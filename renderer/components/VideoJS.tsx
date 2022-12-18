@@ -1,10 +1,14 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 
 export const VideoJS = (props) => {
   const videoRef = React.useRef(null);
   const playerRef = React.useRef(null);
+  let playerState = playerRef.current;
+  const handle = () => {
+    console.log(playerState.currentTime())
+  }
   const {options, onReady} = props;
 
   React.useEffect(() => {
@@ -16,38 +20,38 @@ export const VideoJS = (props) => {
 
       videoElement.classList.add('vjs-big-play-centered');
       videoRef.current.appendChild(videoElement);
-
       const player = playerRef.current = videojs(videoElement, options, () => {
         videojs.log('player is ready');
+
         onReady && onReady(player);
       });
 
-    // You could update an existing player in the `else` block here
-    // on prop change, for example:
+      // You could update an existing player in the `else` block here
+      // on prop change, for example:
     } else {
       const player = playerRef.current;
-
       player.autoplay(options.autoplay);
       player.src(options.sources);
+      console.log(playerRef)
     }
   }, [options, videoRef]);
 
   // Dispose the Video.js player when the functional component unmounts
   React.useEffect(() => {
-    const player = playerRef.current;
-
+    playerState = playerRef.current;
     return () => {
-      if (player && !player.isDisposed()) {
-        player.dispose();
+      if (playerState && !playerState.isDisposed()) {
+        playerState.dispose();
         playerRef.current = null;
       }
     };
   }, [playerRef]);
 
   return (
-    <div data-vjs-player>
-      <div ref={videoRef} />
-    </div>
+      <div data-vjs-player>
+        <div ref={videoRef}/>
+        <button onClick={handle}>Coba</button>
+      </div>
   );
 }
 
