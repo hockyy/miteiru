@@ -73,12 +73,11 @@ export default (windowName: string, options: BrowserWindowConstructorOptions): B
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
+      // webSecurity: false,
       ...options.webPreferences,
     },
   };
   win = new BrowserWindow(browserOptions);
-
   win.on('close', saveState);
-
   return win;
 };

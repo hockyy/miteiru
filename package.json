@@ -12,7 +12,9 @@
   },
   "dependencies": {
     "electron-serve": "^1.1.0",
-    "electron-store": "^8.1.0"
+    "electron-store": "^8.1.0",
+    "react-dropzone": "^14.2.3",
+    "video.js": "^7.20.3"
   },
   "devDependencies": {
     "@types/node": "^16.11.7",
