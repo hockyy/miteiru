@@ -28,9 +28,6 @@ if (isProd) {
     await mainWindow.loadURL(`http://localhost:${port}/home`);
     mainWindow.webContents.openDevTools();
   }
-  ipcMain.on('load-video', (event, file) => {
-    console.log(file)
-  })
 })();
 
 app.on('window-all-closed', () => {

@@ -32,11 +32,9 @@ function Video() {
   const onDrop = useCallback(acceptedFiles => {
     // const draggedVideo = {...acceptedFiles[0], src: `file:/${acceptedFiles[0].path}`}
     const draggedVideo = {
-      type: acceptedFiles[0].type,
+      type: 'video/webm',
       src: `miteiru://${acceptedFiles[0].path}`
     }
-    console.log(draggedVideo)
-    ipcRenderer.send('load-video', draggedVideo)
     setVideoSrc(draggedVideo)
   }, [])
   const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop})
@@ -44,7 +42,8 @@ function Video() {
   return (
       <React.Fragment>
         <div>
-          <ReactPlayer playing={'Play'} url={videoSrc.src}/>
+          <MiteiruPlayer videoSrc={videoSrc}/>
+          {/*<ReactPlayer playing={'Play'} url={videoSrc.src}/>*/}
           {/*<VideoJS options={videoJsOptions} onReady={handlePlayerReady}/>*/}
           <div {...getRootProps()}>
             <input {...getInputProps()} />

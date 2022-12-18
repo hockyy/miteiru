@@ -30,7 +30,8 @@ const mimeTypes = {
   ".png": "image/png",
   ".jpg": "image/jpeg",
   ".map": "text/plain",
-  ".mp4": "video/mp4"
+  ".mp4": "video/mp4",
+  ".mkv": "video/webm"
 };
 
 function charset(mimeExt) {
@@ -63,6 +64,6 @@ export function requestHandler(req, next) {
       stream: true
     });
   } else {
-    console.error("File not fount");
+    console.error("File not found");
   }
 }
