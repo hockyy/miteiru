@@ -30,7 +30,7 @@ function Video() {
     // const draggedVideo = {...acceptedFiles[0], src: `file:/${acceptedFiles[0].path}`}
     const draggedVideo = {
       type: acceptedFiles[0].type,
-      src: `miteiru:///Users/hocky/Movies/Jackbox.mp4`
+      src: `miteiru://${acceptedFiles[0].path}`
     }
     console.log(draggedVideo)
     ipcRenderer.send('load-video', draggedVideo)
@@ -41,13 +41,13 @@ function Video() {
   return (
       <React.Fragment>
         <div>
-          <video width="320" height="240" controls>
-            <source src="miteiru:///Users/hocky/Movies/Jackbox.mp4"
-                    type="video/mp4"/>
-            {/*<source src="movie.ogg" type="video/ogg"/>*/}
-            Your browser does not support the video tag.
-          </video>
-          {/*<VideoJS options={videoJsOptions} onReady={handlePlayerReady}/>*/}
+          {/*<video width="320" height="240" controls>*/}
+          {/*  <source src={videoSrc.src}*/}
+          {/*          type="video/mp4"/>*/}
+          {/*  /!*<source src="movie.ogg" type="video/ogg"/>*!/*/}
+          {/*  Your browser does not support the video tag.*/}
+          {/*</video>*/}
+          <VideoJS options={videoJsOptions} onReady={handlePlayerReady}/>
           <div {...getRootProps()}>
             <input {...getInputProps()} />
             {
