@@ -2,9 +2,12 @@ import {ipcRenderer} from "electron";
 import React, {useCallback, useState} from "react";
 import {useDropzone} from "react-dropzone";
 import VideoJS from "../components/VideoJS";
+import MiteiruPlayer from "../components/MiteiruPlayer";
+import ReactPlayer from 'react-player'
+
 
 function Video() {
-  const [videoSrc, setVideoSrc] = useState({src: ''})
+  const [videoSrc, setVideoSrc] = useState({src: '', type: ''})
   const playerRef = React.useRef(null);
 
   const videoJsOptions = {
@@ -41,13 +44,8 @@ function Video() {
   return (
       <React.Fragment>
         <div>
-          {/*<video width="320" height="240" controls>*/}
-          {/*  <source src={videoSrc.src}*/}
-          {/*          type="video/mp4"/>*/}
-          {/*  /!*<source src="movie.ogg" type="video/ogg"/>*!/*/}
-          {/*  Your browser does not support the video tag.*/}
-          {/*</video>*/}
-          <VideoJS options={videoJsOptions} onReady={handlePlayerReady}/>
+          <ReactPlayer playing={'Play'} url={videoSrc.src}/>
+          {/*<VideoJS options={videoJsOptions} onReady={handlePlayerReady}/>*/}
           <div {...getRootProps()}>
             <input {...getInputProps()} />
             {
