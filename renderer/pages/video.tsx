@@ -1,10 +1,7 @@
-import {ipcRenderer} from "electron";
 import React, {useCallback, useState} from "react";
 import {useDropzone} from "react-dropzone";
 import VideoJS from "../components/VideoJS";
-import MiteiruPlayer from "../components/MiteiruPlayer";
-import VideoReact from "../components/VideoReact";
-import ReactPlayer from "react-player";
+import Subtitle from "../components/Subtitle";
 
 
 function Video() {
@@ -43,9 +40,6 @@ function Video() {
   return (
       <React.Fragment>
         <div>
-          {/*<MiteiruPlayer videoSrc={videoSrc}/>*/}
-          {/*<ReactPlayer url={videoSrc.src}/>*/}
-          {/*<VideoReact videoSrc={videoSrc.src}/>*/}
           <VideoJS options={videoJsOptions} onReady={handlePlayerReady}/>
           <div {...getRootProps()}>
             <input {...getInputProps()} />

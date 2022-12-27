@@ -13,3 +13,12 @@
     @apply text-white font-bold px-4 py-2 rounded bg-blue-600 hover:bg-blue-500;
   }
 }
+
+.subtitle:hover {
+  -webkit-text-fill-color: aqua;
+}
+
+
+.subtitle {
+  -webkit-text-fill-color: green;
+}

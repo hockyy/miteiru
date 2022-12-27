@@ -1,6 +1,7 @@
 import React, {useEffect} from 'react';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
+import Subtitle from "./Subtitle";
 
 export const VideoJS = (props) => {
   const videoRef = React.useRef(null);
@@ -48,8 +49,15 @@ export const VideoJS = (props) => {
   }, [playerRef]);
 
   return (
-      <div data-vjs-player>
-        <div ref={videoRef}/>
+      <div>
+        <div>
+          <div className={'z-[-1] fixed w-[100vw]'}>
+            <div data-vjs-player>
+              <div ref={videoRef}></div>
+            </div>
+          </div>
+          <Subtitle/>
+        </div>
         <button onClick={handle}>Coba</button>
       </div>
   );
