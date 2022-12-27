@@ -45,17 +45,19 @@ export const Subtitle = ({currentTime, subtitle}) => {
 
     }
   }, [currentTime])
-  return <div className={"w-[100vw] justify-center text-center"} style={{
+  return <div className={"w-[100vw] justify-center text-center content-center"} style={{
     position: "fixed",
-    top: "90vh",
+    top: "80vh",
     zIndex: 100,
     WebkitTextStrokeColor: "black",
     WebkitTextStrokeWidth: "1px",
     fontSize: "40px",
     fontFamily: "Arial",
-    fontWeight: "bold"
+    fontWeight: "bold",
   }}>
-    {caption}
+    {caption.length > 0 && <div className={"bg-white/100 w-fit mx-auto rounded-lg px-3 pt-2 pb-1"}>
+      {caption}
+    </div>}
   </div>
 }
 
