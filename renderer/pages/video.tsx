@@ -1,68 +1,32 @@
-import React, {useCallback, useState} from "react";
+import React, {useCallback, useRef, useState} from "react";
 import {useDropzone} from "react-dropzone";
 import VideoJS from "../components/VideoJS";
-import Subtitle from "../components/Subtitle";
 import {SubtitleContainer} from "../components/dataStructures";
+import MiteiruDropzone from "../components/MiteiruDropzone";
+import Subtitle from "../components/Subtitle";
 
 
 function Video() {
   const [videoSrc, setVideoSrc] = useState({src: '', type: ''})
   const [currentSubtitle, setCurrentSubtitle] = useState(new SubtitleContainer(''))
-  const playerRef = React.useRef(null);
-  const videoJsOptions = {
-    autoplay: true,
-    controls: true,
-    responsive: true,
-    fluid: true,
-    sources: [videoSrc]
-  };
-  const handlePlayerReady = (player) => {
+  const [currentTime, setCurrentTime] = useState(0);
+  const playerRef = useRef(null);
+  const readyCallback = useCallback((player) => {
     playerRef.current = player;
-
-    // You can handle player events here, for example:
-    player.on('waiting', () => {
-      console.log('waiting')
-    });
-
-    player.on('dispose', () => {
-      console.log('dispose')
-    });
-  };
-  const onDrop = useCallback(acceptedFiles => {
-    // const draggedVideo = {...acceptedFiles[0], src: `file:/${acceptedFiles[0].path}`}
-    if (acceptedFiles[0].path.endsWith('.srt')) {
-      const draggedSubtitle = {
-        type: 'text/plain',
-        src: `${acceptedFiles[0].path}`
-      }
-      const tmpFile = new SubtitleContainer(draggedSubtitle.src);
-      setCurrentSubtitle(tmpFile)
-      console.log(tmpFile)
-    } else {
-
-      const draggedVideo = {
-        type: 'video/webm',
-        src: `miteiru://${acceptedFiles[0].path}`
-      }
-      setVideoSrc(draggedVideo)
-    }
   }, [])
-  const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop})
-
   return (
       <React.Fragment>
         <div>
-          <VideoJS subtitle={currentSubtitle} options={videoJsOptions} onReady={handlePlayerReady}/>
-
-          <div {...getRootProps()}>
-            <input {...getInputProps()}/>
-            {
-              isDragActive ?
-                  <p>Drop the files here ...</p> :
-                  <p>Drag 'n' drop some files here, or click to select files</p>
-            }
-          </div>
+          <VideoJS options={{
+            autoplay: true,
+            controls: true,
+            responsive: true,
+            fluid: true,
+            sources: [videoSrc]
+          }} onReady={readyCallback} setCurrentTime={setCurrentTime}/>
+          <Subtitle currentTime={currentTime} subtitle={currentSubtitle}/>
         </div>
+        <MiteiruDropzone setCurrentSubtitle={setCurrentSubtitle} setVideoSrc={setVideoSrc}/>
 
       </React.Fragment>
   );
