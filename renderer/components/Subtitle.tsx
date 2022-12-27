@@ -7,7 +7,7 @@ import {getLineByTime} from "./dataStructures";
 export const Subtitle = ({currentTime, subtitle}) => {
   const [caption, setCaption] = useState([])
   const setFromContent = (content) => {
-    if (content === '') setCaption('')
+    if (content === '') setCaption([])
     let current = content.map((val, index) => {
       return <Sentence key={index} origin={val.origin} separation={val.separation}/>
     })

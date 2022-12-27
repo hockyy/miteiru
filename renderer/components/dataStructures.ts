@@ -75,20 +75,16 @@ export class SubtitleContainer {
 
 
 export function getLineByTime(subtitle: SubtitleContainer, t: number) {
-    let low = 0;
-    let high = subtitle.lines.length - 1;
-    while (low < high) {
-      let mid = (low + high + 1) >> 1;
-      console.log(subtitle.lines[mid].timeStart, t)
-      if (subtitle.lines[mid].timeStart <= t) low = mid;
-      else high = mid - 1;
-    }
-    console.log(subtitle.lines[low])
-    console.log(t)
-    if (subtitle.lines[low].timeStart <= t && t <= subtitle.lines[low].timeEnd) {
-      console.log("OK")
-      return subtitle.lines[low].content;
-    } else {
-      return '';
-    }
+  let low = 0;
+  let high = subtitle.lines.length - 1;
+  while (low < high) {
+    let mid = (low + high + 1) >> 1;
+    if (subtitle.lines[mid].timeStart <= t) low = mid;
+    else high = mid - 1;
   }
+  if (subtitle.lines[low].timeStart <= t && t <= subtitle.lines[low].timeEnd) {
+    return subtitle.lines[low].content;
+  } else {
+    return '';
+  }
+}
