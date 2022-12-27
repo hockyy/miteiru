@@ -1,8 +1,11 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
+import {SubtitleContainer} from "../components/dataStructures";
 
 function Home() {
+  const tmp = new SubtitleContainer('');
+  useEffect(() => console.log(tmp), [])
   return (
       <React.Fragment>
         <Head>

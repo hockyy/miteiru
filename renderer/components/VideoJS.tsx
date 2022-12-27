@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 import Subtitle from "./Subtitle";
@@ -7,8 +7,9 @@ export const VideoJS = (props) => {
   const videoRef = React.useRef(null);
   const playerRef = React.useRef(null);
   let playerState = playerRef.current;
+  const [currentTime, setCurrentTime] = useState(0);
   const handle = () => {
-    console.log(playerState.currentTime())
+    setCurrentTime(playerState.currentTime())
   }
   const {options, onReady} = props;
 
@@ -56,9 +57,13 @@ export const VideoJS = (props) => {
               <div ref={videoRef}></div>
             </div>
           </div>
-          <Subtitle/>
+          <Subtitle currentTime={currentTime} subtitle={props.subtitle}/>
         </div>
-        <button onClick={handle}>Coba</button>
+        <button onClick={handle} style={{
+          position: 'fixed',
+          top: '80vh'
+        }}>Coba
+        </button>
       </div>
   );
 }

@@ -11,25 +11,26 @@
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
+    "@plussub/srt-vtt-parser": "^1.1.0",
     "electron-serve": "^1.1.0",
     "electron-store": "^8.1.0",
     "html-react-parser": "^3.0.6",
     "react-dropzone": "^14.2.3",
-    "shunou-js": "^0.0.4",
+    "shunou-js": "^0.0.6",
     "video.js": "^7.20.3"
   },
   "devDependencies": {
-    "@types/node": "^16.11.7",
-    "@types/react": "^18.0.8",
-    "autoprefixer": "^10.4.7",
-    "electron": "^20.1.0",
-    "electron-builder": "^23.3.3",
-    "next": "^12.2.5",
+    "@types/node": "^16.18.11",
+    "@types/react": "^18.0.26",
+    "autoprefixer": "^10.4.13",
+    "electron": "^20.3.8",
+    "electron-builder": "^23.6.0",
+    "next": "^12.3.4",
     "nextron": "^8.2.0",
-    "postcss": "^8.4.13",
+    "postcss": "^8.4.20",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "tailwindcss": "^3.1.8",
-    "typescript": "^4.8.2"
+    "tailwindcss": "^3.2.4",
+    "typescript": "^4.9.4"
   }
 }

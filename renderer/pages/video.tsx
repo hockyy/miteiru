@@ -2,12 +2,13 @@ import React, {useCallback, useState} from "react";
 import {useDropzone} from "react-dropzone";
 import VideoJS from "../components/VideoJS";
 import Subtitle from "../components/Subtitle";
+import {SubtitleContainer} from "../components/dataStructures";
 
 
 function Video() {
   const [videoSrc, setVideoSrc] = useState({src: '', type: ''})
+  const [currentSubtitle, setCurrentSubtitle] = useState(new SubtitleContainer(''))
   const playerRef = React.useRef(null);
-
   const videoJsOptions = {
     autoplay: true,
     controls: true,
@@ -29,20 +30,32 @@ function Video() {
   };
   const onDrop = useCallback(acceptedFiles => {
     // const draggedVideo = {...acceptedFiles[0], src: `file:/${acceptedFiles[0].path}`}
-    const draggedVideo = {
-      type: 'video/webm',
-      src: `miteiru://${acceptedFiles[0].path}`
+    if (acceptedFiles[0].path.endsWith('.srt')) {
+      const draggedSubtitle = {
+        type: 'text/plain',
+        src: `${acceptedFiles[0].path}`
+      }
+      const tmpFile = new SubtitleContainer(draggedSubtitle.src);
+      setCurrentSubtitle(tmpFile)
+      console.log(tmpFile)
+    } else {
+
+      const draggedVideo = {
+        type: 'video/webm',
+        src: `miteiru://${acceptedFiles[0].path}`
+      }
+      setVideoSrc(draggedVideo)
     }
-    setVideoSrc(draggedVideo)
   }, [])
   const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop})
 
   return (
       <React.Fragment>
         <div>
-          <VideoJS options={videoJsOptions} onReady={handlePlayerReady}/>
+          <VideoJS subtitle={currentSubtitle} options={videoJsOptions} onReady={handlePlayerReady}/>
+
           <div {...getRootProps()}>
-            <input {...getInputProps()} />
+            <input {...getInputProps()}/>
             {
               isDragActive ?
                   <p>Drop the files here ...</p> :

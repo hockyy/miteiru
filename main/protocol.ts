@@ -31,7 +31,9 @@ const mimeTypes = {
   ".jpg": "image/jpeg",
   ".map": "text/plain",
   ".mp4": "video/mp4",
-  ".mkv": "video/webm"
+  ".mkv": "video/webm",
+  ".srt": "text/plain",
+  ".vtt": "text/plain"
 };
 
 function charset(mimeExt) {
