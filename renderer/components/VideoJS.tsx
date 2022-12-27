@@ -21,9 +21,18 @@ export const VideoJS = ({options, onReady, setCurrentTime}) => {
         onReady && onReady(player);
       });
     } else {
-      if (options.sources[0].src !== playerRef.current.currentSrc()) playerRef.current.src(options.sources);
+      if (options.sources[0].src !== playerRef.current.currentSrc()) {
+        playerRef.current.src(options.sources);
+      }
     }
   }, [options, videoRef]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      handle()
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
       <div>

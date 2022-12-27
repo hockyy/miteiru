@@ -15,7 +15,6 @@ export const Subtitle = ({currentTime, subtitle}) => {
   }
   useEffect(() => {
     try {
-      console.log("OK")
       setFromContent(subtitle.lines[0].content)
     } catch (e) {
     }
@@ -24,7 +23,6 @@ export const Subtitle = ({currentTime, subtitle}) => {
     console.log(currentTime)
     try {
       const currentContent = getLineByTime(subtitle, Math.trunc(currentTime * 1000));
-      console.log(currentContent);
       setFromContent(currentContent);
     } catch (e) {
 

@@ -5,7 +5,6 @@ import {SubtitleContainer} from "../components/dataStructures";
 
 function Home() {
   const tmp = new SubtitleContainer('');
-  useEffect(() => console.log(tmp), [])
   return (
       <React.Fragment>
         <Head>

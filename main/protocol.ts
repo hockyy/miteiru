@@ -50,7 +50,6 @@ function mime(filename) {
 
 export function requestHandler(req, next) {
   const reqUrl = new URL(req.url);
-  console.log(reqUrl)
   let reqPath = decodeURI(reqUrl.pathname);
   if (reqPath === "/") {
     reqPath = "/index.html";
