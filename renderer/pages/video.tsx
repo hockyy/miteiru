@@ -1,4 +1,4 @@
-import React, {useCallback, useRef, useState} from "react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import {useDropzone} from "react-dropzone";
 import VideoJS from "../components/VideoJS";
 import {SubtitleContainer} from "../components/dataStructures";
@@ -14,19 +14,34 @@ function Video() {
   const readyCallback = useCallback((player) => {
     playerRef.current = player;
   }, [])
+  const [dragDrop, setDragDrop] = useState(true);
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      if(event.key === "x")
+      setDragDrop((old) => {
+        return !old
+      })
+    };
+    window.addEventListener('keydown', handleKeyPress);
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, []);
   return (
       <React.Fragment>
-        <div>
+        <div onClick={() => {
+          console.log("OK")
+        }
+        }>
           <VideoJS options={{
             autoplay: true,
             controls: true,
             responsive: true,
-            fluid: true,
             sources: [videoSrc]
           }} onReady={readyCallback} setCurrentTime={setCurrentTime}/>
           <Subtitle currentTime={currentTime} subtitle={currentSubtitle}/>
         </div>
-        <MiteiruDropzone setCurrentSubtitle={setCurrentSubtitle} setVideoSrc={setVideoSrc}/>
+        {dragDrop && <MiteiruDropzone setCurrentSubtitle={setCurrentSubtitle} setVideoSrc={setVideoSrc}/>}
 
       </React.Fragment>
   );

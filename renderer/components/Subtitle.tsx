@@ -37,6 +37,7 @@ export const Subtitle = ({currentTime, subtitle}) => {
   }, [subtitle]);
   useEffect(() => {
     console.log(currentTime)
+    console.log(subtitle)
     try {
       const currentContent = getLineByTime(subtitle, Math.trunc(currentTime * 1000));
       setFromContent(currentContent);
@@ -45,11 +46,14 @@ export const Subtitle = ({currentTime, subtitle}) => {
     }
   }, [currentTime])
   return <div className={"w-[100vw] justify-center text-center"} style={{
+    position: "fixed",
+    top: "90vh",
+    zIndex: 100,
     WebkitTextStrokeColor: "black",
     WebkitTextStrokeWidth: "1px",
-    fontSize: "30px",
+    fontSize: "40px",
     fontFamily: "Arial",
-    fontWeight: "bold",
+    fontWeight: "bold"
   }}>
     {caption}
   </div>

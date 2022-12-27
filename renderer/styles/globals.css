@@ -18,6 +18,21 @@
   -webkit-text-fill-color: aqua;
 }
 
+.video-container {
+  height: 100vh;
+  width: 100vw;
+}
+
+.video {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+video-js{
+  width: 100% !important;
+  height: 100% !important;
+}
+
 
 .subtitle {
   justify-self: center;

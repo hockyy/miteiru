@@ -24,16 +24,18 @@ export const MiteiruDropzone = ({setCurrentSubtitle, setVideoSrc}) => {
 
   const {getRootProps, getInputProps, isDragActive} = useDropzone({
     onDrop,
-    noDragEventsBubbling: true,
   })
 
-  return (<div style={{
-    backgroundColor: "red",
-    position: "fixed",
-    top: "90vh",
-    width: "100vw"
-  }}>
-    <div {...getRootProps()}>
+  return (<div>
+    <div {...getRootProps()} style={{
+      zIndex: 5,
+      backgroundColor: "blue",
+      opacity: "30%",
+      position: "fixed",
+      top: "0vh",
+      height: "100vh",
+      width: "100vw"
+    }}>
       <input {...getInputProps()}/>
       {
         isDragActive ?

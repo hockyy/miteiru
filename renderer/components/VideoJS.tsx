@@ -35,19 +35,10 @@ export const VideoJS = ({options, onReady, setCurrentTime}) => {
   }, []);
 
   return (
-      <div>
-        <div>
-          <div>
-            <div className={"video-container"}data-vjs-player>
-              <div className={'video'} ref={videoRef}></div>
-            </div>
-          </div>
+      <div className={'z-0'}>
+        <div className={"video-container"} data-vjs-player>
+          <div className={'video'} ref={videoRef}></div>
         </div>
-        <button onClick={handle} style={{
-          position: 'fixed',
-          top: '80vh'
-        }}>Coba
-        </button>
       </div>
   );
 }
