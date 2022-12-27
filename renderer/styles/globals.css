@@ -20,5 +20,7 @@
 
 
 .subtitle {
-  -webkit-text-fill-color: green;
+  justify-self: center;
+  text-align: center;
+  -webkit-text-fill-color: white;
 }

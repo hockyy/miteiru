@@ -1,8 +1,24 @@
 import React, {useEffect, useState} from "react";
 
 import parse from 'html-react-parser';
-import Sentence from "./Sentence";
 import {getLineByTime} from "./dataStructures";
+
+const Sentence = ({origin, separation}) => {
+  const handleChange = (origin) => {
+    console.log(origin)
+  }
+  return <button className={"subtitle"} onClick={() => {
+    handleChange(origin)
+  }}>
+    {separation.map((val, index) => {
+      return <ruby key={index}>{val.bottom}
+        <rp>(</rp>
+        <rt>{val.top ?? ''}</rt>
+        <rp>)</rp>
+      </ruby>
+    })}
+  </button>
+}
 
 export const Subtitle = ({currentTime, subtitle}) => {
   const [caption, setCaption] = useState([])
@@ -28,10 +44,10 @@ export const Subtitle = ({currentTime, subtitle}) => {
 
     }
   }, [currentTime])
-  return <div style={{
+  return <div className={"w-[100vw] justify-center text-center"} style={{
     WebkitTextStrokeColor: "black",
     WebkitTextStrokeWidth: "1px",
-    fontSize: "50px",
+    fontSize: "30px",
     fontFamily: "Arial",
     fontWeight: "bold",
   }}>

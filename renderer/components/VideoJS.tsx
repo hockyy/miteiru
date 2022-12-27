@@ -30,16 +30,16 @@ export const VideoJS = ({options, onReady, setCurrentTime}) => {
   useEffect(() => {
     const interval = setInterval(() => {
       handle()
-    }, 100);
+    }, 200);
     return () => clearInterval(interval);
   }, []);
 
   return (
       <div>
         <div>
-          <div className={'z-[-1] fixed w-[100vw]'}>
-            <div data-vjs-player>
-              <div ref={videoRef}></div>
+          <div>
+            <div className={"video-container"}data-vjs-player>
+              <div className={'video'} ref={videoRef}></div>
             </div>
           </div>
         </div>
