@@ -39,7 +39,7 @@ export const Subtitle = ({currentTime, primarySub, secondarySub}) => {
   }
   const setFromSecondaryContent = (content) => {
     if (content === '' || content.length === 0) {
-      setSecondaryCaption('')
+      setSecondaryCaption([])
       return;
     }
     const current = <PlainSentence origin={content}/>

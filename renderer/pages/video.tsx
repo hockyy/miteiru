@@ -18,10 +18,10 @@ function Video() {
   const [dragDrop, setDragDrop] = useState(true);
   useEffect(() => {
     const handleKeyPress = (event) => {
-      if(event.key === "x")
-      setDragDrop((old) => {
-        return !old
-      })
+      if (event.key === "x")
+        setDragDrop((old) => {
+          return !old
+        })
     };
     window.addEventListener('keydown', handleKeyPress);
     return () => {
@@ -30,10 +30,7 @@ function Video() {
   }, []);
   return (
       <React.Fragment>
-        <div onClick={() => {
-          console.log("OK")
-        }
-        }>
+        <div>
           <VideoJS options={{
             autoplay: true,
             controls: true,
@@ -42,7 +39,9 @@ function Video() {
           }} onReady={readyCallback} setCurrentTime={setCurrentTime}/>
           <Subtitle currentTime={currentTime} primarySub={primarySub} secondarySub={secondarySub}/>
         </div>
-        {dragDrop && <MiteiruDropzone setPrimarySub={setPrimarySub} setSecondarySub={setSecondarySub} setVideoSrc={setVideoSrc}/>}
+        {dragDrop &&
+            <MiteiruDropzone setPrimarySub={setPrimarySub} setSecondarySub={setSecondarySub}
+                             setVideoSrc={setVideoSrc}/>}
 
       </React.Fragment>
   );

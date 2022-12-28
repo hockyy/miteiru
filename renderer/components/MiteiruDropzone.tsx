@@ -12,7 +12,6 @@ export const MiteiruDropzone = ({setPrimarySub, setSecondarySub, setVideoSrc}) =
         src: `${acceptedFiles[0].path}`
       }
       const tmpSub = new SubtitleContainer(draggedSubtitle.src);
-      console.log(tmpSub)
       if (tmpSub.language === "JP") {
         setPrimarySub(tmpSub)
       } else if (tmpSub.language === "EN") {
