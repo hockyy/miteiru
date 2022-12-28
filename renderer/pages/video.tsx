@@ -33,14 +33,15 @@ function Video() {
   return (
       <React.Fragment>
         <div>
-          <MeaningBox meaning={meaning}/>
+          <MeaningBox meaning={meaning} setMeaning={setMeaning}/>
           <VideoJS options={{
             autoplay: true,
             controls: true,
             responsive: true,
             sources: [videoSrc]
           }} onReady={readyCallback} setCurrentTime={setCurrentTime}/>
-          <Subtitle setMeaning={setMeaning} currentTime={currentTime} primarySub={primarySub} secondarySub={secondarySub}/>
+          <Subtitle setMeaning={setMeaning} currentTime={currentTime} primarySub={primarySub}
+                    secondarySub={secondarySub}/>
         </div>
         {dragDrop &&
             <MiteiruDropzone setPrimarySub={setPrimarySub} setSecondarySub={setSecondarySub}

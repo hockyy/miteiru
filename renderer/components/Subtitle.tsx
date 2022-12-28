@@ -74,7 +74,7 @@ export const Subtitle = ({setMeaning, currentTime, primarySub, secondarySub}) =>
     <div className={"w-[100vw] justify-center text-center content-center"} style={{
       position: "fixed",
       top: "80vh",
-      zIndex: 100,
+      zIndex: 10,
       WebkitTextStrokeColor: "black",
       WebkitTextStrokeWidth: "1px",
       fontSize: "40px",
@@ -89,7 +89,7 @@ export const Subtitle = ({setMeaning, currentTime, primarySub, secondarySub}) =>
     <div className={"w-[100vw] justify-center text-center content-center"} style={{
       position: "fixed",
       top: "10vh",
-      zIndex: 100,
+      zIndex: 10,
       WebkitTextStrokeColor: "black",
       WebkitTextStrokeWidth: "1px",
       fontSize: "40px",

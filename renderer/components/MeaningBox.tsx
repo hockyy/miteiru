@@ -3,15 +3,15 @@ import {ipcRenderer} from "electron";
 
 const initialContentState = {sense: [], kanji: []};
 
-const MeaningBox = ({meaning}: { meaning: string }) => {
+const MeaningBox = ({meaning, setMeaning}: { meaning: string, setMeaning: any }) => {
   const [meaningContent, setMeaningContent] = useState(initialContentState)
   useEffect(() => {
-    console.log(meaning)
-    if (meaning === '') return;
+    if (meaning === '') {
+      setMeaningContent(initialContentState);
+      return;
+    }
     ipcRenderer.invoke('query', meaning).then(val => {
-      console.log(val)
       if (val.length > 0) {
-        console.log(val[0])
         setMeaningContent(val[0])
       } else {
         setMeaningContent(initialContentState)
@@ -30,8 +30,8 @@ const MeaningBox = ({meaning}: { meaning: string }) => {
 
   if (meaningContent.kanji.length > 0) {
     return (<div onClick={() => {
-      setMeaningContent(initialContentState)
-    }} className={"z-[100] relative bg-blue-200/20 w-[100vw] h-[100vh]"}>
+      setMeaning('');
+    }} className={"z-[100] fixed bg-blue-200/20 w-[100vw] h-[100vh]"}>
       <div
           className={"inset-x-0 mx-auto mt-10 bg-blue-100 z-[101] fixed rounded-lg w-[80vw] h-[60vh]"}>
         <div className={"bg-blue-100 p-5 rounded-t-lg"}>
