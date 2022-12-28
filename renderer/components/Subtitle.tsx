@@ -54,7 +54,6 @@ export const Subtitle = ({setMeaning, currentTime, primarySub, secondarySub}) =>
       return;
     }
     let current = content.map((val, index) => {
-      console.log(val)
       return <Sentence key={index}
                        origin={val.origin}
                        separation={val.separation}
