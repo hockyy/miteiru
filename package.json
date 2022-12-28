@@ -16,7 +16,7 @@
     "electron-store": "^8.1.0",
     "html-react-parser": "^3.0.6",
     "react-dropzone": "^14.2.3",
-    "shunou-js": "^0.0.6",
+    "shunou-js": "^0.0.7",
     "video.js": "^7.20.3"
   },
   "devDependencies": {

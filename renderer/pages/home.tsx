@@ -1,7 +1,7 @@
 import React, {useEffect} from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import {SubtitleContainer} from "../components/dataStructures";
+import {SubtitleContainer} from "../components/DataStructures";
 
 function Home() {
   const tmp = new SubtitleContainer('');

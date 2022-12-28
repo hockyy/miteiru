@@ -1,8 +1,8 @@
 import {useCallback, useState} from "react";
-import {SubtitleContainer} from "./dataStructures";
+import {SubtitleContainer} from "./DataStructures";
 import {useDropzone} from "react-dropzone";
 
-export const MiteiruDropzone = ({setCurrentSubtitle, setVideoSrc}) => {
+export const MiteiruDropzone = ({setPrimarySub, setSecondarySub, setVideoSrc}) => {
 
   const onDrop = useCallback(acceptedFiles => {
     // const draggedVideo = {...acceptedFiles[0], src: `file:/${acceptedFiles[0].path}`}
@@ -11,8 +11,13 @@ export const MiteiruDropzone = ({setCurrentSubtitle, setVideoSrc}) => {
         type: 'text/plain',
         src: `${acceptedFiles[0].path}`
       }
-      const tmpFile = new SubtitleContainer(draggedSubtitle.src);
-      setCurrentSubtitle(tmpFile)
+      const tmpSub = new SubtitleContainer(draggedSubtitle.src);
+      console.log(tmpSub)
+      if (tmpSub.language === "JP") {
+        setPrimarySub(tmpSub)
+      } else if (tmpSub.language === "EN") {
+        setSecondarySub(tmpSub)
+      }
     } else if (acceptedFiles[0].path.endsWith('.mp4') || acceptedFiles[0].path.endsWith('.mkv')) {
       const draggedVideo = {
         type: 'video/webm',

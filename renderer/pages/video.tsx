@@ -1,14 +1,15 @@
 import React, {useCallback, useEffect, useRef, useState} from "react";
 import {useDropzone} from "react-dropzone";
 import VideoJS from "../components/VideoJS";
-import {SubtitleContainer} from "../components/dataStructures";
+import {SubtitleContainer} from "../components/DataStructures";
 import MiteiruDropzone from "../components/MiteiruDropzone";
 import Subtitle from "../components/Subtitle";
 
 
 function Video() {
   const [videoSrc, setVideoSrc] = useState({src: '', type: ''})
-  const [currentSubtitle, setCurrentSubtitle] = useState(new SubtitleContainer(''))
+  const [primarySub, setPrimarySub] = useState(new SubtitleContainer(''))
+  const [secondarySub, setSecondarySub] = useState(new SubtitleContainer(''))
   const [currentTime, setCurrentTime] = useState(0);
   const playerRef = useRef(null);
   const readyCallback = useCallback((player) => {
@@ -39,9 +40,9 @@ function Video() {
             responsive: true,
             sources: [videoSrc]
           }} onReady={readyCallback} setCurrentTime={setCurrentTime}/>
-          <Subtitle currentTime={currentTime} subtitle={currentSubtitle}/>
+          <Subtitle currentTime={currentTime} primarySub={primarySub} secondarySub={secondarySub}/>
         </div>
-        {dragDrop && <MiteiruDropzone setCurrentSubtitle={setCurrentSubtitle} setVideoSrc={setVideoSrc}/>}
+        {dragDrop && <MiteiruDropzone setPrimarySub={setPrimarySub} setSecondarySub={setSecondarySub} setVideoSrc={setVideoSrc}/>}
 
       </React.Fragment>
   );

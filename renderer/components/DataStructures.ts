@@ -1,4 +1,4 @@
-import {getFurigana} from "shunou-js";
+import {getFurigana, isMixedJapanese} from "shunou-js";
 import fs from 'fs';
 import {parse} from '@plussub/srt-vtt-parser';
 import subtitle from "./Subtitle";
@@ -25,6 +25,7 @@ export class SubtitleContainer {
   language: string;
 
   constructor(filename: string) {
+    this.lines = []
     if (filename === '') return
     const {entries} = parse(
         fs
@@ -32,16 +33,27 @@ export class SubtitleContainer {
         .toString()
     );
 
-    this.lines = []
-    entries.forEach(({from, to, text, id}) => {
+    const totalLine = entries.length >> 1;
+    let totalMixed = 0;
+    this.language = "EN"
+    for (const {text} of entries) {
       // process transcript entry
-      this.lines.push(new Line(from, to, text))
+      totalMixed += isMixedJapanese(text) ? 1 : 0;
+      if (totalMixed >= totalLine) {
+        this.language = "JP"
+      }
+    }
+
+    entries.forEach(({from, to, text}) => {
+      // process transcript entry
+      this.lines.push(new Line(from, to, text, this.language === "JP"))
     });
   }
 }
 
 
 export function getLineByTime(subtitle: SubtitleContainer, t: number) {
+  if (!subtitle.lines || subtitle.lines.length === 0) return ''
   let low = 0;
   let high = subtitle.lines.length - 1;
   while (low < high) {
