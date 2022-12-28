@@ -2,7 +2,7 @@ import {app, ipcMain, protocol} from 'electron';
 import serve from 'electron-serve';
 import {createWindow} from './helpers';
 import {requestHandler, scheme} from "./protocol";
-import {kanjiAnywhere, setup as setupJmdict} from 'jmdict-simplified-node';
+import {getTags, kanjiAnywhere, setup as setupJmdict} from 'jmdict-simplified-node';
 
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
@@ -19,13 +19,26 @@ if (isProd) {
   const jmdictPromise =
       setupJmdict('my-jmdict-simplified-db', '/Users/hocky/project/jmdict-eng-3.2.0-alpha.1.json');
   const {db} = await jmdictPromise;
+  const tags = await getTags(db);
 
   const mainWindow = createWindow('main', {
     width: 1000,
     height: 600,
   });
   ipcMain.handle('query', async (event, query) => {
-    return await kanjiAnywhere(db, query, 5);
+    const matches = await kanjiAnywhere(db, query, 10);
+    // Swap the exact match to front
+    for (let i = 0;i < matches.length;i++) {
+      if(matches[i].kanji.map(val => val.text).includes(query)) {
+        [matches[i], matches[0]] = [matches[0], matches[i]]
+        break;
+      }
+    }
+    return matches
+  })
+
+  ipcMain.handle('tags', (event) => {
+    return tags;
   })
 
   protocol.registerFileProtocol(scheme, requestHandler); /* eng-disable PROTOCOL_HANDLER_JS_CHECK */
