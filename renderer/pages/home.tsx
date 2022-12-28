@@ -22,6 +22,13 @@ function Home() {
           <span>💕 </span>
         </div>
         <div className='mt-1 w-full flex-wrap flex justify-center'>
+          <button onClick={async () => {
+            const ret = await ipcRenderer.invoke('query', "悪魔")
+            console.log(ret)
+          }
+          }>
+            TMP
+          </button>
           <Link href='/next'>
             <a className='btn-blue'>Go to next page</a>
           </Link>

@@ -25,6 +25,7 @@ if (isProd) {
     height: 600,
   });
   ipcMain.handle('query', async (event, query) => {
+    console.log(query)
     return await kanjiAnywhere(db, query, 1)
   })
 

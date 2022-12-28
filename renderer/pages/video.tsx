@@ -12,6 +12,7 @@ function Video() {
   const [primarySub, setPrimarySub] = useState(new SubtitleContainer(''))
   const [secondarySub, setSecondarySub] = useState(new SubtitleContainer(''))
   const [currentTime, setCurrentTime] = useState(0);
+  const [meaning, setMeaning] = useState('');
   const playerRef = useRef(null);
   const readyCallback = useCallback((player) => {
     playerRef.current = player;
@@ -32,14 +33,14 @@ function Video() {
   return (
       <React.Fragment>
         <div>
-          <MeaningBox/>
+          <MeaningBox meaning={meaning}/>
           <VideoJS options={{
             autoplay: true,
             controls: true,
             responsive: true,
             sources: [videoSrc]
           }} onReady={readyCallback} setCurrentTime={setCurrentTime}/>
-          <Subtitle currentTime={currentTime} primarySub={primarySub} secondarySub={secondarySub}/>
+          <Subtitle setMeaning={setMeaning} currentTime={currentTime} primarySub={primarySub} secondarySub={secondarySub}/>
         </div>
         {dragDrop &&
             <MiteiruDropzone setPrimarySub={setPrimarySub} setSecondarySub={setSecondarySub}

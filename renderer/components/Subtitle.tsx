@@ -3,14 +3,11 @@ import {getLineByTime} from "./DataStructures";
 import parse from "html-react-parser"
 import {ipcRenderer} from "electron";
 
-const Sentence = ({origin, separation, addRomaji = true, addHiragana = true}) => {
+const Sentence = ({origin, setMeaning, separation, addRomaji = true, addHiragana = true}) => {
   const handleChange = (origin) => {
-    console.log(origin)
+    setMeaning(origin)
   }
-  return <button className={"subtitle"} onClick={async () => {
-    const ret = await ipcRenderer.invoke('query', origin)
-    console.log(ret)
-  }}>
+  return <button className={"subtitle"} onClick={() => handleChange(origin)}>
     {separation.map((val, index) => {
       const hiragana = (<>
             <rp>(</rp>
@@ -24,8 +21,8 @@ const Sentence = ({origin, separation, addRomaji = true, addHiragana = true}) =>
             <rp>)</rp>
           </>
       )
-      return <ruby style={{rubyPosition: "under"}}>
-        <ruby style={{rubyPosition: "over"}} key={index}>
+      return <ruby style={{rubyPosition: "under"}} key={index}>
+        <ruby style={{rubyPosition: "over"}}>
           {val.main}
           {(val.isKana || val.isKanji) && addHiragana && hiragana}
         </ruby>
@@ -39,7 +36,7 @@ const PlainSentence = ({origin}) => {
   return <div>{parse(origin)}</div>
 }
 
-export const Subtitle = ({currentTime, primarySub, secondarySub}) => {
+export const Subtitle = ({setMeaning, currentTime, primarySub, secondarySub}) => {
   const [caption, setCaption] = useState([])
   const [secondaryCaption, setSecondaryCaption] = useState([])
   const setFromContent = (content) => {
@@ -48,7 +45,10 @@ export const Subtitle = ({currentTime, primarySub, secondarySub}) => {
       return;
     }
     let current = content.map((val, index) => {
-      return <Sentence key={index} origin={val.origin} separation={val.separation}/>
+      return <Sentence key={index}
+                       origin={val.origin}
+                       separation={val.separation}
+                       setMeaning={setMeaning}/>
     })
     setCaption(current)
   }
