@@ -5,18 +5,21 @@ const initialContentState = {sense: [], kanji: []};
 
 const MeaningBox = ({meaning, setMeaning}: { meaning: string, setMeaning: any }) => {
   const [meaningContent, setMeaningContent] = useState(initialContentState)
+  const [otherMeanings, setOtherMeanings] = useState([]);
+  const [meaningIndex, setMeaningIndex] = useState(0);
   useEffect(() => {
     if (meaning === '') {
       setMeaningContent(initialContentState);
       return;
     }
     ipcRenderer.invoke('query', meaning).then(val => {
+      setOtherMeanings(val)
       if (val.length > 0) {
         setMeaningContent(val[0])
+        setMeaningIndex(0)
       } else {
         setMeaningContent(initialContentState)
       }
-
     })
   }, [meaning]);
   const joinString = (arr, separator = '; ') => {
@@ -34,17 +37,38 @@ const MeaningBox = ({meaning, setMeaning}: { meaning: string, setMeaning: any })
     }} className={"z-[100] fixed bg-blue-200/20 w-[100vw] h-[100vh]"}>
       <div
           className={"inset-x-0 mx-auto mt-10 bg-blue-100 z-[101] fixed rounded-lg w-[80vw] h-[60vh]"}>
-        <div className={"bg-blue-100 p-5 rounded-t-lg"}>
+
+        <div
+            className={"flex flex-row justify-center text-center content-center align-middle bg-blue-100 p-5 rounded-t-lg"}>
+
+          {meaningIndex - 1 >= 0 &&
+              < button className={"bg-blue-800 p-3 rounded-md m-4"} onClick={(e) => {
+                e.stopPropagation()
+                setMeaningIndex((old) => {
+                  setMeaningContent(otherMeanings[old - 1])
+                  return old - 1
+                })
+              }
+              }>Previous
+              </button>}
           <div className={"text-5xl"} style={{
-            top: "10vh",
             WebkitTextStrokeColor: "black",
-            WebkitTextStrokeWidth: "1px",
+            WebkitTextFillColor: "blue",
             fontSize: "40px",
             fontFamily: "Arial",
-            fontWeight: "bold",
           }}>{joinString(meaningContent.kanji.map(val => {
             return val.text
           }))}</div>
+          {meaningIndex + 1 < otherMeanings.length &&
+              < button className={"bg-blue-800 p-3 rounded-md m-4"} onClick={(e) => {
+                e.stopPropagation()
+                setMeaningIndex((old) => {
+                  setMeaningContent(otherMeanings[old + 1])
+                  return old + 1
+                })
+              }
+              }>Next
+              </button>}
         </div>
         <div className={"bg-white w-full h-full rounded-b-lg text-blue-800 text-lg p-2"}>
           {

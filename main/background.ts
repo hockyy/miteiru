@@ -25,8 +25,7 @@ if (isProd) {
     height: 600,
   });
   ipcMain.handle('query', async (event, query) => {
-    console.log(query)
-    return await kanjiAnywhere(db, query, 1)
+    return await kanjiAnywhere(db, query, 5);
   })
 
   protocol.registerFileProtocol(scheme, requestHandler); /* eng-disable PROTOCOL_HANDLER_JS_CHECK */
