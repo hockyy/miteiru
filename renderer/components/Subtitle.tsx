@@ -3,11 +3,18 @@ import {getLineByTime} from "./DataStructures";
 import parse from "html-react-parser"
 import {ipcRenderer} from "electron";
 
-const Sentence = ({origin, setMeaning, separation, addRomaji = true, addHiragana = true}) => {
+export const Sentence = ({
+                           origin,
+                           setMeaning,
+                           separation,
+                           addRomaji = true,
+                           addHiragana = true,
+                           extraClass
+                         }) => {
   const handleChange = (origin) => {
     setMeaning(origin)
   }
-  return <button className={"subtitle"} onClick={() => handleChange(origin)}>
+  return <button className={extraClass} onClick={() => handleChange(origin)}>
     {separation.map((val, index) => {
       const hiragana = (<>
             <rp>(</rp>
@@ -48,7 +55,8 @@ export const Subtitle = ({setMeaning, currentTime, primarySub, secondarySub}) =>
       return <Sentence key={index}
                        origin={val.origin}
                        separation={val.separation}
-                       setMeaning={setMeaning}/>
+                       setMeaning={setMeaning}
+                       extraClass={"subtitle"}/>
     })
     setCaption(current)
   }

@@ -1,5 +1,7 @@
 import {useEffect, useState} from "react";
 import {ipcRenderer} from "electron";
+import {getFurigana} from "shunou-js";
+import {Sentence} from "./Subtitle";
 
 const initialContentState = {sense: [], kanji: []};
 
@@ -40,7 +42,11 @@ const MeaningBox = ({meaning, setMeaning}: { meaning: string, setMeaning: any })
       setMeaning('');
     }} className={"z-[100] fixed bg-blue-200/20 w-[100vw] h-[100vh]"}>
       <div
-          className={"overflow-clip border-2 border-blue-700 inset-x-0 mx-auto mt-10 bg-blue-100 z-[101] fixed rounded-lg w-[80vw] h-[60vh]"}>
+          onClick={(e) => {
+            e.stopPropagation()
+          }
+          }
+          className={"overflow-clip border-2 border-blue-700 inset-x-0 mx-auto mt-10 bg-blue-100 z-[101] fixed rounded-lg w-[80vw] h-[80vh]"}>
         <div
             className={"overflow-scroll h-auto flex flex-row justify-center text-center content-center align-middle bg-blue-100 p-5 rounded-t-lg"}>
 
@@ -54,14 +60,26 @@ const MeaningBox = ({meaning, setMeaning}: { meaning: string, setMeaning: any })
               }
               }>Previous
               </button>}
-          <div className={"text-5xl"} style={{
+          <div className={"flex flex-wrap gap-2"} style={{
             WebkitTextStrokeColor: "black",
             WebkitTextFillColor: "blue",
             fontSize: "40px",
             fontFamily: "Arial",
-          }}>{joinString(meaningContent.kanji.map(val => {
-            return val.text
-          }))}</div>
+          }}>{meaningContent.kanji.map(val => {
+            const furiganized = getFurigana(val.text);
+            console.log(furiganized)
+            const tmp = (
+                <div className={"bg-white rounded-xl p-2 border-2 border-blue-700 w-fit"}>
+                  {[...furiganized.map((val, idx) => {
+                    return (<Sentence key={idx}
+                                      origin={val.origin}
+                                      setMeaning={setMeaning}
+                                      separation={val.separation}
+                                      extraClass={"meaning-kanji text-md"}/>)
+                  })]}
+                </div>)
+            return tmp;
+          })}</div>
           {meaningIndex + 1 < otherMeanings.length &&
               < button className={"bg-blue-800 p-3 rounded-md m-4"} onClick={(e) => {
                 e.stopPropagation()
@@ -89,7 +107,8 @@ const MeaningBox = ({meaning, setMeaning}: { meaning: string, setMeaning: any })
                           ret = tags[val];
                         } catch (e) {
                         }
-                        return <div className={"bg-blue-500 w-fit p-1 rounded-lg px-2 m-3 text-white"}>{ret}</div>
+                        return <div
+                            className={"bg-blue-500 w-fit p-1 rounded-lg px-2 m-3 text-white"}>{ret}</div>
                       }
                   )}</div>
                 <div className={"flex flex-row px-3"}>

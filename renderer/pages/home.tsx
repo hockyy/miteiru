@@ -24,7 +24,6 @@ function Home() {
         <div className='mt-1 w-full flex-wrap flex justify-center'>
           <button onClick={async () => {
             const ret = await ipcRenderer.invoke('query', "悪魔")
-            console.log(ret)
           }
           }>
             TMP

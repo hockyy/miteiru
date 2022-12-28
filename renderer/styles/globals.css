@@ -15,6 +15,17 @@
 }
 
 
+.meaning-kanji {
+  justify-self: center;
+  text-align: center;
+  -webkit-text-fill-color: darkblue;
+}
+
+.meaning-kanji:hover {
+  -webkit-text-fill-color: royalblue;
+}
+
+
 .subtitle {
   justify-self: center;
   text-align: center;

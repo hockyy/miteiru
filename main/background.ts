@@ -3,6 +3,7 @@ import serve from 'electron-serve';
 import {createWindow} from './helpers';
 import {requestHandler, scheme} from "./protocol";
 import {getTags, kanjiAnywhere, setup as setupJmdict} from 'jmdict-simplified-node';
+import {match} from "assert";
 
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
@@ -26,10 +27,18 @@ if (isProd) {
     height: 600,
   });
   ipcMain.handle('query', async (event, query) => {
-    const matches = await kanjiAnywhere(db, query, 10);
+    let matches = await kanjiAnywhere(db, query, 10);
     // Swap the exact match to front
-    for (let i = 0;i < matches.length;i++) {
-      if(matches[i].kanji.map(val => val.text).includes(query)) {
+    matches = matches.sort((a, b) => {
+          // Get smallest kanji length in a and b, compare it
+          const smallestA = Math.min(...a.kanji.map(val => val.text.length))
+          const smallestB = Math.min(...b.kanji.map(val => val.text.length))
+          if (smallestA !== smallestB) return smallestA - smallestB;
+          return a.kanji.length - b.kanji.length
+        }
+    )
+    for (let i = 0; i < matches.length; i++) {
+      if (matches[i].kanji.map(val => val.text).includes(query)) {
         [matches[i], matches[0]] = [matches[0], matches[i]]
         break;
       }
