@@ -20,10 +20,13 @@ function Video() {
   const [dragDrop, setDragDrop] = useState(true);
   useEffect(() => {
     const handleKeyPress = (event) => {
-      if (event.key === "x")
+      if (event.key === "x") {
         setDragDrop((old) => {
           return !old
         })
+      } else if (event.key === "Escape") {
+        setMeaning("")
+      }
     };
     window.addEventListener('keydown', handleKeyPress);
     return () => {

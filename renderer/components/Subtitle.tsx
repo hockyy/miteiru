@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import {getLineByTime} from "./DataStructures";
 import parse from "html-react-parser"
 import {ipcRenderer} from "electron";
+import {isMixedJapanese} from "shunou-js";
 
 export const Sentence = ({
                            origin,
@@ -28,12 +29,13 @@ export const Sentence = ({
             <rp>)</rp>
           </>
       )
+      const showFurigana = (val.isKana || val.isKanji || val.isMixed || isMixedJapanese(origin));
       return <ruby style={{rubyPosition: "under"}} key={index}>
         <ruby style={{rubyPosition: "over"}}>
           {val.main}
-          {(val.isKana || val.isKanji) && addHiragana && hiragana}
+          {showFurigana && addHiragana && hiragana}
         </ruby>
-        {(val.isKana || val.isKanji) && addRomaji && romaji}
+        {showFurigana && addRomaji && romaji}
       </ruby>
     })}
   </button>

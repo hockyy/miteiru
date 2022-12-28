@@ -17,7 +17,7 @@
     "html-react-parser": "^3.0.6",
     "jmdict-simplified-node": "^1.1.2",
     "react-dropzone": "^14.2.3",
-    "shunou-js": "^0.0.15",
+    "shunou-js": "^0.0.17",
     "video.js": "^7.20.3"
   },
   "devDependencies": {

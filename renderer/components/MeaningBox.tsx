@@ -65,11 +65,10 @@ const MeaningBox = ({meaning, setMeaning}: { meaning: string, setMeaning: any })
             WebkitTextFillColor: "blue",
             fontSize: "40px",
             fontFamily: "Arial",
-          }}>{meaningContent.kanji.map(val => {
+          }}>{meaningContent.kanji.map((val,meanKey) => {
             const furiganized = getFurigana(val.text);
-            console.log(furiganized)
             const tmp = (
-                <div className={"bg-white rounded-xl p-2 border-2 border-blue-700 w-fit"}>
+                <div key={meanKey} className={"bg-white rounded-xl p-2 border-2 border-blue-700 w-fit"}>
                   {[...furiganized.map((val, idx) => {
                     return (<Sentence key={idx}
                                       origin={val.origin}
@@ -101,13 +100,14 @@ const MeaningBox = ({meaning, setMeaning}: { meaning: string, setMeaning: any })
                 <div
                     className={"flex flex-wrap container rounded-t-lg bg-blue-200 px-3"}>{
 
-                  sense.partOfSpeech.map((val) => {
+                  sense.partOfSpeech.map((val, keyTags) => {
                         let ret = val;
                         try {
                           ret = tags[val];
                         } catch (e) {
                         }
                         return <div
+                            key={keyTags}
                             className={"bg-blue-500 w-fit p-1 rounded-lg px-2 m-3 text-white"}>{ret}</div>
                       }
                   )}</div>
@@ -115,7 +115,7 @@ const MeaningBox = ({meaning, setMeaning}: { meaning: string, setMeaning: any })
                   <div className={'mx-2 mb-3'}>
                     <span className={"font-bold text-blue-8 mr-1"}>{idxSense + 1}.</span>
                     {
-                      joinString(sense.gloss.map((gloss, idxGloss) => {
+                      joinString(sense.gloss.map((gloss) => {
                         return gloss.text
                       }))
                     }

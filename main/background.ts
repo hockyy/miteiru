@@ -2,7 +2,14 @@ import {app, ipcMain, protocol} from 'electron';
 import serve from 'electron-serve';
 import {createWindow} from './helpers';
 import {requestHandler, scheme} from "./protocol";
-import {getTags, kanjiAnywhere, setup as setupJmdict} from 'jmdict-simplified-node';
+import {
+  kanjiBeginning,
+  getTags,
+  readingBeginning,
+  kanjiAnywhere,
+  readingAnywhere,
+  setup as setupJmdict
+} from 'jmdict-simplified-node';
 import {match} from "assert";
 
 
@@ -27,14 +34,26 @@ if (isProd) {
     height: 600,
   });
   ipcMain.handle('query', async (event, query) => {
-    let matches = await kanjiAnywhere(db, query, 10);
+    let matches = []
+    matches = matches.concat(await readingBeginning(db, query, 10));
+    matches = matches.concat(await kanjiBeginning(db, query));
+    matches = matches.concat(await readingAnywhere(db, query, 10));
+    matches = matches.concat(await kanjiAnywhere(db, query));
+    const ids = matches.map(o => o.id)
+    matches = matches.filter(({id}, index) => !ids.includes(id, index + 1))
     // Swap the exact match to front
     matches = matches.sort((a, b) => {
           // Get smallest kanji length in a and b, compare it
-          const smallestA = Math.min(...a.kanji.map(val => val.text.length))
-          const smallestB = Math.min(...b.kanji.map(val => val.text.length))
+          const smallestA = (a.kanji[0].text.length)
+          const smallestB = (b.kanji[0].text.length)
           if (smallestA !== smallestB) return smallestA - smallestB;
-          return a.kanji.length - b.kanji.length
+          const isVerbA = +(!tags[a.sense[0].partOfSpeech[0]].includes("verb"));
+          const isVerbB = +(!tags[b.sense[0].partOfSpeech[0]].includes("verb"));
+          if (isVerbA !== isVerbB) return isVerbA - isVerbB;
+          const isNounA = +(!tags[a.sense[0].partOfSpeech[0]].includes("noun"));
+          const isNounB = +(!tags[b.sense[0].partOfSpeech[0]].includes("noun"));
+          if (isNounA !== isNounB) return isNounA - isNounB;
+          if (a.kanji.length !== b.kanji.length) return a.kanji.length - b.kanji.length
         }
     )
     for (let i = 0; i < matches.length; i++) {
