@@ -1,13 +1,15 @@
 import React, {useEffect, useState} from "react";
 import {getLineByTime} from "./DataStructures";
 import parse from "html-react-parser"
+import {ipcRenderer} from "electron";
 
 const Sentence = ({origin, separation, addRomaji = true, addHiragana = true}) => {
   const handleChange = (origin) => {
     console.log(origin)
   }
-  return <button className={"subtitle"} onClick={() => {
-    handleChange(origin)
+  return <button className={"subtitle"} onClick={async () => {
+    const ret = await ipcRenderer.invoke('query', origin)
+    console.log(ret)
   }}>
     {separation.map((val, index) => {
       const hiragana = (<>

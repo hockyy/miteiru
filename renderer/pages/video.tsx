@@ -4,6 +4,7 @@ import VideoJS from "../components/VideoJS";
 import {SubtitleContainer} from "../components/DataStructures";
 import MiteiruDropzone from "../components/MiteiruDropzone";
 import Subtitle from "../components/Subtitle";
+import MeaningBox from "../components/MeaningBox";
 
 
 function Video() {
@@ -31,6 +32,7 @@ function Video() {
   return (
       <React.Fragment>
         <div>
+          <MeaningBox/>
           <VideoJS options={{
             autoplay: true,
             controls: true,

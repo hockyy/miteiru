@@ -15,6 +15,7 @@
     "electron-serve": "^1.1.0",
     "electron-store": "^8.1.0",
     "html-react-parser": "^3.0.6",
+    "jmdict-simplified-node": "^1.1.2",
     "react-dropzone": "^14.2.3",
     "shunou-js": "^0.0.15",
     "video.js": "^7.20.3"
