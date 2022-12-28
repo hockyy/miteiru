@@ -23,3 +23,5 @@ Miteiru is an open source Electron video player to learn Japanese. It has modula
 - Will support Android and Windows.
 - Miteiru will have built-in Tokenizer and Dictionary, and supports French, German, Bahasa Indonesia, and many more.
 - Miteiru will support Chinese and Korean too!
+
+![Miteiru](./README.assets/Miteiru.gif)
