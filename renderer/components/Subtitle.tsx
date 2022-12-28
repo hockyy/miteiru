@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import {getLineByTime} from "./DataStructures";
 import parse from "html-react-parser"
 
-const Sentence = ({origin, separation}) => {
+const Sentence = ({origin, separation, addRomaji = true, addHiragana = true}) => {
   const handleChange = (origin) => {
     console.log(origin)
   }
@@ -10,15 +10,28 @@ const Sentence = ({origin, separation}) => {
     handleChange(origin)
   }}>
     {separation.map((val, index) => {
-      return <ruby key={index}>{val.bottom}
-        <rp>(</rp>
-        <rt>{val.top ?? ''}</rt>
-        <rp>)</rp>
+      const hiragana = (<>
+            <rp>(</rp>
+            <rt>{val.hiragana ?? ''}</rt>
+            <rp>)</rp>
+          </>
+      )
+      const romaji = (<>
+            <rp>(</rp>
+            <rt>{val.romaji ?? ''}</rt>
+            <rp>)</rp>
+          </>
+      )
+      return <ruby style={{rubyPosition: "under"}}>
+        <ruby style={{rubyPosition: "over"}} key={index}>
+          {val.main}
+          {(val.isKana || val.isKanji) && addHiragana && hiragana}
+        </ruby>
+        {(val.isKana || val.isKanji) && addRomaji && romaji}
       </ruby>
     })}
   </button>
 }
-
 
 const PlainSentence = ({origin}) => {
   return <div>{parse(origin)}</div>

@@ -55,7 +55,6 @@ export function requestHandler(req, next) {
     reqPath = "/index.html";
   }
   const reqFilename = path.basename(reqPath);
-  // console.log(reqPath)
   const {mimeExt, mimeType} = mime(reqFilename);
   if (mimeType !== null) {
     next({
