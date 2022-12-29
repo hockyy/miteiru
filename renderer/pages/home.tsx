@@ -1,7 +1,6 @@
 import React, {useState} from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import {SubtitleContainer} from "../components/DataStructures";
 import {ipcRenderer} from 'electron';
 import {ContainerHome} from "../components/ContainerHome";
 
@@ -9,7 +8,6 @@ const checkSymbol = ['❌', '✅', '🙃']
 const initialCheck = {ok: 0, message: 'Check is not run yet'}
 
 function Home() {
-  const tmp = new SubtitleContainer('');
   const [dicdir, setDicdir] = useState('');
   const [mecab, setMecab] = useState('mecab');
   const [jmdict, setJmdict] = useState('');
@@ -129,12 +127,11 @@ function Home() {
                     className='bg-green-600 p-3 rounded-sm bg-green-700'
                     onClick={() => {
                       const text = '木ぃ切って 月収6万だろ~'
-                      ipcRenderer.invoke('getShunou', text).then(val => {
+                      ipcRenderer.invoke('getShunou', mecab, text).then(val => {
                         console.log(val)
                       })
                     }
                     }>
-
                   tmp
                 </button>
                 <Link href='/video'>

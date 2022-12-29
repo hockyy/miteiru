@@ -5,7 +5,11 @@ import {Sentence} from "./Subtitle";
 
 const initialContentState = {sense: [], kanji: []};
 
-const MeaningBox = ({meaning, setMeaning}: { meaning: string, setMeaning: any }) => {
+const MeaningBox = ({
+                      meaning,
+                      setMeaning,
+                      mecab
+                    }: { meaning: string, setMeaning: any, mecab: string }) => {
   const [meaningContent, setMeaningContent] = useState(initialContentState)
   const [otherMeanings, setOtherMeanings] = useState([]);
   const [meaningIndex, setMeaningIndex] = useState(0);
@@ -65,8 +69,8 @@ const MeaningBox = ({meaning, setMeaning}: { meaning: string, setMeaning: any })
             WebkitTextFillColor: "blue",
             fontSize: "40px",
             fontFamily: "Arial",
-          }}>{meaningContent.kanji.map((val,meanKey) => {
-            const furiganized = getFurigana(val.text);
+          }}>{meaningContent.kanji.map((val, meanKey) => {
+            const furiganized = getFurigana(val.text, mecab);
             return (
                 <div key={meanKey}
                      className={"bg-white rounded-xl p-2 border-2 border-blue-700 w-fit"}>
