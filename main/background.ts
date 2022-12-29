@@ -30,11 +30,13 @@ if (isProd) {
   let JMDict = {db: null, tags: {}};
   const setUpJMDict = async (filename) => {
     try {
-      const jmSetup = await setupJmdict(path.join(appDataDirectory, `jmdict-new-${crypto.randomUUID()}`), filename);
-      console.log(jmSetup)
-      const jmTags = await getTags(JMDict.db);
+      if (JMDict.db) {
+        JMDict.db.close()
+      }
+      const jmSetup = await setupJmdict(path.join(appDataDirectory, `jmdict-db`), filename);
+      const jmTags = await getTags(jmSetup.db);
       JMDict = {
-        db: JMDict.db,
+        db: jmSetup.db,
         tags: jmTags
       }
       return true;
