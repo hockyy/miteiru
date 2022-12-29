@@ -12,6 +12,7 @@ import {
 } from 'jmdict-simplified-node';
 import fs from "fs";
 import path from "path";
+import * as crypto from "crypto";
 
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
@@ -24,11 +25,26 @@ if (isProd) {
 
 (async () => {
   await app.whenReady();
-  const appDataDirectory = app.getPath('appData');
-  const jmdictPromise =
-      setupJmdict('my-jmdict-simplified-db', '/Users/hocky/project/jmdict-eng-3.2.0-alpha.1.json');
-  const {db} = await jmdictPromise;
-  const tags = await getTags(db);
+  const appDataDirectory = app.getPath('userData');
+
+  let JMDict = {db: null, tags: {}};
+  const setUpJMDict = async (filename) => {
+    try {
+      const jmSetup = await setupJmdict(path.join(appDataDirectory, `jmdict-new-${crypto.randomUUID()}`), filename);
+      console.log(jmSetup)
+      const jmTags = await getTags(JMDict.db);
+      JMDict = {
+        db: JMDict.db,
+        tags: jmTags
+      }
+      return true;
+    } catch (e) {
+      console.log(e);
+
+      return false;
+    }
+  }
+
 
   const mainWindow = createWindow('main', {
     width: 1000,
@@ -36,38 +52,44 @@ if (isProd) {
   });
   ipcMain.handle('query', async (event, query) => {
     let matches = []
-    matches = matches.concat(await readingBeginning(db, query, 10));
-    matches = matches.concat(await kanjiBeginning(db, query));
-    matches = matches.concat(await readingAnywhere(db, query, 10));
-    matches = matches.concat(await kanjiAnywhere(db, query));
-    const ids = matches.map(o => o.id)
-    matches = matches.filter(({id}, index) => !ids.includes(id, index + 1))
-    // Swap the exact match to front
-    matches = matches.sort((a, b) => {
-          // Get smallest kanji length in a and b, compare it
-          const smallestA = (a.kanji[0].text.length)
-          const smallestB = (b.kanji[0].text.length)
-          if (smallestA !== smallestB) return smallestA - smallestB;
-          const isVerbA = +(!tags[a.sense[0].partOfSpeech[0]].includes("verb"));
-          const isVerbB = +(!tags[b.sense[0].partOfSpeech[0]].includes("verb"));
-          if (isVerbA !== isVerbB) return isVerbA - isVerbB;
-          const isNounA = +(!tags[a.sense[0].partOfSpeech[0]].includes("noun"));
-          const isNounB = +(!tags[b.sense[0].partOfSpeech[0]].includes("noun"));
-          if (isNounA !== isNounB) return isNounA - isNounB;
-          if (a.kanji.length !== b.kanji.length) return a.kanji.length - b.kanji.length
+    try {
+
+      matches = matches.concat(await readingBeginning(JMDict.db, query, 10));
+      matches = matches.concat(await kanjiBeginning(JMDict.db, query));
+      matches = matches.concat(await readingAnywhere(JMDict.db, query, 10));
+      matches = matches.concat(await kanjiAnywhere(JMDict.db, query));
+      const ids = matches.map(o => o.id)
+      matches = matches.filter(({id}, index) => !ids.includes(id, index + 1))
+      // Swap the exact match to front
+      matches = matches.sort((a, b) => {
+            // Get smallest kanji length in a and b, compare it
+            const smallestA = (a.kanji[0].text.length)
+            const smallestB = (b.kanji[0].text.length)
+            if (smallestA !== smallestB) return smallestA - smallestB;
+            const isVerbA = +(!JMDict.tags[a.sense[0].partOfSpeech[0]].includes("verb"));
+            const isVerbB = +(!JMDict.tags[b.sense[0].partOfSpeech[0]].includes("verb"));
+            if (isVerbA !== isVerbB) return isVerbA - isVerbB;
+            const isNounA = +(!JMDict.tags[a.sense[0].partOfSpeech[0]].includes("noun"));
+            const isNounB = +(!JMDict.tags[b.sense[0].partOfSpeech[0]].includes("noun"));
+            if (isNounA !== isNounB) return isNounA - isNounB;
+            if (a.kanji.length !== b.kanji.length) return a.kanji.length - b.kanji.length
+          }
+      )
+      for (let i = 0; i < matches.length; i++) {
+        if (matches[i].kanji.map(val => val.text).includes(query)) {
+          [matches[i], matches[0]] = [matches[0], matches[i]]
+          break;
         }
-    )
-    for (let i = 0; i < matches.length; i++) {
-      if (matches[i].kanji.map(val => val.text).includes(query)) {
-        [matches[i], matches[0]] = [matches[0], matches[i]]
-        break;
       }
+      return matches
+    } catch (e) {
+      console.log(e)
+      return []
     }
-    return matches
   })
 
   ipcMain.handle('tags', (event) => {
-    return tags;
+    return JMDict.tags;
   })
   ipcMain.handle('pickDirectory', async (event) => {
     return await dialog.showOpenDialog({
@@ -91,7 +113,7 @@ if (isProd) {
       filters: [{name: 'Allowed Extensions', extensions: allowed}]
     });
   })
-  ipcMain.handle('validateConfig', (event, config) => {
+  ipcMain.handle('validateConfig', async (event, config) => {
     if (!fs.existsSync(config.dicdir) || !fs.lstatSync(config.dicdir).isDirectory()) return {
       ok: false,
       message: `dicdir '${config.dicdir}' doesn't exist`
@@ -100,7 +122,7 @@ if (isProd) {
       ok: false,
       message: `jmdict '${config.jmdict}' doesn't exist`
     };
-    if(!(config.jmdict.endsWith('.json'))) return {
+    if (!(config.jmdict.endsWith('.json'))) return {
       ok: false,
       message: `'${config.jmdict}' is not a JSON file`
     };
@@ -117,7 +139,17 @@ if (isProd) {
         message: `'${currentFile}' is not a file`
       };
     }
-    return {ok: true, message: 'Setup is ready'};
+    // Load DB Here
+    const ret = await setUpJMDict(config.jmdict);
+    if (ret) {
+
+      return {ok: true, message: 'Setup is ready'};
+    } else {
+      return {
+        ok: false,
+        message: `Failed to load JMDict DB!`
+      };
+    }
   })
   ipcMain.handle('appDataPath', () => {
     return appDataDirectory
