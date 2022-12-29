@@ -9,8 +9,8 @@ const initialCheck = {ok: 0, message: 'Check is not run yet'}
 
 function Home() {
   const [dicdir, setDicdir] = useState('');
-  const [mecab, setMecab] = useState('mecab');
-  const [jmdict, setJmdict] = useState('');
+  const [mecab, setMecab] = useState('/opt/homebrew/bin/mecab');
+  const [jmdict, setJmdict] = useState('/Users/hocky/Downloads/jmdict-eng-3.2.0-alpha.1.json');
   const [check, setCheck] = useState(initialCheck);
   return (
       <React.Fragment>
@@ -122,18 +122,18 @@ function Home() {
 
                   Remove JMDict Cache
                 </button>
-                <button
-                    type={"button"}
-                    className='bg-green-600 p-3 rounded-sm bg-green-700'
-                    onClick={() => {
-                      const text = '木ぃ切って 月収6万だろ~'
-                      ipcRenderer.invoke('getShunou', mecab, text).then(val => {
-                        console.log(val)
-                      })
-                    }
-                    }>
-                  tmp
-                </button>
+                {/*<button*/}
+                {/*    type={"button"}*/}
+                {/*    className='bg-green-600 p-3 rounded-sm bg-green-700'*/}
+                {/*    onClick={() => {*/}
+                {/*      const text = '木ぃ切って 月収6万だろ~'*/}
+                {/*      ipcRenderer.invoke('getShunou', mecab, text).then(val => {*/}
+                {/*        console.log(val)*/}
+                {/*      })*/}
+                {/*    }*/}
+                {/*    }>*/}
+                {/*  tmp*/}
+                {/*</button>*/}
                 <Link href='/video'>
                   <button
                       type={"button"}
