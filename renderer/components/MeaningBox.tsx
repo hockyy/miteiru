@@ -67,8 +67,9 @@ const MeaningBox = ({meaning, setMeaning}: { meaning: string, setMeaning: any })
             fontFamily: "Arial",
           }}>{meaningContent.kanji.map((val,meanKey) => {
             const furiganized = getFurigana(val.text);
-            const tmp = (
-                <div key={meanKey} className={"bg-white rounded-xl p-2 border-2 border-blue-700 w-fit"}>
+            return (
+                <div key={meanKey}
+                     className={"bg-white rounded-xl p-2 border-2 border-blue-700 w-fit"}>
                   {[...furiganized.map((val, idx) => {
                     return (<Sentence key={idx}
                                       origin={val.origin}
@@ -76,8 +77,7 @@ const MeaningBox = ({meaning, setMeaning}: { meaning: string, setMeaning: any })
                                       separation={val.separation}
                                       extraClass={"meaning-kanji text-md"}/>)
                   })]}
-                </div>)
-            return tmp;
+                </div>);
           })}</div>
           {meaningIndex + 1 < otherMeanings.length &&
               < button className={"bg-blue-800 p-3 rounded-md m-4"} onClick={(e) => {

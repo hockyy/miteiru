@@ -5,6 +5,7 @@ import {SubtitleContainer} from "../components/DataStructures";
 import MiteiruDropzone from "../components/MiteiruDropzone";
 import Subtitle from "../components/Subtitle";
 import MeaningBox from "../components/MeaningBox";
+import Link from "next/link";
 
 
 function Video() {
@@ -36,6 +37,9 @@ function Video() {
   return (
       <React.Fragment>
         <div>
+          <Link href='/home'>
+            <a className='btn-blue'>Home</a>
+          </Link>
           <MeaningBox meaning={meaning} setMeaning={setMeaning}/>
           <VideoJS options={{
             autoplay: true,
