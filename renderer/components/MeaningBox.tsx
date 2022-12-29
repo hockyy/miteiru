@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 import {ipcRenderer} from "electron";
-import {getFurigana} from "shunou-js";
+import {getFurigana} from "shunou";
 import {Sentence} from "./Subtitle";
 
 const initialContentState = {sense: [], kanji: []};

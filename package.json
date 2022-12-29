@@ -19,7 +19,7 @@
     "jmdict-simplified-node": "^1.1.2",
     "patch-package": "^6.5.0",
     "react-dropzone": "^14.2.3",
-    "shunou-js": "^0.0.17",
+    "shunou": "^0.0.18",
     "video.js": "^7.20.3"
   },
   "devDependencies": {
