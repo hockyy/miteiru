@@ -1,8 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {getLineByTime} from "./DataStructures";
 import parse from "html-react-parser"
-import {ipcRenderer} from "electron";
-import {isMixedJapanese} from "shunou-js";
+import {isMixedJapanese} from "shunou";
 
 export const Sentence = ({
                            origin,

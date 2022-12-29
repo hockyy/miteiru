@@ -1,7 +1,6 @@
-import {getFurigana, isMixedJapanese} from "shunou-js";
+import {getFurigana, isMixedJapanese} from "shunou";
 import fs from 'fs';
 import {parse} from '@plussub/srt-vtt-parser';
-import subtitle from "./Subtitle";
 
 
 export class Line {
