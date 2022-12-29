@@ -11,6 +11,7 @@ const initialCheck = {ok: 0, message: 'Check is not run yet'}
 function Home() {
   const tmp = new SubtitleContainer('');
   const [dicdir, setDicdir] = useState('');
+  const [mecab, setMecab] = useState('mecab');
   const [jmdict, setJmdict] = useState('');
   const [check, setCheck] = useState(initialCheck);
   return (
@@ -45,6 +46,24 @@ function Home() {
                 <button
                     className='bg-blue-400 hover:bg-blue-500 rounded-sm text-white p-2 w-full'
                     onClick={() => {
+                      ipcRenderer.invoke('pickFile', ['*']).then((val) => {
+                        if (!val.canceled) setMecab(val.filePaths[0])
+                      })
+                    }
+                    }>
+                  Select Mecab Path
+                </button>
+                <input
+                    className={"text-blue-800 outline-none rounded-sm text-lg md:min-w-[50vw] border border-gray-300 focus:border-blue-500 ring-1 ring-blue-400 focus:ring-blue-500 rounded-lg"}
+                    type={"text"} value={mecab}
+                    onChange={(val) => {
+                      setMecab(val.target.value)
+                    }}></input>
+              </div>
+              <div className={"flex justify-between  gap-3 p-3 w-full"}>
+                <button
+                    className='bg-blue-400 hover:bg-blue-500 rounded-sm text-white p-2 w-full'
+                    onClick={() => {
                       ipcRenderer.invoke('pickFile', ['json']).then((val) => {
                         if (!val.canceled) setJmdict(val.filePaths[0])
                       })
@@ -67,9 +86,12 @@ function Home() {
                     disabled={check.ok === 2}
                     className='disabled:cursor-not-allowed disabled:bg-amber-200 enabled:bg-amber-600 p-3 rounded-sm enabled:hover:bg-amber-700'
                     onClick={() => {
-                      setCheck({ok: 2, message: 'checking...'})
+                      setCheck({
+                        ok: 2,
+                        message: "checking..."
+                      })
                       ipcRenderer.invoke('validateConfig', {
-                        dicdir, jmdict
+                        mecab, dicdir, jmdict
                       }).then(val => {
                         setCheck(val)
                       })
@@ -85,42 +107,45 @@ function Home() {
 
             </ContainerHome>
             <ContainerHome>
-              <button
-                  type={"button"}
-                  className='bg-red-600 p-3 rounded-sm hover:bg-red-700'
-                  onClick={() => {
-                    setCheck({
-                      ok: 2,
-                      message: 'Removing JMDict Cache'
-                    })
-                    ipcRenderer.invoke('removeDictCache').then(val => {
-                      setCheck(initialCheck)
-                    })
-                  }
-                  }>
-
-                Remove JMDict Cache
-              </button>
-              <button
-                  type={"button"}
-                  className='bg-green-600 p-3 rounded-sm bg-green-700'
-                  onClick={() => {
-                    ipcRenderer.invoke('appDataPath').then(val => {
-                      console.log(val)
-                    })
-                  }
-                  }>
-
-                tmp
-              </button>
-              <Link href='/video'>
+              <div className={'flex flex-row gap-3'}>
                 <button
                     type={"button"}
-                    disabled={check.ok !== 1}
-                    className='disabled:cursor-not-allowed disabled:bg-green-300 enabled:bg-green-600 p-3 rounded-sm enabled:hover:bg-green-700'>
-                  Video
+                    className='bg-red-600 p-3 rounded-sm hover:bg-red-700'
+                    onClick={() => {
+                      setCheck({
+                        ok: 2,
+                        message: 'Removing JMDict Cache'
+                      })
+                      ipcRenderer.invoke('removeDictCache').then(val => {
+                        setCheck(initialCheck)
+                      })
+                    }
+                    }>
+
+                  Remove JMDict Cache
                 </button>
-              </Link>
+                <button
+                    type={"button"}
+                    className='bg-green-600 p-3 rounded-sm bg-green-700'
+                    onClick={() => {
+                      const text = '木ぃ切って 月収6万だろ~'
+                      ipcRenderer.invoke('getShunou', text).then(val => {
+                        console.log(val)
+                      })
+                    }
+                    }>
+
+                  tmp
+                </button>
+                <Link href='/video'>
+                  <button
+                      type={"button"}
+                      disabled={check.ok !== 1}
+                      className='disabled:cursor-not-allowed disabled:bg-green-300 enabled:bg-green-600 p-3 rounded-sm enabled:hover:bg-green-700'>
+                    Video
+                  </button>
+                </Link>
+              </div>
             </ContainerHome>
 
           </div>

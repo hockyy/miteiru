@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "nextron",
     "build": "nextron build",
+    "build:linux": "nextron build --linux",
     "postinstall": "electron-builder install-app-deps; patch-package",
     "patch": "patch-package jmdict-simplified-node"
   },
@@ -19,7 +20,7 @@
     "jmdict-simplified-node": "^1.1.2",
     "patch-package": "^6.5.0",
     "react-dropzone": "^14.2.3",
-    "shunou": "^0.0.18",
+    "shunou": "^0.0.24",
     "video.js": "^7.20.3"
   },
   "devDependencies": {

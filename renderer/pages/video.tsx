@@ -5,6 +5,7 @@ import MiteiruDropzone from "../components/MiteiruDropzone";
 import Subtitle from "../components/Subtitle";
 import MeaningBox from "../components/MeaningBox";
 import Link from "next/link";
+import {useRouter} from "next/router";
 
 
 function Video() {
@@ -18,6 +19,8 @@ function Video() {
     playerRef.current = player;
   }, [])
   const [dragDrop, setDragDrop] = useState(true);
+
+  const router = useRouter()
   useEffect(() => {
     const handleKeyPress = (event) => {
       if (event.key === "x") {
@@ -26,6 +29,8 @@ function Video() {
         })
       } else if (event.key === "Escape") {
         setMeaning("")
+      } else if (event.key === "q") {
+        router.push('/home')
       }
     };
     window.addEventListener('keydown', handleKeyPress);
@@ -36,9 +41,6 @@ function Video() {
   return (
       <React.Fragment>
         <div>
-          <Link href='/home'>
-            <a className='btn-blue'>Home</a>
-          </Link>
           <MeaningBox meaning={meaning} setMeaning={setMeaning}/>
           <VideoJS options={{
             autoplay: true,

@@ -13,6 +13,7 @@ export class Line {
     this.timeEnd = end
     if (isInJapanese) {
       this.content = getFurigana(strContent)
+      console.log(this.content)
     } else {
       this.content = strContent
     }
