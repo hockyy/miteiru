@@ -76,11 +76,12 @@ if (isProd) {
       matches = matches.concat(await kanjiAnywhere(JMDict.db, query));
       const ids = matches.map(o => o.id)
       matches = matches.filter(({id}, index) => !ids.includes(id, index + 1))
+
       // Swap the exact match to front
       matches = matches.sort((a, b) => {
             // Get smallest kanji length in a and b, compare it
-            const smallestA = (a.kanji[0].text.length)
-            const smallestB = (b.kanji[0].text.length)
+            const smallestA = (a.kanji[0].text??''.length)
+            const smallestB = (b.kanji[0].text??''.length)
             if (smallestA !== smallestB) return smallestA - smallestB;
             const isVerbA = +(!JMDict.tags[a.sense[0].partOfSpeech[0]].includes("verb"));
             const isVerbB = +(!JMDict.tags[b.sense[0].partOfSpeech[0]].includes("verb"));
@@ -92,7 +93,7 @@ if (isProd) {
           }
       )
       for (let i = 0; i < matches.length; i++) {
-        if (matches[i].kanji.map(val => val.text).includes(query)) {
+        if (matches[i].kanji.map(val => val.text??'').includes(query)) {
           [matches[i], matches[0]] = [matches[0], matches[i]]
           break;
         }
@@ -131,6 +132,7 @@ if (isProd) {
   })
   ipcMain.handle('removeDictCache', (event) => {
     removeJMDictCache()
+    return true;
   })
   ipcMain.handle('validateConfig', async (event, config) => {
     if (!fs.existsSync(config.dicdir) || !fs.lstatSync(config.dicdir).isDirectory()) return {

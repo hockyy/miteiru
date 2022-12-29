@@ -1,21 +1,84 @@
 diff --git a/node_modules/jmdict-simplified-node/index.js b/node_modules/jmdict-simplified-node/index.js
-index b50ce2d..0bd0b48 100644
+index b50ce2d..233738c 100644
 --- a/node_modules/jmdict-simplified-node/index.js
 +++ b/node_modules/jmdict-simplified-node/index.js
-@@ -22,6 +22,7 @@ __export(require("./interfaces"));
- function setup(DBNAME, filename = '', verbose = false) {
-     return __awaiter(this, void 0, void 0, function* () {
-         const db = levelup_1.default(leveldown_1.default(DBNAME));
-+        try {
-         try {
-             const opt = { asBuffer: false };
-             const [dictDate, version] = yield Promise.all([db.get('raw/dictDate', opt), db.get('raw/version', opt)]);
-@@ -71,6 +72,8 @@ function setup(DBNAME, filename = '', verbose = false) {
+@@ -34,43 +34,48 @@ function setup(DBNAME, filename = '', verbose = false) {
+             throw new Error('database not found but cannot create it if no `filename` given');
          }
-         if (batch.length) {
-             yield db.batch(batch);
-+        }} catch (e) {
-+          db.close()
+         const raw = JSON.parse(yield fs_1.promises.readFile(filename, 'utf8'));
+-        const maxBatches = 10000;
+-        let batch = [];
+-        {
+-            // non-JSON, pure strings
+-            const keys = ['dictDate', 'version'];
+-            for (const key of keys) {
+-                batch.push({ type: 'put', key: `raw/${key}`, value: raw[key] });
+-            }
+-        }
+-        {
+-            // to JSONify
+-            const keys = ['tags', 'dictRevisions'];
+-            for (const key of keys) {
+-                batch.push({ type: 'put', key: `raw/${key}`, value: JSON.stringify(raw[key]) });
++        try {
++            const maxBatches = 10000;
++            let batch = [];
++            {
++                // non-JSON, pure strings
++                const keys = ['dictDate', 'version'];
++                for (const key of keys) {
++                    batch.push({ type: 'put', key: `raw/${key}`, value: raw[key] });
++                }
+             }
+-        }
+-        for (const [numWordsWritten, w] of raw.words.entries()) {
+-            if (batch.length > maxBatches) {
+-                yield db.batch(batch);
+-                batch = [];
+-                if (verbose) {
+-                    console.log(`${numWordsWritten} entries written`);
++            {
++                // to JSONify
++                const keys = ['tags', 'dictRevisions'];
++                for (const key of keys) {
++                    batch.push({ type: 'put', key: `raw/${key}`, value: JSON.stringify(raw[key]) });
+                 }
+             }
+-            batch.push({ type: 'put', key: `raw/words/${w.id}`, value: JSON.stringify(w) });
+-            for (const key of ['kana', 'kanji']) {
+-                for (const k of w[key]) {
+-                    batch.push({ type: 'put', key: `indexes/${key}/${k.text}-${w.id}`, value: w.id });
+-                    for (const substr of allSubstrings(k.text)) {
+-                        // collisions in key ok, since value will be same
+-                        batch.push({ type: 'put', key: `indexes/partial-${key}/${substr}-${w.id}`, value: w.id });
++            for (const [numWordsWritten, w] of raw.words.entries()) {
++                if (batch.length > maxBatches) {
++                    yield db.batch(batch);
++                    batch = [];
++                    if (verbose) {
++                        console.log(`${numWordsWritten} entries written`);
++                    }
++                }
++                batch.push({ type: 'put', key: `raw/words/${w.id}`, value: JSON.stringify(w) });
++                for (const key of ['kana', 'kanji']) {
++                    for (const k of w[key]) {
++                        batch.push({ type: 'put', key: `indexes/${key}/${k.text}-${w.id}`, value: w.id });
++                        for (const substr of allSubstrings(k.text)) {
++                            // collisions in key ok, since value will be same
++                            batch.push({ type: 'put', key: `indexes/partial-${key}/${substr}-${w.id}`, value: w.id });
++                        }
+                     }
+                 }
+             }
+-        }
+-        if (batch.length) {
+-            yield db.batch(batch);
++            if (batch.length) {
++                yield db.batch(batch);
++            }
++        } catch (e) {
++            db.close()
++            throw e;
          }
          return { db, dictDate: raw.dictDate, version: raw.version };
      });
