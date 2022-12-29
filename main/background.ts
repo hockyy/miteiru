@@ -85,16 +85,39 @@ if (isProd) {
       // ]
     });
   })
+  ipcMain.handle('pickFile', async (event, allowed) => {
+    return await dialog.showOpenDialog({
+      properties: ['openFile'],
+      filters: [{name: 'Allowed Extensions', extensions: allowed}]
+    });
+  })
   ipcMain.handle('validateConfig', (event, config) => {
-    console.log(config)
-    const ret = fs.existsSync(config.dicdir)
+    if (!fs.existsSync(config.dicdir) || !fs.lstatSync(config.dicdir).isDirectory()) return {
+      ok: false,
+      message: `dicdir '${config.dicdir}' doesn't exist`
+    };
+    if (!fs.existsSync(config.jmdict) || !fs.lstatSync(config.jmdict).isFile()) return {
+      ok: false,
+      message: `jmdict '${config.jmdict}' doesn't exist`
+    };
+    if(!(config.jmdict.endsWith('.json'))) return {
+      ok: false,
+      message: `'${config.jmdict}' is not a JSON file`
+    };
+
     const IMPORTANT_FILES = ["char.bin", "dicrc", "matrix.bin", "sys.dic", "unk.dic"]
     for (const file of IMPORTANT_FILES) {
       const currentFile = path.join(config.dicdir, file)
-      if (!fs.existsSync(path.join(config.dicdir, file))) return false;
-      if (!fs.lstatSync(path.join(config.dicdir, file)).isFile()) return false
+      if (!fs.existsSync(currentFile)) return {
+        ok: false,
+        message: `file '${currentFile}' doesn't exist`
+      };
+      if (!fs.lstatSync(currentFile).isFile()) return {
+        ok: false,
+        message: `'${currentFile}' is not a file`
+      };
     }
-    return true;
+    return {ok: true, message: ''};
   })
   ipcMain.handle('appDataPath', () => {
     return appDataDirectory
@@ -106,8 +129,6 @@ if (isProd) {
     const port = process.argv[2];
     await mainWindow.loadURL(`http://localhost:${port}/home`);
     mainWindow.webContents.openDevTools();
-    await mainWindow.webContents.session.clearCache()
-    await mainWindow.webContents.session.clearStorageData()
   }
 })();
 
