@@ -197,10 +197,6 @@ if (isProd) {
     return okSetup;
   }
 
-  ipcMain.handle('getShunou', async (event, mecab, text) => {
-    return getFurigana(text, mecab)
-  })
-
   ipcMain.handle('getMecabCommand', async (event, mecab, text) => {
     return mecabCommand
   })
