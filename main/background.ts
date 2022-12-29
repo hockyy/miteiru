@@ -117,7 +117,7 @@ if (isProd) {
         message: `'${currentFile}' is not a file`
       };
     }
-    return {ok: true, message: ''};
+    return {ok: true, message: 'Setup is ready'};
   })
   ipcMain.handle('appDataPath', () => {
     return appDataDirectory

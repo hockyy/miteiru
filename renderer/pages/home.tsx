@@ -9,79 +9,89 @@ function Home() {
   const tmp = new SubtitleContainer('');
   const [dicdir, setDicdir] = useState('');
   const [jmdict, setJmdict] = useState('');
-  const [check, setCheck] = useState('');
+  const [check, setCheck] = useState({ok: false, message: 'check is not run yet'});
   return (
       <React.Fragment>
         <Head>
           <title>Home - Nextron (with-typescript-tailwindcss)</title>
         </Head>
-        <div className={"flex flex-col items-center text-center bg-white gap-3"}>
-          <ContainerHome>
-            <div className={"flex flex-row gap-3 p-3 w-fit"}>
-              <button
-                  className='bg-blue-400 hover:bg-blue-500 rounded-sm text-white p-2 w-full'
-                  onClick={() => {
-                    ipcRenderer.invoke('pickDirectory').then((val) => {
-                      if (!val.canceled) setDicdir(val.filePaths[0])
-                    })
-                  }
-                  }>
-                Select MeCab Dictionary Directory
-              </button>
-              <input
-                  className={"text-blue-800 outline-none rounded-sm text-lg md:min-w-[50vw] border border-gray-300 focus:border-blue-500 ring-1 ring-blue-400 focus:ring-blue-500 rounded-lg"}
-                  type={"text"} value={dicdir}
-                  onChange={(val) => {
-                    setDicdir(val.target.value)
-                  }}></input>
-            </div>
-            <div className={"flex justify-between  gap-3 p-3 w-full"}>
-              <button
-                  className='bg-blue-400 hover:bg-blue-500 rounded-sm text-white p-2 w-full'
-                  onClick={() => {
-                    ipcRenderer.invoke('pickFile', ['json']).then((val) => {
-                      if (!val.canceled) setJmdict(val.filePaths[0])
-                    })
-                  }
-                  }>
-                Select JMDict Json
-              </button>
-              <input
-                  className={"text-blue-800 outline-none rounded-sm text-lg md:min-w-[50vw] border border-gray-300 focus:border-blue-500 ring-1 ring-blue-400 focus:ring-blue-500 rounded-lg"}
-                  type={"text"} value={jmdict}
-                  onChange={(val) => {
-                    setJmdict(val.target.value)
-                  }}></input>
-            </div>
-          </ContainerHome>
-          <ContainerHome>
-            <div className={'flex flex-row justify-center items-center gap-2'}>
-
-              <button
-                  className='bg-amber-600 p-3 rounded-sm hover:bg-amber-700'
-                  onClick={() => {
-                    console.log(dicdir)
-                    ipcRenderer.invoke('validateConfig', {
-                      dicdir, jmdict
-                    }).then(val => {
-                      console.log(val);
-                      if (val.ok) setCheck('OK')
-                      else setCheck(val.message)
-                    })
-                  }
-                  }>
-                Check
-              </button>
-              <div className={'text-black'}>
-                {check}
+        <div
+            className={"flex flex-col justify-center items-center bg-white h-[100vh] w-[100vw]"}>
+          <div
+              className={"flex flex-col h-fit items-center bg-blue-50 gap-4 w-fit p-5 border rounded-lg border-blue-800"}>
+            <ContainerHome>
+              <div className={"flex flex-row gap-3 p-3"}>
+                <button
+                    className='bg-blue-400 hover:bg-blue-500 rounded-sm text-white p-2 w-full'
+                    onClick={() => {
+                      ipcRenderer.invoke('pickDirectory').then((val) => {
+                        if (!val.canceled) setDicdir(val.filePaths[0])
+                      })
+                    }
+                    }>
+                  Select MeCab Dictionary Directory
+                </button>
+                <input
+                    className={"text-blue-800 outline-none rounded-sm text-lg md:min-w-[50vw] border border-gray-300 focus:border-blue-500 ring-1 ring-blue-400 focus:ring-blue-500 rounded-lg"}
+                    type={"text"} value={dicdir}
+                    onChange={(val) => {
+                      setDicdir(val.target.value)
+                    }}></input>
               </div>
-            </div>
-          </ContainerHome>
+              <div className={"flex justify-between  gap-3 p-3 w-full"}>
+                <button
+                    className='bg-blue-400 hover:bg-blue-500 rounded-sm text-white p-2 w-full'
+                    onClick={() => {
+                      ipcRenderer.invoke('pickFile', ['json']).then((val) => {
+                        if (!val.canceled) setJmdict(val.filePaths[0])
+                      })
+                    }
+                    }>
+                  Select JMDict Json
+                </button>
+                <input
+                    className={"text-blue-800 outline-none rounded-sm text-lg md:min-w-[50vw] border border-gray-300 focus:border-blue-500 ring-1 ring-blue-400 focus:ring-blue-500 rounded-lg"}
+                    type={"text"} value={jmdict}
+                    onChange={(val) => {
+                      setJmdict(val.target.value)
+                    }}></input>
+              </div>
+            </ContainerHome>
+            <ContainerHome>
+              <div className={'flex flex-row justify-center items-center gap-2'}>
 
+                <button
+                    className='bg-amber-600 p-3 rounded-sm hover:bg-amber-700'
+                    onClick={() => {
+                      console.log(dicdir)
+                      ipcRenderer.invoke('validateConfig', {
+                        dicdir, jmdict
+                      }).then(val => {
+                        setCheck(val)
+                      })
+                    }
+                    }>
+                  Check
+                </button>
+                <div className={'text-black'}>
+                  {check.ok ? '✅' : '❌'}{' '}{check.message}
+                </div>
+              </div>
+
+            </ContainerHome>
+            <ContainerHome>
+              <Link href='/video'>
+                <button
+                    type={"button"}
+                    disabled={!check.ok}
+                    className='disabled:cursor-not-allowed disabled:bg-green-300 enabled:bg-green-600 p-3 rounded-sm enabled:hover:bg-green-700'>
+                  Video
+                </button>
+              </Link>
+            </ContainerHome>
+
+          </div>
         </div>
-        <Link href='/video'>
-          <a className='btn-blue'>Go to video page</a>
-        </Link>
       </React.Fragment>
   );
 }
