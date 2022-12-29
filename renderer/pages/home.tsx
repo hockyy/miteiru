@@ -23,24 +23,24 @@ function Home() {
           <div
               className={"flex flex-col h-fit items-center bg-blue-50 gap-4 w-fit p-5 border rounded-lg border-blue-800"}>
             <ContainerHome>
-              <div className={"flex flex-row gap-3 p-3"}>
-                <button
-                    className='bg-blue-400 hover:bg-blue-500 rounded-sm text-white p-2 w-full'
-                    onClick={() => {
-                      ipcRenderer.invoke('pickDirectory').then((val) => {
-                        if (!val.canceled) setDicdir(val.filePaths[0])
-                      })
-                    }
-                    }>
-                  Select MeCab Dictionary Directory
-                </button>
-                <input
-                    className={"text-blue-800 outline-none rounded-sm text-lg md:min-w-[50vw] border border-gray-300 focus:border-blue-500 ring-1 ring-blue-400 focus:ring-blue-500 rounded-lg"}
-                    type={"text"} value={dicdir}
-                    onChange={(val) => {
-                      setDicdir(val.target.value)
-                    }}></input>
-              </div>
+              {/*<div className={"flex flex-row gap-3 p-3"}>*/}
+              {/*  <button*/}
+              {/*      className='bg-blue-400 hover:bg-blue-500 rounded-sm text-white p-2 w-full'*/}
+              {/*      onClick={() => {*/}
+              {/*        ipcRenderer.invoke('pickDirectory').then((val) => {*/}
+              {/*          if (!val.canceled) setDicdir(val.filePaths[0])*/}
+              {/*        })*/}
+              {/*      }*/}
+              {/*      }>*/}
+              {/*    Select MeCab Dictionary Directory*/}
+              {/*  </button>*/}
+              {/*  <input*/}
+              {/*      className={"text-blue-800 outline-none rounded-sm text-lg md:min-w-[50vw] border border-gray-300 focus:border-blue-500 ring-1 ring-blue-400 focus:ring-blue-500 rounded-lg"}*/}
+              {/*      type={"text"} value={dicdir}*/}
+              {/*      onChange={(val) => {*/}
+              {/*        setDicdir(val.target.value)*/}
+              {/*      }}></input>*/}
+              {/*</div>*/}
               <div className={"flex justify-between  gap-3 p-3 w-full"}>
                 <button
                     className='bg-blue-400 hover:bg-blue-500 rounded-sm text-white p-2 w-full'
