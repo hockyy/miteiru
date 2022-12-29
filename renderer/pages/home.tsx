@@ -9,7 +9,7 @@ function Home() {
   const tmp = new SubtitleContainer('');
   const [dicdir, setDicdir] = useState('');
   const [jmdict, setJmdict] = useState('');
-  const [check, setCheck] = useState({ok: false, message: 'check is not run yet'});
+  const [check, setCheck] = useState({ok: false, message: 'Check is not run yet'});
   return (
       <React.Fragment>
         <Head>
@@ -80,6 +80,18 @@ function Home() {
 
             </ContainerHome>
             <ContainerHome>
+              <button
+                  type={"button"}
+                  className='bg-green-600 p-3 rounded-sm bg-green-700'
+                  onClick={() => {
+                    ipcRenderer.invoke('appDataPath').then(val => {
+                      console.log(val)
+                    })
+                  }
+                  }>
+
+                tmp
+              </button>
               <Link href='/video'>
                 <button
                     type={"button"}

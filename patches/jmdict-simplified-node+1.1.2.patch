@@ -1,0 +1,21 @@
+diff --git a/node_modules/jmdict-simplified-node/index.js b/node_modules/jmdict-simplified-node/index.js
+index b50ce2d..d164b62 100644
+--- a/node_modules/jmdict-simplified-node/index.js
++++ b/node_modules/jmdict-simplified-node/index.js
+@@ -21,6 +21,7 @@ const levelup_1 = __importDefault(require("levelup"));
+ __export(require("./interfaces"));
+ function setup(DBNAME, filename = '', verbose = false) {
+     return __awaiter(this, void 0, void 0, function* () {
++        try {
+         const db = levelup_1.default(leveldown_1.default(DBNAME));
+         try {
+             const opt = { asBuffer: false };
+@@ -71,6 +72,8 @@ function setup(DBNAME, filename = '', verbose = false) {
+         }
+         if (batch.length) {
+             yield db.batch(batch);
++        }} catch (e) {
++          db.close()
+         }
+         return { db, dictDate: raw.dictDate, version: raw.version };
+     });
