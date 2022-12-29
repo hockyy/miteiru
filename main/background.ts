@@ -12,7 +12,8 @@ import {
 } from 'jmdict-simplified-node';
 import fs from "fs";
 import path from "path";
-import * as crypto from "crypto";
+import {getFurigana, setMecabCommand} from "shunou";
+import {spawnSync} from "child_process";
 
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
@@ -80,8 +81,8 @@ if (isProd) {
       // Swap the exact match to front
       matches = matches.sort((a, b) => {
             // Get smallest kanji length in a and b, compare it
-            const smallestA = (a.kanji[0].text??''.length)
-            const smallestB = (b.kanji[0].text??''.length)
+            const smallestA = (a.kanji[0].text ?? ''.length)
+            const smallestB = (b.kanji[0].text ?? ''.length)
             if (smallestA !== smallestB) return smallestA - smallestB;
             const isVerbA = +(!JMDict.tags[a.sense[0].partOfSpeech[0]].includes("verb"));
             const isVerbB = +(!JMDict.tags[b.sense[0].partOfSpeech[0]].includes("verb"));
@@ -93,7 +94,7 @@ if (isProd) {
           }
       )
       for (let i = 0; i < matches.length; i++) {
-        if (matches[i].kanji.map(val => val.text??'').includes(query)) {
+        if (matches[i].kanji.map(val => val.text ?? '').includes(query)) {
           [matches[i], matches[0]] = [matches[0], matches[i]]
           break;
         }
@@ -134,20 +135,14 @@ if (isProd) {
     removeJMDictCache()
     return true;
   })
-  ipcMain.handle('validateConfig', async (event, config) => {
+
+  const okSetup = {ok: 1, message: 'Setup is ready'};
+
+  const checkDicdir = (config) => {
     if (!fs.existsSync(config.dicdir) || !fs.lstatSync(config.dicdir).isDirectory()) return {
       ok: 0,
       message: `dicdir '${config.dicdir}' doesn't exist`
     };
-    if (!fs.existsSync(config.jmdict) || !fs.lstatSync(config.jmdict).isFile()) return {
-      ok: 0,
-      message: `jmdict '${config.jmdict}' doesn't exist`
-    };
-    if (!(config.jmdict.endsWith('.json'))) return {
-      ok: 0,
-      message: `'${config.jmdict}' is not a JSON file`
-    };
-
     const IMPORTANT_FILES = ["char.bin", "dicrc", "matrix.bin", "sys.dic", "unk.dic"]
     for (const file of IMPORTANT_FILES) {
       const currentFile = path.join(config.dicdir, file)
@@ -160,18 +155,58 @@ if (isProd) {
         message: `'${currentFile}' is not a file`
       };
     }
-    console.log("here")
+    return okSetup
+  }
+
+  const checkJMDict = async (config) => {
+    if (!fs.existsSync(config.jmdict) || !fs.lstatSync(config.jmdict).isFile()) return {
+      ok: 0,
+      message: `jmdict '${config.jmdict}' doesn't exist`
+    };
+    if (!(config.jmdict.endsWith('.json'))) return {
+      ok: 0,
+      message: `'${config.jmdict}' is not a JSON file`
+    };
+
     // Load DB Here
     const ret = await setUpJMDict(config.jmdict);
     if (ret) {
-
-      return {ok: 1, message: 'Setup is ready'};
+      return okSetup;
     } else {
       return {
         ok: 0,
         message: `Failed to load JMDict DB!`
       };
     }
+  }
+
+  const checkMecab = (config) => {
+    if (!fs.existsSync(config.mecab) || !fs.lstatSync(config.mecab).isFile()) return {
+      ok: 0,
+      message: `mecab '${config.mecab}' doesn't exist`
+    };
+
+    if (!(path.basename(config.mecab) === 'mecab')) return {
+      ok: 0,
+      message: `'${config.mecab} is not a mecab file`
+    };
+
+    return okSetup;
+  }
+
+  ipcMain.handle('getShunou', async (event, mecab, text) => {
+    setMecabCommand(mecab)
+    return getFurigana(text)
+  })
+  ipcMain.handle('validateConfig', async (event, config) => {
+
+    // const dicdirRes = checkDicdir(config);
+    // if (dicdirRes.ok !== 1) return dicdirRes
+    const jmdictRes = await checkJMDict(config);
+    if (jmdictRes.ok !== 1) return jmdictRes;
+    const mecabRes = checkMecab(config);
+    if (mecabRes.ok !== 1) return mecabRes;
+    return okSetup;
   })
   ipcMain.handle('appDataPath', () => {
     return appDataDirectory
