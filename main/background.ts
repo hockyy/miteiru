@@ -1,16 +1,17 @@
-import {app, ipcMain, protocol} from 'electron';
+import {app, dialog, ipcMain, protocol} from 'electron';
 import serve from 'electron-serve';
 import {createWindow} from './helpers';
 import {requestHandler, scheme} from "./protocol";
 import {
-  kanjiBeginning,
   getTags,
-  readingBeginning,
   kanjiAnywhere,
+  kanjiBeginning,
   readingAnywhere,
+  readingBeginning,
   setup as setupJmdict
 } from 'jmdict-simplified-node';
-import {match} from "assert";
+import fs from "fs";
+import path from "path";
 
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
@@ -23,7 +24,7 @@ if (isProd) {
 
 (async () => {
   await app.whenReady();
-
+  const appDataDirectory = app.getPath('appData');
   const jmdictPromise =
       setupJmdict('my-jmdict-simplified-db', '/Users/hocky/project/jmdict-eng-3.2.0-alpha.1.json');
   const {db} = await jmdictPromise;
@@ -68,15 +69,45 @@ if (isProd) {
   ipcMain.handle('tags', (event) => {
     return tags;
   })
-
+  ipcMain.handle('pickDirectory', async (event) => {
+    return await dialog.showOpenDialog({
+      properties:
+          [
+            // 'openFile',
+            // 'multiSelections',
+            'openDirectory'
+          ],
+      // filters: [
+      //   {name: 'Images', extensions: ['jpg', 'png', 'gif']},
+      //   {name: 'Movies', extensions: ['mkv', 'avi', 'mp4']},
+      //   {name: 'Custom File Type', extensions: ['as']},
+      //   {name: 'All Files', extensions: ['*']}
+      // ]
+    });
+  })
+  ipcMain.handle('validateConfig', (event, config) => {
+    console.log(config)
+    const ret = fs.existsSync(config.dicdir)
+    const IMPORTANT_FILES = ["char.bin", "dicrc", "matrix.bin", "sys.dic", "unk.dic"]
+    for (const file of IMPORTANT_FILES) {
+      const currentFile = path.join(config.dicdir, file)
+      if (!fs.existsSync(path.join(config.dicdir, file))) return false;
+      if (!fs.lstatSync(path.join(config.dicdir, file)).isFile()) return false
+    }
+    return true;
+  })
+  ipcMain.handle('appDataPath', () => {
+    return appDataDirectory
+  })
   protocol.registerFileProtocol(scheme, requestHandler); /* eng-disable PROTOCOL_HANDLER_JS_CHECK */
   if (isProd) {
-
     await mainWindow.loadURL('app://./home.html');
   } else {
     const port = process.argv[2];
     await mainWindow.loadURL(`http://localhost:${port}/home`);
     mainWindow.webContents.openDevTools();
+    await mainWindow.webContents.session.clearCache()
+    await mainWindow.webContents.session.clearStorageData()
   }
 })();
 
