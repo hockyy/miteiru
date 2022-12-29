@@ -6,14 +6,16 @@ import Subtitle from "../components/Subtitle";
 import MeaningBox from "../components/MeaningBox";
 import Link from "next/link";
 import {useRouter} from "next/router";
+import {ipcRenderer} from "electron";
 
 
 function Video() {
   const [videoSrc, setVideoSrc] = useState({src: '', type: ''})
-  const [primarySub, setPrimarySub] = useState(new SubtitleContainer(''))
-  const [secondarySub, setSecondarySub] = useState(new SubtitleContainer(''))
   const [currentTime, setCurrentTime] = useState(0);
   const [meaning, setMeaning] = useState('');
+  const [mecab, setMecab] = useState('')
+  const [primarySub, setPrimarySub] = useState(new SubtitleContainer('', mecab))
+  const [secondarySub, setSecondarySub] = useState(new SubtitleContainer('', mecab))
   const playerRef = useRef(null);
   const readyCallback = useCallback((player) => {
     playerRef.current = player;
@@ -22,6 +24,9 @@ function Video() {
 
   const router = useRouter()
   useEffect(() => {
+    ipcRenderer.invoke('getMecabCommand').then(val => {
+      setMecab(val)
+    })
     const handleKeyPress = (event) => {
       if (event.key === "x") {
         setDragDrop((old) => {
@@ -41,7 +46,7 @@ function Video() {
   return (
       <React.Fragment>
         <div>
-          <MeaningBox meaning={meaning} setMeaning={setMeaning}/>
+          <MeaningBox meaning={meaning} setMeaning={setMeaning} mecab={mecab}/>
           <VideoJS options={{
             autoplay: true,
             controls: true,
@@ -51,9 +56,9 @@ function Video() {
           <Subtitle setMeaning={setMeaning} currentTime={currentTime} primarySub={primarySub}
                     secondarySub={secondarySub}/>
         </div>
-        {dragDrop &&
+        {mecab !== '' && dragDrop &&
             <MiteiruDropzone setPrimarySub={setPrimarySub} setSecondarySub={setSecondarySub}
-                             setVideoSrc={setVideoSrc}/>}
+                             setVideoSrc={setVideoSrc} mecab={mecab}/>}
 
       </React.Fragment>
   );

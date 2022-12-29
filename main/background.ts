@@ -12,7 +12,7 @@ import {
 } from 'jmdict-simplified-node';
 import fs from "fs";
 import path from "path";
-import {getFurigana, setMecabCommand} from "shunou";
+import {getFurigana} from "shunou";
 import {spawnSync} from "child_process";
 
 
@@ -29,6 +29,7 @@ if (isProd) {
   const appDataDirectory = app.getPath('userData');
 
   let JMDict = {db: null, tags: {}};
+  let mecabCommand = 'mecab'
   const setUpJMDict = async (filename) => {
     try {
       if (JMDict.db) {
@@ -181,7 +182,7 @@ if (isProd) {
   }
 
   const checkMecab = (config) => {
-    if (!fs.existsSync(config.mecab) || !fs.lstatSync(config.mecab).isFile()) return {
+    if (!fs.existsSync(config.mecab) || !(fs.lstatSync(config.mecab).isFile() || fs.lstatSync(config.mecab).isSymbolicLink())) return {
       ok: 0,
       message: `mecab '${config.mecab}' doesn't exist`
     };
@@ -191,12 +192,17 @@ if (isProd) {
       message: `'${config.mecab} is not a mecab file`
     };
 
+    mecabCommand = config.mecab;
+
     return okSetup;
   }
 
   ipcMain.handle('getShunou', async (event, mecab, text) => {
-    setMecabCommand(mecab)
-    return getFurigana(text)
+    return getFurigana(text, mecab)
+  })
+
+  ipcMain.handle('getMecabCommand', async (event, mecab, text) => {
+    return mecabCommand
   })
   ipcMain.handle('validateConfig', async (event, config) => {
 

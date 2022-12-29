@@ -8,11 +8,11 @@ export class Line {
   timeEnd: number;
   content: any[];
 
-  constructor(start, end, strContent, isInJapanese = true) {
+  constructor(start, end, strContent, mecab, isInJapanese = true) {
     this.timeStart = start
     this.timeEnd = end
     if (isInJapanese) {
-      this.content = getFurigana(strContent)
+      this.content = getFurigana(strContent, mecab)
       console.log(this.content)
     } else {
       this.content = strContent
@@ -24,7 +24,7 @@ export class SubtitleContainer {
   lines: Line[];
   language: string;
 
-  constructor(filename: string) {
+  constructor(filename: string, mecab: string) {
     this.lines = []
     if (filename === '') return
     const {entries} = parse(
@@ -46,7 +46,7 @@ export class SubtitleContainer {
 
     entries.forEach(({from, to, text}) => {
       // process transcript entry
-      this.lines.push(new Line(from, to, text, this.language === "JP"))
+      this.lines.push(new Line(from, to, text, mecab, this.language === "JP"))
     });
   }
 }
