@@ -5,11 +5,13 @@ import {SubtitleContainer} from "../components/DataStructures";
 import {ipcRenderer} from 'electron';
 import {ContainerHome} from "../components/ContainerHome";
 
+const checkSymbol = ['❌', '✅', '🙃']
+
 function Home() {
   const tmp = new SubtitleContainer('');
   const [dicdir, setDicdir] = useState('');
   const [jmdict, setJmdict] = useState('');
-  const [check, setCheck] = useState({ok: false, message: 'Check is not run yet'});
+  const [check, setCheck] = useState({ok: 0, message: 'Check is not run yet'});
   return (
       <React.Fragment>
         <Head>
@@ -61,9 +63,10 @@ function Home() {
               <div className={'flex flex-row justify-center items-center gap-2'}>
 
                 <button
-                    className='bg-amber-600 p-3 rounded-sm hover:bg-amber-700'
+                    disabled={check.ok === 2}
+                    className='disabled:bg-amber-500 enabled:bg-amber-600 p-3 rounded-sm enabled:hover:bg-amber-700'
                     onClick={() => {
-                      console.log(dicdir)
+                      setCheck({ok: 2, message: 'checking...'})
                       ipcRenderer.invoke('validateConfig', {
                         dicdir, jmdict
                       }).then(val => {
@@ -74,7 +77,7 @@ function Home() {
                   Check
                 </button>
                 <div className={'text-black'}>
-                  {check.ok ? '✅' : '❌'}{' '}{check.message}
+                  {checkSymbol[check.ok]}{' '}{check.message}
                 </div>
               </div>
 
@@ -92,10 +95,22 @@ function Home() {
 
                 tmp
               </button>
+              <button
+                  type={"button"}
+                  className='bg-green-600 p-3 rounded-sm bg-green-700'
+                  onClick={() => {
+                    ipcRenderer.invoke('appDataPath').then(val => {
+                      console.log(val)
+                    })
+                  }
+                  }>
+
+                tmp
+              </button>
               <Link href='/video'>
                 <button
                     type={"button"}
-                    disabled={!check.ok}
+                    disabled={check.ok !== 1}
                     className='disabled:cursor-not-allowed disabled:bg-green-300 enabled:bg-green-600 p-3 rounded-sm enabled:hover:bg-green-700'>
                   Video
                 </button>

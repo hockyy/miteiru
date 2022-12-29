@@ -47,6 +47,20 @@ if (isProd) {
     }
   }
 
+  const removeJMDictCache = () => {
+    if (JMDict.db) {
+      JMDict.db.close()
+    }
+    try {
+      fs.rmSync(path.join(appDataDirectory, `jmdict-db`), {
+        recursive: true,
+        force: true
+      })
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
 
   const mainWindow = createWindow('main', {
     width: 1000,
@@ -115,17 +129,20 @@ if (isProd) {
       filters: [{name: 'Allowed Extensions', extensions: allowed}]
     });
   })
+  ipcMain.handle('removeDictCache', (event) => {
+    removeJMDictCache()
+  })
   ipcMain.handle('validateConfig', async (event, config) => {
     if (!fs.existsSync(config.dicdir) || !fs.lstatSync(config.dicdir).isDirectory()) return {
-      ok: false,
+      ok: 0,
       message: `dicdir '${config.dicdir}' doesn't exist`
     };
     if (!fs.existsSync(config.jmdict) || !fs.lstatSync(config.jmdict).isFile()) return {
-      ok: false,
+      ok: 0,
       message: `jmdict '${config.jmdict}' doesn't exist`
     };
     if (!(config.jmdict.endsWith('.json'))) return {
-      ok: false,
+      ok: 0,
       message: `'${config.jmdict}' is not a JSON file`
     };
 
@@ -133,22 +150,23 @@ if (isProd) {
     for (const file of IMPORTANT_FILES) {
       const currentFile = path.join(config.dicdir, file)
       if (!fs.existsSync(currentFile)) return {
-        ok: false,
+        ok: 0,
         message: `file '${currentFile}' doesn't exist`
       };
       if (!fs.lstatSync(currentFile).isFile()) return {
-        ok: false,
+        ok: 0,
         message: `'${currentFile}' is not a file`
       };
     }
+    console.log("here")
     // Load DB Here
     const ret = await setUpJMDict(config.jmdict);
     if (ret) {
 
-      return {ok: true, message: 'Setup is ready'};
+      return {ok: 1, message: 'Setup is ready'};
     } else {
       return {
-        ok: false,
+        ok: 0,
         message: `Failed to load JMDict DB!`
       };
     }
