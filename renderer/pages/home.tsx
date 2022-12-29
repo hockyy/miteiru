@@ -6,12 +6,13 @@ import {ipcRenderer} from 'electron';
 import {ContainerHome} from "../components/ContainerHome";
 
 const checkSymbol = ['❌', '✅', '🙃']
+const initialCheck = {ok: 0, message: 'Check is not run yet'}
 
 function Home() {
   const tmp = new SubtitleContainer('');
   const [dicdir, setDicdir] = useState('');
   const [jmdict, setJmdict] = useState('');
-  const [check, setCheck] = useState({ok: 0, message: 'Check is not run yet'});
+  const [check, setCheck] = useState(initialCheck);
   return (
       <React.Fragment>
         <Head>
@@ -64,7 +65,7 @@ function Home() {
 
                 <button
                     disabled={check.ok === 2}
-                    className='disabled:bg-amber-500 enabled:bg-amber-600 p-3 rounded-sm enabled:hover:bg-amber-700'
+                    className='disabled:cursor-not-allowed disabled:bg-amber-200 enabled:bg-amber-600 p-3 rounded-sm enabled:hover:bg-amber-700'
                     onClick={() => {
                       setCheck({ok: 2, message: 'checking...'})
                       ipcRenderer.invoke('validateConfig', {
@@ -76,6 +77,7 @@ function Home() {
                     }>
                   Check
                 </button>
+
                 <div className={'text-black'}>
                   {checkSymbol[check.ok]}{' '}{check.message}
                 </div>
@@ -85,15 +87,19 @@ function Home() {
             <ContainerHome>
               <button
                   type={"button"}
-                  className='bg-green-600 p-3 rounded-sm bg-green-700'
+                  className='bg-red-600 p-3 rounded-sm hover:bg-red-700'
                   onClick={() => {
-                    ipcRenderer.invoke('appDataPath').then(val => {
-                      console.log(val)
+                    setCheck({
+                      ok: 2,
+                      message: 'Removing JMDict Cache'
+                    })
+                    ipcRenderer.invoke('removeDictCache').then(val => {
+                      setCheck(initialCheck)
                     })
                   }
                   }>
 
-                tmp
+                Remove JMDict Cache
               </button>
               <button
                   type={"button"}

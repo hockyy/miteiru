@@ -8,7 +8,8 @@
   "scripts": {
     "dev": "nextron",
     "build": "nextron build",
-    "postinstall": "electron-builder install-app-deps; patch-package"
+    "postinstall": "electron-builder install-app-deps; patch-package",
+    "patch": "patch-package jmdict-simplified-node"
   },
   "dependencies": {
     "@plussub/srt-vtt-parser": "^1.1.0",
