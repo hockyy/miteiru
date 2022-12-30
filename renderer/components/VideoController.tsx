@@ -6,7 +6,6 @@ import play = Simulate.play;
 import SmoothCollapse from "react-smooth-collapse";
 
 const playingClass = ["", "playing"]
-const controllerHide = ["controller-hidden", ""]
 export const VideoController = ({player, currentTime, metadata, showController}) => {
   const [duration, setDuration] = useState(0)
   useEffect(() => {
