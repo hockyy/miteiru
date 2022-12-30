@@ -34,14 +34,12 @@ export class SubtitleContainer {
         .toString()
     );
 
-    const totalLine = entries.length >> 1;
-    let totalMixed = 0;
     this.language = "EN"
     for (const {text} of entries) {
       // process transcript entry
-      totalMixed += isMixedJapanese(text) ? 1 : 0;
-      if (totalMixed >= totalLine) {
-        this.language = "JP"
+      if(isMixedJapanese(text)) {
+        this.language = 'JP';
+        break;
       }
     }
 
