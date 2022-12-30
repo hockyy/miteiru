@@ -73,8 +73,11 @@ function Video() {
           <div className={"flex flex-col justify-end bottom-0 z-[3] fixed h-[100vh] w-[100vw]"}>
             <Subtitle setMeaning={setMeaning} currentTime={currentTime} primarySub={primarySub}
                       secondarySub={secondarySub}/>
-            {player && <VideoController player={player} currentTime={currentTime}
-                                        metadata={metadata} showController={showController}/>}
+            {player && <VideoController player={player}
+                                        currentTime={currentTime}
+                                        setCurrentTime={setCurrentTime}
+                                        metadata={metadata}
+                                        showController={showController}/>}
           </div>
 
 
