@@ -3,9 +3,11 @@ import {VideoSeekSlider} from "react-video-seek-slider";
 import {useEffect, useState} from "react";
 import {Simulate} from "react-dom/test-utils";
 import play = Simulate.play;
+import SmoothCollapse from "react-smooth-collapse";
 
 const playingClass = ["", "playing"]
-export const VideoController = ({player, currentTime, metadata}) => {
+const controllerHide = ["controller-hidden", ""]
+export const VideoController = ({player, currentTime, metadata, showController}) => {
   const [duration, setDuration] = useState(0)
   useEffect(() => {
   }, [currentTime])
@@ -37,22 +39,24 @@ export const VideoController = ({player, currentTime, metadata}) => {
       window.removeEventListener('keydown', handleVideoController);
     };
   }, []);
-  return <div className={'z-[15]'}>
-    <div className={"w-[100vw] h-6 content-center"}>
-      <VideoSeekSlider
-          max={duration}
-          currentTime={currentTime * 1000}
-          onChange={(seekedTime) => {
-            player.currentTime(seekedTime / 1000)
-          }}
-      />
-    </div>
-    <div className={"flex flex-row justify-center content-center"}>
-      <div className={"rounded-lg p-1 m-3 h-fit w-fit playpause " + playingClass[playing]}
-           onClick={togglePlay}>
-        <div className="button"></div>
+  return <SmoothCollapse eagerRender={true} expanded={showController}>
+    <div className={'z-[15]'}>
+      <div className={"w-[100vw] h-6 content-center"}>
+        <VideoSeekSlider
+            max={duration}
+            currentTime={currentTime * 1000}
+            onChange={(seekedTime) => {
+              player.currentTime(seekedTime / 1000)
+            }}
+        />
       </div>
-    </div>
+      <div className={"flex flex-row justify-center content-center"}>
+        <div className={"rounded-lg p-1 m-3 h-fit w-fit playpause " + playingClass[playing]}
+             onClick={togglePlay}>
+          <div className="button"></div>
+        </div>
+      </div>
 
-  </div>
+    </div>
+  </SmoothCollapse>
 }
