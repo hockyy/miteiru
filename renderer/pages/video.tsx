@@ -53,8 +53,6 @@ function Video() {
         <div>
           <MeaningBox meaning={meaning} setMeaning={setMeaning} mecab={mecab}/>
           <VideoJS options={{
-            autoplay: true,
-            controls: true,
             responsive: true,
             sources: [videoSrc],
             playbackRates: [0.5, 1, 1.5, 2],
@@ -66,10 +64,13 @@ function Video() {
               durationDisplay: true
             }
           }} onReady={readyCallback} setCurrentTime={setCurrentTime}/>
-          <Subtitle setMeaning={setMeaning} currentTime={currentTime} primarySub={primarySub}
+          <div className={"flex flex-col justify-end bottom-0 z-[3] fixed h-[100vh] w-[100vw]"}>
+            <Subtitle setMeaning={setMeaning} currentTime={currentTime} primarySub={primarySub}
                     secondarySub={secondarySub}/>
-          {player && <VideoController player={player} currentTime={currentTime}
-                                      metadata={metadata}/>}
+            {player && <VideoController player={player} currentTime={currentTime}
+                                        metadata={metadata}/>}
+          </div>
+
 
         </div>
         {mecab !== '' && dragDrop &&
