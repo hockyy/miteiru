@@ -21,7 +21,6 @@ export const VideoJS = ({options, onReady, setCurrentTime}) => {
         videojs.log('player is ready');
         onReady && onReady(player);
       });
-      player.playbackRate(2)
     } else {
       if (options.sources[0].src !== playerRef.current.currentSrc()) {
         playerRef.current.src(options.sources);
@@ -38,7 +37,7 @@ export const VideoJS = ({options, onReady, setCurrentTime}) => {
 
   return (
       <div className={'z-0'}>
-        <div className={"video-container"} data-vjs-player>
+        <div className={"video-container"}>
           <div className={'video'} ref={videoRef}></div>
         </div>
       </div>

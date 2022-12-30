@@ -32,7 +32,7 @@ export const MiteiruDropzone = ({setPrimarySub, setSecondarySub, setVideoSrc, me
 
   return (<div>
     <div {...getRootProps()} style={{
-      zIndex: 5,
+      zIndex: 20,
       backgroundColor: "blue",
       opacity: "30%",
       position: "fixed",
