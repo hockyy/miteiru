@@ -16,10 +16,12 @@ export const VideoJS = ({options, onReady, setCurrentTime}) => {
       const videoElement = document.createElement("video-js");
       videoElement.classList.add('vjs-big-play-centered');
       videoRef.current.appendChild(videoElement);
+
       const player = playerRef.current = videojs(videoElement, options, () => {
         videojs.log('player is ready');
         onReady && onReady(player);
       });
+      player.playbackRate(2)
     } else {
       if (options.sources[0].src !== playerRef.current.currentSrc()) {
         playerRef.current.src(options.sources);

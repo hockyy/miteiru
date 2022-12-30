@@ -51,7 +51,15 @@ function Video() {
             autoplay: true,
             controls: true,
             responsive: true,
-            sources: [videoSrc]
+            sources: [videoSrc],
+            playbackRates: [0.5, 1, 1.5, 2],
+            controlBar: {
+              liveDisplay: false,
+              pictureInPictureToggle: false,
+              remainingTimeDisplay: true,
+              playbackRateMenuButton: false,
+              durationDisplay: true
+            }
           }} onReady={readyCallback} setCurrentTime={setCurrentTime}/>
           <Subtitle setMeaning={setMeaning} currentTime={currentTime} primarySub={primarySub}
                     secondarySub={secondarySub}/>
