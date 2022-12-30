@@ -5,8 +5,10 @@ import SmoothCollapse from "react-smooth-collapse";
 import {Volume} from "./Volume";
 import SettingsController from "./SettingsController";
 import {ArrowLeft, ArrowRight} from "./Icons";
+import {randomUUID} from "crypto";
 
 const playingClass = ["", "playing"]
+const shiftAmount = 100;
 
 export const toTime = (time: number) => {
   time = Math.trunc(time)
@@ -26,7 +28,10 @@ export const VideoController = ({
                                   setCurrentTime,
                                   currentTime,
                                   metadata,
-                                  showController
+                                  showController,
+                                  primarySub,
+                                  secondarySub,
+                                  setInfo
                                 }) => {
   const [duration, setDuration] = useState(0)
 
@@ -39,6 +44,7 @@ export const VideoController = ({
       return (val ^ 1)
     })
   }
+  const [shift, setShift] = useState(0);
   const changeTimeTo = (seekedTime: number) => {
     setCurrentTime(seekedTime)
     player.currentTime(seekedTime)
@@ -62,6 +68,30 @@ export const VideoController = ({
         deltaTime(-2)
       } else if (event.code === "ArrowRight") {
         deltaTime(+2)
+      } else if (event.code === "BracketLeft") {
+        if (event.ctrlKey) {
+          secondarySub.shift -= shiftAmount
+          setInfo(info => {
+            return {message: `Shifting Secondary Sub ${secondarySub.shift}ms`, udpate: randomUUID()}
+          })
+        } else {
+          primarySub.shift -= shiftAmount
+          setInfo(info => {
+            return {message: `Shifting Primary Sub ${primarySub.shift}ms`, udpate: randomUUID()}
+          })
+        }
+      } else if (event.code === "BracketRight") {
+        if (event.ctrlKey) {
+          secondarySub.shift += shiftAmount
+          setInfo(info => {
+            return {message: `Shifting Secondary Sub ${secondarySub.shift}ms`, udpate: randomUUID()}
+          })
+        } else {
+          primarySub.shift += shiftAmount
+          setInfo(info => {
+            return {message: `Shifting Primary Sub ${primarySub.shift}ms`, udpate: randomUUID()}
+          })
+        }
       }
     };
     window.addEventListener('keydown', handleVideoController);
