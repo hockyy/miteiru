@@ -44,7 +44,7 @@ const MeaningBox = ({
   if (meaningContent.kanji.length > 0) {
     return (<div onClick={() => {
       setMeaning('');
-    }} className={"z-[100] fixed bg-blue-200/20 w-[100vw] h-[100vh]"}>
+    }} className={"z-[18] fixed bg-blue-200/20 w-[100vw] h-[100vh]"}>
       <div
           onClick={(e) => {
             e.stopPropagation()

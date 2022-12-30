@@ -8,6 +8,7 @@ import Link from "next/link";
 import {useRouter} from "next/router";
 import {ipcRenderer} from "electron";
 import {VideoController} from "../components/VideoController";
+import Toast from "../components/Toast";
 
 
 function Video() {
@@ -20,6 +21,7 @@ function Video() {
   const [player, setPlayer] = useState(null)
   const [metadata, setMetadata] = useState(0)
   const [showController, setShowController] = useState(true);
+  const [toastInfo, setToastInfo] = useState({message: 'coba', update: ''});
   const readyCallback = useCallback((playerRef) => {
     setPlayer(playerRef);
     playerRef.on('loadedmetadata', () => {
@@ -57,6 +59,7 @@ function Video() {
   return (
       <React.Fragment>
         <div>
+          <Toast info={toastInfo} setInfo={setToastInfo}/>
           <MeaningBox meaning={meaning} setMeaning={setMeaning} mecab={mecab}/>
           <VideoJS options={{
             responsive: true,
@@ -77,7 +80,10 @@ function Video() {
                                         currentTime={currentTime}
                                         setCurrentTime={setCurrentTime}
                                         metadata={metadata}
-                                        showController={showController}/>}
+                                        showController={showController}
+                                        primarySub={primarySub}
+                                        secondarySub={secondarySub}
+                                        setInfo={setToastInfo}/>}
           </div>
 
 

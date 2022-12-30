@@ -22,9 +22,11 @@ export class Line {
 export class SubtitleContainer {
   lines: Line[];
   language: string;
+  shift: number;
 
   constructor(filename: string, mecab: string) {
     this.lines = []
+    this.shift = 0
     if (filename === '') return
     const {entries} = parse(
         fs
@@ -50,8 +52,8 @@ export class SubtitleContainer {
   }
 }
 
-
 export function getLineByTime(subtitle: SubtitleContainer, t: number) {
+  t += subtitle.shift
   if (!subtitle.lines || subtitle.lines.length === 0) return ''
   let low = 0;
   let high = subtitle.lines.length - 1;
