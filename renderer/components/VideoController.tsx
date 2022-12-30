@@ -6,10 +6,14 @@ import play = Simulate.play;
 import SmoothCollapse from "react-smooth-collapse";
 
 const playingClass = ["", "playing"]
-export const VideoController = ({player, currentTime, metadata, showController}) => {
+export const VideoController = ({
+                                  player,
+                                  setCurrentTime,
+                                  currentTime,
+                                  metadata,
+                                  showController
+                                }) => {
   const [duration, setDuration] = useState(0)
-  useEffect(() => {
-  }, [currentTime])
 
   useEffect(() => {
     setDuration(player.duration() * 1000)
@@ -20,6 +24,13 @@ export const VideoController = ({player, currentTime, metadata, showController})
       return (val ^ 1)
     })
   }
+  const changeTimeTo = (seekedTime: number) => {
+    setCurrentTime(seekedTime)
+    player.currentTime(seekedTime)
+  }
+  const deltaTime = (plusDelta: number) => {
+    changeTimeTo(player.currentTime() + plusDelta)
+  }
   useEffect(() => {
     if (playing) {
       player.play()
@@ -27,10 +38,15 @@ export const VideoController = ({player, currentTime, metadata, showController})
       player.pause()
     }
   }, [playing, metadata])
+  // https://www.freecodecamp.org/news/javascript-keycode-list-keypress-event-key-codes/
   useEffect(() => {
     const handleVideoController = (event) => {
       if (event.code === "Space") {
         togglePlay()
+      } else if (event.code === "ArrowLeft") {
+        deltaTime(-10)
+      } else if (event.code === "ArrowRight") {
+        deltaTime(+10)
       }
     };
     window.addEventListener('keydown', handleVideoController);
@@ -44,7 +60,7 @@ export const VideoController = ({player, currentTime, metadata, showController})
           max={duration}
           currentTime={currentTime * 1000}
           onChange={(seekedTime) => {
-            player.currentTime(seekedTime / 1000)
+            changeTimeTo(seekedTime / 1000)
           }}
       />
     </div>
