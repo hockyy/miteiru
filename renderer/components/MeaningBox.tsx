@@ -73,7 +73,7 @@ const MeaningBox = ({
             const furiganized = getFurigana(val.text, mecab);
             return (
                 <div key={meanKey}
-                     className={"bg-white rounded-xl p-2 border-2 border-blue-700 w-fit"}>
+                     className={"bg-white rounded-xl p-2 border-2 border-blue-700 w-fit unselectable"}>
                   {[...furiganized.map((val, idx) => {
                     return (<Sentence key={idx}
                                       origin={val.origin}
