@@ -37,8 +37,8 @@ export const Volume = () => {
   const [volume, setVolume] = useState(1);
 
   return (
-      <div className={"animation flex flex-row w-fit items-center cursor-pointer"}>
-        <div className={"w-20 h-5 justify-self-start animation"} onClick={() => {
+      <div className={"animation flex flex-row w-fit gap-4 items-center cursor-pointer px-4"}>
+        <div className={"w-fit h-5 justify-self-start animation"} onClick={() => {
           setVolume(old => {
             return old === 0 ? 0.5 : 0
           })
@@ -46,17 +46,19 @@ export const Volume = () => {
           {VolumeLogo[Math.trunc(volume * 4)]}
         </div>
 
-        <input
-            className={"slider"}
-            type="range"
-            min={0}
-            max={1}
-            step={0.02}
-            value={volume}
-            onChange={event => {
-              setVolume(event.target.valueAsNumber)
-            }}
-        />
+        <div className={"flex w-20 justify-center items-center"}>
+          <input
+              className={"slider"}
+              type="range"
+              min={0}
+              max={1}
+              step={0.02}
+              value={volume}
+              onChange={event => {
+                setVolume(event.target.valueAsNumber)
+              }}
+          />
+        </div>
       </div>
   )
 }

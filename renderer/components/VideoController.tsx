@@ -64,7 +64,7 @@ export const VideoController = ({
           }}
       />
     </div>
-    <SmoothCollapse className={"z-[15] bg-gray-800/70 h-fit"}
+    <SmoothCollapse className={"z-[15] bg-gray-800/70 h-fit pt-2"}
                     eagerRender={true}
                     expanded={showController}>
       <div className={"flex flex-row items-center justify-between"}>
