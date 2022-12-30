@@ -1,6 +1,6 @@
-appId: com.example.nextron
-productName: My Nextron App
-copyright: Copyright © 2018 Yoshihide Shiono
+appId: id.hocky.miteiru
+productName: Miteiru
+copyright: Copyright © 2022 Hocky Yudhiono
 directories:
   output: dist
   buildResources: resources
