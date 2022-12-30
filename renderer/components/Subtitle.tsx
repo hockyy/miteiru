@@ -89,13 +89,11 @@ export const Subtitle = ({setMeaning, currentTime, primarySub, secondarySub}) =>
       fontWeight: "bold",
     }}>
       {caption.length > 0 &&
-          <div className={"bg-white/100 w-fit mx-auto rounded-lg px-3 pt-2 pb-1"}>
+          <div className={"bg-black/30 w-fit mx-auto rounded-lg px-3 pt-2 pb-1"}>
             {caption}
           </div>}
     </div>
-    <div className={"w-[100vw] justify-center text-center content-center"} style={{
-      position: "fixed",
-      top: "10vh",
+    <div className={"w-[100vw] fixed top-2 justify-center text-center content-center"} style={{
       zIndex: 10,
       WebkitTextStrokeColor: "black",
       WebkitTextStrokeWidth: "1px",
@@ -104,7 +102,7 @@ export const Subtitle = ({setMeaning, currentTime, primarySub, secondarySub}) =>
       fontWeight: "bold",
     }}>
       {secondaryCaption.length > 0 &&
-          <div className={"bg-white/100 w-fit mx-auto rounded-lg px-3 pt-2 pb-1"}>
+          <div className={"bg-black/30 w-fit mx-auto rounded-lg px-3 pt-2 pb-1"}>
             {secondaryCaption}
           </div>}
     </div>
