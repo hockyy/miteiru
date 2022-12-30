@@ -7,6 +7,7 @@ import MeaningBox from "../components/MeaningBox";
 import Link from "next/link";
 import {useRouter} from "next/router";
 import {ipcRenderer} from "electron";
+import {VideoController} from "../components/VideoController";
 
 
 function Video() {
@@ -16,9 +17,13 @@ function Video() {
   const [mecab, setMecab] = useState('')
   const [primarySub, setPrimarySub] = useState(new SubtitleContainer('', mecab))
   const [secondarySub, setSecondarySub] = useState(new SubtitleContainer('', mecab))
-  const playerRef = useRef(null);
-  const readyCallback = useCallback((player) => {
-    playerRef.current = player;
+  const [player, setPlayer] = useState(null)
+  const [metadata, setMetadata] = useState(0)
+  const readyCallback = useCallback((playerRef) => {
+    setPlayer(playerRef);
+    playerRef.on('loadedmetadata', () => {
+      setMetadata(old => (old + 1))
+    })
   }, [])
   const [dragDrop, setDragDrop] = useState(true);
 
@@ -63,6 +68,9 @@ function Video() {
           }} onReady={readyCallback} setCurrentTime={setCurrentTime}/>
           <Subtitle setMeaning={setMeaning} currentTime={currentTime} primarySub={primarySub}
                     secondarySub={secondarySub}/>
+          {player && <VideoController player={player} currentTime={currentTime}
+                                      metadata={metadata}/>}
+
         </div>
         {mecab !== '' && dragDrop &&
             <MiteiruDropzone setPrimarySub={setPrimarySub} setSecondarySub={setSecondarySub}
