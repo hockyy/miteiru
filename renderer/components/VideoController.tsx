@@ -38,24 +38,22 @@ export const VideoController = ({player, currentTime, metadata, showController})
       window.removeEventListener('keydown', handleVideoController);
     };
   }, []);
-  return <SmoothCollapse eagerRender={true} expanded={showController}>
-    <div className={'z-[15]'}>
-      <div className={"w-[100vw] h-6 content-center"}>
-        <VideoSeekSlider
-            max={duration}
-            currentTime={currentTime * 1000}
-            onChange={(seekedTime) => {
-              player.currentTime(seekedTime / 1000)
-            }}
-        />
-      </div>
-      <div className={"flex flex-row justify-center content-center"}>
-        <div className={"rounded-lg p-1 m-3 h-fit w-fit playpause " + playingClass[playing]}
-             onClick={togglePlay}>
-          <div className="button"></div>
-        </div>
-      </div>
-
+  return <SmoothCollapse className={"z-[15]"} eagerRender={true} expanded={showController}>
+    <div className={"w-[100vw] h-6 content-center"}>
+      <VideoSeekSlider
+          max={duration}
+          currentTime={currentTime * 1000}
+          onChange={(seekedTime) => {
+            player.currentTime(seekedTime / 1000)
+          }}
+      />
     </div>
+    <div className={"flex flex-row justify-center content-center"}>
+      <div className={"rounded-lg p-1 m-3 h-fit w-fit playpause " + playingClass[playing]}
+           onClick={togglePlay}>
+        <div className="button"></div>
+      </div>
+    </div>
+
   </SmoothCollapse>
 }
