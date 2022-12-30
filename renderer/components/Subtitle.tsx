@@ -80,9 +80,7 @@ export const Subtitle = ({setMeaning, currentTime, primarySub, secondarySub}) =>
     }
   }, [currentTime])
   return <div>
-    <div className={"w-[100vw] justify-center text-center content-center"} style={{
-      position: "fixed",
-      top: "80vh",
+    <div className={"w-[100vw] justify-center text-center content-center mb-3"} style={{
       zIndex: 10,
       WebkitTextStrokeColor: "black",
       WebkitTextStrokeWidth: "1px",

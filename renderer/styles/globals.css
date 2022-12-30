@@ -51,6 +51,16 @@ video-js {
   height: 100% !important;
 }
 
+.controller {
+  opacity: 100;
+  transition: 0.3s ease-in-out;
+}
+
+
+.controller.controller-hidden {
+  opacity: 0;
+  transition: 0.3s ease-in-out;
+}
 
 .playpause {
   background-color: transparent;
@@ -71,5 +81,5 @@ video-js {
 }
 
 .playpause.playing .button {
-   clip-path: polygon(0 0, 40% 0, 40% 100%, 60% 100%, 60% 0, 100% 0, 100% 100%, 0 100%);
+  clip-path: polygon(0 0, 40% 0, 40% 100%, 60% 100%, 60% 0, 100% 0, 100% 100%, 0 100%);
 }

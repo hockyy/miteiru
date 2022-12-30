@@ -19,6 +19,7 @@ function Video() {
   const [secondarySub, setSecondarySub] = useState(new SubtitleContainer('', mecab))
   const [player, setPlayer] = useState(null)
   const [metadata, setMetadata] = useState(0)
+  const [showController, setShowController] = useState(true);
   const readyCallback = useCallback((playerRef) => {
     setPlayer(playerRef);
     playerRef.on('loadedmetadata', () => {
@@ -32,15 +33,20 @@ function Video() {
     ipcRenderer.invoke('getMecabCommand').then(val => {
       setMecab(val)
     })
+    // https://www.freecodecamp.org/news/javascript-keycode-list-keypress-event-key-codes/
     const handleKeyPress = (event) => {
-      if (event.key === "x") {
+      if (event.code === "KeyX") {
         setDragDrop((old) => {
           return !old
         })
-      } else if (event.key === "Escape") {
+      } else if (event.code === "Escape") {
         setMeaning("")
-      } else if (event.key === "q") {
+      } else if (event.code === "KeyQ") {
         router.push('/home')
+      } else if (event.code === "KeyZ") {
+        setShowController((old) => {
+          return !old
+        })
       }
     };
     window.addEventListener('keydown', handleKeyPress);
@@ -66,9 +72,9 @@ function Video() {
           }} onReady={readyCallback} setCurrentTime={setCurrentTime}/>
           <div className={"flex flex-col justify-end bottom-0 z-[3] fixed h-[100vh] w-[100vw]"}>
             <Subtitle setMeaning={setMeaning} currentTime={currentTime} primarySub={primarySub}
-                    secondarySub={secondarySub}/>
+                      secondarySub={secondarySub}/>
             {player && <VideoController player={player} currentTime={currentTime}
-                                        metadata={metadata}/>}
+                                        metadata={metadata} showController={showController}/>}
           </div>
 
 
