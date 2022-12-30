@@ -1,9 +1,9 @@
 import "react-video-seek-slider/styles.css"
 import {VideoSeekSlider} from "react-video-seek-slider";
-import {useEffect, useState} from "react";
-import {Simulate} from "react-dom/test-utils";
-import play = Simulate.play;
+import React, {useEffect, useState} from "react";
 import SmoothCollapse from "react-smooth-collapse";
+import {Volume} from "./Volume";
+import SettingsController from "./SettingsController";
 
 const playingClass = ["", "playing"]
 export const VideoController = ({
@@ -54,8 +54,8 @@ export const VideoController = ({
       window.removeEventListener('keydown', handleVideoController);
     };
   }, []);
-  return <SmoothCollapse className={"z-[15]"} eagerRender={true} expanded={showController}>
-    <div className={"w-[100vw] h-6 content-center"}>
+  return <div>
+    <div className={"w-[100vw] h-6 content-center -mb-4"}>
       <VideoSeekSlider
           max={duration}
           currentTime={currentTime * 1000}
@@ -64,12 +64,24 @@ export const VideoController = ({
           }}
       />
     </div>
-    <div className={"flex flex-row justify-center content-center"}>
-      <div className={"rounded-lg p-1 m-3 h-fit w-fit playpause " + playingClass[playing]}
-           onClick={togglePlay}>
-        <div className="button"></div>
+    <SmoothCollapse className={"z-[15] bg-gray-800/70 h-fit"}
+                    eagerRender={true}
+                    expanded={showController}>
+      <div className={"flex flex-row items-center justify-between"}>
+        <div className={"flex w-1/3 justify-start"}>
+          <Volume/>
+        </div>
+        <div className={"flex w-1/3 justify-center"}>
+          <div
+              className={"animation justify-self-center place-self-center rounded-lg p-1 m-3 w-fit h-fit playpause " + playingClass[playing]}
+              onClick={togglePlay}>
+            <div className="button"></div>
+          </div>
+        </div>
+        <div className={"flex w-1/3 justify-end"}>
+          <SettingsController/>
+        </div>
       </div>
-    </div>
 
-  </SmoothCollapse>
+    </SmoothCollapse></div>
 }
