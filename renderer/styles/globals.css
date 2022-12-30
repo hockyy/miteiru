@@ -57,11 +57,6 @@ video-js {
 }
 
 
-.controller.controller-hidden {
-  opacity: 0;
-  transition: 0.3s ease-in-out;
-}
-
 .playpause {
   background-color: transparent;
   cursor: pointer;
