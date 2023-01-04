@@ -3,6 +3,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import {ipcRenderer} from 'electron';
 import {ContainerHome} from "../components/ContainerHome";
+import {KeyboardHelp} from "../components/KeyboardHelp";
 
 const checkSymbol = ['❌', '✅', '🙃']
 const initialCheck = {ok: 0, message: 'Check is not run yet'}
@@ -15,10 +16,10 @@ function Home() {
   return (
       <React.Fragment>
         <Head>
-          <title>Home - Nextron (with-typescript-tailwindcss)</title>
+          <title>Miteiru</title>
         </Head>
         <div
-            className={"flex flex-col justify-center items-center bg-white h-[100vh] w-[100vw]"}>
+            className={"flex flex-col justify-center items-center bg-white min-h-screen w-[100vw]"}>
           <div
               className={"flex flex-col h-fit items-center bg-blue-50 gap-4 w-fit p-5 border rounded-lg border-blue-800"}>
             <ContainerHome>
@@ -146,6 +147,7 @@ function Home() {
             </ContainerHome>
 
           </div>
+          <KeyboardHelp/>
         </div>
       </React.Fragment>
   );

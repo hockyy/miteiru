@@ -1,6 +1,27 @@
-import {useCallback, useState} from "react";
+import React, {useCallback, useState} from "react";
 import {SubtitleContainer} from "./DataStructures";
 import {useDropzone} from "react-dropzone";
+import {Key} from "./KeyboardHelp";
+
+const ActiveDropzoneCue = ({isActive}) => {
+  const message = ["Drag here please UωU", "Drop Here (ᴗ_ ᴗ。)"]
+  return <div
+      className={"flex content-center items-center justify-center w-screen h-screen text-white text-5xl"}>
+    <div
+        style={{
+          WebkitTextStrokeColor: "black",
+          WebkitTextStrokeWidth: "1px",
+          fontFamily: "Arial"
+        }}
+        className={"font-bold flex flex-col gap-2 justify-center items-center rounded-lg border-[10px] border-dashed w-screen h-screen"}>
+
+      <div>{message[+isActive]}</div>
+      <div className={"flex flex-row justify-center items-center"}>
+        or Press <Key extraClass={"mx-4 text-gray-500"} value={"X"}/> to toggle me~!
+      </div>
+    </div>
+  </div>
+}
 
 export const MiteiruDropzone = ({setPrimarySub, setSecondarySub, setVideoSrc, mecab}) => {
 
@@ -33,19 +54,14 @@ export const MiteiruDropzone = ({setPrimarySub, setSecondarySub, setVideoSrc, me
   return (<div>
     <div {...getRootProps()} style={{
       zIndex: 20,
-      backgroundColor: "blue",
-      opacity: "30%",
+      backgroundColor: "rgba(122,122,122,0.45)",
       position: "fixed",
       top: "0vh",
       height: "100vh",
       width: "100vw"
     }}>
       <input {...getInputProps()}/>
-      {
-        isDragActive ?
-            <p>Drop the files here ...</p> :
-            <p>Drag 'n' drop some files here, or click to select files</p>
-      }
+      <ActiveDropzoneCue isActive={isDragActive}/>
     </div>
   </div>)
 }
