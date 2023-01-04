@@ -1,10 +1,9 @@
-import React, {useCallback, useEffect, useRef, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import VideoJS from "../components/VideoJS";
 import {SubtitleContainer} from "../components/DataStructures";
 import MiteiruDropzone from "../components/MiteiruDropzone";
-import Subtitle, {PrimarySubtitle, SecondarySubtitle} from "../components/Subtitle";
+import {PrimarySubtitle, SecondarySubtitle} from "../components/Subtitle";
 import MeaningBox from "../components/MeaningBox";
-import Link from "next/link";
 import {useRouter} from "next/router";
 import {ipcRenderer} from "electron";
 import {VideoController} from "../components/VideoController";
