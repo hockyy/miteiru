@@ -1,11 +1,27 @@
 import React, {useEffect, useState} from "react";
-import {getLineByTime} from "./DataStructures";
-import parse from "html-react-parser"
-import {isMixedJapanese} from "shunou";
+import {getLineByTime, SubtitleContainer} from "./DataStructures";
 import {PlainSentence, Sentence} from "./Sentence";
+import {
+  CJKStyling,
+  defaultPrimarySubtitleStyling,
+  defaultSecondarySubtitleStyling
+} from "../utils/CJKStyling";
 
 
-export const PrimarySubtitle = ({currentTime, subtitle, shift, setMeaning}) => {
+export const PrimarySubtitle = ({
+                                  currentTime,
+                                  subtitle,
+                                  shift,
+                                  setMeaning,
+                                  subtitleStyling = defaultPrimarySubtitleStyling
+                                }: {
+                                  currentTime: number,
+                                  subtitle: SubtitleContainer,
+                                  shift: number,
+                                  setMeaning: any,
+                                  subtitleStyling?: CJKStyling
+                                }
+) => {
   const [caption, setCaption] = useState([])
   const setFromContent = (content) => {
     if (content === '' || content.length === 0) {
@@ -17,7 +33,8 @@ export const PrimarySubtitle = ({currentTime, subtitle, shift, setMeaning}) => {
                        origin={val.origin}
                        separation={val.separation}
                        setMeaning={setMeaning}
-                       extraClass={"subtitle"}/>
+                       extraClass={"subtitle"}
+                       subtitleStyling={subtitleStyling}/>
     })
     setCaption(current)
   }
@@ -29,10 +46,22 @@ export const PrimarySubtitle = ({currentTime, subtitle, shift, setMeaning}) => {
       console.log(e)
     }
   }, [currentTime])
-  return <Subtitle caption={caption} extraClass={"mb-3 unselectable"}/>
+  return <Subtitle caption={caption} extraClass={"mb-3 unselectable"}
+                   subtitleStyling={subtitleStyling}/>
 };
 
-export const SecondarySubtitle = ({currentTime, subtitle, shift}) => {
+export const SecondarySubtitle = ({
+                                    currentTime,
+                                    subtitle,
+                                    shift,
+                                    subtitleStyling = defaultSecondarySubtitleStyling
+                                  }: {
+                                    currentTime: number,
+                                    subtitle: SubtitleContainer,
+                                    shift: number,
+                                    subtitleStyling?: CJKStyling
+                                  }
+) => {
   const [caption, setCaption] = useState([])
   const setFromContent = (content) => {
     if (content === '' || content.length === 0) {
@@ -50,19 +79,21 @@ export const SecondarySubtitle = ({currentTime, subtitle, shift}) => {
       console.log(e)
     }
   }, [currentTime])
-  return <Subtitle caption={caption} extraClass={"fixed top-2"}/>
+  return <Subtitle caption={caption} extraClass={"fixed top-2"} subtitleStyling={subtitleStyling}/>
 };
+export const Subtitle = ({
+                           caption,
+                           extraClass,
+                           subtitleStyling
+                         }: { caption: any[], extraClass: string, subtitleStyling: CJKStyling }) => {
 
-export const Subtitle = ({caption, extraClass}: { caption: any[], extraClass: string }) => {
   return <div
-      className={"w-[100vw] justify-center text-center content-center unselectable " + extraClass}
+      className={"w-[100vw] z-10 font-bold lg:text-[2.5vw] sm:text-[3vw] justify-center text-center content-center unselectable " + extraClass}
       style={{
-        zIndex: 10,
-        WebkitTextStrokeColor: "black",
-        WebkitTextStrokeWidth: "1px",
-        fontSize: "40px",
+        WebkitTextFillColor: subtitleStyling.text.color,
+        WebkitTextStrokeColor: subtitleStyling.stroke.color,
+        WebkitTextStrokeWidth: subtitleStyling.stroke.width,
         fontFamily: "Arial",
-        fontWeight: "bold",
       }}>
     {caption.length > 0 &&
         <div className={"bg-black/30 w-fit mx-auto rounded-lg px-3 pt-2 pb-1"}>

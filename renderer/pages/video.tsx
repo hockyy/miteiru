@@ -9,7 +9,6 @@ import {ipcRenderer} from "electron";
 import {VideoController} from "../components/VideoController";
 import Toast from "../components/Toast";
 
-
 function Video() {
   const [videoSrc, setVideoSrc] = useState({src: '', type: ''})
   const [currentTime, setCurrentTime] = useState(0);

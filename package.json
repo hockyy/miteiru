@@ -23,6 +23,7 @@
     "react-smooth-collapse": "^2.1.2",
     "react-video-seek-slider": "^6.0.3",
     "shunou": "^0.0.27",
+    "styled-components": "^5.3.6",
     "video.js": "^7.20.3"
   },
   "devDependencies": {

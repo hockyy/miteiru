@@ -1,15 +1,17 @@
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {ipcRenderer} from "electron";
 import {getFurigana} from "shunou";
-import {Sentence} from "./Subtitle";
+import {Sentence} from "./Sentence";
+import {CJKStyling, defaultMeaningBoxStyling} from "../utils/CJKStyling";
 
 const initialContentState = {sense: [], kanji: []};
 
 const MeaningBox = ({
                       meaning,
                       setMeaning,
-                      mecab
-                    }: { meaning: string, setMeaning: any, mecab: string }) => {
+                      mecab,
+                      subtitleStyling = defaultMeaningBoxStyling
+                    }: { meaning: string, setMeaning: any, mecab: string, subtitleStyling?: CJKStyling }) => {
   const [meaningContent, setMeaningContent] = useState(initialContentState)
   const [otherMeanings, setOtherMeanings] = useState([]);
   const [meaningIndex, setMeaningIndex] = useState(0);
@@ -65,10 +67,11 @@ const MeaningBox = ({
               }>Previous
               </button>}
           <div className={"flex flex-wrap gap-2"} style={{
-            WebkitTextStrokeColor: "black",
-            WebkitTextFillColor: "blue",
-            fontSize: "40px",
+            WebkitTextFillColor: subtitleStyling.text.color,
+            WebkitTextStrokeColor: subtitleStyling.stroke.color,
+            WebkitTextStrokeWidth: subtitleStyling.stroke.width,
             fontFamily: "Arial",
+            fontSize: "40px",
           }}>{meaningContent.kanji.map((val, meanKey) => {
             const furiganized = getFurigana(val.text, mecab);
             return (
@@ -79,7 +82,8 @@ const MeaningBox = ({
                                       origin={val.origin}
                                       setMeaning={setMeaning}
                                       separation={val.separation}
-                                      extraClass={"meaning-kanji text-md"}/>)
+                                      extraClass={"meaning-kanji text-md"}
+                                      subtitleStyling={subtitleStyling}/>)
                   })]}
                 </div>);
           })}</div>

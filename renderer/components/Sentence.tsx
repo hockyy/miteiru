@@ -1,5 +1,8 @@
 import {isMixedJapanese} from "shunou";
 import parse from "html-react-parser";
+import styled from "styled-components";
+import {CJKStyling, defaultSubtitleStyling} from "../utils/CJKStyling";
+
 
 export const Sentence = ({
                            origin,
@@ -7,12 +10,28 @@ export const Sentence = ({
                            separation,
                            addRomaji = true,
                            addHiragana = true,
-                           extraClass
-                         }) => {
+                           extraClass,
+                           subtitleStyling
+                         }: {
+                           origin: string,
+                           setMeaning: any,
+                           separation: any,
+                           addRomaji?: boolean,
+                           addHiragana?: boolean,
+                           extraClass: string,
+                           subtitleStyling: CJKStyling
+                         }
+) => {
   const handleChange = (origin) => {
     setMeaning(origin)
   }
-  return <button className={extraClass} onClick={() => handleChange(origin)}>
+  const StyledSentence = styled.button`
+    &:hover {
+      -webkit-text-fill-color: ${subtitleStyling.text.hoverColor};
+      -webkit-text-stroke-color: ${subtitleStyling.stroke.hoverColor};
+    }
+  `
+  return <StyledSentence className={extraClass} onClick={() => handleChange(origin)}>
     {separation.map((val, index) => {
       const hiragana = (<>
             <rp>(</rp>
@@ -35,7 +54,7 @@ export const Sentence = ({
         {showFurigana && addRomaji && romaji}
       </ruby>
     })}
-  </button>
+  </StyledSentence>
 }
 
 export const PlainSentence = ({origin}) => {
