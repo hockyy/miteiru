@@ -1,7 +1,7 @@
 import {isMixedJapanese} from "shunou";
 import parse from "html-react-parser";
 import styled from "styled-components";
-import {CJKStyling, defaultSubtitleStyling} from "../utils/CJKStyling";
+import {CJKStyling} from "../utils/CJKStyling";
 
 
 export const Sentence = ({
