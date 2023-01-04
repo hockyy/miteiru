@@ -2,7 +2,7 @@ import React, {useCallback, useEffect, useRef, useState} from "react";
 import VideoJS from "../components/VideoJS";
 import {SubtitleContainer} from "../components/DataStructures";
 import MiteiruDropzone from "../components/MiteiruDropzone";
-import Subtitle from "../components/Subtitle";
+import Subtitle, {PrimarySubtitle, SecondarySubtitle} from "../components/Subtitle";
 import MeaningBox from "../components/MeaningBox";
 import Link from "next/link";
 import {useRouter} from "next/router";
@@ -16,8 +16,13 @@ function Video() {
   const [currentTime, setCurrentTime] = useState(0);
   const [meaning, setMeaning] = useState('');
   const [mecab, setMecab] = useState('')
+
   const [primarySub, setPrimarySub] = useState(new SubtitleContainer('', mecab))
+  const [primaryShift, setPrimaryShift] = useState(0)
+
   const [secondarySub, setSecondarySub] = useState(new SubtitleContainer('', mecab))
+  const [secondaryShift, setSecondaryShift] = useState(0)
+
   const [player, setPlayer] = useState(null)
   const [metadata, setMetadata] = useState(0)
   const [showController, setShowController] = useState(true);
@@ -74,15 +79,21 @@ function Video() {
             }
           }} onReady={readyCallback} setCurrentTime={setCurrentTime}/>
           <div className={"flex flex-col justify-end bottom-0 z-[3] fixed h-[100vh] w-[100vw]"}>
-            <Subtitle setMeaning={setMeaning} currentTime={currentTime} primarySub={primarySub}
-                      secondarySub={secondarySub}/>
+            <PrimarySubtitle setMeaning={setMeaning}
+                             currentTime={currentTime}
+                             subtitle={primarySub}
+                             shift={primaryShift}/>
+            <SecondarySubtitle
+                currentTime={currentTime}
+                subtitle={secondarySub}
+                shift={secondaryShift}/>
             {player && <VideoController player={player}
                                         currentTime={currentTime}
                                         setCurrentTime={setCurrentTime}
                                         metadata={metadata}
                                         showController={showController}
-                                        primarySub={primarySub}
-                                        secondarySub={secondarySub}
+                                        setPrimaryShift={setPrimaryShift}
+                                        setSecondaryShift={setSecondaryShift}
                                         setInfo={setToastInfo}/>}
           </div>
 

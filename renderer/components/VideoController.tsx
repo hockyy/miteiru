@@ -29,8 +29,8 @@ export const VideoController = ({
                                   currentTime,
                                   metadata,
                                   showController,
-                                  primarySub,
-                                  secondarySub,
+                                  setPrimaryShift,
+                                  setSecondaryShift,
                                   setInfo
                                 }) => {
   const [duration, setDuration] = useState(0)
@@ -68,30 +68,17 @@ export const VideoController = ({
         deltaTime(-2)
       } else if (event.code === "ArrowRight") {
         deltaTime(+2)
-      } else if (event.code === "BracketLeft") {
-        if (event.ctrlKey) {
-          secondarySub.shift -= shiftAmount
-          setInfo(info => {
-            return {message: `Shifting Secondary Sub ${secondarySub.shift}ms`, udpate: randomUUID()}
+      } else if (event.code.startsWith("Bracket")) {
+        const currentShiftAmount = event.code === "BracketLeft" ? -shiftAmount : shiftAmount;
+        (event.ctrlKey ? setSecondaryShift : setPrimaryShift)(old => {
+          setInfo(() => {
+            return {
+              message: `Shifting ${(event.ctrlKey ? "Secondary" : "Primary")} Sub to ${old + currentShiftAmount}ms`,
+              udpate: randomUUID()
+            }
           })
-        } else {
-          primarySub.shift -= shiftAmount
-          setInfo(info => {
-            return {message: `Shifting Primary Sub ${primarySub.shift}ms`, udpate: randomUUID()}
-          })
-        }
-      } else if (event.code === "BracketRight") {
-        if (event.ctrlKey) {
-          secondarySub.shift += shiftAmount
-          setInfo(info => {
-            return {message: `Shifting Secondary Sub ${secondarySub.shift}ms`, udpate: randomUUID()}
-          })
-        } else {
-          primarySub.shift += shiftAmount
-          setInfo(info => {
-            return {message: `Shifting Primary Sub ${primarySub.shift}ms`, udpate: randomUUID()}
-          })
-        }
+          return old + currentShiftAmount;
+        })
       }
     };
     window.addEventListener('keydown', handleVideoController);
