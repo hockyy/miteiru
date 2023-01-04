@@ -102,7 +102,7 @@ export const VideoController = ({
                     expanded={showController}>
       <div className={"flex flex-row items-center justify-between pt-1"}>
         <div className={"flex w-1/3"}>
-          <Volume/>
+          <Volume player={player}/>
           <div className={"flex flex-row px-4 justify-end content-end w-32 animation"}>
             <div>{toTime(currentTime)}</div>
             &nbsp;
