@@ -37,7 +37,7 @@ sudo apt install libmecab-dev
 Then, you can run
 
 ```bash
-which brew
+which mecab
 ```
 
 to show your default mecab binary file. Use it as the path when asked in Miteiru. Then, you can get JMDict Dictionary in [https://github.com/scriptin/jmdict-simplified/releases](https://github.com/scriptin/jmdict-simplified/releases). Use it as the path when asked in Miteiru as well. Miteiru will build a LevelDB cache locally. Then, you can enjoy the app!
