@@ -12,6 +12,36 @@ Miteiru is an open source Electron video player to learn Japanese. It has modula
 - Translation subtitles alongside the Japanese subtitles.
 - Word/Token spacing in the Japanese subtitles 
 
+## Installation Guide
+
+The alpha version will mostly be tested on Darwin/ARM64 M1 Mac. Other build will be made in the future. To directly run the edge version of the app in dev environment, you can run the followings on the cloned repository:
+
+```bash
+npm install
+npm run dev
+```
+
+Mecab can be downloaded through [brew](https://brew.sh/) by running:
+
+```bash
+brew install mecab
+```
+
+or in Ubuntu:
+
+```bash
+sudo apt install mecab
+sudo apt install libmecab-dev
+```
+
+Then, you can run
+
+```bash
+which brew
+```
+
+to show your default mecab binary file. Use it as the path when asked in Miteiru. Then, you can get JMDict Dictionary in [https://github.com/scriptin/jmdict-simplified/releases](https://github.com/scriptin/jmdict-simplified/releases). Use it as the path when asked in Miteiru as well. Miteiru will build a LevelDB cache locally. Then, you can enjoy the app!
+
 ## Future Enhancements
 
 - Verb inflections 
