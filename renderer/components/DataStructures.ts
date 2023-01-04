@@ -35,7 +35,7 @@ export class SubtitleContainer {
     this.language = "EN"
     for (const {text} of entries) {
       // process transcript entry
-      if(isMixedJapanese(text)) {
+      if (isMixedJapanese(text)) {
         this.language = 'JP';
         break;
       }
@@ -48,8 +48,8 @@ export class SubtitleContainer {
   }
 }
 
-export function getLineByTime(subtitle: SubtitleContainer, shift:number, t: number) {
-  t += shift
+export function getLineByTime(subtitle: SubtitleContainer, shift: number, t: number) {
+  t -= shift
   if (!subtitle.lines || subtitle.lines.length === 0) return ''
   let low = 0;
   let high = subtitle.lines.length - 1;
