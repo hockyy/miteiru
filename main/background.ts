@@ -12,8 +12,6 @@ import {
 } from 'jmdict-simplified-node';
 import fs from "fs";
 import path from "path";
-import {getFurigana} from "shunou";
-import {spawnSync} from "child_process";
 
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
@@ -131,6 +129,32 @@ if (isProd) {
       properties: ['openFile'],
       filters: [{name: 'Allowed Extensions', extensions: allowed}]
     });
+  })
+
+  ipcMain.handle('readFile', async (event, allowed) => {
+    const {filePaths, canceled} = await dialog.showOpenDialog({
+      properties: ['openFile'],
+      filters: [{name: 'Allowed Extensions', extensions: allowed}]
+    });
+    if (filePaths.length > 0 && !canceled) {
+      return await fs.readFileSync(filePaths[0], 'utf-8');
+    }
+    return '';
+  })
+  ipcMain.handle('saveFile', async (event, allowed, saveData: string) => {
+    const {filePath, canceled} = await dialog.showSaveDialog({
+      properties: ['createDirectory'],
+      filters: [{name: 'Allowed Extensions', extensions: allowed}]
+    }).then()
+
+    if (filePath && !canceled) {
+      fs.writeFile(filePath, saveData, (err) => {
+        if (err) throw err;
+        console.log('The file has been saved!');
+      });
+    }
+
+
   })
   ipcMain.handle('removeDictCache', (event) => {
     removeJMDictCache()

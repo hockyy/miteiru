@@ -1,11 +1,18 @@
 import {ArrowLeft} from "./Icons";
 import React from "react";
 import {PopoverPicker} from "./PopoverPicker";
+import {
+  CJKStyling,
+  defaultPrimarySubtitleStyling,
+  defaultSecondarySubtitleStyling
+} from "../utils/CJKStyling";
+import {ipcRenderer} from "electron";
 
 const StylingBox = ({
                       subtitleStyling,
                       setSubtitleStyling,
-                      subtitleName
+                      subtitleName,
+                      defaultStyling
                     }) => {
   return <div className={"w-full mx-5 px-3 flex flex-col content-start gap-3 unselectable"}>
     <div className={"flex flex-row items-center gap-3"}>
@@ -70,6 +77,45 @@ const StylingBox = ({
           }}
       />
     </div>
+    <button
+        type={"button"}
+        className='enabled:bg-red-600 p-3 rounded-sm enabled:hover:bg-red-700'
+        onClick={() => {
+          setSubtitleStyling(defaultStyling)
+        }
+        }
+    >
+      Reset
+    </button>
+    <div className={"flex flex-row gap-2"}>
+    <button
+        type={"button"}
+        className='w-full enabled:bg-green-600 p-3 rounded-sm enabled:hover:bg-green-700'
+        onClick={() => {
+          ipcRenderer.invoke("readFile", ["json"]).then((val)=>{
+            try {
+              const parsed = JSON.parse(val) as CJKStyling;
+              setSubtitleStyling(parsed)
+            } catch (e) {
+              console.log(e)
+            }
+
+          })
+        }
+        }
+    >
+      Import
+    </button>
+    <button
+        type={"button"}
+        className='w-full enabled:bg-blue-600 p-3 rounded-sm enabled:hover:bg-blue-700'
+        onClick={() => {
+          ipcRenderer.invoke("saveFile", ["json"], JSON.stringify(subtitleStyling))
+        }
+        }
+    >
+      Export
+    </button></div>
   </div>
 }
 
@@ -99,9 +145,9 @@ export const Sidebar = ({
       Settings
     </div>
     <StylingBox subtitleStyling={primaryStyling} setSubtitleStyling={setPrimaryStyling}
-                subtitleName={"CJK"}/>
+                subtitleName={"CJK"} defaultStyling={defaultPrimarySubtitleStyling}/>
     <hr className={"w-full h-1 m-5"}/>
     <StylingBox subtitleStyling={secondaryStyling} setSubtitleStyling={setSecondaryStyling}
-                subtitleName={"Other"}/>
+                subtitleName={"Other"} defaultStyling={defaultSecondarySubtitleStyling}/>
   </div>
 }
