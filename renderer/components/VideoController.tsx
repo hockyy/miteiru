@@ -31,7 +31,8 @@ export const VideoController = ({
                                   showController,
                                   setPrimaryShift,
                                   setSecondaryShift,
-                                  setInfo
+                                  setInfo,
+                                  setShowSidebar
                                 }) => {
   const [duration, setDuration] = useState(0)
 
@@ -129,7 +130,7 @@ export const VideoController = ({
           </button>
         </div>
         <div className={"flex w-1/3 justify-end"}>
-          <SettingsController/>
+          <SettingsController setShowSidebar={setShowSidebar}/>
         </div>
       </div>
 

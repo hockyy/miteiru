@@ -8,6 +8,7 @@ import {useRouter} from "next/router";
 import {ipcRenderer} from "electron";
 import {VideoController} from "../components/VideoController";
 import Toast from "../components/Toast";
+import {Sidebar} from "../components/Sidebar";
 
 function Video() {
   const [videoSrc, setVideoSrc] = useState({src: '', type: ''})
@@ -25,6 +26,7 @@ function Video() {
   const [metadata, setMetadata] = useState(0)
   const [showController, setShowController] = useState(true);
   const [toastInfo, setToastInfo] = useState({message: 'coba', update: ''});
+  const [showSidebar, setShowSidebar] = useState(false)
   const readyCallback = useCallback((playerRef) => {
     setPlayer(playerRef);
     playerRef.on('loadedmetadata', () => {
@@ -50,6 +52,10 @@ function Video() {
         router.push('/home')
       } else if (event.code === "KeyZ") {
         setShowController((old) => {
+          return !old
+        })
+      } else if (event.code === "KeyC") {
+        setShowSidebar((old) => {
           return !old
         })
       }
@@ -92,7 +98,8 @@ function Video() {
                                         showController={showController}
                                         setPrimaryShift={setPrimaryShift}
                                         setSecondaryShift={setSecondaryShift}
-                                        setInfo={setToastInfo}/>}
+                                        setInfo={setToastInfo}
+                                        setShowSidebar={setShowSidebar}/>}
           </div>
 
 
@@ -100,7 +107,7 @@ function Video() {
         {mecab !== '' && dragDrop &&
             <MiteiruDropzone setPrimarySub={setPrimarySub} setSecondarySub={setSecondarySub}
                              setVideoSrc={setVideoSrc} mecab={mecab}/>}
-
+        <Sidebar showSidebar={showSidebar} setShowSidebar={setShowSidebar}/>
       </React.Fragment>
   );
 }
