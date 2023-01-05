@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import {ipcRenderer} from 'electron';
@@ -7,11 +7,15 @@ import {KeyboardHelp} from "../components/KeyboardHelp";
 
 const checkSymbol = ['❌', '✅', '🙃']
 const initialCheck = {ok: 0, message: 'Check is not run yet'}
+const mecabDefaultDirectory = {
+  'darwin': '/opt/homebrew/bin/mecab',
+  'linux': '/usr/bin/mecab'
+}
 
 function Home() {
   const [dicdir, setDicdir] = useState('');
-  const [mecab, setMecab] = useState('/opt/homebrew/bin/mecab');
-  const [jmdict, setJmdict] = useState('//Users/hocky/project/jmdict-eng-3.2.0-alpha.1.json');
+  const [mecab, setMecab] = useState(mecabDefaultDirectory[process.platform] ?? mecabDefaultDirectory['linux']);
+  const [jmdict, setJmdict] = useState('/Users/root/jmdict-eng-3.2.1.json');
   const [check, setCheck] = useState(initialCheck);
   return (
       <React.Fragment>
@@ -79,30 +83,50 @@ function Home() {
               </div>
             </ContainerHome>
             <ContainerHome>
-              <div className={'flex flex-row justify-center items-center gap-2'}>
-
-                <button
-                    disabled={check.ok === 2}
-                    className='disabled:cursor-not-allowed disabled:bg-amber-200 enabled:bg-amber-600 p-3 rounded-sm enabled:hover:bg-amber-700'
-                    onClick={() => {
-                      setCheck({
-                        ok: 2,
-                        message: "checking..."
-                      })
-                      ipcRenderer.invoke('validateConfig', {
-                        mecab, dicdir, jmdict
-                      }).then(val => {
-                        setCheck(val)
-                      })
-                    }
-                    }>
-                  Check
-                </button>
-
+              <div className={'flex flex-col justify-center items-center gap-2'}>
+                <div className={'flex flex-row gap-3'}>
+                  <button
+                      disabled={check.ok === 2}
+                      className='disabled:cursor-not-allowed disabled:bg-amber-200 enabled:bg-amber-600 p-3 rounded-sm enabled:hover:bg-amber-700'
+                      onClick={() => {
+                        setCheck({
+                          ok: 2,
+                          message: "checking..."
+                        })
+                        ipcRenderer.invoke('validateConfig', {
+                          mecab, dicdir, jmdict
+                        }).then(val => {
+                          setCheck(val)
+                        })
+                      }
+                      }>
+                    Check
+                  </button>
+                  <button
+                      disabled={check.ok === 2}
+                      className='disabled:cursor-not-allowed disabled:bg-amber-200 enabled:bg-amber-600 p-3 rounded-sm enabled:hover:bg-amber-700'
+                      onClick={() => {
+                        setCheck({
+                          ok: 2,
+                          message: "checking..."
+                        })
+                        ipcRenderer.invoke('validateConfig', {
+                          mecab, dicdir, jmdict, cached: true
+                        }).then(val => {
+                          setCheck(val)
+                        })
+                      }
+                      }>
+                    Check With Cache
+                  </button>
+                </div>
                 <div className={'text-black'}>
                   {checkSymbol[check.ok]}{' '}{check.message}
                 </div>
+
+
               </div>
+
 
             </ContainerHome>
             <ContainerHome>
