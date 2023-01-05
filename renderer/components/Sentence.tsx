@@ -2,8 +2,14 @@ import {isMixedJapanese} from "shunou";
 import parse from "html-react-parser";
 import styled from "styled-components";
 import {CJKStyling} from "../utils/CJKStyling";
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 
+const StyledSentence = styled.button`
+  &:hover {
+    -webkit-text-fill-color: ${props => props.subtitleStyling.text.hoverColor};
+    -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
+  }
+`
 
 export const Sentence = ({
                            origin,
@@ -23,24 +29,12 @@ export const Sentence = ({
                            subtitleStyling: CJKStyling
                          }
 ) => {
-  const [StyledSentence, setStyledSentence] = useState(styled.button`
-    &:hover {
-      -webkit-text-fill-color: ${subtitleStyling.text.hoverColor};
-      -webkit-text-stroke-color: ${subtitleStyling.stroke.hoverColor};
-    }
-  `)
-  useEffect(() => {
-    setStyledSentence(styled.button`
-        &:hover {
-          -webkit-text-fill-color: ${subtitleStyling.text.hoverColor};
-          -webkit-text-stroke-color: ${subtitleStyling.stroke.hoverColor};
-        }
-      `)
-  }, [subtitleStyling])
   const handleChange = (origin) => {
     setMeaning(origin)
   }
-  return <StyledSentence className={extraClass} onClick={() => handleChange(origin)}>
+  return <StyledSentence subtitleStyling={subtitleStyling}
+                         className={extraClass}
+                         onClick={() => handleChange(origin)}>
     {separation.map((val, index) => {
       const hiragana = (<>
             <rp>(</rp>
