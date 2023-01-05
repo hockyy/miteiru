@@ -32,7 +32,7 @@ export const VideoController = ({
                                   setPrimaryShift,
                                   setSecondaryShift,
                                   setInfo,
-                                  setShowSidebar
+                                  setShowSidebar,
                                 }) => {
   const [duration, setDuration] = useState(0)
 
