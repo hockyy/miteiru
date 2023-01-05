@@ -26,6 +26,7 @@ const StylingBox = ({
       }/>
       {subtitleName} Subtitle Hover Color
     </div>
+
     <div className={"flex flex-row items-center gap-3"}>
       <PopoverPicker color={subtitleStyling.stroke.color} onChange={(val) => {
         const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
@@ -52,6 +53,22 @@ const StylingBox = ({
       }
       }/>
       {subtitleName} Background Color
+    </div>
+    <div className={"flex w-full justify-center items-center"}>
+      Stroke Width
+      <input
+          className={"slider"}
+          type="range"
+          min={0}
+          max={1}
+          step={0.02}
+          value={parseFloat(subtitleStyling.stroke.width.trim('px'))}
+          onChange={event => {
+            const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+            newCopy.stroke.width = event.target.value + "px";
+            setSubtitleStyling(newCopy)
+          }}
+      />
     </div>
   </div>
 }
