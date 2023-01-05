@@ -96,7 +96,9 @@ export const Subtitle = ({
         fontFamily: "Arial",
       }}>
     {caption.length > 0 &&
-        <div className={"bg-black/30 w-fit mx-auto rounded-lg px-3 pt-2 pb-1"}>
+        <div className={"w-fit mx-auto rounded-lg px-3 pt-2 pb-1"} style={{
+          backgroundColor: subtitleStyling.background
+        }}>
           {caption}
         </div>
     }

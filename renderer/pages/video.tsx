@@ -9,6 +9,7 @@ import {ipcRenderer} from "electron";
 import {VideoController} from "../components/VideoController";
 import Toast from "../components/Toast";
 import {Sidebar} from "../components/Sidebar";
+import {defaultPrimarySubtitleStyling, defaultSecondarySubtitleStyling} from "../utils/CJKStyling";
 
 function Video() {
   const [videoSrc, setVideoSrc] = useState({src: '', type: ''})
@@ -18,9 +19,11 @@ function Video() {
 
   const [primarySub, setPrimarySub] = useState(new SubtitleContainer('', mecab))
   const [primaryShift, setPrimaryShift] = useState(0)
+  const [primaryStyling, setPrimaryStyling] = useState(defaultPrimarySubtitleStyling);
 
   const [secondarySub, setSecondarySub] = useState(new SubtitleContainer('', mecab))
   const [secondaryShift, setSecondaryShift] = useState(0)
+  const [secondaryStyling, setSecondaryStyling] = useState(defaultSecondarySubtitleStyling);
 
   const [player, setPlayer] = useState(null)
   const [metadata, setMetadata] = useState(0)
@@ -86,11 +89,13 @@ function Video() {
             <PrimarySubtitle setMeaning={setMeaning}
                              currentTime={currentTime}
                              subtitle={primarySub}
-                             shift={primaryShift}/>
+                             shift={primaryShift}
+                             subtitleStyling={primaryStyling}/>
             <SecondarySubtitle
                 currentTime={currentTime}
                 subtitle={secondarySub}
-                shift={secondaryShift}/>
+                shift={secondaryShift}
+                subtitleStyling={secondaryStyling}/>
             {player && <VideoController player={player}
                                         currentTime={currentTime}
                                         setCurrentTime={setCurrentTime}
@@ -107,7 +112,11 @@ function Video() {
         {mecab !== '' && dragDrop &&
             <MiteiruDropzone setPrimarySub={setPrimarySub} setSecondarySub={setSecondarySub}
                              setVideoSrc={setVideoSrc} mecab={mecab}/>}
-        <Sidebar showSidebar={showSidebar} setShowSidebar={setShowSidebar}/>
+        <Sidebar showSidebar={showSidebar} setShowSidebar={setShowSidebar}
+                 primaryStyling={primaryStyling}
+                 setPrimaryStyling={setPrimaryStyling}
+                 secondaryStyling={secondaryStyling}
+                 setSecondaryStyling={setSecondaryStyling}/>
       </React.Fragment>
   );
 }

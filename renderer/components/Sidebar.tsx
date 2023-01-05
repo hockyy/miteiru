@@ -1,12 +1,65 @@
-import {ArrowLeft, Cogs} from "./Icons";
+import {ArrowLeft} from "./Icons";
+import React from "react";
+import {PopoverPicker} from "./PopoverPicker";
 
-export const Sidebar = ({showSidebar, setShowSidebar}) => {
+const StylingBox = ({
+                      subtitleStyling,
+                      setSubtitleStyling,
+                      subtitleName
+                    }) => {
+  return <div className={"w-full ml-12 flex flex-col content-start gap-3 unselectable"}>
+    <div className={"flex flex-row items-center gap-3"}>
+      <PopoverPicker color={subtitleStyling.text.color} onChange={(val) => {
+        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+        newCopy.text.color = val;
+        setSubtitleStyling(newCopy)
+      }
+      }/>
+      {subtitleName} Subtitle Text Color
+    </div>
+    <div className={"flex flex-row items-center gap-3"}>
+      <PopoverPicker color={subtitleStyling.text.hoverColor} onChange={(val) => {
+        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+        newCopy.text.hoverColor = val;
+        setSubtitleStyling(newCopy)
+      }
+      }/>
+      {subtitleName} Subtitle Hover Color
+    </div>
+    <div className={"flex flex-row items-center gap-3"}>
+      <PopoverPicker color={subtitleStyling.stroke.color} onChange={(val) => {
+        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+        newCopy.stroke.color = val;
+        setSubtitleStyling(newCopy)
+      }
+      }/>
+      {subtitleName} Subtitle Stroke Color
+    </div>
+    <div className={"w-full flex flex-row items-center gap-3"}>
+      <PopoverPicker color={subtitleStyling.background} onChange={(val) => {
+        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+        newCopy.background = val;
+        setSubtitleStyling(newCopy)
+      }
+      }/>
+      {subtitleName} Background Color
+    </div>
+  </div>
+}
 
+export const Sidebar = ({
+                          showSidebar,
+                          setShowSidebar,
+                          primaryStyling,
+                          setPrimaryStyling,
+                          secondaryStyling,
+                          setSecondaryStyling,
+                        }) => {
   return <div style={{
     transition: "all 0.3s ease-out",
     transform: `translate(${!showSidebar ? "25vw" : "0"}, 0`
   }}
-              className={"flex flex-col content-center items-center p-3 z-[19] fixed right-0 top-0 h-screen w-[25vw] bg-gray-700/70"}>
+              className={"overflow-y-scroll overflow-x-clip flex flex-col content-center items-center p-3 z-[19] fixed right-0 top-0 h-screen w-[25vw] bg-gray-700/70"}>
 
     <button className={"self-start p-2"} onClick={() => {
       setShowSidebar(old => !old)
@@ -19,42 +72,10 @@ export const Sidebar = ({showSidebar, setShowSidebar}) => {
     <div className={"font-bold unselectable text-3xl m-4"}>
       Settings
     </div>
-    <div className={"flex flex-col content-start gap-3 unselectable"}>
-      <div className={"flex flex-row items-center gap-3"}>
-        <input type={"color"}/>
-        CJK Subtitle Text Color
-      </div>
-      <div className={"flex flex-row items-center gap-3"}>
-        <input type={"color"}/>
-        CJK Subtitle Hover Color
-      </div>
-      <div className={"flex flex-row items-center gap-3"}>
-        <input type={"color"}/>
-        CJK Subtitle Stroke Color
-      </div>
-      <div className={"flex flex-row items-center gap-3"}>
-        <input type={"color"}/>
-        CJK Background Color
-      </div>
-    </div>
+    <StylingBox subtitleStyling={primaryStyling} setSubtitleStyling={setPrimaryStyling}
+                subtitleName={"CJK"}/>
     <hr className={"w-full h-1 m-5"}/>
-    <div className={"flex flex-col content-start gap-3 "}>
-      <div className={"flex flex-row items-center gap-3 unselectable"}>
-        <input type={"color"}/>
-        <div>Other Subtitle Text Color</div>
-      </div>
-      <div className={"flex flex-row items-center gap-3"}>
-        <input type={"color"}/>
-        Other Subtitle Hover Color
-      </div>
-      <div className={"flex flex-row items-center gap-3"}>
-        <input type={"color"}/>
-        Other Subtitle Stroke Color
-      </div>
-      <div className={"flex flex-row items-center gap-3"}>
-        <input type={"color"}/>
-        Other Background Color
-      </div>
-    </div>
+    <StylingBox subtitleStyling={secondaryStyling} setSubtitleStyling={setSecondaryStyling}
+                subtitleName={"Other"}/>
   </div>
 }
