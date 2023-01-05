@@ -3,6 +3,7 @@ import parse from "html-react-parser";
 import styled from "styled-components";
 import {CJKStyling} from "../utils/CJKStyling";
 import React, {useEffect, useState} from "react";
+import {randomUUID} from "crypto";
 
 const StyledSentence = styled.button`
   &:hover {
@@ -61,5 +62,5 @@ export const Sentence = ({
 }
 
 export const PlainSentence = ({origin}) => {
-  return <div>{parse(origin)}</div>
+  return <div key={randomUUID()}>{parse(origin)}</div>
 }
