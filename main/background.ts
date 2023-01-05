@@ -183,16 +183,7 @@ if (isProd) {
     return okSetup
   }
 
-  const checkJMDict = async (config) => {
-    if (!fs.existsSync(config.jmdict) || !fs.lstatSync(config.jmdict).isFile()) return {
-      ok: 0,
-      message: `jmdict '${config.jmdict}' doesn't exist`
-    };
-    if (!(config.jmdict.endsWith('.json'))) return {
-      ok: 0,
-      message: `'${config.jmdict}' is not a JSON file`
-    };
-
+  const loadJMDict = async (config) => {
     // Load DB Here
     const ret = await setUpJMDict(config.jmdict);
     if (ret) {
@@ -203,6 +194,18 @@ if (isProd) {
         message: `Failed to load JMDict DB!`
       };
     }
+  }
+  const checkJMDict = async (config) => {
+    if (!fs.existsSync(config.jmdict) || !fs.lstatSync(config.jmdict).isFile()) return {
+      ok: 0,
+      message: `jmdict '${config.jmdict}' doesn't exist`
+    };
+    if (!(config.jmdict.endsWith('.json'))) return {
+      ok: 0,
+      message: `'${config.jmdict}' is not a JSON file`
+    };
+
+    return await loadJMDict(config);
   }
 
   const checkMecab = (config) => {
@@ -228,7 +231,13 @@ if (isProd) {
 
     // const dicdirRes = checkDicdir(config);
     // if (dicdirRes.ok !== 1) return dicdirRes
-    const jmdictRes = await checkJMDict(config);
+    let jmdictRes;
+    if (!config.cached) {
+      jmdictRes = await checkJMDict(config);
+    } else {
+      jmdictRes = await loadJMDict('')
+      if(jmdictRes.ok === 1) jmdictRes.message = 'JMDict cache loaded successfuly'
+    }
     if (jmdictRes.ok !== 1) return jmdictRes;
     const mecabRes = checkMecab(config);
     if (mecabRes.ok !== 1) return mecabRes;
