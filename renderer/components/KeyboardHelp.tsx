@@ -9,10 +9,21 @@ const shortcutInformation = [{
     key: "Z",
     description: "Toggle Video Control Bar"
   }, {
+    key: "C",
+    description: "Toggle Sidebar"
+  }, {
     key: "Q",
     description: "Back to Home"
-  },
-  {
+  }, {
+    key: "Esc",
+    description: "Exit From CJK Information Box"
+  }, {
+    key: "O",
+    description: "Remove CJK Subtitle"
+  }, {
+    key: "P",
+    description: "Remove Other/Secondary Subtitle"
+  }, {
     key: "[",
     description: "Shift CJK Subtitle Slower"
   }, {
@@ -24,9 +35,6 @@ const shortcutInformation = [{
   }, {
     key: "⌃]",
     description: "Shift Main Subtitle Faster"
-  }, {
-    key: "Esc",
-    description: "Exit From CJK Information Box"
   }]
 
 export const Key = ({value, extraClass = ""}) => {

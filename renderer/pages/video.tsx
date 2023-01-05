@@ -37,6 +37,14 @@ function Video() {
     })
   }, [])
   const [dragDrop, setDragDrop] = useState(true);
+  const resetSub = (subSetter) => {
+    subSetter(new SubtitleContainer('', mecab))
+  }
+
+  useEffect(() => {
+    resetSub(setPrimarySub)
+    resetSub(setSecondarySub)
+  }, [videoSrc])
 
   const router = useRouter()
   useEffect(() => {
@@ -61,6 +69,10 @@ function Video() {
         setShowSidebar((old) => {
           return !old
         })
+      } else if (event.code === "KeyO") {
+        resetSub(setPrimarySub)
+      } else if (event.code === "KeyP") {
+        resetSub(setSecondarySub)
       }
     };
     window.addEventListener('keydown', handleKeyPress);
