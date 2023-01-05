@@ -45,7 +45,7 @@ export const PrimarySubtitle = ({
     } catch (e) {
       console.log(e)
     }
-  }, [currentTime])
+  }, [currentTime, subtitleStyling])
   return <Subtitle caption={caption} extraClass={"mb-3 unselectable"}
                    subtitleStyling={subtitleStyling}/>
 };
@@ -78,7 +78,7 @@ export const SecondarySubtitle = ({
     } catch (e) {
       console.log(e)
     }
-  }, [currentTime])
+  }, [currentTime, subtitleStyling])
   return <Subtitle caption={caption} extraClass={"fixed top-2"} subtitleStyling={subtitleStyling}/>
 };
 export const Subtitle = ({
