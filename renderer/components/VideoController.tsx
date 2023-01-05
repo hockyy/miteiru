@@ -72,7 +72,6 @@ export const VideoController = ({
       } else if (event.code.startsWith("Bracket")) {
         const currentShiftAmount = event.code === "BracketLeft" ? -shiftAmount : shiftAmount;
         (event.ctrlKey ? setSecondaryShift : setPrimaryShift)(old => {
-          console.log("Here", old)
           setInfo(() => {
             return {
               message: `Shifting ${(event.ctrlKey ? "Secondary" : "Primary")} Sub to ${old + currentShiftAmount}ms`,
