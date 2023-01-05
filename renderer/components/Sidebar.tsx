@@ -7,7 +7,7 @@ const StylingBox = ({
                       setSubtitleStyling,
                       subtitleName
                     }) => {
-  return <div className={"w-full ml-12 flex flex-col content-start gap-3 unselectable"}>
+  return <div className={"w-full mx-5 px-3 flex flex-col content-start gap-3 unselectable"}>
     <div className={"flex flex-row items-center gap-3"}>
       <PopoverPicker color={subtitleStyling.text.color} onChange={(val) => {
         const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
@@ -34,6 +34,15 @@ const StylingBox = ({
       }
       }/>
       {subtitleName} Subtitle Stroke Color
+    </div>
+    <div className={"flex flex-row items-center gap-3"}>
+      <PopoverPicker color={subtitleStyling.stroke.hoverColor} onChange={(val) => {
+        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+        newCopy.stroke.hoverColor = val;
+        setSubtitleStyling(newCopy)
+      }
+      }/>
+      {subtitleName} Subtitle Hover Stroke Color
     </div>
     <div className={"w-full flex flex-row items-center gap-3"}>
       <PopoverPicker color={subtitleStyling.background} onChange={(val) => {
