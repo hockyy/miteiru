@@ -61,6 +61,8 @@ function Video() {
         setMeaning("")
       } else if (event.code === "KeyQ") {
         router.push('/home')
+      } else if (event.code === "KeyL") {
+        router.push('/learn')
       } else if (event.code === "KeyZ") {
         setShowController((old) => {
           return !old
