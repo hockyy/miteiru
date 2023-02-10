@@ -23,9 +23,15 @@ export class SubtitleContainer {
   lines: Line[];
   language: string;
 
-  constructor(filename: string, mecab: string) {
-    this.lines = []
+  constructor(filename: string, mecab: string, fromFile: boolean = true) {
     if (filename === '') return
+    this.lines = []
+    if(!fromFile) {
+      this.language = "JP"
+      console.log(filename, mecab, fromFile)
+      this.lines.push(new Line(0, 1000000, filename, mecab, this.language === "JP"))
+      return
+    }
     const {entries} = parse(
         fs
         .readFileSync(filename) // or '.srt'
