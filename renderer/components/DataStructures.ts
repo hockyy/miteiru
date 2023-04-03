@@ -28,7 +28,6 @@ export class SubtitleContainer {
     this.lines = []
     if(!fromFile) {
       this.language = "JP"
-      console.log(filename, mecab, fromFile)
       this.lines.push(new Line(0, 1000000, filename, mecab, this.language === "JP"))
       return
     }
