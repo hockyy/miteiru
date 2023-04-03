@@ -26,7 +26,7 @@ const ActiveDropzoneCue = ({isActive}) => {
 export const MiteiruDropzone = ({setPrimarySub, setSecondarySub, setVideoSrc, mecab}) => {
 
   const onDrop = useCallback(acceptedFiles => {
-    // const draggedVideo = {...acceptedFiles[0], src: `file:/${acceptedFiles[0].path}`}
+    const draggedVideo = {...acceptedFiles[0], src: `file:/${acceptedFiles[0].path}`}
     if (acceptedFiles[0].path.endsWith('.srt')) {
       const draggedSubtitle = {
         type: 'text/plain',
