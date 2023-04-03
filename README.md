@@ -4,7 +4,7 @@ Miteiru is an open source Electron video player to learn Japanese. It has modula
 
 ## What can 見ている do?
 
-- Cross-platform! Available in MacOS, GNU/Linux.
+- Cross-platform! Available in Windows, MacOS, GNU/Linux.
 - Supports all videos that your [chromium](https://www.chromium.org/audio-video/) supports! In some OS's, it supports **x265**.
 - On-The-Fly Furigana generation! blazing-fast and no cache build needed.
 - Instant definition of any terms that uses LevelDB on first start only!
@@ -92,7 +92,7 @@ dicdir =  $(rcpath)\..\dic\unidic
 - Pronounciation audio
 - Customizable subtitle style.
 - Online hosted videos.
-- Will support Android and Windows.
+- Will support Android.
 - Miteiru will have built-in Tokenizer and Dictionary, and supports French, German, Bahasa Indonesia, and many more.
 - Miteiru will support Chinese and Korean too!
 
