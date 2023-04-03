@@ -30,11 +30,15 @@ export const MiteiruDropzone = ({setPrimarySub, setSecondarySub, setVideoSrc, me
     // console.log(draggedVideo)
     let currentPath = acceptedFiles[0].path;
     currentPath = currentPath.replace('\\', '/')
-    console.log(currentPath)
+    let pathUri = currentPath
+    if (process.platform === 'win32') {
+      pathUri[0] = pathUri.toLowerCase()
+      pathUri[1] = '|'
+    }
     if (currentPath.endsWith('.srt')) {
       const draggedSubtitle = {
         type: 'text/plain',
-        src: `${currentPath}`
+        src: `${pathUri}`
       }
       const tmpSub = new SubtitleContainer(draggedSubtitle.src, mecab);
       if (tmpSub.language === "JP") {
@@ -45,7 +49,7 @@ export const MiteiruDropzone = ({setPrimarySub, setSecondarySub, setVideoSrc, me
     } else if (currentPath.endsWith('.mp4') || currentPath.endsWith('.mkv')) {
       const draggedVideo = {
         type: 'video/webm',
-        src: `miteiru://${currentPath}`
+        src: `miteiru://${[pathUri]}`
       }
       setVideoSrc(draggedVideo)
     }
