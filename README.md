@@ -4,7 +4,7 @@ Miteiru is an open source Electron video player to learn Japanese. It has modula
 
 ## What can 見ている do?
 
-- Cross-platform! Available in MacOS, GNU/Linux.
+- Cross-platform! Available in Windows, MacOS, GNU/Linux.
 - Supports all videos that your [chromium](https://www.chromium.org/audio-video/) supports! In some OS's, it supports **x265**.
 - On-The-Fly Furigana generation! blazing-fast and no cache build needed.
 - Instant definition of any terms that uses LevelDB on first start only!
@@ -43,7 +43,46 @@ to show your default mecab binary file. Use it as the path when asked in Miteiru
 
 ## MeCab Dictionary Customization
 
-By default, you are using whatever your default Mecab Dictionary offers you, but you can further customize this by modifying the `mecabrc` file which is located in `/opt/homebrew/etc/mecabrc` in MacOS, and `/etc/mecabrc` in Ubuntu. For other OS's you gotta figure it our for yourself right now. Shunou, Miteiru's microlibrary can support Unidic, Jumandic, Ipadic, and it's variations. Specifically, if you check out the `dicrc` file of each dictionary, Shunou can support the output format `chamame`, `chasen`, and the classic Jumandic god knows what output format. You can get [UniDic files here](https://clrd.ninjal.ac.jp/unidic/en/)
+By default, you are using whatever your default Mecab Dictionary offers you, but you can further customize this by modifying the `mecabrc` file which is located in `/opt/homebrew/etc/mecabrc` in MacOS, `C:\Program Files (x86)\MeCab\etc\mecabrc` in Windows, and `/etc/mecabrc` in Ubuntu. For other OS's you gotta figure it our for yourself right now. Shunou, Miteiru's microlibrary can support Unidic, Jumandic, Ipadic, and it's variations. Specifically, if you check out the `dicrc` file of each dictionary, Shunou can support the output format `chamame`, `chasen`, and the classic Jumandic god knows what output format. You can get [UniDic files here](https://clrd.ninjal.ac.jp/unidic/en/)
+
+Configuration file in mac:
+```
+;
+; Configuration file of MeCab
+;
+; $Id: mecabrc.in,v 1.3 2006/05/29 15:36:08 taku-ku Exp $;
+;
+; dicdir =  /opt/homebrew/lib/mecab/dic/ipadic
+; dicdir =  /opt/homebrew/lib/mecab/dic/jumandic
+dicdir =  /opt/homebrew/lib/mecab/dic/unidic
+; userdic = /home/foo/bar/user.dic
+
+; output-format-type = wakati
+; input-buffer-size = 8192
+
+; node-format = %m\n
+; bos-format = %S\n
+; eos-format = EOS\n
+```
+
+Windows:
+```
+;
+; Configuration file of MeCab
+;
+; $Id: mecabrc.in,v 1.3 2006/05/29 15:36:08 taku-ku Exp $;
+;
+dicdir =  $(rcpath)\..\dic\unidic
+
+; userdic = /home/foo/bar/user.dic
+
+; output-format-type = wakati
+; input-buffer-size = 8192
+
+; node-format = %m\n
+; bos-format = %S\n
+; eos-format = EOS\n
+```
 
 ## Future Enhancements
 
@@ -53,7 +92,7 @@ By default, you are using whatever your default Mecab Dictionary offers you, but
 - Pronounciation audio
 - Customizable subtitle style.
 - Online hosted videos.
-- Will support Android and Windows.
+- Will support Android.
 - Miteiru will have built-in Tokenizer and Dictionary, and supports French, German, Bahasa Indonesia, and many more.
 - Miteiru will support Chinese and Korean too!
 
