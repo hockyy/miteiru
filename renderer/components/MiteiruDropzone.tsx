@@ -51,7 +51,7 @@ export const MiteiruDropzone = ({setPrimarySub, setSecondarySub, setVideoSrc, me
     } else if (currentPath.endsWith('.mp4') || currentPath.endsWith('.mkv')) {
       const draggedVideo = {
         type: 'video/webm',
-        src: `miteiru://${[pathUri]}`
+        src: `miteiru://${pathUri}`
       }
       setVideoSrc(draggedVideo)
     }
