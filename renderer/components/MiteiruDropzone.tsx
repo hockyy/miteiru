@@ -30,6 +30,7 @@ export const MiteiruDropzone = ({setPrimarySub, setSecondarySub, setVideoSrc, me
     // console.log(draggedVideo)
     let currentPath = acceptedFiles[0].path;
     currentPath = currentPath.replace('\\', '/')
+    console.log(currentPath)
     if (currentPath.endsWith('.srt')) {
       const draggedSubtitle = {
         type: 'text/plain',
