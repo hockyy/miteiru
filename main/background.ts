@@ -214,10 +214,12 @@ if (isProd) {
       message: `mecab '${config.mecab}' doesn't exist`
     };
 
-    if (!(path.basename(config.mecab) === 'mecab')) return {
-      ok: 0,
-      message: `'${config.mecab} is not a mecab file`
-    };
+    if (!(path.basename(config.mecab) === 'mecab' || path.basename(config.mecab) === 'mecab.exe')) {
+      return {
+        ok: 0,
+        message: `'${config.mecab} is not a mecab file`
+      };
+    }
 
     mecabCommand = config.mecab;
 
@@ -236,7 +238,7 @@ if (isProd) {
       jmdictRes = await checkJMDict(config);
     } else {
       jmdictRes = await loadJMDict('')
-      if(jmdictRes.ok === 1) jmdictRes.message = 'JMDict cache loaded successfuly'
+      if (jmdictRes.ok === 1) jmdictRes.message = 'JMDict cache loaded successfuly'
     }
     if (jmdictRes.ok !== 1) return jmdictRes;
     const mecabRes = checkMecab(config);
