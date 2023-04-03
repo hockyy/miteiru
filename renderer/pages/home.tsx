@@ -9,13 +9,14 @@ const checkSymbol = ['❌', '✅', '🙃']
 const initialCheck = {ok: 0, message: 'Check is not run yet'}
 const mecabDefaultDirectory = {
   'darwin': '/opt/homebrew/bin/mecab',
-  'linux': '/usr/bin/mecab'
+  'linux': '/usr/bin/mecab',
+  'win32': 'C:\\Program Files (x86)\\MeCab\\bin\\mecab.exe'
 }
 
 function Home() {
   const [dicdir, setDicdir] = useState('');
   const [mecab, setMecab] = useState(mecabDefaultDirectory[process.platform] ?? mecabDefaultDirectory['linux']);
-  const [jmdict, setJmdict] = useState('/Users/root/jmdict-eng-3.2.1.json');
+  const [jmdict, setJmdict] = useState('');
   const [check, setCheck] = useState(initialCheck);
   return (
       <React.Fragment>
