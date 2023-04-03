@@ -27,6 +27,7 @@ export const MiteiruDropzone = ({setPrimarySub, setSecondarySub, setVideoSrc, me
 
   const onDrop = useCallback(acceptedFiles => {
     const draggedVideo = {...acceptedFiles[0], src: `file:/${acceptedFiles[0].path}`}
+    console.log(draggedVideo)
     if (acceptedFiles[0].path.endsWith('.srt')) {
       const draggedSubtitle = {
         type: 'text/plain',
