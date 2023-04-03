@@ -9,7 +9,7 @@
     "dev": "nextron",
     "build": "nextron build",
     "build:linux": "nextron build --linux",
-    "postinstall": "electron-builder install-app-deps; patch-package",
+    "postinstall": "electron-builder install-app-deps && patch-package",
     "patch": "patch-package jmdict-simplified-node"
   },
   "dependencies": {
