@@ -26,12 +26,14 @@ const ActiveDropzoneCue = ({isActive}) => {
 export const MiteiruDropzone = ({setPrimarySub, setSecondarySub, setVideoSrc, mecab}) => {
 
   const onDrop = useCallback(acceptedFiles => {
-    const draggedVideo = {...acceptedFiles[0], src: `file:/${acceptedFiles[0].path}`}
-    console.log(draggedVideo)
-    if (acceptedFiles[0].path.endsWith('.srt')) {
+    // const draggedVideo = {...acceptedFiles[0], src: `file:/${acceptedFiles[0].path}`}
+    // console.log(draggedVideo)
+    let currentPath = acceptedFiles[0].path;
+    currentPath = currentPath.replace('\\', '/')
+    if (currentPath.endsWith('.srt')) {
       const draggedSubtitle = {
         type: 'text/plain',
-        src: `${acceptedFiles[0].path}`
+        src: `${currentPath}`
       }
       const tmpSub = new SubtitleContainer(draggedSubtitle.src, mecab);
       if (tmpSub.language === "JP") {
@@ -39,10 +41,10 @@ export const MiteiruDropzone = ({setPrimarySub, setSecondarySub, setVideoSrc, me
       } else if (tmpSub.language === "EN") {
         setSecondarySub(tmpSub)
       }
-    } else if (acceptedFiles[0].path.endsWith('.mp4') || acceptedFiles[0].path.endsWith('.mkv')) {
+    } else if (currentPath.endsWith('.mp4') || currentPath.endsWith('.mkv')) {
       const draggedVideo = {
         type: 'video/webm',
-        src: `miteiru://${acceptedFiles[0].path}`
+        src: `miteiru://${currentPath}`
       }
       setVideoSrc(draggedVideo)
     }
