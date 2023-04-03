@@ -65,6 +65,25 @@ dicdir =  /opt/homebrew/lib/mecab/dic/unidic
 ; eos-format = EOS\n
 ```
 
+Windows:
+```
+;
+; Configuration file of MeCab
+;
+; $Id: mecabrc.in,v 1.3 2006/05/29 15:36:08 taku-ku Exp $;
+;
+dicdir =  $(rcpath)\..\dic\unidic
+
+; userdic = /home/foo/bar/user.dic
+
+; output-format-type = wakati
+; input-buffer-size = 8192
+
+; node-format = %m\n
+; bos-format = %S\n
+; eos-format = EOS\n
+```
+
 ## Future Enhancements
 
 - Verb inflections 
