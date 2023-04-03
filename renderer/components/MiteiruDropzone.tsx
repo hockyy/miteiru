@@ -29,7 +29,7 @@ export const MiteiruDropzone = ({setPrimarySub, setSecondarySub, setVideoSrc, me
     // const draggedVideo = {...acceptedFiles[0], src: `file:/${acceptedFiles[0].path}`}
     // console.log(draggedVideo)
     let currentPath = acceptedFiles[0].path;
-    currentPath = currentPath.replace('\\', '/')
+    currentPath = currentPath.replaceAll('\\', '/')
     let pathUri = currentPath
     if (process.platform === 'win32') {
       const depan = pathUri[0].toLowerCase() + '|'
