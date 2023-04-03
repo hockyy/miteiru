@@ -44,7 +44,6 @@ function Video() {
   useEffect(() => {
     resetSub(setPrimarySub)
     resetSub(setSecondarySub)
-    console.log(videoSrc)
   }, [videoSrc])
 
   const router = useRouter()
