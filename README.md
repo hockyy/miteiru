@@ -45,6 +45,26 @@ to show your default mecab binary file. Use it as the path when asked in Miteiru
 
 By default, you are using whatever your default Mecab Dictionary offers you, but you can further customize this by modifying the `mecabrc` file which is located in `/opt/homebrew/etc/mecabrc` in MacOS, and `/etc/mecabrc` in Ubuntu. For other OS's you gotta figure it our for yourself right now. Shunou, Miteiru's microlibrary can support Unidic, Jumandic, Ipadic, and it's variations. Specifically, if you check out the `dicrc` file of each dictionary, Shunou can support the output format `chamame`, `chasen`, and the classic Jumandic god knows what output format. You can get [UniDic files here](https://clrd.ninjal.ac.jp/unidic/en/)
 
+Configuration file in mac:
+```
+;
+; Configuration file of MeCab
+;
+; $Id: mecabrc.in,v 1.3 2006/05/29 15:36:08 taku-ku Exp $;
+;
+; dicdir =  /opt/homebrew/lib/mecab/dic/ipadic
+; dicdir =  /opt/homebrew/lib/mecab/dic/jumandic
+dicdir =  /opt/homebrew/lib/mecab/dic/unidic
+; userdic = /home/foo/bar/user.dic
+
+; output-format-type = wakati
+; input-buffer-size = 8192
+
+; node-format = %m\n
+; bos-format = %S\n
+; eos-format = EOS\n
+```
+
 ## Future Enhancements
 
 - Verb inflections 
