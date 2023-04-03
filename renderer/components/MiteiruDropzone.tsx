@@ -32,7 +32,7 @@ export const MiteiruDropzone = ({setPrimarySub, setSecondarySub, setVideoSrc, me
     currentPath = currentPath.replace('\\', '/')
     let pathUri = currentPath
     if (process.platform === 'win32') {
-      pathUri[0] = pathUri.toLowerCase()
+      pathUri[0] = pathUri[0].toLowerCase()
       pathUri[1] = '|'
     }
     if (currentPath.endsWith('.srt')) {
