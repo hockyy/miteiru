@@ -38,7 +38,7 @@ export const MiteiruDropzone = ({setPrimarySub, setSecondarySub, setVideoSrc, me
     if (currentPath.endsWith('.srt')) {
       const draggedSubtitle = {
         type: 'text/plain',
-        src: `${pathUri}`
+        src: `${currentPath}`
       }
       const tmpSub = new SubtitleContainer(draggedSubtitle.src, mecab);
       if (tmpSub.language === "JP") {
