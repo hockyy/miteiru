@@ -77,6 +77,38 @@ const StylingBox = ({
           }}
       />
     </div>
+    <div className={"flex w-full justify-center items-center"}>
+      Font Size
+      <input
+          className={"slider"}
+          type="range"
+          min={10}
+          max={100}
+          step={1}
+          value={parseInt(subtitleStyling.text.fontSize.trim('px'))}
+          onChange={event => {
+            const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+            newCopy.text.fontSize = event.target.value + "px";
+            setSubtitleStyling(newCopy)
+          }}
+      />
+    </div>
+    <div className={"flex w-full justify-center items-center"}>
+      Position From Top
+      <input
+          className={"slider"}
+          type="range"
+          min={0}
+          max={100}
+          step={1}
+          value={parseInt(subtitleStyling.positionFromTop.trim('vh'))}
+          onChange={event => {
+            const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+            newCopy.positionFromTop = event.target.value + "vh";
+            setSubtitleStyling(newCopy)
+          }}
+      />
+    </div>
     <button
         type={"button"}
         className='enabled:bg-red-600 p-3 rounded-sm enabled:hover:bg-red-700'
