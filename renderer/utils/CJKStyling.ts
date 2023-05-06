@@ -15,6 +15,9 @@ export interface CJKStyling {
   text: TextStyling
   background: string
   positionFromTop: string,
+  showFuriganaOnKana: boolean,
+  showRomaji: boolean,
+  showFurigana: boolean;
 }
 
 
@@ -30,7 +33,10 @@ export const defaultMeaningBoxStyling: CJKStyling = {
     fontSize: "24px",
   },
   background: "#00000000",
-  positionFromTop: "100vh"
+  positionFromTop: "100vh",
+  showFuriganaOnKana: false,
+  showFurigana: true,
+  showRomaji: true
 }
 
 
@@ -46,7 +52,10 @@ export const defaultPrimarySubtitleStyling: CJKStyling = {
     fontSize: "24px",
   },
   background: "#000000A5",
-  positionFromTop: "10vh"
+  positionFromTop: "10vh",
+  showFuriganaOnKana: false,
+  showFurigana: true,
+  showRomaji: true
 }
 
 export const defaultSecondarySubtitleStyling: CJKStyling = {
@@ -61,5 +70,8 @@ export const defaultSecondarySubtitleStyling: CJKStyling = {
     fontSize: "24px",
   },
   background: "#000000A5",
-  positionFromTop: "10vh"
+  positionFromTop: "10vh",
+  showFuriganaOnKana: false,
+  showFurigana: false,
+  showRomaji: false
 }
