@@ -16,16 +16,12 @@ export const Sentence = ({
                            origin,
                            setMeaning,
                            separation,
-                           addRomaji = true,
-                           addHiragana = true,
                            extraClass,
                            subtitleStyling
                          }: {
                            origin: string,
                            setMeaning: any,
                            separation: any,
-                           addRomaji?: boolean,
-                           addHiragana?: boolean,
                            extraClass: string,
                            subtitleStyling: CJKStyling
                          }
@@ -33,9 +29,10 @@ export const Sentence = ({
   const handleChange = (origin) => {
     setMeaning(origin)
   }
-  return <StyledSentence subtitleStyling={subtitleStyling}
-                         className={extraClass}
-                         onClick={() => handleChange(origin)}>
+  return <StyledSentence
+      subtitleStyling={subtitleStyling}
+      className={extraClass}
+      onClick={() => handleChange(origin)}>
     {separation.map((val, index) => {
       const hiragana = (<>
             <rp>(</rp>
@@ -49,13 +46,15 @@ export const Sentence = ({
             <rp>)</rp>
           </>
       )
-      const showFurigana = (val.isKana || val.isKanji || val.isMixed || isMixedJapanese(origin));
+      const showHelp = val.isKanji || val.isMixed || isMixedJapanese(origin);
+      const showRomaji = (val.isKana || showHelp);
+      const showFurigana = ((val.isKana && subtitleStyling.showFuriganaOnKana) || showHelp);
       return <ruby style={{rubyPosition: "under"}} key={index}>
         <ruby style={{rubyPosition: "over"}}>
           {val.main}
-          {showFurigana && addHiragana && hiragana}
+          <rt className={"unselectable"}>{subtitleStyling.showFurigana && showFurigana && hiragana}</rt>
         </ruby>
-        {showFurigana && addRomaji && romaji}
+        <rt className={"unselectable"}>{subtitleStyling.showRomaji && showRomaji && romaji}</rt>
       </ruby>
     })}
   </StyledSentence>

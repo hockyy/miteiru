@@ -87,7 +87,7 @@ export const Subtitle = ({
                          }: { caption: any[], extraClass?: string, subtitleStyling: CJKStyling }) => {
 
   return <div
-      className={"fixed w-[100vw] z-10 font-bold unselectable text-center " + extraClass}
+      className={"fixed w-[100vw] z-10 font-bold text-center " + extraClass}
       style={{
         WebkitTextFillColor: subtitleStyling.text.color,
         WebkitTextStrokeColor: subtitleStyling.stroke.color,

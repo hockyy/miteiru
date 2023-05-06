@@ -7,6 +7,7 @@ import {
   defaultSecondarySubtitleStyling
 } from "../utils/CJKStyling";
 import {ipcRenderer} from "electron";
+import Toggle from "./Toggle";
 
 const StylingBox = ({
                       subtitleStyling,
@@ -15,6 +16,33 @@ const StylingBox = ({
                       defaultStyling
                     }) => {
   return <div className={"w-full mx-5 px-3 flex flex-col content-start gap-3 unselectable"}>
+    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
+      <Toggle defaultCheck={subtitleStyling.showFurigana} onChange={(val) => {
+        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+        newCopy.showFurigana = val;
+        setSubtitleStyling(newCopy)
+      }
+      }/>
+      {subtitleName} Show Furigana
+    </div>}
+    {subtitleName == "CJK" && subtitleStyling.showFurigana && <div className={"flex flex-row items-center gap-3"}>
+      <Toggle defaultCheck={subtitleStyling.showFuriganaOnKana} onChange={(val) => {
+        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+        newCopy.showFuriganaOnKana = val;
+        setSubtitleStyling(newCopy)
+      }
+      }/>
+      {subtitleName} Show Furigana on Kana
+    </div>}
+    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
+      <Toggle defaultCheck={subtitleStyling.showRomaji} onChange={(val) => {
+        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+        newCopy.showRomaji = val;
+        setSubtitleStyling(newCopy)
+      }
+      }/>
+      {subtitleName} Show Romaji
+    </div>}
     <div className={"flex flex-row items-center gap-3"}>
       <PopoverPicker color={subtitleStyling.text.color} onChange={(val) => {
         const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
@@ -120,34 +148,35 @@ const StylingBox = ({
       Reset
     </button>
     <div className={"flex flex-row gap-2"}>
-    <button
-        type={"button"}
-        className='w-full enabled:bg-green-600 p-3 rounded-sm enabled:hover:bg-green-700'
-        onClick={() => {
-          ipcRenderer.invoke("readFile", ["json"]).then((val)=>{
-            try {
-              const parsed = JSON.parse(val) as CJKStyling;
-              setSubtitleStyling(parsed)
-            } catch (e) {
-              console.log(e)
-            }
+      <button
+          type={"button"}
+          className='w-full enabled:bg-green-600 p-3 rounded-sm enabled:hover:bg-green-700'
+          onClick={() => {
+            ipcRenderer.invoke("readFile", ["json"]).then((val) => {
+              try {
+                const parsed = JSON.parse(val) as CJKStyling;
+                setSubtitleStyling(parsed)
+              } catch (e) {
+                console.log(e)
+              }
 
-          })
-        }
-        }
-    >
-      Import
-    </button>
-    <button
-        type={"button"}
-        className='w-full enabled:bg-blue-600 p-3 rounded-sm enabled:hover:bg-blue-700'
-        onClick={() => {
-          ipcRenderer.invoke("saveFile", ["json"], JSON.stringify(subtitleStyling))
-        }
-        }
-    >
-      Export
-    </button></div>
+            })
+          }
+          }
+      >
+        Import
+      </button>
+      <button
+          type={"button"}
+          className='w-full enabled:bg-blue-600 p-3 rounded-sm enabled:hover:bg-blue-700'
+          onClick={() => {
+            ipcRenderer.invoke("saveFile", ["json"], JSON.stringify(subtitleStyling))
+          }
+          }
+      >
+        Export
+      </button>
+    </div>
   </div>
 }
 
