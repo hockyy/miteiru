@@ -1,7 +1,7 @@
 import {getFurigana, isMixedJapanese} from "shunou";
 import fs from 'fs';
 import {parse as parseSRT} from '@plussub/srt-vtt-parser';
-import {parse as parseASS, stringify, compile, decompile} from 'ass-compiler';
+import {parse as parseASS} from 'ass-compiler';
 
 
 export class Line {
@@ -36,9 +36,8 @@ export class SubtitleContainer {
     let entries;
 
     if (filename.endsWith('.ass')) {
-      const data = parseAssSubtitle(filename);
+      entries = parseAssSubtitle(filename);
     } else {
-
       const data = parseSRT(
           fs
           .readFileSync(filename) // or '.srt'
@@ -88,16 +87,12 @@ function parseAssSubtitle(filename: string) {
   const parsedASS = parseASS(text);
 
 // Extract plain-text dialogue lines
-  const entries = parsedASS.events.dialogue.map((event, index) => {
+  return parsedASS.events.dialogue.map((event, index) => {
     return {
-      id: index,
-      from: event.Start,
-      to: event.End,
-      text: event.Text.raw,
+      id: index.toString(),
+      from: Math.round(event.Start * 1000),
+      to: Math.round(event.End * 1000),
+      text: event.Text.combined,
     };
   });
-
-  const parsedResult = {
-    entries,
-  };
 }
