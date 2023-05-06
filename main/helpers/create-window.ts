@@ -8,7 +8,7 @@ import Store from 'electron-store';
 export default (windowName: string, options: BrowserWindowConstructorOptions): BrowserWindow => {
   const key = 'window-state';
   const name = `window-state-${windowName}`;
-  const store = new Store({ name });
+  const store = new Store({name});
   const defaultSize = {
     width: options.width,
     height: options.height,
@@ -31,10 +31,10 @@ export default (windowName: string, options: BrowserWindowConstructorOptions): B
 
   const windowWithinBounds = (windowState, bounds) => {
     return (
-      windowState.x >= bounds.x &&
-      windowState.y >= bounds.y &&
-      windowState.x + windowState.width <= bounds.x + bounds.width &&
-      windowState.y + windowState.height <= bounds.y + bounds.height
+        windowState.x >= bounds.x &&
+        windowState.y >= bounds.y &&
+        windowState.x + windowState.width <= bounds.x + bounds.width &&
+        windowState.y + windowState.height <= bounds.y + bounds.height
     );
   };
 
@@ -79,5 +79,14 @@ export default (windowName: string, options: BrowserWindowConstructorOptions): B
   };
   win = new BrowserWindow(browserOptions);
   win.on('close', saveState);
+  win.on('enter-full-screen', () => {
+    win.setAutoHideMenuBar(true);
+    win.setMenuBarVisibility(false);
+  });
+
+  win.on('leave-full-screen', () => {
+    win.setAutoHideMenuBar(false);
+    win.setMenuBarVisibility(true);
+  });
   return win;
 };
