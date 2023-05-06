@@ -1,6 +1,7 @@
 import {getFurigana, isMixedJapanese} from "shunou";
 import fs from 'fs';
-import {parse} from '@plussub/srt-vtt-parser';
+import {parse as parseSRT} from '@plussub/srt-vtt-parser';
+import {parse as parseASS, stringify, compile, decompile} from 'ass-compiler';
 
 
 export class Line {
@@ -31,11 +32,20 @@ export class SubtitleContainer {
       this.lines.push(new Line(0, 1000000, filename, mecab, this.language === "JP"))
       return
     }
-    const {entries} = parse(
-        fs
-        .readFileSync(filename) // or '.srt'
-        .toString()
-    );
+
+    let entries;
+
+    if (filename.endsWith('.ass')) {
+      const data = parseAssSubtitle(filename);
+    } else {
+
+      const data = parseSRT(
+          fs
+          .readFileSync(filename) // or '.srt'
+          .toString()
+      );
+      entries = data.entries;
+    }
 
     this.language = "EN"
     for (const {text} of entries) {
@@ -70,25 +80,20 @@ export function getLineByTime(subtitle: SubtitleContainer, shift: number, t: num
   }
 }
 
-function parseAssSubtitle() {
+function parseAssSubtitle(filename: string) {
 
-  const assSubtitle = fs.readFileSync('path/to/your/subtitle.ass', 'utf8');
+  const text = fs.readFileSync(filename).toString();
 
-// Parse the ASS subtitle
-  const parsedSubtitle = assParser(assSubtitle);
+// parse just turn ASS text into JSON
+  const parsedASS = parseASS(text);
 
 // Extract plain-text dialogue lines
-  const entries = parsedSubtitle
-  .filter((section) => section.section === 'Events')
-  .flatMap((section) => section.body)
-  .filter((event) => event.key === 'Dialogue')
-  .map((event, index) => {
-    const text = event.value.Text.replace(/{[^}]*}/g, ''); // Remove ASS tags and styling
+  const entries = parsedASS.events.dialogue.map((event, index) => {
     return {
-      id: index.toString(),
-      from: event.value.Start,
-      to: event.value.End,
-      text,
+      id: index,
+      from: event.Start,
+      to: event.End,
+      text: event.Text.raw,
     };
   });
 
