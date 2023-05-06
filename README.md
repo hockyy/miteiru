@@ -95,5 +95,3 @@ dicdir =  $(rcpath)\..\dic\unidic
 - Will support Android.
 - Miteiru will have built-in Tokenizer and Dictionary, and supports French, German, Bahasa Indonesia, and many more.
 - Miteiru will support Chinese and Korean too!
-
-![Miteiru](./README.assets/Miteiru.gif)
