@@ -7,12 +7,14 @@ interface StrokeStyling {
 interface TextStyling {
   color: string
   hoverColor: string
+  fontSize: string
 }
 
 export interface CJKStyling {
   stroke: StrokeStyling
   text: TextStyling
   background: string
+  positionFromTop: string,
 }
 
 
@@ -24,9 +26,11 @@ export const defaultMeaningBoxStyling: CJKStyling = {
   },
   text: {
     color: "#001fc4",
-    hoverColor: "#001269"
+    hoverColor: "#001269",
+    fontSize: "24px",
   },
-  background: "#00000000"
+  background: "#00000000",
+  positionFromTop: "100vh"
 }
 
 
@@ -38,9 +42,11 @@ export const defaultPrimarySubtitleStyling: CJKStyling = {
   },
   text: {
     color: "#ffdd00",
-    hoverColor: "#00ffda"
+    hoverColor: "#00ffda",
+    fontSize: "24px",
   },
-  background: "#000000A5"
+  background: "#000000A5",
+  positionFromTop: "10vh"
 }
 
 export const defaultSecondarySubtitleStyling: CJKStyling = {
@@ -51,7 +57,9 @@ export const defaultSecondarySubtitleStyling: CJKStyling = {
   },
   text: {
     color: "#FFFFFF",
-    hoverColor: "#ffcc00"
+    hoverColor: "#ffcc00",
+    fontSize: "24px",
   },
-  background: "#000000A5"
+  background: "#000000A5",
+  positionFromTop: "10vh"
 }

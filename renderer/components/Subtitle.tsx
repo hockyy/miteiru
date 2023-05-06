@@ -46,8 +46,7 @@ export const PrimarySubtitle = ({
       console.log(e)
     }
   }, [currentTime, subtitleStyling])
-  return <Subtitle caption={caption} extraClass={"mb-3 unselectable"}
-                   subtitleStyling={subtitleStyling}/>
+  return <Subtitle caption={caption} subtitleStyling={subtitleStyling}/>
 };
 
 export const SecondarySubtitle = ({
@@ -83,21 +82,23 @@ export const SecondarySubtitle = ({
 };
 export const Subtitle = ({
                            caption,
-                           extraClass,
+                           extraClass = "",
                            subtitleStyling
-                         }: { caption: any[], extraClass: string, subtitleStyling: CJKStyling }) => {
+                         }: { caption: any[], extraClass?: string, subtitleStyling: CJKStyling }) => {
 
   return <div
-      className={"w-[100vw] z-10 font-bold lg:text-[2.5vw] sm:text-[3vw] justify-center text-center content-center unselectable " + extraClass}
+      className={"fixed w-[100vw] z-10 font-bold unselectable text-center " + extraClass}
       style={{
         WebkitTextFillColor: subtitleStyling.text.color,
         WebkitTextStrokeColor: subtitleStyling.stroke.color,
         WebkitTextStrokeWidth: subtitleStyling.stroke.width,
         fontFamily: "Arial",
+        top: subtitleStyling.positionFromTop, // Add this line to set the position from top
       }}>
     {caption.length > 0 &&
         <div className={"w-fit mx-auto rounded-lg px-3 pt-2 pb-1"} style={{
-          backgroundColor: subtitleStyling.background
+          backgroundColor: subtitleStyling.background,
+          fontSize: subtitleStyling.text.fontSize, // Add this line to set the font size
         }}>
           {caption}
         </div>
