@@ -26,7 +26,7 @@ export class SubtitleContainer {
   constructor(filename: string, mecab: string, fromFile: boolean = true) {
     if (filename === '') return
     this.lines = []
-    if(!fromFile) {
+    if (!fromFile) {
       this.language = "JP"
       this.lines.push(new Line(0, 1000000, filename, mecab, this.language === "JP"))
       return
@@ -68,4 +68,31 @@ export function getLineByTime(subtitle: SubtitleContainer, shift: number, t: num
   } else {
     return '';
   }
+}
+
+function parseAssSubtitle() {
+
+  const assSubtitle = fs.readFileSync('path/to/your/subtitle.ass', 'utf8');
+
+// Parse the ASS subtitle
+  const parsedSubtitle = assParser(assSubtitle);
+
+// Extract plain-text dialogue lines
+  const entries = parsedSubtitle
+  .filter((section) => section.section === 'Events')
+  .flatMap((section) => section.body)
+  .filter((event) => event.key === 'Dialogue')
+  .map((event, index) => {
+    const text = event.value.Text.replace(/{[^}]*}/g, ''); // Remove ASS tags and styling
+    return {
+      id: index.toString(),
+      from: event.value.Start,
+      to: event.value.End,
+      text,
+    };
+  });
+
+  const parsedResult = {
+    entries,
+  };
 }
