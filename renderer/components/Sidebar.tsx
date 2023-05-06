@@ -190,9 +190,9 @@ export const Sidebar = ({
                         }) => {
   return <div style={{
     transition: "all 0.3s ease-out",
-    transform: `translate(${!showSidebar ? "25vw" : "0"}, 0`
+    transform: `translate(${!showSidebar ? "30vw" : "0"}, 0`
   }}
-              className={"overflow-y-scroll overflow-x-clip flex flex-col content-center items-center p-3 z-[19] fixed right-0 top-0 h-screen w-[25vw] bg-gray-700/70"}>
+              className={"overflow-y-scroll overflow-x-clip flex flex-col content-center items-center p-3 z-[19] fixed right-0 top-0 h-screen w-[30vw] bg-gray-700/70"}>
 
     <button className={"self-start p-2"} onClick={() => {
       setShowSidebar(old => !old)
