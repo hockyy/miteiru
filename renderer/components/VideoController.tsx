@@ -87,7 +87,7 @@ export const VideoController = ({
       window.removeEventListener('keydown', handleVideoController);
     };
   }, []);
-  return <div>
+  return <div className={'z-[15]'}>
     <div className={"w-[100vw] h-6 content-center -mb-4"}>
       <VideoSeekSlider
           max={duration}
@@ -97,7 +97,7 @@ export const VideoController = ({
           }}
       />
     </div>
-    <SmoothCollapse className={"z-[15] bg-gray-800/70 h-fit unselectable"}
+    <SmoothCollapse className={"bg-gray-800/70 h-fit unselectable"}
                     eagerRender={true}
                     expanded={showController}>
       <div className={"flex flex-row items-center justify-between pt-1"}>

@@ -85,18 +85,18 @@ export const Subtitle = ({
                            extraClass = "",
                            subtitleStyling
                          }: { caption: any[], extraClass?: string, subtitleStyling: CJKStyling }) => {
-
+  let currentContainerStyle: React.CSSProperties = {
+    WebkitTextFillColor: subtitleStyling.text.color,
+    WebkitTextStrokeColor: subtitleStyling.stroke.color,
+    WebkitTextStrokeWidth: subtitleStyling.stroke.width,
+    fontFamily: "Arial",
+  }
+  currentContainerStyle[subtitleStyling.positionFromTop ? 'top' : 'bottom'] = subtitleStyling.position;
   return <div
       className={"fixed w-[100vw] z-10 font-bold text-center " + extraClass}
-      style={{
-        WebkitTextFillColor: subtitleStyling.text.color,
-        WebkitTextStrokeColor: subtitleStyling.stroke.color,
-        WebkitTextStrokeWidth: subtitleStyling.stroke.width,
-        fontFamily: "Arial",
-        top: subtitleStyling.positionFromTop, // Add this line to set the position from top
-      }}>
+      style={currentContainerStyle}>
     {caption.length > 0 &&
-        <div className={"w-fit mx-auto rounded-lg px-3 pt-2 pb-1"} style={{
+        <div className={"w-fit z-10 mx-auto rounded-lg px-3 pt-2 pb-1"} style={{
           backgroundColor: subtitleStyling.background,
           fontSize: subtitleStyling.text.fontSize, // Add this line to set the font size
         }}>
