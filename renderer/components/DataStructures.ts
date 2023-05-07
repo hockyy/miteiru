@@ -101,7 +101,7 @@ function parseAssSubtitle(text: string) {
       id: index.toString(),
       from: Math.round(event.Start * 1000),
       to: Math.round(event.End * 1000),
-      text: event.Text.combined,
+      text: event.Text.combined.replace(/\\N/g, '\n')
     };
   });
 }
