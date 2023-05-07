@@ -10,6 +10,7 @@ import {VideoController} from "../components/VideoController";
 import Toast from "../components/Toast";
 import {Sidebar} from "../components/Sidebar";
 import {defaultPrimarySubtitleStyling, defaultSecondarySubtitleStyling} from "../utils/CJKStyling";
+import {randomUUID} from "crypto";
 
 function Video() {
   const [videoSrc, setVideoSrc] = useState({src: '', type: ''})
@@ -32,8 +33,6 @@ function Video() {
   const [showSidebar, setShowSidebar] = useState(false)
 
   const onLoadFiles = useCallback(async acceptedFiles => {
-    // const draggedVideo = {...acceptedFiles[0], src: `file:/${acceptedFiles[0].path}`}
-    // console.log(draggedVideo)
     let currentPath = acceptedFiles[0].path;
     currentPath = currentPath.replaceAll('\\', '/')
     let pathUri = currentPath
@@ -41,6 +40,10 @@ function Video() {
       pathUri = '/' + currentPath
     }
     if (currentPath.endsWith('.srt') || currentPath.endsWith('.vtt') || currentPath.endsWith('.ass')) {
+      setToastInfo({
+        message: 'Loading subtitles, please wait!',
+        update: randomUUID()
+      })
       const draggedSubtitle = {
         type: 'text/plain',
         src: `${currentPath}`
@@ -51,6 +54,10 @@ function Video() {
       } else {
         setSecondarySub(tmpSub)
       }
+      setToastInfo({
+        message: 'Subtitle loaded',
+        update: randomUUID()
+      })
     } else if (currentPath.endsWith('.mp4') || currentPath.endsWith('.mkv')) {
       const draggedVideo = {
         type: 'video/webm',
@@ -115,7 +122,7 @@ function Video() {
   return (
       <React.Fragment>
         <div>
-          <Toast info={toastInfo} setInfo={setToastInfo}/>
+          <Toast info={toastInfo}/>
           <MeaningBox meaning={meaning} setMeaning={setMeaning} mecab={mecab}/>
           <VideoJS options={{
             responsive: true,
@@ -153,8 +160,7 @@ function Video() {
 
 
         </div>
-        {mecab !== '' && dragDrop &&
-            <MiteiruDropzone onDrop={onLoadFiles}/>}
+        {mecab !== '' && dragDrop && <MiteiruDropzone onDrop={onLoadFiles}/>}
         <Sidebar showSidebar={showSidebar} setShowSidebar={setShowSidebar}
                  primaryStyling={primaryStyling}
                  setPrimaryStyling={setPrimaryStyling}

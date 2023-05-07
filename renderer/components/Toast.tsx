@@ -3,7 +3,7 @@ import {useEffect, useState} from "react";
 const toastTimeout = 3000
 
 const toastHidden = ["", "hidden"]
-export const Toast = ({setInfo, info}) => {
+export const Toast = ({info}) => {
   const [lastToast, setLastToast] = useState(info)
   useEffect(() => {
     if (info.message !== '') {
