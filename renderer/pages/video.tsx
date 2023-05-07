@@ -30,6 +30,36 @@ function Video() {
   const [showController, setShowController] = useState(true);
   const [toastInfo, setToastInfo] = useState({message: 'coba', update: ''});
   const [showSidebar, setShowSidebar] = useState(false)
+
+  const onLoadFiles = useCallback(async acceptedFiles => {
+    // const draggedVideo = {...acceptedFiles[0], src: `file:/${acceptedFiles[0].path}`}
+    // console.log(draggedVideo)
+    let currentPath = acceptedFiles[0].path;
+    currentPath = currentPath.replaceAll('\\', '/')
+    let pathUri = currentPath
+    if (process.platform === 'win32') {
+      pathUri = '/' + currentPath
+    }
+    if (currentPath.endsWith('.srt') || currentPath.endsWith('.vtt') || currentPath.endsWith('.ass')) {
+      const draggedSubtitle = {
+        type: 'text/plain',
+        src: `${currentPath}`
+      }
+      const tmpSub = await SubtitleContainer.create(draggedSubtitle.src, mecab);
+      if (tmpSub.language === "JP") {
+        setPrimarySub(tmpSub)
+      } else {
+        setSecondarySub(tmpSub)
+      }
+    } else if (currentPath.endsWith('.mp4') || currentPath.endsWith('.mkv')) {
+      const draggedVideo = {
+        type: 'video/webm',
+        src: `miteiru://${pathUri}`
+      }
+      setVideoSrc(draggedVideo)
+    }
+  }, [])
+
   const readyCallback = useCallback((playerRef) => {
     setPlayer(playerRef);
     playerRef.on('loadedmetadata', () => {
@@ -124,8 +154,7 @@ function Video() {
 
         </div>
         {mecab !== '' && dragDrop &&
-            <MiteiruDropzone setPrimarySub={setPrimarySub} setSecondarySub={setSecondarySub}
-                             setVideoSrc={setVideoSrc} mecab={mecab}/>}
+            <MiteiruDropzone onDrop={onLoadFiles}/>}
         <Sidebar showSidebar={showSidebar} setShowSidebar={setShowSidebar}
                  primaryStyling={primaryStyling}
                  setPrimaryStyling={setPrimaryStyling}
