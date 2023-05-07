@@ -10,6 +10,12 @@ const languageMap = {
   'english': 'EN',
 }
 
+function removeTags(text) {
+  const regex = /\{\\.+?}/g;
+  return text.replace(regex, '');
+}
+
+
 export class Line {
   timeStart: number;
   timeEnd: number;
@@ -63,7 +69,7 @@ export class SubtitleContainer {
 
     entries.forEach(({from, to, text}) => {
       // process transcript entry
-      subtitleContainer.lines.push(new Line(from, to, text, mecab, subtitleContainer.language === "JP"))
+      subtitleContainer.lines.push(new Line(from, to, removeTags(text), mecab, subtitleContainer.language === "JP"))
     });
     return subtitleContainer
   }
