@@ -99,8 +99,6 @@ function Video() {
     })
     // https://www.freecodecamp.org/news/javascript-keycode-list-keypress-event-key-codes/
     const handleKeyPress = (event) => {
-      event.preventDefault()
-      event.stopPropagation()
       if (event.code === "Escape") {
         setMeaning("")
       } else if (event.code === "KeyQ") {
@@ -119,6 +117,9 @@ function Video() {
         resetSub(setPrimarySub)
       } else if (event.code === "KeyP") {
         resetSub(setSecondarySub)
+      } else if(event.code === "Space"){
+        event.preventDefault()
+        event.stopPropagation()
       }
     };
     window.addEventListener('keydown', handleKeyPress);
