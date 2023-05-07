@@ -25,15 +25,16 @@ const StylingBox = ({
       }/>
       {subtitleName} Show Furigana
     </div>}
-    {subtitleName == "CJK" && subtitleStyling.showFurigana && <div className={"flex flex-row items-center gap-3"}>
-      <Toggle defaultCheck={subtitleStyling.showFuriganaOnKana} onChange={(val) => {
-        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-        newCopy.showFuriganaOnKana = val;
-        setSubtitleStyling(newCopy)
-      }
-      }/>
-      {subtitleName} Show Furigana on Kana
-    </div>}
+    {subtitleName == "CJK" && subtitleStyling.showFurigana &&
+        <div className={"flex flex-row items-center gap-3"}>
+          <Toggle defaultCheck={subtitleStyling.showFuriganaOnKana} onChange={(val) => {
+            const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+            newCopy.showFuriganaOnKana = val;
+            setSubtitleStyling(newCopy)
+          }
+          }/>
+          {subtitleName} Show Furigana on Kana
+        </div>}
     {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
       <Toggle defaultCheck={subtitleStyling.showRomaji} onChange={(val) => {
         const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
@@ -95,7 +96,7 @@ const StylingBox = ({
           className={"slider"}
           type="range"
           min={0}
-          max={1}
+          max={1.5}
           step={0.02}
           value={parseFloat(subtitleStyling.stroke.width.trim('px'))}
           onChange={event => {
@@ -121,18 +122,27 @@ const StylingBox = ({
           }}
       />
     </div>
+    <div className={"flex flex-row items-center gap-3"}>
+      <Toggle defaultCheck={subtitleStyling.positionFromTop} onChange={(val) => {
+        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+        newCopy.positionFromTop = val;
+        setSubtitleStyling(newCopy)
+      }
+      }/>
+      {subtitleName} Subtitle Position From Top
+    </div>
     <div className={"flex w-full justify-center items-center"}>
-      Position From Top
+      Position from {subtitleStyling.positionFromTop ? 'top' : 'bottom'}
       <input
           className={"slider"}
           type="range"
           min={0}
           max={100}
           step={1}
-          value={parseInt(subtitleStyling.positionFromTop.trim('vh'))}
+          value={parseInt(subtitleStyling.position.trim('vh'))}
           onChange={event => {
             const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-            newCopy.positionFromTop = event.target.value + "vh";
+            newCopy.position = event.target.value + "vh";
             setSubtitleStyling(newCopy)
           }}
       />

@@ -14,7 +14,8 @@ export interface CJKStyling {
   stroke: StrokeStyling
   text: TextStyling
   background: string
-  positionFromTop: string,
+  position: string,
+  positionFromTop: boolean,
   showFuriganaOnKana: boolean,
   showRomaji: boolean,
   showFurigana: boolean;
@@ -33,7 +34,8 @@ export const defaultMeaningBoxStyling: CJKStyling = {
     fontSize: "24px",
   },
   background: "#00000000",
-  positionFromTop: "100vh",
+  position: "0vh",
+  positionFromTop: true,
   showFuriganaOnKana: false,
   showFurigana: true,
   showRomaji: true
@@ -49,10 +51,11 @@ export const defaultPrimarySubtitleStyling: CJKStyling = {
   text: {
     color: "#ffdd00",
     hoverColor: "#00ffda",
-    fontSize: "24px",
+    fontSize: "35px",
   },
   background: "#000000A5",
-  positionFromTop: "10vh",
+  position: "2vh",
+  positionFromTop: true,
   showFuriganaOnKana: false,
   showFurigana: true,
   showRomaji: true
@@ -67,10 +70,11 @@ export const defaultSecondarySubtitleStyling: CJKStyling = {
   text: {
     color: "#FFFFFF",
     hoverColor: "#ffcc00",
-    fontSize: "24px",
+    fontSize: "35px",
   },
   background: "#000000A5",
-  positionFromTop: "10vh",
+  position: "2vh",
+  positionFromTop: false,
   showFuriganaOnKana: false,
   showFurigana: false,
   showRomaji: false
