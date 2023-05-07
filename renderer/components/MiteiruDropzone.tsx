@@ -23,36 +23,7 @@ const ActiveDropzoneCue = ({isActive}) => {
   </div>
 }
 
-export const MiteiruDropzone = ({setPrimarySub, setSecondarySub, setVideoSrc, mecab}) => {
-
-  const onDrop = useCallback(async acceptedFiles => {
-    // const draggedVideo = {...acceptedFiles[0], src: `file:/${acceptedFiles[0].path}`}
-    // console.log(draggedVideo)
-    let currentPath = acceptedFiles[0].path;
-    currentPath = currentPath.replaceAll('\\', '/')
-    let pathUri = currentPath
-    if (process.platform === 'win32') {
-      pathUri = '/' + currentPath
-    }
-    if (currentPath.endsWith('.srt') || currentPath.endsWith('.vtt') || currentPath.endsWith('.ass')) {
-      const draggedSubtitle = {
-        type: 'text/plain',
-        src: `${currentPath}`
-      }
-      const tmpSub = await SubtitleContainer.create(draggedSubtitle.src, mecab);
-      if (tmpSub.language === "JP") {
-        setPrimarySub(tmpSub)
-      } else {
-        setSecondarySub(tmpSub)
-      }
-    } else if (currentPath.endsWith('.mp4') || currentPath.endsWith('.mkv')) {
-      const draggedVideo = {
-        type: 'video/webm',
-        src: `miteiru://${pathUri}`
-      }
-      setVideoSrc(draggedVideo)
-    }
-  }, [])
+export const MiteiruDropzone = ({onDrop}) => {
 
   const {getRootProps, getInputProps, isDragActive} = useDropzone({
     noClick: true,
