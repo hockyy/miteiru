@@ -55,10 +55,8 @@ function Video() {
         type: 'text/plain',
         src: `${currentPath}`
       }
-      console.log(toastSetter)
       const tmpSub = await SubtitleContainer.create(draggedSubtitle.src, mecab);
       clearInterval(toastSetter);
-      console.log("OK")
       if (tmpSub.language === "JP") {
         setPrimarySub(tmpSub)
       } else {
