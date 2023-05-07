@@ -25,24 +25,23 @@ const ActiveDropzoneCue = ({isActive}) => {
 
 export const MiteiruDropzone = ({onDrop}) => {
 
-  const {getRootProps, getInputProps, isDragActive} = useDropzone({
+  const {getRootProps} = useDropzone({
     noClick: true,
     onDrop,
+    noKeyboard: true,
+    noDragEventsBubbling: true
   })
 
-  return (<div>
-    <div {...getRootProps()} style={{
-      zIndex: 20,
-      backgroundColor: "rgba(171,248,255,0.45)",
-      position: "fixed",
-      top: "0vh",
-      height: "100vh",
-      width: "100vw"
-    }}>
-      <input {...getInputProps()}/>
-      <ActiveDropzoneCue isActive={isDragActive}/>
-    </div>
-  </div>)
+  return (
+      <div {...getRootProps()} className={"unselectable"} style={{
+        zIndex: 4,
+        position: "fixed",
+        top: "0vh",
+        height: "100vh",
+        width: "100vw"
+
+      }}>
+      </div>)
 }
 
 export default MiteiruDropzone;

@@ -87,7 +87,7 @@ export const VideoController = ({
       window.removeEventListener('keydown', handleVideoController);
     };
   }, []);
-  return <div className={'z-[15]'}>
+  return <div>
     <div className={"w-[100vw] h-6 content-center -mb-4"}>
       <VideoSeekSlider
           max={duration}
