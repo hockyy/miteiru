@@ -2,7 +2,13 @@ import {getFurigana, isMixedJapanese} from "shunou";
 import fs from 'fs';
 import {parse as parseSRT} from '@plussub/srt-vtt-parser';
 import {parse as parseASS} from 'ass-compiler';
+import languageEncoding from "detect-file-encoding-and-language";
+import iconv from "iconv-lite"
 
+const languageMap = {
+  'japanese': 'JP',
+  'english': 'EN',
+}
 
 export class Line {
   timeStart: number;
@@ -24,41 +30,44 @@ export class SubtitleContainer {
   lines: Line[];
   language: string;
 
-  constructor(filename: string, mecab: string, fromFile: boolean = true) {
-    if (filename === '') return
+  constructor(content: string, mecab: string) {
     this.lines = []
-    if (!fromFile) {
-      this.language = "JP"
-      this.lines.push(new Line(0, 1000000, filename, mecab, this.language === "JP"))
-      return
-    }
+    if (content === '') return
+    this.language = "JP"
+    this.lines.push(new Line(0, 1000000, content, mecab, this.language === "JP"))
+    return
+  }
 
+  static async create(filename: string, mecab: string) {
+    if (filename === '') return
+    const subtitleContainer = new SubtitleContainer('', mecab);
     let entries;
+    console.log(filename)
+    const buffer = await fs.promises.readFile(filename)
+    const blob = new Blob([buffer]);
 
+    const currentData = await languageEncoding(blob);
+    const text = iconv.decode(buffer, currentData.encoding)
     if (filename.endsWith('.ass')) {
-      entries = parseAssSubtitle(filename);
+      entries = parseAssSubtitle(text);
     } else {
-      const data = parseSRT(
-          fs
-          .readFileSync(filename) // or '.srt'
-          .toString()
-      );
+      const data = parseSRT(text);
       entries = data.entries;
     }
 
-    this.language = "EN"
-    for (const {text} of entries) {
-      // process transcript entry
-      if (isMixedJapanese(text)) {
-        this.language = 'JP';
-        break;
-      }
+    console.log(entries)
+
+    try {
+      subtitleContainer.language = languageMap[currentData.language];
+    } catch (e) {
+      subtitleContainer.language = "EN";
     }
 
     entries.forEach(({from, to, text}) => {
       // process transcript entry
-      this.lines.push(new Line(from, to, text, mecab, this.language === "JP"))
+      subtitleContainer.lines.push(new Line(from, to, text, mecab, subtitleContainer.language === "JP"))
     });
+    return subtitleContainer
   }
 }
 
@@ -79,14 +88,9 @@ export function getLineByTime(subtitle: SubtitleContainer, shift: number, t: num
   }
 }
 
-function parseAssSubtitle(filename: string) {
-
-  const text = fs.readFileSync(filename).toString();
-
-// parse just turn ASS text into JSON
+function parseAssSubtitle(text: string) {
   const parsedASS = parseASS(text);
-
-// Extract plain-text dialogue lines
+  // Extract plain-text dialogue lines
   return parsedASS.events.dialogue.map((event, index) => {
     return {
       id: index.toString(),

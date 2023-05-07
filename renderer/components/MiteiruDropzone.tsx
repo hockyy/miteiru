@@ -25,7 +25,7 @@ const ActiveDropzoneCue = ({isActive}) => {
 
 export const MiteiruDropzone = ({setPrimarySub, setSecondarySub, setVideoSrc, mecab}) => {
 
-  const onDrop = useCallback(acceptedFiles => {
+  const onDrop = useCallback(async acceptedFiles => {
     // const draggedVideo = {...acceptedFiles[0], src: `file:/${acceptedFiles[0].path}`}
     // console.log(draggedVideo)
     let currentPath = acceptedFiles[0].path;
@@ -40,10 +40,10 @@ export const MiteiruDropzone = ({setPrimarySub, setSecondarySub, setVideoSrc, me
         type: 'text/plain',
         src: `${currentPath}`
       }
-      const tmpSub = new SubtitleContainer(draggedSubtitle.src, mecab);
+      const tmpSub = await SubtitleContainer.create(draggedSubtitle.src, mecab);
       if (tmpSub.language === "JP") {
         setPrimarySub(tmpSub)
-      } else if (tmpSub.language === "EN") {
+      } else {
         setSecondarySub(tmpSub)
       }
     } else if (currentPath.endsWith('.mp4') || currentPath.endsWith('.mkv')) {

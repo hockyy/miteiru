@@ -24,7 +24,7 @@ function Learn() {
   }, []);
   useEffect(() => {
     if (mecab !== '') {
-      setPrimarySub(new SubtitleContainer(directInput, mecab, false))
+      setPrimarySub(new SubtitleContainer(directInput, mecab))
       setCurrentTime(old => (old^1))
     }
   }, [mecab, directInput])
