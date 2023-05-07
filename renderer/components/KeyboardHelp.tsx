@@ -3,13 +3,10 @@ const shortcutInformation = [{
   description: "Toggle Pause"
 },
   {
-    key: "X",
-    description: "Toggle Dropzone"
-  }, {
     key: "Z",
     description: "Toggle Video Control Bar"
   }, {
-    key: "C",
+    key: "X",
     description: "Toggle Sidebar"
   }, {
     key: "Q",

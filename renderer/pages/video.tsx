@@ -7,7 +7,7 @@ import MeaningBox from "../components/MeaningBox";
 import {useRouter} from "next/router";
 import {ipcRenderer} from "electron";
 import {VideoController} from "../components/VideoController";
-import Toast from "../components/Toast";
+import Toast, {TOAST_TIMEOUT} from "../components/Toast";
 import {Sidebar} from "../components/Sidebar";
 import {defaultPrimarySubtitleStyling, defaultSecondarySubtitleStyling} from "../utils/CJKStyling";
 import {randomUUID} from "crypto";
@@ -41,14 +41,24 @@ function Video() {
     }
     if (currentPath.endsWith('.srt') || currentPath.endsWith('.vtt') || currentPath.endsWith('.ass')) {
       setToastInfo({
-        message: 'Loading subtitles, please wait!',
+        message: 'Loading subtitle, please wait!',
         update: randomUUID()
-      })
+      });
+      const toastSetter = setInterval(() => {
+        console.log("WTF");
+        setToastInfo({
+          message: 'Still loading subtitle, please wait!',
+          update: randomUUID()
+        })
+      }, TOAST_TIMEOUT);
       const draggedSubtitle = {
         type: 'text/plain',
         src: `${currentPath}`
       }
+      console.log(toastSetter)
       const tmpSub = await SubtitleContainer.create(draggedSubtitle.src, mecab);
+      clearInterval(toastSetter);
+      console.log("OK")
       if (tmpSub.language === "JP") {
         setPrimarySub(tmpSub)
       } else {
@@ -90,11 +100,9 @@ function Video() {
     })
     // https://www.freecodecamp.org/news/javascript-keycode-list-keypress-event-key-codes/
     const handleKeyPress = (event) => {
-      if (event.code === "KeyX") {
-        setDragDrop((old) => {
-          return !old
-        })
-      } else if (event.code === "Escape") {
+      event.preventDefault()
+      event.stopPropagation()
+      if (event.code === "Escape") {
         setMeaning("")
       } else if (event.code === "KeyQ") {
         router.push('/home')
@@ -104,7 +112,7 @@ function Video() {
         setShowController((old) => {
           return !old
         })
-      } else if (event.code === "KeyC") {
+      } else if (event.code === "KeyX") {
         setShowSidebar((old) => {
           return !old
         })
@@ -121,6 +129,7 @@ function Video() {
   }, []);
   return (
       <React.Fragment>
+
         <div>
           <Toast info={toastInfo}/>
           <MeaningBox meaning={meaning} setMeaning={setMeaning} mecab={mecab}/>
@@ -136,7 +145,7 @@ function Video() {
               durationDisplay: true
             }
           }} onReady={readyCallback} setCurrentTime={setCurrentTime}/>
-          <div className={"flex flex-col justify-end bottom-0 z-[3] fixed h-[100vh] w-[100vw]"}>
+          <div>
             <PrimarySubtitle setMeaning={setMeaning}
                              currentTime={currentTime}
                              subtitle={primarySub}
@@ -147,6 +156,8 @@ function Video() {
                 subtitle={secondarySub}
                 shift={secondaryShift}
                 subtitleStyling={secondaryStyling}/>
+          </div>
+          <div className={"flex flex-col justify-end bottom-0 z-[15] fixed"}>
             {player && <VideoController player={player}
                                         currentTime={currentTime}
                                         setCurrentTime={setCurrentTime}
@@ -157,10 +168,10 @@ function Video() {
                                         setInfo={setToastInfo}
                                         setShowSidebar={setShowSidebar}/>}
           </div>
+          {mecab !== '' && <MiteiruDropzone onDrop={onLoadFiles}/>}
 
 
         </div>
-        {mecab !== '' && dragDrop && <MiteiruDropzone onDrop={onLoadFiles}/>}
         <Sidebar showSidebar={showSidebar} setShowSidebar={setShowSidebar}
                  primaryStyling={primaryStyling}
                  setPrimaryStyling={setPrimaryStyling}
