@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 
-const toastTimeout = 3000
+export const TOAST_TIMEOUT = 3000
 
 const toastHidden = ["", "hidden"]
 export const Toast = ({info}) => {
@@ -11,7 +11,7 @@ export const Toast = ({info}) => {
         (function () {
           setLastToast(info)
         })();
-      }, toastTimeout)
+      }, TOAST_TIMEOUT)
     }
     return;
   }, [info])

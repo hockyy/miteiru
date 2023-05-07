@@ -1,9 +1,11 @@
-import {getFurigana, isMixedJapanese} from "shunou";
+import {getFurigana} from "shunou";
 import fs from 'fs';
 import {parse as parseSRT} from '@plussub/srt-vtt-parser';
 import {parse as parseASS} from 'ass-compiler';
 import languageEncoding from "detect-file-encoding-and-language";
 import iconv from "iconv-lite"
+import {Dispatch, SetStateAction} from "react";
+import {randomUUID} from "crypto";
 
 const languageMap = {
   'japanese': 'JP',
@@ -48,7 +50,6 @@ export class SubtitleContainer {
     if (filename === '') return
     const subtitleContainer = new SubtitleContainer('', mecab);
     let entries;
-    console.log(filename)
     const buffer = await fs.promises.readFile(filename)
     const blob = new Blob([buffer]);
 
