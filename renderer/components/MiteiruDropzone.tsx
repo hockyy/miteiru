@@ -34,7 +34,6 @@ export const MiteiruDropzone = ({setPrimarySub, setSecondarySub, setVideoSrc, me
     if (process.platform === 'win32') {
       pathUri = '/' + currentPath
     }
-    console.log(currentPath)
     if (currentPath.endsWith('.srt') || currentPath.endsWith('.vtt') || currentPath.endsWith('.ass')) {
       const draggedSubtitle = {
         type: 'text/plain',

@@ -55,8 +55,6 @@ export class SubtitleContainer {
       entries = data.entries;
     }
 
-    console.log(entries)
-
     try {
       subtitleContainer.language = languageMap[currentData.language];
     } catch (e) {
