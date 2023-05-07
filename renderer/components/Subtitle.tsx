@@ -78,7 +78,7 @@ export const SecondarySubtitle = ({
       console.log(e)
     }
   }, [currentTime, subtitleStyling])
-  return <Subtitle caption={caption} extraClass={"fixed top-2"} subtitleStyling={subtitleStyling}/>
+  return <Subtitle caption={caption} subtitleStyling={subtitleStyling}/>
 };
 export const Subtitle = ({
                            caption,
