@@ -34,7 +34,7 @@ function Video() {
     setSecondaryStyling,
     resetSub
   } = useSubtitle(mecab);
-  const {videoSrc, onLoadFiles} = useLoadFiles(setToastInfo, setPrimarySub, setSecondarySub, mecab);
+  const {videoSrc, onLoadFiles, onVideoEndHandler} = useLoadFiles(setToastInfo, setPrimarySub, setSecondarySub, resetSub, mecab);
   const {showController, setShowController, showSidebar, setShowSidebar} = useMenuDisplay();
   const {
     readyCallback,
@@ -42,7 +42,7 @@ function Video() {
     player,
     currentTime,
     setCurrentTime
-  } = useReadyPlayerCallback(resetSub, setPrimarySub, setSecondarySub, videoSrc);
+  } = useReadyPlayerCallback(onVideoEndHandler);
 
   useKeyBind(setMeaning, setShowController, setShowSidebar, setPrimarySub, setSecondarySub, mecab);
 

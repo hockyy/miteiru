@@ -2,8 +2,9 @@ import {useCallback, useState} from 'react';
 import {SubtitleContainer} from "../components/DataStructures";
 import {randomUUID} from "crypto";
 import {TOAST_TIMEOUT} from "../components/Toast";
+import {isSubtitle, isVideo} from "../utils/fomatUtils";
 
-const useLoadFiles = (setToastInfo, setPrimarySub, setSecondarySub, mecab) => {
+const useLoadFiles = (setToastInfo, setPrimarySub, setSecondarySub, resetSub, mecab) => {
   const [videoSrc, setVideoSrc] = useState({src: '', type: ''});
   const onLoadFiles = useCallback(async acceptedFiles => {
     let currentPath = acceptedFiles[0].path;
@@ -12,7 +13,7 @@ const useLoadFiles = (setToastInfo, setPrimarySub, setSecondarySub, mecab) => {
     if (process.platform === 'win32') {
       pathUri = '/' + currentPath;
     }
-    if (currentPath.endsWith('.srt') || currentPath.endsWith('.vtt') || currentPath.endsWith('.ass')) {
+    if (isSubtitle(currentPath)) {
       setToastInfo({
         message: 'Loading subtitle, please wait!',
         update: randomUUID()
@@ -38,17 +39,22 @@ const useLoadFiles = (setToastInfo, setPrimarySub, setSecondarySub, mecab) => {
         message: 'Subtitle loaded',
         update: randomUUID()
       });
-    } else if (currentPath.endsWith('.mp4') || currentPath.endsWith('.mkv')) {
+    } else if (isVideo(currentPath)) {
       const draggedVideo = {
         type: 'video/webm',
         src: `miteiru://${pathUri}`
       };
       setVideoSrc(draggedVideo);
+
+      resetSub(setPrimarySub)
+      resetSub(setSecondarySub)
     }
   }, [mecab]);
+  const onVideoEndHandler = () => {};
   return {
     onLoadFiles,
     videoSrc,
+    onVideoEndHandler
   }
 };
 
