@@ -2,14 +2,6 @@ import {useCallback, useEffect, useState} from "react";
 import {videoConstants} from "../utils/constants";
 import {randomUUID} from "crypto";
 
-export const useVideoDuration = (player, metadata) => {
-  const [duration, setDuration] = useState(0);
-  useEffect(() => {
-    setDuration(player.duration() * 1000)
-  }, [metadata, player]);
-  return duration;
-}
-
 export const useVideoPlayingToggle = (player, metadata) => {
   const [isPlaying, setIsPlaying] = useState(1);
   const togglePlay = useCallback(() => {
@@ -18,10 +10,12 @@ export const useVideoPlayingToggle = (player, metadata) => {
     })
   }, [setIsPlaying]);
   useEffect(() => {
-    if (isPlaying) {
-      player.play()
-    } else {
-      player.pause()
+    if (player) {
+      if (isPlaying) {
+        player.play()
+      } else {
+        player.pause()
+      }
     }
   }, [isPlaying, metadata, player]);
   return {isPlaying, setIsPlaying, togglePlay};
@@ -58,22 +52,26 @@ export const useVideoKeyboardControls = (togglePlay, deltaTime, setPrimaryShift,
 }
 
 
-export const useVideoTimeChanger = (player, setCurrentTime) => {
-  const [duration, setDuration] = useState(0)
-
+export const useVideoTimeChanger = (player, setCurrentTime, metadata) => {
+  const [duration, setDuration] = useState(0);
+  const [enableSeeker, setEnableSeeker] = useState(false);
   useEffect(() => {
     if (player) {
-      setDuration(player.duration() * 1000)
+      setDuration(player.duration() * 1000);
     }
-  }, [player])
+  }, [player, metadata]);
   const changeTimeTo = useCallback((seekedTime: number) => {
     if (player) {
       setCurrentTime(seekedTime)
       player.currentTime(seekedTime)
     }
   }, [player, setCurrentTime])
+
   const deltaTime = useCallback((plusDelta: number) => {
-    changeTimeTo(player.currentTime() + plusDelta)
+    if (player) {
+      changeTimeTo(player.currentTime() + plusDelta)
+    }
   }, [player]);
-  return {changeTimeTo, deltaTime, duration};
+
+  return {changeTimeTo, deltaTime, duration, setDuration, enableSeeker, setEnableSeeker};
 }

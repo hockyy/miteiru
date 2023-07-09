@@ -21,11 +21,18 @@ import {
   useVideoPlayingToggle,
   useVideoTimeChanger
 } from "../hooks/useVideoController";
+import {usePlayNextAfterEnd} from "../hooks/usePlayNextAfterEnd";
 
 function Video() {
-  const {meaning, setMeaning} = useMeaning();
-  const {toastInfo, setToastInfo} = useMiteiruToast();
   const mecab = useMecab();
+  const {toastInfo, setToastInfo} = useMiteiruToast();
+  const {
+    readyCallback,
+    metadata,
+    player,
+    currentTime,
+    setCurrentTime
+  } = useReadyPlayerCallback();
   const {
     primarySub,
     setPrimarySub,
@@ -40,23 +47,24 @@ function Video() {
     secondaryStyling,
     setSecondaryStyling
   } = useSubtitle(mecab);
-  const {videoSrc, onLoadFiles, onVideoEndHandler, blockEnder, setBlockEnder} =
+  const {meaning, setMeaning} = useMeaning();
+  const {
+    duration,
+    deltaTime,
+    changeTimeTo,
+    enableSeeker,
+    setEnableSeeker
+  } = useVideoTimeChanger(player, setCurrentTime, metadata);
+  const {videoSrc, onLoadFiles, onVideoEndHandler} =
       useLoadFiles(setToastInfo,
           primarySub, setPrimarySub,
-          secondarySub, setSecondarySub, mecab);
+          secondarySub, setSecondarySub,
+          mecab, setEnableSeeker, changeTimeTo, player);
   const {showController, setShowController, showSidebar, setShowSidebar} = useMenuDisplay();
-  const {
-    readyCallback,
-    metadata,
-    player,
-    currentTime,
-    setCurrentTime
-  } = useReadyPlayerCallback(onVideoEndHandler, blockEnder, setBlockEnder);
   useKeyBind(setMeaning, setShowController, setShowSidebar, setPrimarySub, setSecondarySub, mecab);
-
-  const {duration, deltaTime, changeTimeTo} = useVideoTimeChanger(player, setCurrentTime);
   const {togglePlay, isPlaying} = useVideoPlayingToggle(player, metadata);
   useVideoKeyboardControls(togglePlay, deltaTime, setPrimaryShift, setSecondaryShift, setToastInfo);
+  usePlayNextAfterEnd(player, currentTime, onVideoEndHandler, duration, changeTimeTo, setEnableSeeker)
   return (
       <React.Fragment>
         <Head>
@@ -99,7 +107,8 @@ function Video() {
                 player={player}
                 currentTime={currentTime}
                 showController={showController}
-                setShowSidebar={setShowSidebar}/>}
+                setShowSidebar={setShowSidebar}
+                enableSeeker={enableSeeker}/>}
           </div>
           {mecab !== '' && <MiteiruDropzone onDrop={onLoadFiles}/>}
         </div>
