@@ -66,13 +66,13 @@ if (isProd) {
     width: 1000,
     height: 600,
   });
-  ipcMain.handle('query', async (event, query) => {
+  ipcMain.handle('query', async (event, query, limit) => {
     let matches = []
     try {
 
-      matches = matches.concat(await readingBeginning(JMDict.db, query, 10));
+      matches = matches.concat(await readingBeginning(JMDict.db, query, limit));
       matches = matches.concat(await kanjiBeginning(JMDict.db, query));
-      matches = matches.concat(await readingAnywhere(JMDict.db, query, 10));
+      matches = matches.concat(await readingAnywhere(JMDict.db, query, limit));
       matches = matches.concat(await kanjiAnywhere(JMDict.db, query));
       const ids = matches.map(o => o.id)
       matches = matches.filter(({id}, index) => !ids.includes(id, index + 1))
@@ -103,6 +103,10 @@ if (isProd) {
       console.log(e)
       return []
     }
+  })
+
+  ipcMain.handle('exactQuery', async (event, query, limit) => {
+    return await kanjiBeginning(JMDict.db, query, limit);
   })
 
   ipcMain.handle('tags', (event) => {

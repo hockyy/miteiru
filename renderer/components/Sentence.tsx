@@ -2,7 +2,7 @@ import {isMixedJapanese} from "shunou";
 import parse from "html-react-parser";
 import styled from "styled-components";
 import {CJKStyling} from "../utils/CJKStyling";
-import React, {useEffect, useState} from "react";
+import React from "react";
 import {randomUUID} from "crypto";
 
 const StyledSentence = styled.button`

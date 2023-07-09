@@ -21,7 +21,7 @@ const MeaningBox = ({
       setMeaningContent(initialContentState);
       return;
     }
-    ipcRenderer.invoke('query', meaning).then(val => {
+    ipcRenderer.invoke('query', meaning, 10).then(val => {
       setOtherMeanings(val)
       if (val.length > 0) {
         setMeaningContent(val[0])
