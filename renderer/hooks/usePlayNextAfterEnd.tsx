@@ -6,9 +6,15 @@ export const usePlayNextAfterEnd = (player,
                                     duration,
                                     setEnableSeeker) => {
   useEffect(() => {
-    if (player && currentTime * 1000 === duration && duration > 0) {
-      setEnableSeeker(false);
-      onVideoEndHandler();
+    if (player) {
+      const ender = () => {
+        setEnableSeeker(false);
+        onVideoEndHandler();
+      }
+      player.on('ended', ender);
+      return () => {
+        player.off('ended', ender)
+      }
     }
   }, [player, currentTime, duration]);
 }

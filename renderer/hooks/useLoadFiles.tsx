@@ -60,7 +60,6 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
     }
     await queue.end(currentHash);
   }, [mecab]);
-  const [blockEnder, setBlockEnder] = useState(false);
   const onVideoEndHandler = useCallback(async () => {
     if (videoSrc.path) {
       const nextVideo = findNextInFolder(videoSrc.path);
@@ -94,9 +93,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
   return {
     onLoadFiles,
     videoSrc,
-    onVideoEndHandler,
-    setBlockEnder,
-    blockEnder
+    onVideoEndHandler
   }
 };
 
