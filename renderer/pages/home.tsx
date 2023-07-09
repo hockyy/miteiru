@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import {ipcRenderer} from 'electron';
@@ -18,6 +18,40 @@ function Home() {
   const [mecab, setMecab] = useState(mecabDefaultDirectory[process.platform] ?? mecabDefaultDirectory['linux']);
   const [jmdict, setJmdict] = useState('');
   const [check, setCheck] = useState(initialCheck);
+
+  const handleSelectMecabPath = useCallback(() => {
+    ipcRenderer.invoke('pickFile', ['*']).then((val) => {
+      if (!val.canceled) setMecab(val.filePaths[0]);
+    });
+  }, []);
+
+  const handleSelectJMDictJson = useCallback(() => {
+    ipcRenderer.invoke('pickFile', ['json']).then((val) => {
+      if (!val.canceled) setJmdict(val.filePaths[0]);
+    });
+  }, []);
+
+  const handleCheck = useCallback((cached = false) => {
+    setCheck({
+      ok: 2,
+      message: "checking..."
+    });
+    ipcRenderer.invoke('validateConfig', {
+      mecab, dicdir, jmdict, cached
+    }).then(val => {
+      setCheck(val);
+    });
+  }, [mecab, dicdir, jmdict]);
+
+  const handleRemoveJMDictCache = useCallback(() => {
+    setCheck({
+      ok: 2,
+      message: 'Removing JMDict Cache'
+    });
+    ipcRenderer.invoke('removeDictCache').then(() => {
+      setCheck(initialCheck);
+    });
+  }, []);
   return (
       <React.Fragment>
         <Head>
@@ -49,12 +83,7 @@ function Home() {
               <div className={"flex justify-between  gap-3 p-3 w-full"}>
                 <button
                     className='bg-blue-400 hover:bg-blue-500 rounded-sm text-white p-2 w-full'
-                    onClick={() => {
-                      ipcRenderer.invoke('pickFile', ['*']).then((val) => {
-                        if (!val.canceled) setMecab(val.filePaths[0])
-                      })
-                    }
-                    }>
+                    onClick={handleSelectMecabPath}>
                   Select Mecab Path
                 </button>
                 <input
@@ -67,12 +96,7 @@ function Home() {
               <div className={"flex justify-between  gap-3 p-3 w-full"}>
                 <button
                     className='bg-blue-400 hover:bg-blue-500 rounded-sm text-white p-2 w-full'
-                    onClick={() => {
-                      ipcRenderer.invoke('pickFile', ['json']).then((val) => {
-                        if (!val.canceled) setJmdict(val.filePaths[0])
-                      })
-                    }
-                    }>
+                    onClick={handleSelectJMDictJson}>
                   Select JMDict Json
                 </button>
                 <input
@@ -89,35 +113,13 @@ function Home() {
                   <button
                       disabled={check.ok === 2}
                       className='disabled:cursor-not-allowed disabled:bg-amber-200 enabled:bg-amber-600 p-3 rounded-sm enabled:hover:bg-amber-700'
-                      onClick={() => {
-                        setCheck({
-                          ok: 2,
-                          message: "checking..."
-                        })
-                        ipcRenderer.invoke('validateConfig', {
-                          mecab, dicdir, jmdict
-                        }).then(val => {
-                          setCheck(val)
-                        })
-                      }
-                      }>
+                      onClick={() => handleCheck(false)}>
                     Check
                   </button>
                   <button
                       disabled={check.ok === 2}
                       className='disabled:cursor-not-allowed disabled:bg-amber-200 enabled:bg-amber-600 p-3 rounded-sm enabled:hover:bg-amber-700'
-                      onClick={() => {
-                        setCheck({
-                          ok: 2,
-                          message: "checking..."
-                        })
-                        ipcRenderer.invoke('validateConfig', {
-                          mecab, dicdir, jmdict, cached: true
-                        }).then(val => {
-                          setCheck(val)
-                        })
-                      }
-                      }>
+                      onClick={() => handleCheck(true)}>
                     Check With Cache
                   </button>
                 </div>
@@ -135,17 +137,7 @@ function Home() {
                 <button
                     type={"button"}
                     className='bg-red-600 p-3 rounded-sm hover:bg-red-700'
-                    onClick={() => {
-                      setCheck({
-                        ok: 2,
-                        message: 'Removing JMDict Cache'
-                      })
-                      ipcRenderer.invoke('removeDictCache').then(() => {
-                        setCheck(initialCheck)
-                      })
-                    }
-                    }>
-
+                    onClick={handleRemoveJMDictCache}>
                   Remove JMDict Cache
                 </button>
                 {/*<button*/}
