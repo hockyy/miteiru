@@ -30,15 +30,15 @@ export class Line {
     this.timeStart = start
     this.timeEnd = end
     if (isInJapanese) {
-      this.content = getFurigana(strContent, mecab)
-      this.fillContentWithLearningKotoba()
+      this.content = getFurigana(strContent, mecab);
     } else {
-      this.content = strContent
+      this.content = strContent;
     }
   }
 
-  fillContentWithLearningKotoba() {
+  async fillContentWithLearningKotoba() {
     this.meaning = Array(this.content.length).fill('');
+    console.log(this.content)
     for (let i = 0; i < this.content.length; i++) {
       const word = this.content[i];
       if(word.length <= 1) continue;
@@ -98,15 +98,19 @@ export class SubtitleContainer {
       entries = data.entries;
     }
 
+    console.log(currentData.language)
+
     try {
       subtitleContainer.language = languageMap[currentData.language];
     } catch (e) {
       subtitleContainer.language = "EN";
     }
-    entries.forEach(({from, to, text}) => {
+    for (const {from, to, text} of entries) {
       // process transcript entry
       subtitleContainer.lines.push(new Line(from, to, removeTags(text), mecab, subtitleContainer.language === "JP"))
-    });
+      const back = subtitleContainer.lines[subtitleContainer.lines.length - 1];
+      await back.fillContentWithLearningKotoba();
+    }
     return subtitleContainer
   }
 }
