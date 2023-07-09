@@ -109,6 +109,7 @@ function Video() {
                 showController={showController}
                 setShowSidebar={setShowSidebar}
                 enableSeeker={enableSeeker}
+                setEnableSeeker={setEnableSeeker}
                 onVideoChangeHandler={onVideoChangeHandler}/>}
           </div>
           {mecab !== '' && <MiteiruDropzone onDrop={onLoadFiles}/>}
