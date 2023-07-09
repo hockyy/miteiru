@@ -14,6 +14,8 @@ import useMenuDisplay from "../hooks/useMenuDisplay";
 import useReadyPlayerCallback from "../hooks/useReadyPlayerCallback";
 import useMiteiruToast from "../hooks/useMiteiruToast";
 import useMeaning from "../hooks/useMeaning";
+import Head from "next/head";
+import {getMiteiruVideoTitle} from "../utils/formatUtils";
 
 function Video() {
   const {meaning, setMeaning} = useMeaning();
@@ -45,12 +47,13 @@ function Video() {
     currentTime,
     setCurrentTime
   } = useReadyPlayerCallback(onVideoEndHandler);
-
   useKeyBind(setMeaning, setShowController, setShowSidebar, setPrimarySub, setSecondarySub, mecab);
 
   return (
       <React.Fragment>
-
+        <Head>
+          <title>{getMiteiruVideoTitle(videoSrc.path, primarySub.path, secondarySub.path)}</title>
+        </Head>
         <div>
           <Toast info={toastInfo}/>
           <MeaningBox meaning={meaning} setMeaning={setMeaning} mecab={mecab}/>
