@@ -55,7 +55,7 @@ function Video() {
     enableSeeker,
     setEnableSeeker
   } = useVideoTimeChanger(player, setCurrentTime, metadata);
-  const {videoSrc, onLoadFiles, onVideoEndHandler} =
+  const {videoSrc, onLoadFiles, onVideoChangeHandler} =
       useLoadFiles(setToastInfo,
           primarySub, setPrimarySub,
           secondarySub, setSecondarySub,
@@ -64,7 +64,7 @@ function Video() {
   useKeyBind(setMeaning, setShowController, setShowSidebar, setPrimarySub, setSecondarySub, mecab);
   const {togglePlay, isPlaying} = useVideoPlayingToggle(player, metadata);
   useVideoKeyboardControls(togglePlay, deltaTime, setPrimaryShift, setSecondaryShift, setToastInfo);
-  usePlayNextAfterEnd(player, currentTime, onVideoEndHandler, duration, setEnableSeeker)
+  usePlayNextAfterEnd(player, currentTime, onVideoChangeHandler, duration, setEnableSeeker)
   return (
       <React.Fragment>
         <Head>
@@ -108,7 +108,8 @@ function Video() {
                 currentTime={currentTime}
                 showController={showController}
                 setShowSidebar={setShowSidebar}
-                enableSeeker={enableSeeker}/>}
+                enableSeeker={enableSeeker}
+                onVideoChangeHandler={onVideoChangeHandler}/>}
           </div>
           {mecab !== '' && <MiteiruDropzone onDrop={onLoadFiles}/>}
         </div>

@@ -3,7 +3,7 @@ import {SubtitleContainer} from "../components/DataStructures";
 import {randomUUID} from "crypto";
 import {TOAST_TIMEOUT} from "../components/Toast";
 import {isSubtitle, isVideo} from "../utils/utils";
-import {findNextInFolder} from "../utils/folderUtils";
+import {findPositionDeltaInFolder} from "../utils/folderUtils";
 import {useAsyncAwaitQueue} from "./useAsyncAwaitQueue";
 
 const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, setSecondarySub, mecab, setEnableSeeker, changeTimeTo, player) => {
@@ -60,19 +60,17 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
     }
     await queue.end(currentHash);
   }, [mecab]);
-  const onVideoEndHandler = useCallback(async () => {
+  const onVideoChangeHandler = useCallback(async (delta: number = 1) => {
     if (videoSrc.path) {
-      const nextVideo = findNextInFolder(videoSrc.path);
+      const nextVideo = findPositionDeltaInFolder(videoSrc.path, delta);
       await onLoadFiles([{path: nextVideo}]);
     }
-
     if (primarySub.path) {
-      const nextPrimary = findNextInFolder(primarySub.path);
+      const nextPrimary = findPositionDeltaInFolder(primarySub.path, delta);
       await onLoadFiles([{path: nextPrimary}]);
     }
-
     if (secondarySub.path) {
-      const nextSecondary = findNextInFolder(secondarySub.path);
+      const nextSecondary = findPositionDeltaInFolder(secondarySub.path, delta);
       await onLoadFiles([{path: nextSecondary}]);
     }
   }, [videoSrc.path, primarySub.path, secondarySub.path]);
@@ -93,7 +91,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
   return {
     onLoadFiles,
     videoSrc,
-    onVideoEndHandler
+    onVideoChangeHandler
   }
 };
 
