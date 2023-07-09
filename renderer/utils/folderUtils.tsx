@@ -1,4 +1,4 @@
-import {isArrayEndsWithMatcher, isSubtitle, isVideo} from "./formatUtils";
+import {isArrayEndsWithMatcher, isSubtitle, isVideo} from "./utils";
 import {videoConstants} from "./constants";
 import {readdirSync} from "fs";
 
