@@ -1,10 +1,10 @@
 import "react-video-seek-slider/styles.css"
 import {VideoSeekSlider} from "react-video-seek-slider";
-import React from "react";
+import React, {useEffect, useState} from "react";
 import SmoothCollapse from "react-smooth-collapse";
 import {Volume} from "./Volume";
 import SettingsController from "./SettingsController";
-import {ArrowLeft, ArrowRight, StepRight} from "./Icons";
+import {ArrowLeft, ArrowRight, StepLeft, StepRight} from "./Icons";
 import {toTime} from "../utils/utils";
 import {videoConstants} from "../utils/constants";
 
@@ -19,7 +19,8 @@ export const VideoController = ({
                                   showController,
                                   setShowSidebar,
                                   enableSeeker,
-                                  onVideoChangeHandler
+                                  setEnableSeeker,
+                                  onVideoChangeHandler,
                                 }) => {
   return <div>
     <div className={"w-[100vw] h-6 content-center -mb-4"}>
@@ -49,6 +50,14 @@ export const VideoController = ({
         </div>
         <div className={"flex w-1/3 justify-center items-center gap-4"}>
           <button onClick={() => {
+            if (enableSeeker) {
+              setEnableSeeker(false)
+              onVideoChangeHandler(-1);
+            }
+          }} className={"flex flex-row items-center gap-1 animation h-5"}>
+            {StepLeft}
+          </button>
+          <button onClick={() => {
             deltaTime(-10)
           }} className={"flex flex-row items-center gap-1 animation h-5"}>
             {ArrowLeft} 10
@@ -64,7 +73,10 @@ export const VideoController = ({
             10 {ArrowRight}
           </button>
           <button onClick={() => {
-            changeTimeTo(duration/1000)
+            if (enableSeeker) {
+              setEnableSeeker(false)
+              onVideoChangeHandler();
+            }
           }} className={"flex flex-row items-center gap-1 animation h-5"}>
             {StepRight}
           </button>
