@@ -15,7 +15,12 @@ import useReadyPlayerCallback from "../hooks/useReadyPlayerCallback";
 import useMiteiruToast from "../hooks/useMiteiruToast";
 import useMeaning from "../hooks/useMeaning";
 import Head from "next/head";
-import {getMiteiruVideoTitle} from "../utils/formatUtils";
+import {getMiteiruVideoTitle} from "../utils/utils";
+import {
+  useVideoKeyboardControls,
+  useVideoPlayingToggle,
+  useVideoTimeChanger
+} from "../hooks/useVideoController";
 
 function Video() {
   const {meaning, setMeaning} = useMeaning();
@@ -35,7 +40,7 @@ function Video() {
     secondaryStyling,
     setSecondaryStyling
   } = useSubtitle(mecab);
-  const {videoSrc, onLoadFiles, onVideoEndHandler} =
+  const {videoSrc, onLoadFiles, onVideoEndHandler, blockEnder, setBlockEnder} =
       useLoadFiles(setToastInfo,
           primarySub, setPrimarySub,
           secondarySub, setSecondarySub, mecab);
@@ -46,9 +51,12 @@ function Video() {
     player,
     currentTime,
     setCurrentTime
-  } = useReadyPlayerCallback(onVideoEndHandler);
+  } = useReadyPlayerCallback(onVideoEndHandler, blockEnder, setBlockEnder);
   useKeyBind(setMeaning, setShowController, setShowSidebar, setPrimarySub, setSecondarySub, mecab);
 
+  const {duration, deltaTime, changeTimeTo} = useVideoTimeChanger(player, setCurrentTime);
+  const {togglePlay, isPlaying} = useVideoPlayingToggle(player, metadata);
+  useVideoKeyboardControls(togglePlay, deltaTime, setPrimaryShift, setSecondaryShift, setToastInfo);
   return (
       <React.Fragment>
         <Head>
@@ -82,15 +90,16 @@ function Video() {
                 subtitleStyling={secondaryStyling}/>
           </div>
           <div className={"flex flex-col justify-end bottom-0 z-[15] fixed"}>
-            {player && <VideoController player={player}
-                                        currentTime={currentTime}
-                                        setCurrentTime={setCurrentTime}
-                                        metadata={metadata}
-                                        showController={showController}
-                                        setPrimaryShift={setPrimaryShift}
-                                        setSecondaryShift={setSecondaryShift}
-                                        setInfo={setToastInfo}
-                                        setShowSidebar={setShowSidebar}/>}
+            {player && <VideoController
+                isPlaying={isPlaying}
+                duration={duration}
+                changeTimeTo={changeTimeTo}
+                deltaTime={deltaTime}
+                togglePlay={togglePlay}
+                player={player}
+                currentTime={currentTime}
+                showController={showController}
+                setShowSidebar={setShowSidebar}/>}
           </div>
           {mecab !== '' && <MiteiruDropzone onDrop={onLoadFiles}/>}
         </div>

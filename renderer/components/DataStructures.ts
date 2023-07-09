@@ -4,6 +4,7 @@ import {parse as parseSRT} from '@plussub/srt-vtt-parser';
 import {parse as parseASS} from 'ass-compiler';
 import languageEncoding from "detect-file-encoding-and-language";
 import iconv from "iconv-lite"
+import {Queue} from "async-await-queue";
 
 const languageMap = {
   'japanese': 'JP',
@@ -67,7 +68,6 @@ export class SubtitleContainer {
     } catch (e) {
       subtitleContainer.language = "EN";
     }
-
     entries.forEach(({from, to, text}) => {
       // process transcript entry
       subtitleContainer.lines.push(new Line(from, to, removeTags(text), mecab, subtitleContainer.language === "JP"))
