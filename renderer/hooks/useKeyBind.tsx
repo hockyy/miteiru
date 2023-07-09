@@ -1,8 +1,8 @@
 import {useEffect} from 'react';
 import {SubtitleContainer} from "../components/DataStructures";
+import {useRouter} from "next/router";
 
 export default function useKeyBind(
-    router,
     setMeaning,
     setShowController,
     setShowSidebar,
@@ -10,15 +10,15 @@ export default function useKeyBind(
     setSecondarySub,
     mecab
 ) {
-
+  const router = useRouter();
   useEffect(() => {
-    const handleKeyPress = (event) => {
+    const handleKeyPress = async (event) => {
       if (event.code === "Escape") {
         setMeaning("");
       } else if (event.code === "KeyQ") {
-        router.push('/home');
+        await router.push('/home');
       } else if (event.code === "KeyL") {
-        router.push('/learn');
+        await router.push('/learn');
       } else if (event.code === "KeyZ") {
         setShowController((old) => {
           return !old;
