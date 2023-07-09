@@ -2,14 +2,14 @@ import {useEffect} from "react";
 
 export const usePlayNextAfterEnd = (player,
                                     currentTime,
-                                    onVideoEndHandler,
+                                    onVideoChangeHandler,
                                     duration,
                                     setEnableSeeker) => {
   useEffect(() => {
     if (player) {
       const ender = () => {
         setEnableSeeker(false);
-        onVideoEndHandler();
+        onVideoChangeHandler();
       }
       player.on('ended', ender);
       return () => {
