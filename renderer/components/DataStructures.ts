@@ -65,7 +65,6 @@ export class Line {
       })
 
     }
-    console.log(this.meaning)
   }
 }
 
