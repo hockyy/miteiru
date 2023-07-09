@@ -46,6 +46,12 @@ export const Sentence = ({
             <rp>)</rp>
           </>
       )
+      const wordMeaning = (<>
+            <rp>(</rp>
+            <rt>{val.meaning ?? ''}</rt>
+            <rp>)</rp>
+          </>
+      )
       const showHelp = val.isKanji || val.isMixed || isMixedJapanese(origin);
       const showRomaji = (val.isKana || showHelp);
       const showFurigana = ((val.isKana && subtitleStyling.showFuriganaOnKana) || showHelp);
@@ -55,11 +61,12 @@ export const Sentence = ({
           <rt className={"unselectable"}>{subtitleStyling.showFurigana && showFurigana && hiragana}</rt>
         </ruby>
         <rt className={"unselectable"}>{subtitleStyling.showRomaji && showRomaji && romaji}</rt>
+        <rt className={"unselectable"}>{!subtitleStyling.showRomaji && wordMeaning}</rt>
       </ruby>
     })}
   </StyledSentence>
 }
 
-export const PlainSentence = ({origin}) => {
-  return <div key={randomUUID()}>{parse(origin)}</div>
-}
+  export const PlainSentence = ({origin}) => {
+    return <div key={randomUUID()}>{parse(origin)}</div>
+  }
