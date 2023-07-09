@@ -40,7 +40,6 @@ export class Line {
     this.meaning = Array(this.content.length).fill('');
     for (let i = 0; i < this.content.length; i++) {
       const word = this.content[i];
-      if (word.origin.length <= 1) continue;
       if (isHiragana(word.origin) && word.origin.length <= 2) continue;
       await ipcRenderer.invoke('exactQuery', word.origin, 1).then(val => {
         for (const entry of val) {
