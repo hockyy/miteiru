@@ -1,12 +1,13 @@
-import {useCallback, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {SubtitleContainer} from "../components/DataStructures";
 import {randomUUID} from "crypto";
 import {TOAST_TIMEOUT} from "../components/Toast";
 import {isSubtitle, isVideo} from "../utils/utils";
 import {findNextInFolder} from "../utils/folderUtils";
 import {useAsyncAwaitQueue} from "./useAsyncAwaitQueue";
+import {videoConstants} from "../utils/constants";
 
-const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, setSecondarySub, mecab) => {
+const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, setSecondarySub, mecab, setEnableSeeker, changeTimeTo, player) => {
   const [videoSrc, setVideoSrc] = useState({src: '', type: '', path: ''});
   const queue = useAsyncAwaitQueue();
   const resetSub = useCallback((subSetter) => {
@@ -78,6 +79,18 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
     }
   }, [videoSrc.path, primarySub.path, secondarySub.path]);
 
+  useEffect(() => {
+    if (player) {
+      const enableSeeker = () => {
+        setEnableSeeker(true);
+        changeTimeTo(0);
+      }
+      player.on('loadedmetadata', enableSeeker)
+      return () => {
+        player.off('loadedmetadata', enableSeeker)
+      }
+    }
+  }, [player, videoSrc.path])
 
   return {
     onLoadFiles,
