@@ -1,6 +1,6 @@
 import {videoConstants} from "./constants";
 
-const isArrayEndsWithMatcher = (path, arrayMatcher) => {
+export const isArrayEndsWithMatcher = (path, arrayMatcher) => {
   for (const videoFormat of arrayMatcher) {
     if (path.endsWith('.' + videoFormat)) {
       return true

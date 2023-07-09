@@ -31,10 +31,9 @@ function Video() {
     primaryStyling,
     setPrimaryStyling,
     secondaryStyling,
-    setSecondaryStyling,
-    resetSub
+    setSecondaryStyling
   } = useSubtitle(mecab);
-  const {videoSrc, onLoadFiles, onVideoEndHandler} = useLoadFiles(setToastInfo, setPrimarySub, setSecondarySub, resetSub, mecab);
+  const {videoSrc, onLoadFiles, onVideoEndHandler} = useLoadFiles(setToastInfo, setPrimarySub, setSecondarySub, mecab);
   const {showController, setShowController, showSidebar, setShowSidebar} = useMenuDisplay();
   const {
     readyCallback,

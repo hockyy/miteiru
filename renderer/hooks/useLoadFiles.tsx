@@ -3,9 +3,14 @@ import {SubtitleContainer} from "../components/DataStructures";
 import {randomUUID} from "crypto";
 import {TOAST_TIMEOUT} from "../components/Toast";
 import {isSubtitle, isVideo} from "../utils/fomatUtils";
+import {findNextInFolder} from "../utils/folderUtils";
 
-const useLoadFiles = (setToastInfo, setPrimarySub, setSecondarySub, resetSub, mecab) => {
-  const [videoSrc, setVideoSrc] = useState({src: '', type: ''});
+const useLoadFiles = (setToastInfo, setPrimarySub, setSecondarySub, mecab) => {
+  const [videoSrc, setVideoSrc] = useState({src: '', type: '', path: ''});
+  const resetSub = useCallback((subSetter) => {
+    subSetter(new SubtitleContainer('', mecab));
+  }, [mecab]);
+
   const onLoadFiles = useCallback(async acceptedFiles => {
     let currentPath = acceptedFiles[0].path;
     currentPath = currentPath.replaceAll('\\', '/')
@@ -42,7 +47,8 @@ const useLoadFiles = (setToastInfo, setPrimarySub, setSecondarySub, resetSub, me
     } else if (isVideo(currentPath)) {
       const draggedVideo = {
         type: 'video/webm',
-        src: `miteiru://${pathUri}`
+        src: `miteiru://${pathUri}`,
+        path: pathUri
       };
       setVideoSrc(draggedVideo);
 
@@ -50,7 +56,14 @@ const useLoadFiles = (setToastInfo, setPrimarySub, setSecondarySub, resetSub, me
       resetSub(setSecondarySub)
     }
   }, [mecab]);
-  const onVideoEndHandler = () => {};
+
+  const onVideoEndHandler = () => {
+    if (videoSrc.path) {
+      const nextVideo = findNextInFolder(videoSrc.path);
+
+    }
+  };
+
   return {
     onLoadFiles,
     videoSrc,
