@@ -1,10 +1,13 @@
-import {getFurigana} from "shunou";
+import {getFurigana, isMixedJapanese} from "shunou";
 import fs from 'fs';
 import {parse as parseSRT} from '@plussub/srt-vtt-parser';
 import {parse as parseASS} from 'ass-compiler';
 import languageEncoding from "detect-file-encoding-and-language";
 import iconv from "iconv-lite"
-import {Queue} from "async-await-queue";
+import {ipcRenderer} from "electron";
+import {isKana, isKanji, isHiragana} from 'wanakana'
+import {japaneseConstants} from "../utils/constants";
+
 
 const languageMap = {
   'japanese': 'JP',
@@ -21,15 +24,48 @@ export class Line {
   timeStart: number;
   timeEnd: number;
   content: any[];
+  meaning: string[];
 
   constructor(start, end, strContent, mecab, isInJapanese = true) {
     this.timeStart = start
     this.timeEnd = end
     if (isInJapanese) {
       this.content = getFurigana(strContent, mecab)
+      this.fillContentWithLearningKotoba()
     } else {
       this.content = strContent
     }
+  }
+
+  fillContentWithLearningKotoba() {
+    this.meaning = Array(this.content.length).fill('');
+    for (let i = 0; i < this.content.length; i++) {
+      const word = this.content[i];
+      if(word.length <= 1) continue;
+      if(isHiragana(word) && word.length <= 2) continue;
+      ipcRenderer.invoke('exactQuery', word.origin, 1).then(val => {
+        for (const entry of val) {
+          let got = 0;
+          if (got) break;
+          for (const reading of entry.kana) {
+            if (reading.text === word.hiragana) {
+              try {
+                this.meaning[i] = entry.sense[0].gloss[0].text;
+                this.meaning[i] = this.meaning[i].replace(/\((.*?)\)/g, '').trim();
+                if (this.meaning[i].length > japaneseConstants.meaningLengthLimit) {
+                  this.meaning[i] = ''
+                }
+                got = 1;
+                break;
+              } catch (ignored) {
+              }
+            }
+          }
+        }
+      })
+
+    }
+    console.log(this.meaning)
   }
 }
 

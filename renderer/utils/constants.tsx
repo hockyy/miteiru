@@ -8,3 +8,7 @@ export const videoConstants = {
   shiftAmount : 100,
   playingClass : ["", "playing"],
 }
+
+export const japaneseConstants = {
+  meaningLengthLimit: 15
+}
