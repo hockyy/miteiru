@@ -88,8 +88,6 @@ function Video() {
                                         setShowSidebar={setShowSidebar}/>}
           </div>
           {mecab !== '' && <MiteiruDropzone onDrop={onLoadFiles}/>}
-
-
         </div>
         <Sidebar showSidebar={showSidebar} setShowSidebar={setShowSidebar}
                  primaryStyling={primaryStyling}
