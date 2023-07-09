@@ -4,8 +4,6 @@ import {parse as parseSRT} from '@plussub/srt-vtt-parser';
 import {parse as parseASS} from 'ass-compiler';
 import languageEncoding from "detect-file-encoding-and-language";
 import iconv from "iconv-lite"
-import {Dispatch, SetStateAction} from "react";
-import {randomUUID} from "crypto";
 
 const languageMap = {
   'japanese': 'JP',
@@ -37,6 +35,7 @@ export class Line {
 export class SubtitleContainer {
   lines: Line[];
   language: string;
+  path: string = '';
 
   constructor(content: string, mecab: string) {
     this.lines = []
@@ -49,6 +48,7 @@ export class SubtitleContainer {
   static async create(filename: string, mecab: string) {
     if (filename === '') return
     const subtitleContainer = new SubtitleContainer('', mecab);
+    subtitleContainer.path = filename;
     let entries;
     const buffer = await fs.promises.readFile(filename)
     const blob = new Blob([buffer]);
