@@ -106,7 +106,9 @@ if (isProd) {
   })
 
   ipcMain.handle('exactQuery', async (event, query, limit) => {
-    return await kanjiBeginning(JMDict.db, query, limit);
+    let matches = await kanjiBeginning(JMDict.db, query, limit);
+    matches = matches.concat(await readingBeginning(JMDict.db, query, limit));
+    return matches;
   })
 
   ipcMain.handle('tags', (event) => {

@@ -41,13 +41,13 @@ export class Line {
     for (let i = 0; i < this.content.length; i++) {
       const word = this.content[i];
       if (isHiragana(word.origin) && word.origin.length <= 2) continue;
-      await ipcRenderer.invoke('exactQuery', word.origin, 1).then(val => {
+      await ipcRenderer.invoke('query', word.origin, 2).then(val => {
         for (const entry of val) {
           let got = 0;
           if (got) break;
           for (const reading of entry.kana) {
-            if (reading.text === word.hiragana) {
-              try {
+            try {
+              if (reading.text === word.hiragana || (entry.kanji.length >= 1 && word.origin === entry.kanji[0].text)) {
                 this.meaning[i] = entry.sense[0].gloss[0].text;
                 this.meaning[i] = this.meaning[i].replace(/\((.*?)\)/g, '').trim();
                 if (this.meaning[i].length > japaneseConstants.meaningLengthLimit) {
@@ -55,8 +55,9 @@ export class Line {
                 }
                 got = 1;
                 break;
-              } catch (ignored) {
               }
+            } catch (ignored) {
+              console.log(ignored)
             }
           }
         }
