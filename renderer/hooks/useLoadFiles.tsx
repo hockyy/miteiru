@@ -1,8 +1,8 @@
-import {useCallback, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {SubtitleContainer} from "../components/DataStructures";
 import {randomUUID} from "crypto";
 import {TOAST_TIMEOUT} from "../components/Toast";
-import {isSubtitle, isVideo} from "../utils/fomatUtils";
+import {isSubtitle, isVideo} from "../utils/formatUtils";
 import {findNextInFolder} from "../utils/folderUtils";
 
 const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, setSecondarySub, mecab) => {
@@ -33,16 +33,17 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
         type: 'text/plain',
         src: `${currentPath}`
       };
-      const tmpSub = await SubtitleContainer.create(draggedSubtitle.src, mecab);
-      clearInterval(toastSetter);
-      if (tmpSub.language === "JP") {
-        setPrimarySub(tmpSub);
-      } else {
-        setSecondarySub(tmpSub);
-      }
-      setToastInfo({
-        message: 'Subtitle loaded',
-        update: randomUUID()
+      SubtitleContainer.create(draggedSubtitle.src, mecab).then(tmpSub => {
+        clearInterval(toastSetter);
+        if (tmpSub.language === "JP") {
+          setPrimarySub(tmpSub);
+        } else {
+          setSecondarySub(tmpSub);
+        }
+        setToastInfo({
+          message: 'Subtitle loaded',
+          update: randomUUID()
+        });
       });
     } else if (isVideo(currentPath)) {
       const draggedVideo = {
@@ -51,26 +52,32 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
         path: pathUri
       };
       setVideoSrc(draggedVideo);
-
       resetSub(setPrimarySub)
       resetSub(setSecondarySub)
     }
   }, [mecab]);
 
-  const onVideoEndHandler = () => {
-    if (videoSrc.path) {
-      const nextVideo = findNextInFolder(videoSrc.path);
-      console.log(nextVideo);
+  const onVideoEndHandler = useCallback(async () => {
+    try {
+      if (videoSrc.path) {
+        const nextVideo = findNextInFolder(videoSrc.path);
+        await onLoadFiles([{path: nextVideo}]);
+      }
+
+      if (primarySub.path) {
+        const nextPrimary = findNextInFolder(primarySub.path);
+        await onLoadFiles([{path: nextPrimary}]);
+      }
+
+      if (secondarySub.path) {
+        const nextSecondary = findNextInFolder(secondarySub.path);
+        await onLoadFiles([{path: nextSecondary}]);
+      }
+    } catch (error) {
+      console.error(error);
     }
-    if (primarySub.path) {
-      const nextPrimary = findNextInFolder(primarySub.path);
-      console.log(nextPrimary);
-    }
-    if (secondarySub.path) {
-      const nextSecondary = findNextInFolder(secondarySub.path);
-      console.log(nextSecondary);
-    }
-  };
+  }, [videoSrc.path, primarySub.path, secondarySub.path]);
+
 
   return {
     onLoadFiles,

@@ -1,4 +1,6 @@
-import {useCallback, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
+import {Simulate} from "react-dom/test-utils";
+import play = Simulate.play;
 
 const useReadyPlayerCallback = (onVideoEndHandler) => {
   const [player, setPlayer] = useState(null)
@@ -10,8 +12,16 @@ const useReadyPlayerCallback = (onVideoEndHandler) => {
     playerRef.on('loadedmetadata', () => {
       setMetadata(old => (old + 1))
     })
-    playerRef.on('ended', onVideoEndHandler);
   }, []);
+
+  useEffect(() => {
+    if (player) {
+      player.on('ended', onVideoEndHandler);
+      return () => {
+        player.off('ended', onVideoEndHandler);
+      };
+    }
+  }, [player, onVideoEndHandler]);
   return {metadata, readyCallback, player, setPlayer, currentTime, setCurrentTime};
 }
 

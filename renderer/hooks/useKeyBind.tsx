@@ -17,8 +17,8 @@ export default function useKeyBind(
         setMeaning("");
       } else if (event.code === "KeyQ") {
         await router.push('/home');
-      } else if (event.code === "KeyL") {
-        await router.push('/learn');
+      // } else if (event.code === "KeyL") {
+      //   await router.push('/learn');
       } else if (event.code === "KeyZ") {
         setShowController((old) => {
           return !old;
