@@ -60,7 +60,7 @@ const useLoadFiles = (setToastInfo, setPrimarySub, setSecondarySub, mecab) => {
   const onVideoEndHandler = () => {
     if (videoSrc.path) {
       const nextVideo = findNextInFolder(videoSrc.path);
-
+      console.log(nextVideo);
     }
   };
 
