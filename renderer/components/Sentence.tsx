@@ -35,30 +35,34 @@ export const Sentence = ({
       subtitleStyling={subtitleStyling}
       className={extraClass}
       onClick={() => handleChange(origin)}>
-    {separation.map((val, index) => {
-      const hiragana = (<>
-            <rp>(</rp>
-            <rt>{val.hiragana ?? ''}</rt>
-            <rp>)</rp>
-          </>
-      )
-      const romaji = (<>
-            <rp>(</rp>
-            <rt>{val.romaji ?? ''}</rt>
-            <rp>)</rp>
-          </>
-      )
-      const showHelp = val.isKanji || val.isMixed || isMixedJapanese(origin);
-      const showRomaji = (val.isKana || showHelp);
-      const showFurigana = ((val.isKana && subtitleStyling.showFuriganaOnKana) || showHelp);
-      return <ruby style={{rubyPosition: "under"}} key={index}>
-        <ruby style={{rubyPosition: "over"}}>
-          {val.main}
-          <rt className={"unselectable"}>{subtitleStyling.showFurigana && showFurigana && hiragana}</rt>
+    <ruby style={{rubyPosition: "under"}}>
+      {separation.map((val, index) => {
+        const hiragana = (<>
+              <rp>(</rp>
+              <rt>{val.hiragana ?? ''}</rt>
+              <rp>)</rp>
+            </>
+        )
+        const romaji = (<>
+              <rp>(</rp>
+              <rt>{val.romaji ?? ''}</rt>
+              <rp>)</rp>
+            </>
+        )
+        const showHelp = val.isKanji || val.isMixed || isMixedJapanese(origin);
+        const showRomaji = (val.isKana || showHelp);
+        const showFurigana = ((val.isKana && subtitleStyling.showFuriganaOnKana) || showHelp);
+        return <ruby style={{rubyPosition: "under"}} key={index}>
+          <ruby style={{rubyPosition: "over"}}>
+            {val.main}
+            <rt className={"unselectable"}>{subtitleStyling.showFurigana && showFurigana && hiragana}</rt>
+          </ruby>
+          <rt className={"unselectable"}>{subtitleStyling.showRomaji && showRomaji && romaji}</rt>
         </ruby>
-        <rt className={"unselectable"}>{subtitleStyling.showRomaji && showRomaji && wordMeaning}</rt>
-      </ruby>
-    })}
+      })}
+      <rt className={"unselectable"}>{subtitleStyling.showMeaning && wordMeaning}</rt>
+
+    </ruby>
   </StyledSentence>
 }
 

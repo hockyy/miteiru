@@ -38,12 +38,11 @@ export class Line {
 
   async fillContentWithLearningKotoba() {
     this.meaning = Array(this.content.length).fill('');
-    console.log(this.content)
     for (let i = 0; i < this.content.length; i++) {
       const word = this.content[i];
-      if(word.length <= 1) continue;
-      if(isHiragana(word) && word.length <= 2) continue;
-      ipcRenderer.invoke('exactQuery', word.origin, 1).then(val => {
+      if (word.origin.length <= 1) continue;
+      if (isHiragana(word.origin) && word.origin.length <= 2) continue;
+      await ipcRenderer.invoke('exactQuery', word.origin, 1).then(val => {
         for (const entry of val) {
           let got = 0;
           if (got) break;
@@ -98,8 +97,6 @@ export class SubtitleContainer {
       entries = data.entries;
     }
 
-    console.log(currentData.language)
-
     try {
       subtitleContainer.language = languageMap[currentData.language];
     } catch (e) {
@@ -117,7 +114,12 @@ export class SubtitleContainer {
 
 export function getLineByTime(subtitle: SubtitleContainer, shift: number, t: number) {
   t -= shift
-  if (!subtitle.lines || subtitle.lines.length === 0) return ''
+  if (!subtitle.lines || subtitle.lines.length === 0) {
+    return {
+      content: '',
+      meaning: []
+    };
+  }
   let low = 0;
   let high = subtitle.lines.length - 1;
   while (low < high) {
@@ -126,9 +128,15 @@ export function getLineByTime(subtitle: SubtitleContainer, shift: number, t: num
     else high = mid - 1;
   }
   if (subtitle.lines[low].timeStart <= t && t <= subtitle.lines[low].timeEnd) {
-    return subtitle.lines[low].content;
+    return {
+      content: subtitle.lines[low].content,
+      meaning: subtitle.lines[low].meaning
+    };
   } else {
-    return '';
+    return {
+      content: '',
+      meaning: []
+    };
   }
 }
 

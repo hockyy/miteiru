@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {getLineByTime, SubtitleContainer} from "./DataStructures";
 import {PlainSentence, Sentence} from "./Sentence";
 import {
@@ -23,7 +23,7 @@ export const PrimarySubtitle = ({
                                 }
 ) => {
   const [caption, setCaption] = useState([])
-  const setFromContent = (content) => {
+  const setFromContent = useCallback((content, wordMeaning = []) => {
     if (content === '' || content.length === 0) {
       setCaption([])
       return;
@@ -35,18 +35,19 @@ export const PrimarySubtitle = ({
                        setMeaning={setMeaning}
                        extraClass={"subtitle"}
                        subtitleStyling={subtitleStyling}
-                       wordMeaning={val.meaning}/>
+                       wordMeaning={wordMeaning[index]}/>
     })
     setCaption(current)
-  }
+  }, [subtitleStyling, subtitle])
   useEffect(() => {
     try {
-      const primaryContent = getLineByTime(subtitle, shift, Math.trunc(currentTime * 1000));
-      setFromContent(primaryContent);
+      const line = getLineByTime(subtitle, shift, Math.trunc(currentTime * 1000));
+      const primaryContent = line.content;
+      setFromContent(primaryContent, line.meaning);
     } catch (e) {
       console.log(e)
     }
-  }, [currentTime, subtitleStyling])
+  }, [currentTime, subtitleStyling, subtitle])
   return <Subtitle caption={caption} subtitleStyling={subtitleStyling}/>
 };
 
@@ -74,7 +75,7 @@ export const SecondarySubtitle = ({
   useEffect(() => {
     try {
       const secondaryContent = getLineByTime(subtitle, shift, Math.trunc(currentTime * 1000));
-      setFromContent(secondaryContent);
+      setFromContent(secondaryContent.content);
     } catch (e) {
       console.log(e)
     }
