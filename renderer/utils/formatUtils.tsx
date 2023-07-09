@@ -17,3 +17,11 @@ export const isSubtitle = (path) => {
   return isArrayEndsWithMatcher(path, videoConstants.supportedSubtitleFormats);
 }
 
+const getFormattedNameFromPath = (path) => {
+  const pathList = path.split('/');
+  return path ? (' - ' + pathList[pathList.length - 1]) : ''
+
+}
+export const getMiteiruVideoTitle = (videoPath = '', primarySub = '', secondarySub = '') => {
+  return `Miteiru${getFormattedNameFromPath(videoPath)}${getFormattedNameFromPath(primarySub)}${getFormattedNameFromPath(secondarySub)}`
+}

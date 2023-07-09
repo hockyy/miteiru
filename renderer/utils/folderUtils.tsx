@@ -1,4 +1,4 @@
-import {isArrayEndsWithMatcher, isSubtitle, isVideo} from "./fomatUtils";
+import {isArrayEndsWithMatcher, isSubtitle, isVideo} from "./formatUtils";
 import {videoConstants} from "./constants";
 import {readdirSync} from "fs";
 
@@ -9,19 +9,19 @@ export const findNextInFolder = (path: string) => {
   const folderPathSplitted = path.split('/');
   folderPathSplitted.pop();
   const folderPath = folderPathSplitted.join('/');
-  let listOfMatchingFiles = [];
-  for (const currentFormat of matcher) {
-    const wildcardMatcher = folderPath;
-    let filesMatched = readdirSync(wildcardMatcher);
-    filesMatched = filesMatched.filter(filePattern => {
-      return isArrayEndsWithMatcher(filePattern, matcher);
-    })
-    listOfMatchingFiles = listOfMatchingFiles.concat(wildcardMatcher);
-  }
-  listOfMatchingFiles = listOfMatchingFiles.sort();
-  let retIndex = listOfMatchingFiles.indexOf(path);
-  if (retIndex === -1 || retIndex + 1 < listOfMatchingFiles.length) {
-    return listOfMatchingFiles[retIndex + 1];
+  let filesMatched = readdirSync(folderPath).map(fileName => {
+    return `${folderPath}/${fileName}`
+  });
+  filesMatched = filesMatched.filter(filePattern => {
+    return isArrayEndsWithMatcher(filePattern, matcher);
+  })
+  filesMatched = filesMatched.sort();
+  let retIndex = filesMatched.findIndex((element) => {
+    return element === path
+  });
+
+  if (retIndex + 1 < filesMatched.length) {
+    return filesMatched[retIndex + 1];
   }
   return '';
 }
