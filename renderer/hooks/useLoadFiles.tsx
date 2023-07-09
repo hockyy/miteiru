@@ -5,7 +5,7 @@ import {TOAST_TIMEOUT} from "../components/Toast";
 import {isSubtitle, isVideo} from "../utils/fomatUtils";
 import {findNextInFolder} from "../utils/folderUtils";
 
-const useLoadFiles = (setToastInfo, setPrimarySub, setSecondarySub, mecab) => {
+const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, setSecondarySub, mecab) => {
   const [videoSrc, setVideoSrc] = useState({src: '', type: '', path: ''});
   const resetSub = useCallback((subSetter) => {
     subSetter(new SubtitleContainer('', mecab));
@@ -61,6 +61,14 @@ const useLoadFiles = (setToastInfo, setPrimarySub, setSecondarySub, mecab) => {
     if (videoSrc.path) {
       const nextVideo = findNextInFolder(videoSrc.path);
       console.log(nextVideo);
+    }
+    if (primarySub.path) {
+      const nextPrimary = findNextInFolder(primarySub.path);
+      console.log(nextPrimary);
+    }
+    if (secondarySub.path) {
+      const nextSecondary = findNextInFolder(secondarySub.path);
+      console.log(nextSecondary);
     }
   };
 
