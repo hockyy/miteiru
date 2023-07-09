@@ -34,7 +34,8 @@ export const PrimarySubtitle = ({
                        separation={val.separation}
                        setMeaning={setMeaning}
                        extraClass={"subtitle"}
-                       subtitleStyling={subtitleStyling}/>
+                       subtitleStyling={subtitleStyling}
+                       wordMeaning={val.meaning}/>
     })
     setCaption(current)
   }
