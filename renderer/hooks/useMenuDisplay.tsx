@@ -1,6 +1,6 @@
 import {useState} from 'react';
 
-const useLoadFiles = () => {
+const useMenuDisplay = () => {
   const [showController, setShowController] = useState(true);
   const [showSidebar, setShowSidebar] = useState(false)
   return {
@@ -8,4 +8,4 @@ const useLoadFiles = () => {
   }
 };
 
-export default useLoadFiles;
+export default useMenuDisplay;
