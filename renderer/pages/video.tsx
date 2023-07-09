@@ -1,32 +1,24 @@
-import React, {useCallback, useEffect, useState} from "react";
+import React from "react";
 import VideoJS from "../components/VideoJS";
-import {SubtitleContainer} from "../components/DataStructures";
 import MiteiruDropzone from "../components/MiteiruDropzone";
 import {PrimarySubtitle, SecondarySubtitle} from "../components/Subtitle";
 import MeaningBox from "../components/MeaningBox";
-import {useRouter} from "next/router";
 import {VideoController} from "../components/VideoController";
-import Toast, {TOAST_TIMEOUT} from "../components/Toast";
+import Toast from "../components/Toast";
 import {Sidebar} from "../components/Sidebar";
-import {defaultPrimarySubtitleStyling, defaultSecondarySubtitleStyling} from "../utils/CJKStyling";
-import {randomUUID} from "crypto";
 import useKeyBind from "../hooks/useKeyBind";
 import useSubtitle from "../hooks/useSubtitle";
-import {ipcRenderer} from "electron";
+import useMecab from "../hooks/useMecab";
+import useLoadFiles from "../hooks/useLoadFiles";
+import useMenuDisplay from "../hooks/useMenuDisplay";
+import useReadyPlayerCallback from "../hooks/useReadyPlayerCallback";
+import useMiteiruToast from "../hooks/useMiteiruToast";
+import useMeaning from "../hooks/useMeaning";
 
 function Video() {
-  const [videoSrc, setVideoSrc] = useState({src: '', type: ''})
-  const [currentTime, setCurrentTime] = useState(0);
-  const [meaning, setMeaning] = useState('');
-
-  const [mecab, setMecab] = useState('')
-
-  useEffect(() => {
-    ipcRenderer.invoke('getMecabCommand').then(val => {
-      setMecab(val)
-    })
-  }, []);
-
+  const {meaning, setMeaning} = useMeaning();
+  const {toastInfo, setToastInfo} = useMiteiruToast();
+  const mecab = useMecab();
   const {
     primarySub,
     setPrimarySub,
@@ -39,76 +31,20 @@ function Video() {
     primaryStyling,
     setPrimaryStyling,
     secondaryStyling,
-    setSecondaryStyling
-  } = useSubtitle(mecab, defaultPrimarySubtitleStyling, defaultSecondarySubtitleStyling);
+    setSecondaryStyling,
+    resetSub
+  } = useSubtitle(mecab);
+  const {videoSrc, onLoadFiles} = useLoadFiles(setToastInfo, setPrimarySub, setSecondarySub, mecab);
+  const {showController, setShowController, showSidebar, setShowSidebar} = useMenuDisplay();
+  const {
+    readyCallback,
+    metadata,
+    player,
+    currentTime,
+    setCurrentTime
+  } = useReadyPlayerCallback(resetSub, setPrimarySub, setSecondarySub, videoSrc);
 
-  const [player, setPlayer] = useState(null)
-  const [metadata, setMetadata] = useState(0)
-  const [showController, setShowController] = useState(true);
-  const [toastInfo, setToastInfo] = useState({message: 'coba', update: ''});
-  const [showSidebar, setShowSidebar] = useState(false)
-
-  const onLoadFiles = useCallback(async acceptedFiles => {
-    let currentPath = acceptedFiles[0].path;
-    currentPath = currentPath.replaceAll('\\', '/')
-    let pathUri = currentPath
-    if (process.platform === 'win32') {
-      pathUri = '/' + currentPath
-    }
-    if (currentPath.endsWith('.srt') || currentPath.endsWith('.vtt') || currentPath.endsWith('.ass')) {
-      setToastInfo({
-        message: 'Loading subtitle, please wait!',
-        update: randomUUID()
-      });
-      const toastSetter = setInterval(() => {
-        console.log("WTF");
-        setToastInfo({
-          message: 'Still loading subtitle, please wait!',
-          update: randomUUID()
-        })
-      }, TOAST_TIMEOUT);
-      const draggedSubtitle = {
-        type: 'text/plain',
-        src: `${currentPath}`
-      }
-      console.log(mecab)
-      const tmpSub = await SubtitleContainer.create(draggedSubtitle.src, mecab);
-      clearInterval(toastSetter);
-      if (tmpSub.language === "JP") {
-        setPrimarySub(tmpSub)
-      } else {
-        setSecondarySub(tmpSub)
-      }
-      setToastInfo({
-        message: 'Subtitle loaded',
-        update: randomUUID()
-      })
-    } else if (currentPath.endsWith('.mp4') || currentPath.endsWith('.mkv')) {
-      const draggedVideo = {
-        type: 'video/webm',
-        src: `miteiru://${pathUri}`
-      }
-      setVideoSrc(draggedVideo)
-    }
-  }, [mecab])
-
-  const readyCallback = useCallback((playerRef) => {
-    setPlayer(playerRef);
-    playerRef.on('loadedmetadata', () => {
-      setMetadata(old => (old + 1))
-    })
-  }, [])
-  const resetSub = (subSetter) => {
-    subSetter(new SubtitleContainer('', mecab))
-  }
-
-  useEffect(() => {
-    resetSub(setPrimarySub)
-    resetSub(setSecondarySub)
-  }, [videoSrc])
-
-  const router = useRouter()
-  useKeyBind(router, setMeaning, setShowController, setShowSidebar, setPrimarySub, setSecondarySub, mecab);
+  useKeyBind(setMeaning, setShowController, setShowSidebar, setPrimarySub, setSecondarySub, mecab);
 
   return (
       <React.Fragment>

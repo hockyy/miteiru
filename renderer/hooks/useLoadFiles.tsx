@@ -1,0 +1,55 @@
+import {useCallback, useState} from 'react';
+import {SubtitleContainer} from "../components/DataStructures";
+import {randomUUID} from "crypto";
+import {TOAST_TIMEOUT} from "../components/Toast";
+
+const useLoadFiles = (setToastInfo, setPrimarySub, setSecondarySub, mecab) => {
+  const [videoSrc, setVideoSrc] = useState({src: '', type: ''});
+  const onLoadFiles = useCallback(async acceptedFiles => {
+    let currentPath = acceptedFiles[0].path;
+    currentPath = currentPath.replaceAll('\\', '/')
+    let pathUri = currentPath;
+    if (process.platform === 'win32') {
+      pathUri = '/' + currentPath;
+    }
+    if (currentPath.endsWith('.srt') || currentPath.endsWith('.vtt') || currentPath.endsWith('.ass')) {
+      setToastInfo({
+        message: 'Loading subtitle, please wait!',
+        update: randomUUID()
+      });
+      const toastSetter = setInterval(() => {
+        setToastInfo({
+          message: 'Still loading subtitle, please wait!',
+          update: randomUUID()
+        });
+      }, TOAST_TIMEOUT);
+      const draggedSubtitle = {
+        type: 'text/plain',
+        src: `${currentPath}`
+      };
+      const tmpSub = await SubtitleContainer.create(draggedSubtitle.src, mecab);
+      clearInterval(toastSetter);
+      if (tmpSub.language === "JP") {
+        setPrimarySub(tmpSub);
+      } else {
+        setSecondarySub(tmpSub);
+      }
+      setToastInfo({
+        message: 'Subtitle loaded',
+        update: randomUUID()
+      });
+    } else if (currentPath.endsWith('.mp4') || currentPath.endsWith('.mkv')) {
+      const draggedVideo = {
+        type: 'video/webm',
+        src: `miteiru://${pathUri}`
+      };
+      setVideoSrc(draggedVideo);
+    }
+  }, [mecab]);
+  return {
+    onLoadFiles,
+    videoSrc,
+  }
+};
+
+export default useLoadFiles;
