@@ -64,7 +64,7 @@ function Video() {
   useKeyBind(setMeaning, setShowController, setShowSidebar, setPrimarySub, setSecondarySub, mecab);
   const {togglePlay, isPlaying} = useVideoPlayingToggle(player, metadata);
   useVideoKeyboardControls(togglePlay, deltaTime, setPrimaryShift, setSecondaryShift, setToastInfo);
-  usePlayNextAfterEnd(player, currentTime, onVideoEndHandler, duration, changeTimeTo, setEnableSeeker)
+  usePlayNextAfterEnd(player, currentTime, onVideoEndHandler, duration, setEnableSeeker)
   return (
       <React.Fragment>
         <Head>
