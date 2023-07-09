@@ -18,6 +18,7 @@ export const VideoController = ({
                                   currentTime,
                                   showController,
                                   setShowSidebar,
+                                  enableSeeker
                                 }) => {
   return <div>
     <div className={"w-[100vw] h-6 content-center -mb-4"}>
@@ -25,7 +26,9 @@ export const VideoController = ({
           max={duration}
           currentTime={currentTime * 1000}
           onChange={(seekedTime) => {
-            changeTimeTo(seekedTime / 1000)
+            if (enableSeeker) {
+              changeTimeTo(seekedTime / 1000)
+            }
           }}
       />
     </div>
