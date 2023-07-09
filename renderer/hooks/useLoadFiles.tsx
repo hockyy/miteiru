@@ -5,7 +5,6 @@ import {TOAST_TIMEOUT} from "../components/Toast";
 import {isSubtitle, isVideo} from "../utils/utils";
 import {findNextInFolder} from "../utils/folderUtils";
 import {useAsyncAwaitQueue} from "./useAsyncAwaitQueue";
-import {videoConstants} from "../utils/constants";
 
 const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, setSecondarySub, mecab, setEnableSeeker, changeTimeTo, player) => {
   const [videoSrc, setVideoSrc] = useState({src: '', type: '', path: ''});
