@@ -6,7 +6,6 @@ const useReadyPlayerCallback = (resetSub, setPrimarySub, setSecondarySub, videoS
   const [currentTime, setCurrentTime] = useState(0);
   const [metadata, setMetadata] = useState(0)
 
-
   useEffect(() => {
     resetSub(setPrimarySub)
     resetSub(setSecondarySub)
