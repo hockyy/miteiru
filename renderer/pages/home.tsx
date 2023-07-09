@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import {ipcRenderer} from 'electron';
@@ -140,7 +140,7 @@ function Home() {
                         ok: 2,
                         message: 'Removing JMDict Cache'
                       })
-                      ipcRenderer.invoke('removeDictCache').then(val => {
+                      ipcRenderer.invoke('removeDictCache').then(() => {
                         setCheck(initialCheck)
                       })
                     }
