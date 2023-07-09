@@ -11,6 +11,7 @@ import Toast, {TOAST_TIMEOUT} from "../components/Toast";
 import {Sidebar} from "../components/Sidebar";
 import {defaultPrimarySubtitleStyling, defaultSecondarySubtitleStyling} from "../utils/CJKStyling";
 import {randomUUID} from "crypto";
+import useKeyBind from "../hooks/useKeyBind";
 
 function Video() {
   const [videoSrc, setVideoSrc] = useState({src: '', type: ''})
@@ -93,40 +94,8 @@ function Video() {
   }, [videoSrc])
 
   const router = useRouter()
-  useEffect(() => {
-    ipcRenderer.invoke('getMecabCommand').then(val => {
-      setMecab(val)
-    })
-    // https://www.freecodecamp.org/news/javascript-keycode-list-keypress-event-key-codes/
-    const handleKeyPress = (event) => {
-      if (event.code === "Escape") {
-        setMeaning("")
-      } else if (event.code === "KeyQ") {
-        router.push('/home')
-      } else if (event.code === "KeyL") {
-        router.push('/learn')
-      } else if (event.code === "KeyZ") {
-        setShowController((old) => {
-          return !old
-        })
-      } else if (event.code === "KeyX") {
-        setShowSidebar((old) => {
-          return !old
-        })
-      } else if (event.code === "KeyO") {
-        resetSub(setPrimarySub)
-      } else if (event.code === "KeyP") {
-        resetSub(setSecondarySub)
-      } else if(event.code === "Space"){
-        event.preventDefault()
-        event.stopPropagation()
-      }
-    };
-    window.addEventListener('keydown', handleKeyPress);
-    return () => {
-      window.removeEventListener('keydown', handleKeyPress);
-    };
-  }, []);
+  useKeyBind(router, setMeaning, setShowController, setShowSidebar, setPrimarySub, setSecondarySub, mecab);
+
   return (
       <React.Fragment>
 
