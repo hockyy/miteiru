@@ -5,27 +5,42 @@ import MiteiruDropzone from "../components/MiteiruDropzone";
 import {PrimarySubtitle, SecondarySubtitle} from "../components/Subtitle";
 import MeaningBox from "../components/MeaningBox";
 import {useRouter} from "next/router";
-import {ipcRenderer} from "electron";
 import {VideoController} from "../components/VideoController";
 import Toast, {TOAST_TIMEOUT} from "../components/Toast";
 import {Sidebar} from "../components/Sidebar";
 import {defaultPrimarySubtitleStyling, defaultSecondarySubtitleStyling} from "../utils/CJKStyling";
 import {randomUUID} from "crypto";
 import useKeyBind from "../hooks/useKeyBind";
+import useSubtitle from "../hooks/useSubtitle";
+import {ipcRenderer} from "electron";
 
 function Video() {
   const [videoSrc, setVideoSrc] = useState({src: '', type: ''})
   const [currentTime, setCurrentTime] = useState(0);
   const [meaning, setMeaning] = useState('');
+
   const [mecab, setMecab] = useState('')
 
-  const [primarySub, setPrimarySub] = useState(new SubtitleContainer('', mecab))
-  const [primaryShift, setPrimaryShift] = useState(0)
-  const [primaryStyling, setPrimaryStyling] = useState(defaultPrimarySubtitleStyling);
+  useEffect(() => {
+    ipcRenderer.invoke('getMecabCommand').then(val => {
+      setMecab(val)
+    })
+  }, []);
 
-  const [secondarySub, setSecondarySub] = useState(new SubtitleContainer('', mecab))
-  const [secondaryShift, setSecondaryShift] = useState(0)
-  const [secondaryStyling, setSecondaryStyling] = useState(defaultSecondarySubtitleStyling);
+  const {
+    primarySub,
+    setPrimarySub,
+    secondarySub,
+    setSecondarySub,
+    primaryShift,
+    setPrimaryShift,
+    secondaryShift,
+    setSecondaryShift,
+    primaryStyling,
+    setPrimaryStyling,
+    secondaryStyling,
+    setSecondaryStyling
+  } = useSubtitle(mecab, defaultPrimarySubtitleStyling, defaultSecondarySubtitleStyling);
 
   const [player, setPlayer] = useState(null)
   const [metadata, setMetadata] = useState(0)
@@ -83,7 +98,6 @@ function Video() {
       setMetadata(old => (old + 1))
     })
   }, [])
-  const [dragDrop, setDragDrop] = useState(true);
   const resetSub = (subSetter) => {
     subSetter(new SubtitleContainer('', mecab))
   }
