@@ -42,12 +42,14 @@ export class Line {
       const word = this.content[i];
       if ((isHiragana(word.origin) || isKatakana(word.origin)) && word.origin.length <= 2) continue;
       await ipcRenderer.invoke('query', word.origin, 2).then(val => {
+        let got = 0;
         for (const entry of val) {
-          let got = 0;
           if (got) break;
           for (const reading of entry.kana) {
+            if (got) break;
             try {
               if (reading.text === word.hiragana || (entry.kanji.length >= 1 && word.origin === entry.kanji[0].text)) {
+                if (word.origin === "人間") console.log(entry)
                 this.meaning[i] = entry.sense[0].gloss[0].text;
                 this.meaning[i] = this.meaning[i].replace(/\((.*?)\)/g, '').trim();
                 if (this.meaning[i].length > japaneseConstants.meaningLengthLimit) {
