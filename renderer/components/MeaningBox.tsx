@@ -1,8 +1,6 @@
 import React, {useEffect, useState} from "react";
-import {getFurigana} from "shunou";
 import {Sentence} from "./Sentence";
 import {CJKStyling, defaultMeaningBoxStyling} from "../utils/CJKStyling";
-import {useMiteiruApi} from "../hooks/useMiteiruApi";
 import {MiteiruAPI} from "../../main/preload";
 
 const initialContentState = {sense: [], kanji: []};
@@ -13,7 +11,7 @@ const MeaningBox = ({
                       setMeaning,
                       mecab,
                       subtitleStyling = defaultMeaningBoxStyling,
-                    }: { miteiruApi: typeof MiteiruAPI, meaning: string, setMeaning: any, mecab: string, subtitleStyling?: CJKStyling}) => {
+                    }: { miteiruApi: typeof MiteiruAPI, meaning: string, setMeaning: any, mecab: string, subtitleStyling?: CJKStyling }) => {
   const [meaningContent, setMeaningContent] = useState(initialContentState)
   const [otherMeanings, setOtherMeanings] = useState([]);
   const [meaningIndex, setMeaningIndex] = useState(0);
@@ -72,7 +70,7 @@ const MeaningBox = ({
             fontFamily: "Arial",
             fontSize: "40px",
           }}>{meaningContent.kanji.map((val, meanKey) => {
-            const furiganized = getFurigana(val.text, mecab);
+            const furiganized = miteiruApi.shunou.getFurigana(val.text, mecab);
             return (
                 <div key={meanKey}
                      className={"bg-white rounded-xl p-2 border-2 border-blue-700 w-fit unselectable"}>
