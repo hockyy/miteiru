@@ -1,8 +1,6 @@
 import {useState, useEffect} from 'react';
-import {useMiteiruApi} from "./useMiteiruApi";
-const useMecab = () => {
+const useMecab = (miteiruApi) => {
   const [mecab, setMecab] = useState('');
-  const {miteiruApi} = useMiteiruApi();
 
   useEffect(() => {
     miteiruApi.invoke('getMecabCommand').then(val => {

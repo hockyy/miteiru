@@ -5,15 +5,13 @@ import {TOAST_TIMEOUT} from "../components/Toast";
 import {isSubtitle, isVideo} from "../utils/utils";
 import {findPositionDeltaInFolder} from "../utils/folderUtils";
 import {useAsyncAwaitQueue} from "./useAsyncAwaitQueue";
-import {useMiteiruApi} from "./useMiteiruApi";
 
-const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, setSecondarySub, mecab, setEnableSeeker, changeTimeTo, player) => {
+const useLoadFiles = (miteiruApi, setToastInfo, primarySub, setPrimarySub, secondarySub, setSecondarySub, mecab, setEnableSeeker, changeTimeTo, player) => {
   const [videoSrc, setVideoSrc] = useState({src: '', type: '', path: ''});
   const queue = useAsyncAwaitQueue();
   const resetSub = useCallback((subSetter) => {
     subSetter(new SubtitleContainer('', mecab));
   }, [mecab]);
-  const {miteiruApi} = useMiteiruApi();
   const onLoadFiles = useCallback(async acceptedFiles => {
     const currentHash = Symbol();
     await queue.wait(currentHash);

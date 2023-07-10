@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'react';
-import {useMiteiruApi} from "./useMiteiruApi";
 
 // Use this function to load data when the component is mounted
-export const useStoreData = (key, defaultValue) => {
+export const useStoreData = (miteiruApi, key, defaultValue) => {
   const [data, setData] = useState(defaultValue);
-  const {miteiruApi} = useMiteiruApi();
-
   useEffect(() => {
     // Load data from the store when the component is mounted
     const storeData = miteiruApi.storeGet(key, defaultValue);
