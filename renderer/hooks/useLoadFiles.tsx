@@ -63,15 +63,23 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
   const onVideoChangeHandler = useCallback(async (delta: number = 1) => {
     if (videoSrc.path) {
       const nextVideo = findPositionDeltaInFolder(videoSrc.path, delta);
-      await onLoadFiles([{path: nextVideo}]);
+      if (nextVideo !== '') {
+        await onLoadFiles([{path: nextVideo}]);
+      } else {
+        setEnableSeeker(true);
+      }
     }
     if (primarySub.path) {
       const nextPrimary = findPositionDeltaInFolder(primarySub.path, delta);
-      await onLoadFiles([{path: nextPrimary}]);
+      if (nextPrimary !== '') {
+        await onLoadFiles([{path: nextPrimary}]);
+      }
     }
     if (secondarySub.path) {
       const nextSecondary = findPositionDeltaInFolder(secondarySub.path, delta);
-      await onLoadFiles([{path: nextSecondary}]);
+      if (nextSecondary !== '') {
+        await onLoadFiles([{path: nextSecondary}]);
+      }
     }
   }, [videoSrc.path, primarySub.path, secondarySub.path]);
 
@@ -83,6 +91,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
       }
       player.on('loadedmetadata', enableSeeker)
       return () => {
+        setEnableSeeker(true);
         player.off('loadedmetadata', enableSeeker)
       }
     }

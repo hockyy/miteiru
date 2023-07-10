@@ -1,6 +1,6 @@
 import "react-video-seek-slider/styles.css"
 import {VideoSeekSlider} from "react-video-seek-slider";
-import React from "react";
+import React, {useCallback} from "react";
 import SmoothCollapse from "react-smooth-collapse";
 import {Volume} from "./Volume";
 import SettingsController from "./SettingsController";
@@ -22,16 +22,23 @@ export const VideoController = ({
                                   setEnableSeeker,
                                   onVideoChangeHandler,
                                 }) => {
+  const step = useCallback((delta) => {
+    if (enableSeeker) {
+      setEnableSeeker(false)
+      onVideoChangeHandler(delta);
+    }
+  }, [enableSeeker, onVideoChangeHandler])
+  const timeSeekerHandler = useCallback((seekedTime) => {
+    if (enableSeeker) {
+      changeTimeTo(seekedTime / 1000)
+    }
+  }, [enableSeeker, changeTimeTo])
   return <div>
     <div className={"w-[100vw] h-6 content-center -mb-4"}>
       <VideoSeekSlider
           max={duration}
           currentTime={currentTime * 1000}
-          onChange={(seekedTime) => {
-            if (enableSeeker) {
-              changeTimeTo(seekedTime / 1000)
-            }
-          }}
+          onChange={timeSeekerHandler}
       />
     </div>
     <SmoothCollapse className={"bg-gray-800/70 h-fit unselectable"}
@@ -49,12 +56,8 @@ export const VideoController = ({
           </div>
         </div>
         <div className={"flex w-1/3 justify-center items-center gap-4"}>
-          <button onClick={() => {
-            if (enableSeeker) {
-              setEnableSeeker(false)
-              onVideoChangeHandler(-1);
-            }
-          }} className={"flex flex-row items-center gap-1 animation h-5"}>
+          <button onClick={() => step(-1)}
+                  className={"flex flex-row items-center gap-1 animation h-5"}>
             {StepLeft}
           </button>
           <button onClick={() => {
@@ -72,12 +75,8 @@ export const VideoController = ({
           }} className={"flex flex-row items-center gap-1 animation h-5"}>
             10 {ArrowRight}
           </button>
-          <button onClick={() => {
-            if (enableSeeker) {
-              setEnableSeeker(false)
-              onVideoChangeHandler();
-            }
-          }} className={"flex flex-row items-center gap-1 animation h-5"}>
+          <button onClick={() => step(1)}
+                  className={"flex flex-row items-center gap-1 animation h-5"}>
             {StepRight}
           </button>
         </div>
