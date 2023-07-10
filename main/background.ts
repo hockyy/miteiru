@@ -16,8 +16,6 @@ import Store from "electron-store";
 
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
-export const ElectronStore = new Store();
-
 if (isProd) {
   serve({directory: 'app'});
 } else {
@@ -25,6 +23,7 @@ if (isProd) {
 }
 
 (async () => {
+
   await app.whenReady();
   const appDataDirectory = app.getPath('userData');
 
