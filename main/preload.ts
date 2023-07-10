@@ -1,7 +1,7 @@
 import {contextBridge, ipcRenderer} from "electron";
-import * as electron from "electron";
-import {ElectronStore} from "./background";
+import Store from "electron-store";
 
+export const ElectronStore = new Store();
 
 export const MiteiruAPI = {
   invoke: (channel, ...args) => {
