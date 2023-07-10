@@ -38,9 +38,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
         type: 'text/plain',
         src: `${currentPath}`
       };
-      SubtitleContainer.create(draggedSubtitle.src, mecab, (content, limit) => {
-        return (() => miteiruApi.invoke("query", content, limit));
-      }).then(tmpSub => {
+      SubtitleContainer.create(draggedSubtitle.src, mecab, miteiruApi).then(tmpSub => {
         clearInterval(toastSetter);
         if (tmpSub.language === "JP") {
           setPrimarySub(tmpSub);
@@ -65,16 +63,19 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
     await queue.end(currentHash);
   }, [mecab]);
   const onVideoChangeHandler = useCallback(async (delta: number = 1) => {
+    const positionFinder = (path) => {
+      return findPositionDeltaInFolder(path, delta, miteiruApi);
+    }
     if (videoSrc.path) {
-      const nextVideo = findPositionDeltaInFolder(videoSrc.path, delta);
+      const nextVideo = positionFinder(videoSrc.path);
       await onLoadFiles([{path: nextVideo}]);
     }
     if (primarySub.path) {
-      const nextPrimary = findPositionDeltaInFolder(primarySub.path, delta);
+      const nextPrimary = positionFinder(primarySub.path);
       await onLoadFiles([{path: nextPrimary}]);
     }
     if (secondarySub.path) {
-      const nextSecondary = findPositionDeltaInFolder(secondarySub.path, delta);
+      const nextSecondary = positionFinder(secondarySub.path);
       await onLoadFiles([{path: nextSecondary}]);
     }
   }, [videoSrc.path, primarySub.path, secondarySub.path]);

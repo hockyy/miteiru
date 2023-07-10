@@ -1,5 +1,4 @@
 import {getFurigana} from "shunou";
-import fs from 'fs';
 import {parse as parseSRT} from '@plussub/srt-vtt-parser';
 import {parse as parseASS} from 'ass-compiler';
 import languageEncoding from "detect-file-encoding-and-language";
@@ -35,12 +34,12 @@ export class Line {
     }
   }
 
-  async fillContentWithLearningKotoba(miteiruMeaningQuery) {
+  async fillContentWithLearningKotoba(miteiruApi) {
     this.meaning = Array(this.content.length).fill('');
     for (let i = 0; i < this.content.length; i++) {
       const word = this.content[i];
       if ((isHiragana(word.origin) || isKatakana(word.origin)) && word.origin.length <= 2) continue;
-      await miteiruMeaningQuery(word.origin, 2).then(val => {
+      await miteiruApi('query', word.origin, 2).then(val => {
         let got = 0;
         for (const entry of val) {
           if (got) break;
@@ -80,12 +79,12 @@ export class SubtitleContainer {
     return
   }
 
-  static async create(filename: string, mecab: string, miteiruMeaningQuery) {
+  static async create(filename: string, mecab: string, miteiruApi) {
     if (filename === '') return
     const subtitleContainer = new SubtitleContainer('', mecab);
     subtitleContainer.path = filename;
     let entries;
-    const buffer = await fs.promises.readFile(filename)
+    const buffer = miteiruApi.getBuffer(filename);
     const blob = new Blob([buffer]);
 
     const currentData = await languageEncoding(blob);
@@ -106,7 +105,7 @@ export class SubtitleContainer {
       // process transcript entry
       subtitleContainer.lines.push(new Line(from, to, removeTags(text), mecab, subtitleContainer.language === "JP"))
       const back = subtitleContainer.lines[subtitleContainer.lines.length - 1];
-      await back.fillContentWithLearningKotoba(miteiruMeaningQuery);
+      await back.fillContentWithLearningKotoba(miteiruApi);
     }
     return subtitleContainer
   }
