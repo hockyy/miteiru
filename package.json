@@ -13,6 +13,8 @@
     "patch": "patch-package jmdict-simplified-node"
   },
   "dependencies": {
+    "@electron/asar": "^3.2.4",
+    "@electron/osx-sign": "^1.0.4",
     "@plussub/srt-vtt-parser": "^1.1.0",
     "ass-compiler": "^0.1.8",
     "async-await-queue": "^2.1.4",
