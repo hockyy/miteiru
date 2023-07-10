@@ -79,6 +79,9 @@ if (isProd) {
 
       // Swap the exact match to front
       matches = matches.sort((a, b) => {
+            const commonA = (a.kanji.length ? a.kanji[0].common : 0);
+            const commonB = (b.kanji.length ? b.kanji[0].common : 0);
+            if (commonA !== commonB) return commonB - commonA;
             // Get smallest kanji length in a and b, compare it
             const smallestA = (a.kanji.length ? (a.kanji[0].text ?? ''.length) : 0);
             const smallestB = (b.kanji.length ? (b.kanji[0].text ?? ''.length) : 0);
