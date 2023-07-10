@@ -2,11 +2,11 @@ import {isMixedJapanese} from "shunou";
 import parse from "html-react-parser";
 import styled from "styled-components";
 import {CJKStyling} from "../utils/CJKStyling";
-import React from "react";
+import React, {useCallback} from "react";
 import {randomUUID} from "crypto";
 
 const StyledSentence = styled.button`
-  &:hover {
+  &:hover, &:hover ruby, &:hover rt {
     -webkit-text-fill-color: ${props => props.subtitleStyling.text.hoverColor};
     -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
   }
@@ -28,14 +28,19 @@ export const Sentence = ({
                            wordMeaning?: string
                          }
 ) => {
-  const handleChange = (origin) => {
+  const handleChange = useCallback((origin) => {
     setMeaning(origin)
-  }
+  }, [setMeaning]);
   return <StyledSentence
       subtitleStyling={subtitleStyling}
       className={extraClass}
       onClick={() => handleChange(origin)}>
-    <ruby style={{rubyPosition: "under"}}>
+    <ruby style={{
+      rubyPosition: subtitleStyling.positionMeaningTop ? "over" : "under",
+      WebkitTextFillColor: wordMeaning ? subtitleStyling.textMeaning.color : '',
+      WebkitTextStrokeColor: subtitleStyling.stroke.color,
+      WebkitTextStrokeWidth: subtitleStyling.stroke.width,
+    }}>
       {separation.map((val, index) => {
         const hiragana = (<>
               <rp>(</rp>
@@ -52,7 +57,10 @@ export const Sentence = ({
         const showHelp = val.isKanji || val.isMixed || isMixedJapanese(origin);
         const showRomaji = (val.isKana || showHelp);
         const showFurigana = ((val.isKana && subtitleStyling.showFuriganaOnKana) || showHelp);
-        return <ruby style={{rubyPosition: "under"}} key={index}>
+        return <ruby style={{
+          rubyPosition: "under",
+          WebkitTextFillColor: subtitleStyling.text.color,
+        }} key={index}>
           <ruby style={{rubyPosition: "over"}}>
             {val.main}
             <rt className={"unselectable"}>{subtitleStyling.showFurigana && showFurigana && hiragana}</rt>

@@ -67,9 +67,6 @@ const MeaningBox = ({
               }>Previous
               </button>}
           <div className={"flex flex-wrap gap-2"} style={{
-            WebkitTextFillColor: subtitleStyling.text.color,
-            WebkitTextStrokeColor: subtitleStyling.stroke.color,
-            WebkitTextStrokeWidth: subtitleStyling.stroke.width,
             fontFamily: "Arial",
             fontSize: "40px",
           }}>{meaningContent.kanji.map((val, meanKey) => {

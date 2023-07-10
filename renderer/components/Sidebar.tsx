@@ -90,6 +90,16 @@ const StylingBox = ({
       }/>
       {subtitleName} Subtitle Hover Stroke Color
     </div>
+
+    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
+      <PopoverPicker color={subtitleStyling.textMeaning.color} onChange={(val) => {
+        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+        newCopy.textMeaning.color = val;
+        setSubtitleStyling(newCopy)
+      }
+      }/>
+      {subtitleName} Meaning Text Color
+    </div>}
     <div className={"w-full flex flex-row items-center gap-3"}>
       <PopoverPicker color={subtitleStyling.background} onChange={(val) => {
         const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
@@ -155,6 +165,16 @@ const StylingBox = ({
             setSubtitleStyling(newCopy)
           }}
       />
+    </div>
+
+    <div className={"flex flex-row items-center gap-3"}>
+      <Toggle defaultCheck={subtitleStyling.positionMeaningTop} onChange={(val) => {
+        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+        newCopy.positionMeaningTop = val;
+        setSubtitleStyling(newCopy)
+      }
+      }/>
+      {subtitleName} Subtitle Position From Top
     </div>
     <button
         type={"button"}

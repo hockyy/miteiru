@@ -13,9 +13,11 @@ interface TextStyling {
 export interface CJKStyling {
   stroke: StrokeStyling
   text: TextStyling
+  textMeaning?: TextStyling
   background: string
   position: string,
   positionFromTop: boolean,
+  positionMeaningTop?: boolean
   showFuriganaOnKana: boolean,
   showRomaji: boolean,
   showFurigana: boolean;
@@ -55,13 +57,19 @@ export const defaultPrimarySubtitleStyling: CJKStyling = {
     hoverColor: "#00ffda",
     fontSize: "35px",
   },
+  textMeaning: {
+    color: "#ffffff",
+    hoverColor: "#00ffda",
+    fontSize: "35px",
+  },
   background: "#000000A5",
   position: "2vh",
   positionFromTop: true,
+  positionMeaningTop: true,
   showFuriganaOnKana: false,
   showFurigana: true,
   showRomaji: true,
-  showMeaning: false
+  showMeaning: true
 }
 
 export const defaultSecondarySubtitleStyling: CJKStyling = {
