@@ -4,6 +4,7 @@ import {
   BrowserWindowConstructorOptions,
 } from 'electron';
 import Store from 'electron-store';
+import path from "path";
 
 export default (windowName: string, options: BrowserWindowConstructorOptions): BrowserWindow => {
   const key = 'window-state';
@@ -66,14 +67,16 @@ export default (windowName: string, options: BrowserWindowConstructorOptions): B
   };
 
   state = ensureVisibleOnSomeDisplay(restore());
-
+  console.log(__dirname)
   const browserOptions: BrowserWindowConstructorOptions = {
     ...options,
     ...state,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
-      // webSecurity: false,
+      nodeIntegration: false,
+      contextIsolation: true,
+      enableBlinkFeatures: '',
+      sandbox: false,
+      preload: path.join(__dirname, 'preload.js'),
       ...options.webPreferences,
     },
   };
