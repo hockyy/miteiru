@@ -1,4 +1,6 @@
 import {contextBridge, ipcRenderer} from "electron";
+import * as electron from "electron";
+import {ElectronStore} from "./background";
 
 
 export const MiteiruAPI = {
@@ -10,6 +12,12 @@ export const MiteiruAPI = {
   },
   getPlatform: () => {
     return process.platform;
+  },
+  storeSet: (key, data) => {
+    ElectronStore.set(key, data);
+  },
+  storeGet: (key, data) => {
+    return ElectronStore.get(key, data);
   }
 };
 

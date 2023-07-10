@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from "react";
-import {ipcRenderer} from "electron";
 import {getFurigana} from "shunou";
 import {Sentence} from "./Sentence";
 import {CJKStyling, defaultMeaningBoxStyling} from "../utils/CJKStyling";
+import {useMiteiruApi} from "../hooks/useMiteiruApi";
 
 const initialContentState = {sense: [], kanji: []};
 
@@ -16,12 +16,13 @@ const MeaningBox = ({
   const [otherMeanings, setOtherMeanings] = useState([]);
   const [meaningIndex, setMeaningIndex] = useState(0);
   const [tags, setTags] = useState({})
+  const {miteiruApi} = useMiteiruApi();
   useEffect(() => {
     if (meaning === '') {
       setMeaningContent(initialContentState);
       return;
     }
-    ipcRenderer.invoke('query', meaning, 10).then(val => {
+    miteiruApi.invoke('query', meaning, 10).then(val => {
       setOtherMeanings(val)
       if (val.length > 0) {
         setMeaningContent(val[0])
@@ -30,7 +31,7 @@ const MeaningBox = ({
         setMeaningContent(initialContentState)
       }
     })
-    ipcRenderer.invoke('tags').then(val => {
+    miteiruApi.invoke('tags').then(val => {
       setTags(val)
     })
   }, [meaning]);

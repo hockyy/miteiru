@@ -3,10 +3,10 @@ import Head from "next/head";
 import {ContainerHome} from "../components/ContainerHome";
 import {PrimarySubtitle} from "../components/Subtitle";
 import {SubtitleContainer} from "../components/DataStructures";
-import {ipcRenderer} from "electron";
 import {defaultPrimarySubtitleStyling} from "../utils/CJKStyling";
 import MeaningBox from "../components/MeaningBox";
 import useMeaning from "../hooks/useMeaning";
+import {useMiteiruApi} from "../hooks/useMiteiruApi";
 
 
 function Learn() {
@@ -17,8 +17,9 @@ function Learn() {
   const [primarySub, setPrimarySub] = useState(new SubtitleContainer('', mecab))
   const [primaryStyling, setPrimaryStyling] = useState(defaultPrimarySubtitleStyling);
   const [directInput, setDirectInput] = useState('');
+  const {miteiruApi} = useMiteiruApi();
   useEffect(() => {
-    ipcRenderer.invoke('getMecabCommand').then(val => {
+    miteiruApi.invoke('getMecabCommand').then(val => {
       setMecab(val)
     })
   }, []);
