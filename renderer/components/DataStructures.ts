@@ -49,7 +49,6 @@ export class Line {
             if (got) break;
             try {
               if (reading.text === word.hiragana || (entry.kanji.length >= 1 && word.origin === entry.kanji[0].text)) {
-                if (word.origin === "人間") console.log(entry)
                 this.meaning[i] = entry.sense[0].gloss[0].text;
                 this.meaning[i] = this.meaning[i].replace(/\((.*?)\)/g, '').trim();
                 if (this.meaning[i].length > japaneseConstants.meaningLengthLimit) {

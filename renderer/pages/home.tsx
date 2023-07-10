@@ -4,6 +4,8 @@ import Link from 'next/link';
 import {ipcRenderer} from 'electron';
 import {ContainerHome} from "../components/ContainerHome";
 import {KeyboardHelp} from "../components/KeyboardHelp";
+import {useStoreData} from "../hooks/useStoreData";
+import {defaultPrimarySubtitleStyling, defaultSecondarySubtitleStyling} from "../utils/CJKStyling";
 
 const checkSymbol = ['❌', '✅', '🙃']
 const initialCheck = {ok: 0, message: 'Check is not run yet'}
