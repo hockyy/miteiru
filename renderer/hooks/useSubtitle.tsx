@@ -10,7 +10,7 @@ const useSubtitle = (mecab) => {
 
   const [secondarySub, setSecondarySub] = useState(new SubtitleContainer('', mecab));
   const [secondaryShift, setSecondaryShift] = useState(0);
-  const [secondaryStyling, setSecondaryStyling] = useStoreData('user.styling.secondary', defaultPrimarySubtitleStyling);
+  const [secondaryStyling, setSecondaryStyling] = useStoreData('user.styling.secondary', defaultSecondarySubtitleStyling);
 
   return {
     primarySub,

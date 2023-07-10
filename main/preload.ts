@@ -1,5 +1,6 @@
 import {contextBridge, ipcRenderer} from "electron";
 import Store from "electron-store";
+import fs from "fs";
 
 export const ElectronStore = new Store();
 
@@ -18,6 +19,12 @@ export const MiteiruAPI = {
   },
   storeGet: (key, data) => {
     return ElectronStore.get(key, data);
+  },
+  getBuffer: (path) => {
+    return fs.readFileSync(path);
+  },
+  getDir: (path) => {
+    return fs.readdirSync(path);
   }
 };
 

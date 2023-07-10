@@ -1,15 +1,14 @@
 import {isArrayEndsWithMatcher, isSubtitle, isVideo} from "./utils";
 import {videoConstants} from "./constants";
-import {readdirSync} from "fs";
 
-export const findPositionDeltaInFolder = (path: string, delta: number = 1) => {
+export const findPositionDeltaInFolder = (path: string, delta: number = 1, miteiruApi) => {
   let matcher = [];
   if (isVideo(path)) matcher = videoConstants.supportedVideoFormats;
   if (isSubtitle(path)) matcher = videoConstants.supportedSubtitleFormats;
   const folderPathSplitted = path.split('/');
   folderPathSplitted.pop();
   const folderPath = folderPathSplitted.join('/');
-  let filesMatched = readdirSync(folderPath).map(fileName => {
+  let filesMatched = miteiruApi.getDir(folderPath).map(fileName => {
     return `${folderPath}/${fileName}`
   });
   filesMatched = filesMatched.filter(filePattern => {
