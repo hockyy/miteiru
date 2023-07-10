@@ -1,11 +1,11 @@
-import {getFurigana, isMixedJapanese} from "shunou";
+import {getFurigana} from "shunou";
 import fs from 'fs';
 import {parse as parseSRT} from '@plussub/srt-vtt-parser';
 import {parse as parseASS} from 'ass-compiler';
 import languageEncoding from "detect-file-encoding-and-language";
 import iconv from "iconv-lite"
 import {ipcRenderer} from "electron";
-import {isKana, isKanji, isHiragana} from 'wanakana'
+import {isHiragana, isKatakana} from 'wanakana'
 import {japaneseConstants} from "../utils/constants";
 
 
@@ -40,7 +40,7 @@ export class Line {
     this.meaning = Array(this.content.length).fill('');
     for (let i = 0; i < this.content.length; i++) {
       const word = this.content[i];
-      if (isHiragana(word.origin) && word.origin.length <= 2) continue;
+      if ((isHiragana(word.origin) || isKatakana(word.origin)) && word.origin.length <= 2) continue;
       await ipcRenderer.invoke('query', word.origin, 2).then(val => {
         for (const entry of val) {
           let got = 0;
