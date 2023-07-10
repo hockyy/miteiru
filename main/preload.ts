@@ -1,8 +1,10 @@
 import {contextBridge, ipcRenderer} from "electron";
 import Store from "electron-store";
 import fs from "fs";
-import videojs from 'video.js';
+import videojs from '!video.js';
 import shunou from 'shunou';
+import iconv from "iconv-lite";
+import wanakana from "wanakana";
 
 export const ElectronStore = new Store();
 
@@ -13,9 +15,7 @@ export const MiteiruAPI = {
   on: (channel, func) => {
     return ipcRenderer.on(channel, (event, ...args) => func(...args));
   },
-  getPlatform: () => {
-    return process.platform;
-  },
+  platform: process.platform,
   storeSet: (key, data) => {
     ElectronStore.set(key, data);
   },
@@ -29,7 +29,9 @@ export const MiteiruAPI = {
     return fs.readdirSync(path);
   },
   shunou: shunou,
-  videoJs: videojs
+  videojs: videojs,
+  iconv: iconv,
+  wanakana: wanakana
 };
 
 contextBridge.exposeInMainWorld('miteiru', MiteiruAPI);

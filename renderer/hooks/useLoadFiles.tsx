@@ -1,16 +1,16 @@
 import {useCallback, useEffect, useState} from 'react';
 import {SubtitleContainer} from "../components/DataStructures";
-import {randomUUID} from "crypto";
 import {TOAST_TIMEOUT} from "../components/Toast";
 import {isSubtitle, isVideo} from "../utils/utils";
 import {findPositionDeltaInFolder} from "../utils/folderUtils";
 import {useAsyncAwaitQueue} from "./useAsyncAwaitQueue";
+import uuid from "uuid-random";
 
 const useLoadFiles = (miteiruApi, setToastInfo, primarySub, setPrimarySub, secondarySub, setSecondarySub, mecab, setEnableSeeker, changeTimeTo, player) => {
   const [videoSrc, setVideoSrc] = useState({src: '', type: '', path: ''});
   const queue = useAsyncAwaitQueue();
   const resetSub = useCallback((subSetter) => {
-    subSetter(new SubtitleContainer('', mecab));
+    subSetter(new SubtitleContainer('', mecab, miteiruApi));
   }, [mecab]);
   const onLoadFiles = useCallback(async acceptedFiles => {
     const currentHash = Symbol();
@@ -18,18 +18,18 @@ const useLoadFiles = (miteiruApi, setToastInfo, primarySub, setPrimarySub, secon
     let currentPath = acceptedFiles[0].path;
     currentPath = currentPath.replaceAll('\\', '/')
     let pathUri = currentPath;
-    if (process.platform === 'win32') {
+    if (miteiruApi.platform === 'win32') {
       pathUri = '/' + currentPath;
     }
     if (isSubtitle(currentPath)) {
       setToastInfo({
         message: 'Loading subtitle, please wait!',
-        update: randomUUID()
+        update: uuid()
       });
       const toastSetter = setInterval(() => {
         setToastInfo({
           message: 'Still loading subtitle, please wait!',
-          update: randomUUID()
+          update: uuid()
         });
       }, TOAST_TIMEOUT);
       const draggedSubtitle = {
@@ -45,7 +45,7 @@ const useLoadFiles = (miteiruApi, setToastInfo, primarySub, setPrimarySub, secon
         }
         setToastInfo({
           message: 'Subtitle loaded',
-          update: randomUUID()
+          update: uuid()
         });
       });
     } else if (isVideo(currentPath)) {

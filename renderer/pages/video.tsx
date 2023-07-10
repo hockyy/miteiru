@@ -48,7 +48,7 @@ function Video() {
     setPrimaryStyling,
     secondaryStyling,
     setSecondaryStyling
-  } = useSubtitle(mecab);
+  } = useSubtitle(miteiruApi, mecab);
   const {meaning, setMeaning} = useMeaning();
   const {
     duration,
@@ -121,7 +121,8 @@ function Video() {
           {mecab !== '' && <MiteiruDropzone onDrop={onLoadFiles}/>}
         </div>
         <Sidebar miteiruApi={miteiruApi}
-                 showSidebar={showSidebar} setShowSidebar={setShowSidebar}
+                 showSidebar={showSidebar}
+                 setShowSidebar={setShowSidebar}
                  primaryStyling={primaryStyling}
                  setPrimaryStyling={setPrimaryStyling}
                  secondaryStyling={secondaryStyling}

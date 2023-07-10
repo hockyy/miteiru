@@ -1,16 +1,8 @@
 import parse from "html-react-parser";
-import styled from "styled-components";
 import {CJKStyling} from "../utils/CJKStyling";
 import React, {useCallback} from "react";
-import {randomUUID} from "crypto";
-import {isMixed} from "wanakana"
+import uuid from "uuid-random"
 
-const StyledSentence = styled.button`
-  &:hover, &:hover ruby, &:hover rt {
-    -webkit-text-fill-color: ${props => props.subtitleStyling.text.hoverColor};
-    -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
-  }
-`
 
 export const Sentence = ({
                            origin,
@@ -31,10 +23,7 @@ export const Sentence = ({
   const handleChange = useCallback((origin) => {
     setMeaning(origin)
   }, [setMeaning]);
-  return <StyledSentence
-      subtitleStyling={subtitleStyling}
-      className={extraClass}
-      onClick={() => handleChange(origin)}>
+  return <div>
     <ruby style={{
       rubyPosition: subtitleStyling.positionMeaningTop ? "over" : "under",
       WebkitTextFillColor: wordMeaning ? subtitleStyling.textMeaning.color : '',
@@ -54,7 +43,7 @@ export const Sentence = ({
               <rp>)</rp>
             </>
         )
-        const showHelp = val.isKanji || val.isMixed || isMixed(origin);
+        const showHelp = val.isKanji || val.isMixed;
         const showRomaji = (val.isKana || showHelp);
         const showFurigana = ((val.isKana && subtitleStyling.showFuriganaOnKana) || showHelp);
         return <ruby style={{
@@ -71,9 +60,9 @@ export const Sentence = ({
       <rt className={"unselectable"}>{subtitleStyling.showMeaning && wordMeaning}</rt>
 
     </ruby>
-  </StyledSentence>
+  </div>
 }
 
 export const PlainSentence = ({origin}) => {
-  return <div key={randomUUID()}>{parse(origin)}</div>
+  return <div key={uuid()}>{parse(origin)}</div>
 }

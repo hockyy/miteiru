@@ -1,8 +1,6 @@
 import {parse as parseSRT} from '@plussub/srt-vtt-parser';
 import {parse as parseASS} from 'ass-compiler';
 import languageEncoding from "detect-file-encoding-and-language";
-import iconv from "iconv-lite"
-import {isHiragana, isKatakana} from 'wanakana'
 import {japaneseConstants} from "../utils/constants";
 
 
@@ -37,7 +35,7 @@ export class Line {
     this.meaning = Array(this.content.length).fill('');
     for (let i = 0; i < this.content.length; i++) {
       const word = this.content[i];
-      if ((isHiragana(word.origin) || isKatakana(word.origin)) && word.origin.length <= 2) continue;
+      if ((miteiruApi.wanakana.isHiragana(word.origin) || miteiruApi.wanakana.isKatakana(word.origin)) && word.origin.length <= 2) continue;
       await miteiruApi('query', word.origin, 2).then(val => {
         let got = 0;
         for (const entry of val) {
@@ -87,7 +85,7 @@ export class SubtitleContainer {
     const blob = new Blob([buffer]);
 
     const currentData = await languageEncoding(blob);
-    const text = iconv.decode(buffer, currentData.encoding)
+    const text = miteiruApi.iconv.decode(buffer, currentData.encoding)
     if (filename.endsWith('.ass')) {
       entries = parseAssSubtitle(text);
     } else {

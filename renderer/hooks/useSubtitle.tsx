@@ -3,14 +3,14 @@ import {SubtitleContainer} from "../components/DataStructures";
 import {defaultPrimarySubtitleStyling, defaultSecondarySubtitleStyling} from "../utils/CJKStyling";
 import {useStoreData} from "./useStoreData";
 
-const useSubtitle = (mecab) => {
-  const [primarySub, setPrimarySub] = useState(new SubtitleContainer('', mecab));
+const useSubtitle = (miteiruApi, mecab) => {
+  const [primarySub, setPrimarySub] = useState(new SubtitleContainer('', mecab, miteiruApi));
   const [primaryShift, setPrimaryShift] = useState(0);
-  const [primaryStyling, setPrimaryStyling] = useStoreData('user.styling.primary', defaultPrimarySubtitleStyling);
+  const [primaryStyling, setPrimaryStyling] = useStoreData(miteiruApi, 'user.styling.primary', defaultPrimarySubtitleStyling);
 
-  const [secondarySub, setSecondarySub] = useState(new SubtitleContainer('', mecab));
+  const [secondarySub, setSecondarySub] = useState(new SubtitleContainer('', mecab, miteiruApi));
   const [secondaryShift, setSecondaryShift] = useState(0);
-  const [secondaryStyling, setSecondaryStyling] = useStoreData('user.styling.secondary', defaultSecondarySubtitleStyling);
+  const [secondaryStyling, setSecondaryStyling] = useStoreData(miteiruApi, 'user.styling.secondary', defaultSecondarySubtitleStyling);
 
   return {
     primarySub,

@@ -11,13 +11,13 @@ import {useMiteiruApi} from "../hooks/useMiteiruApi";
 
 function Learn() {
 
+  const {miteiruApi} = useMiteiruApi();
   const {meaning, setMeaning} = useMeaning();
   const [currentTime, setCurrentTime] = useState(0);
   const [mecab, setMecab] = useState('')
-  const [primarySub, setPrimarySub] = useState(new SubtitleContainer('', mecab))
-  const [primaryStyling, setPrimaryStyling] = useState(defaultPrimarySubtitleStyling);
+  const [primarySub, setPrimarySub] = useState(new SubtitleContainer('', mecab, miteiruApi))
+  const [primaryStyling] = useState(defaultPrimarySubtitleStyling);
   const [directInput, setDirectInput] = useState('');
-  const {miteiruApi} = useMiteiruApi();
   useEffect(() => {
     miteiruApi.invoke('getMecabCommand').then(val => {
       setMecab(val)
@@ -25,7 +25,7 @@ function Learn() {
   }, []);
   useEffect(() => {
     if (mecab !== '') {
-      setPrimarySub(new SubtitleContainer(directInput, mecab))
+      setPrimarySub(new SubtitleContainer(directInput, mecab, miteiruApi.shunou.getFurigana))
       setCurrentTime(old => (old ^ 1))
     }
   }, [mecab, directInput])
@@ -38,7 +38,8 @@ function Learn() {
         <div
             className={"flex flex-col justify-center items-center bg-white min-h-screen w-[100vw]"}>
 
-          <MeaningBox meaning={meaning} setMeaning={setMeaning} mecab={mecab}/>
+          <MeaningBox meaning={meaning} setMeaning={setMeaning} mecab={mecab}
+                      miteiruApi={miteiruApi}/>
           <div
               className={"flex flex-col h-[100vh] w-full items-center bg-blue-50 gap-4 p-5 border rounded-lg border-blue-800"}>
             <ContainerHome>
