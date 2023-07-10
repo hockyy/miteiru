@@ -12,9 +12,11 @@ import {
 } from 'jmdict-simplified-node';
 import fs from "fs";
 import path from "path";
+import Store from "electron-store";
 
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
+export const ElectronStore = new Store();
 
 if (isProd) {
   serve({directory: 'app'});

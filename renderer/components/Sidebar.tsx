@@ -6,8 +6,8 @@ import {
   defaultPrimarySubtitleStyling,
   defaultSecondarySubtitleStyling
 } from "../utils/CJKStyling";
-import {ipcRenderer} from "electron";
 import Toggle from "./Toggle";
+import {useMiteiruApi} from "../hooks/useMiteiruApi";
 
 const StylingBox = ({
                       subtitleStyling,
@@ -15,6 +15,7 @@ const StylingBox = ({
                       subtitleName,
                       defaultStyling
                     }) => {
+  const {miteiruApi} = useMiteiruApi();
   return <div className={"w-full mx-5 px-3 flex flex-col content-start gap-3 unselectable"}>
     {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
       <Toggle defaultCheck={subtitleStyling.showFurigana} onChange={(val) => {
@@ -191,7 +192,7 @@ const StylingBox = ({
           type={"button"}
           className='w-full enabled:bg-green-600 p-3 rounded-sm enabled:hover:bg-green-700'
           onClick={() => {
-            ipcRenderer.invoke("readFile", ["json"]).then((val) => {
+            miteiruApi.invoke("readFile", ["json"]).then((val) => {
               try {
                 const parsed = JSON.parse(val) as CJKStyling;
                 setSubtitleStyling(parsed)
@@ -209,7 +210,11 @@ const StylingBox = ({
           type={"button"}
           className='w-full enabled:bg-blue-600 p-3 rounded-sm enabled:hover:bg-blue-700'
           onClick={() => {
-            ipcRenderer.invoke("saveFile", ["json"], JSON.stringify(subtitleStyling))
+            miteiruApi
+            .invoke("saveFile", ["json"], JSON.stringify(subtitleStyling))
+            .catch(e => {
+              console.log(e)
+            })
           }
           }
       >

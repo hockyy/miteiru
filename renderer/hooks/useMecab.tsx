@@ -1,11 +1,11 @@
 import {useState, useEffect} from 'react';
-import {ipcRenderer} from "electron";
-
+import {useMiteiruApi} from "./useMiteiruApi";
 const useMecab = () => {
   const [mecab, setMecab] = useState('');
+  const {miteiruApi} = useMiteiruApi();
 
   useEffect(() => {
-    ipcRenderer.invoke('getMecabCommand').then(val => {
+    miteiruApi.invoke('getMecabCommand').then(val => {
       setMecab(val);
     });
   }, []);
