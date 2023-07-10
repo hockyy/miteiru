@@ -5,8 +5,9 @@ export const videoConstants = {
   supportedSubtitleFormats: [
     'ass', 'srt', 'vrt'
   ],
-  shiftAmount : 100,
-  playingClass : ["", "playing"],
+  shiftAmount: 100,
+  playingClass: ["", "playing"],
+  cjkRegex: /\p{Script=Han}|\p{Script=Hiragana}|\p{Script=Katakana}|\p{Script=Hangul}/gu
 }
 
 export const japaneseConstants = {
