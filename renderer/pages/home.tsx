@@ -1,59 +1,61 @@
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import {ipcRenderer} from 'electron';
 import {ContainerHome} from "../components/ContainerHome";
 import {KeyboardHelp} from "../components/KeyboardHelp";
-import {useStoreData} from "../hooks/useStoreData";
-import {defaultPrimarySubtitleStyling, defaultSecondarySubtitleStyling} from "../utils/CJKStyling";
-
-const checkSymbol = ['❌', '✅', '🙃']
-const initialCheck = {ok: 0, message: 'Check is not run yet'}
-const mecabDefaultDirectory = {
-  'darwin': '/opt/homebrew/bin/mecab',
-  'linux': '/usr/bin/mecab',
-  'win32': 'C:\\Program Files (x86)\\MeCab\\bin\\mecab.exe'
-}
+import {appConstants, japaneseConstants} from "../utils/constants";
+import {useMiteiruApi} from "../hooks/useMiteiruApi";
 
 function Home() {
-  const [dicdir, setDicdir] = useState('');
-  const [mecab, setMecab] = useState(mecabDefaultDirectory[process.platform] ?? mecabDefaultDirectory['linux']);
+  const {miteiruApi} = useMiteiruApi();
+  const [mecab, setMecab] = useState('');
   const [jmdict, setJmdict] = useState('');
-  const [check, setCheck] = useState(initialCheck);
+  const [check, setCheck] = useState(appConstants.initialCheck);
+
+  useEffect(() => {
+    if (!miteiruApi) return;
+    setMecab(japaneseConstants.mecabDefaultDirectory[miteiruApi.getPlatform()])
+  }, [miteiruApi]);
 
   const handleSelectMecabPath = useCallback(() => {
-    ipcRenderer.invoke('pickFile', ['*']).then((val) => {
+    if (!miteiruApi) return;
+    miteiruApi.invoke('pickFile', ['*']).then((val) => {
       if (!val.canceled) setMecab(val.filePaths[0]);
     });
   }, []);
 
   const handleSelectJMDictJson = useCallback(() => {
-    ipcRenderer.invoke('pickFile', ['json']).then((val) => {
+    if (!miteiruApi) return;
+    miteiruApi.invoke('pickFile', ['json']).then((val) => {
       if (!val.canceled) setJmdict(val.filePaths[0]);
     });
-  }, []);
+  }, [miteiruApi]);
 
   const handleCheck = useCallback((cached = false) => {
+    if (!miteiruApi) return;
     setCheck({
       ok: 2,
       message: "checking..."
     });
-    ipcRenderer.invoke('validateConfig', {
-      mecab, dicdir, jmdict, cached
+    miteiruApi.invoke('validateConfig', {
+      mecab, jmdict, cached
     }).then(val => {
       setCheck(val);
     });
-  }, [mecab, dicdir, jmdict]);
+  }, [mecab, jmdict, miteiruApi]);
 
   const handleRemoveJMDictCache = useCallback(() => {
+    if (!miteiruApi) return;
+
     setCheck({
       ok: 2,
       message: 'Removing JMDict Cache'
     });
-    ipcRenderer.invoke('removeDictCache').then(() => {
-      setCheck(initialCheck);
+    miteiruApi.invoke('removeDictCache').then(() => {
+      setCheck(appConstants.initialCheck);
     });
   }, []);
+
   return (
       <React.Fragment>
         <Head>
@@ -64,24 +66,6 @@ function Home() {
           <div
               className={"flex flex-col h-fit items-center bg-blue-50 gap-4 w-fit p-5 border rounded-lg border-blue-800"}>
             <ContainerHome>
-              {/*<div className={"flex flex-row gap-3 p-3"}>*/}
-              {/*  <button*/}
-              {/*      className='bg-blue-400 hover:bg-blue-500 rounded-sm text-white p-2 w-full'*/}
-              {/*      onClick={() => {*/}
-              {/*        ipcRenderer.invoke('pickDirectory').then((val) => {*/}
-              {/*          if (!val.canceled) setDicdir(val.filePaths[0])*/}
-              {/*        })*/}
-              {/*      }*/}
-              {/*      }>*/}
-              {/*    Select MeCab Dictionary Directory*/}
-              {/*  </button>*/}
-              {/*  <input*/}
-              {/*      className={"text-blue-800 outline-none rounded-sm text-lg md:min-w-[50vw] border border-gray-300 focus:border-blue-500 ring-1 ring-blue-400 focus:ring-blue-500 rounded-lg"}*/}
-              {/*      type={"text"} value={dicdir}*/}
-              {/*      onChange={(val) => {*/}
-              {/*        setDicdir(val.target.value)*/}
-              {/*      }}></input>*/}
-              {/*</div>*/}
               <div className={"flex justify-between  gap-3 p-3 w-full"}>
                 <button
                     className='bg-blue-400 hover:bg-blue-500 rounded-sm text-white p-2 w-full'
@@ -126,7 +110,7 @@ function Home() {
                   </button>
                 </div>
                 <div className={'text-black'}>
-                  {checkSymbol[check.ok]}{' '}{check.message}
+                  {appConstants.checkSymbol[check.ok]}{' '}{check.message}
                 </div>
 
 
@@ -142,18 +126,6 @@ function Home() {
                     onClick={handleRemoveJMDictCache}>
                   Remove JMDict Cache
                 </button>
-                {/*<button*/}
-                {/*    type={"button"}*/}
-                {/*    className='bg-green-600 p-3 rounded-sm bg-green-700'*/}
-                {/*    onClick={() => {*/}
-                {/*      const text = '木ぃ切って 月収6万だろ~'*/}
-                {/*      ipcRenderer.invoke('getShunou', mecab, text).then(val => {*/}
-                {/*        console.log(val)*/}
-                {/*      })*/}
-                {/*    }*/}
-                {/*    }>*/}
-                {/*  tmp*/}
-                {/*</button>*/}
                 <Link href='/video'>
                   <button
                       type={"button"}
