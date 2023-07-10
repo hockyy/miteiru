@@ -14,7 +14,7 @@ function Home() {
 
   useEffect(() => {
     if (!miteiruApi) return;
-    setMecab(japaneseConstants.mecabDefaultDirectory[miteiruApi.getPlatform()])
+    setMecab(japaneseConstants.mecabDefaultDirectory[miteiruApi.platform])
   }, [miteiruApi]);
 
   const handleSelectMecabPath = useCallback(() => {

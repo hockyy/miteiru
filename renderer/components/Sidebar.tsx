@@ -249,11 +249,13 @@ export const Sidebar = ({
     <div className={"font-bold unselectable text-3xl m-4"}>
       Settings
     </div>
-    <StylingBox miteiruApi={miteiruApi} subtitleStyling={primaryStyling}
+    <StylingBox miteiruApi={miteiruApi}
+                subtitleStyling={primaryStyling}
                 setSubtitleStyling={setPrimaryStyling}
                 subtitleName={"CJK"} defaultStyling={defaultPrimarySubtitleStyling}/>
     <hr className={"w-full h-1 m-5"}/>
-    <StylingBox miteiruApi={miteiruApi} subtitleStyling={secondaryStyling}
+    <StylingBox miteiruApi={miteiruApi}
+                subtitleStyling={secondaryStyling}
                 setSubtitleStyling={setSecondaryStyling}
                 subtitleName={"Other"} defaultStyling={defaultSecondarySubtitleStyling}/>
   </div>

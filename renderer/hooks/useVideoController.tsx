@@ -1,7 +1,6 @@
 import {useCallback, useEffect, useState} from "react";
 import {videoConstants} from "../utils/constants";
-import {randomUUID} from "crypto";
-
+import uuid from "uuid-random"
 export const useVideoPlayingToggle = (player, metadata) => {
   const [isPlaying, setIsPlaying] = useState(1);
   const togglePlay = useCallback(() => {
@@ -37,7 +36,7 @@ export const useVideoKeyboardControls = (togglePlay, deltaTime, setPrimaryShift,
           setInfo(() => {
             return {
               message: `Shifting ${(event.ctrlKey ? "Secondary" : "Primary")} Sub to ${old + currentShiftAmount}ms`,
-              udpate: randomUUID()
+              udpate: uuid()
             }
           })
           return old + currentShiftAmount;

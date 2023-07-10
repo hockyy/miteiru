@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react';
 export const useStoreData = (miteiruApi, key, defaultValue) => {
   const [data, setData] = useState(defaultValue);
   useEffect(() => {
+    if(!miteiruApi) return;
     // Load data from the store when the component is mounted
     const storeData = miteiruApi.storeGet(key, defaultValue);
     setData(storeData);
-  }, [key, defaultValue]);
+  }, [key, defaultValue, miteiruApi]);
 
   // This function can be used to update the data in the store
   const setStoreData = (value) => {
