@@ -80,8 +80,8 @@ if (isProd) {
       // Swap the exact match to front
       matches = matches.sort((a, b) => {
             // Get smallest kanji length in a and b, compare it
-            const smallestA = (a.kanji[0].text ?? ''.length)
-            const smallestB = (b.kanji[0].text ?? ''.length)
+            const smallestA = (a.kanji.length ? (a.kanji[0].text ?? ''.length) : 0);
+            const smallestB = (b.kanji.length ? (b.kanji[0].text ?? ''.length) : 0);
             if (smallestA !== smallestB) return smallestA - smallestB;
             const isVerbA = +(!JMDict.tags[a.sense[0].partOfSpeech[0]].includes("verb"));
             const isVerbB = +(!JMDict.tags[b.sense[0].partOfSpeech[0]].includes("verb"));
