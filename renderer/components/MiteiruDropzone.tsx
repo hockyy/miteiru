@@ -1,5 +1,4 @@
-import React, {useCallback, useState} from "react";
-import {SubtitleContainer} from "./DataStructures";
+import React from "react";
 import {useDropzone} from "react-dropzone";
 import {Key} from "./KeyboardHelp";
 
