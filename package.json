@@ -37,7 +37,7 @@
     "@types/node": "^16.18.38",
     "@types/react": "^18.2.14",
     "autoprefixer": "^10.4.14",
-    "electron": "^25.2.0",
+    "electron": "^21.4.4",
     "electron-builder": "^24.4.0",
     "next": "^12.3.4",
     "nextron": "^8.5.0",

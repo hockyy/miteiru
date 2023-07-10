@@ -146,7 +146,7 @@ if (isProd) {
       filters: [{name: 'Allowed Extensions', extensions: allowed}]
     });
     if (filePaths.length > 0 && !canceled) {
-      return await fs.readFileSync(filePaths[0], 'utf-8');
+      return fs.readFileSync(filePaths[0], 'utf-8');
     }
     return '';
   })
