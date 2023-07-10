@@ -80,17 +80,26 @@ export const SecondarySubtitle = ({
       console.log(e)
     }
   }, [currentTime, subtitleStyling])
-  return <Subtitle caption={caption} subtitleStyling={subtitleStyling}/>
-};
-export const Subtitle = ({
-                           caption,
-                           extraClass = "",
-                           subtitleStyling
-                         }: { caption: any[], extraClass?: string, subtitleStyling: CJKStyling }) => {
-  let currentContainerStyle: React.CSSProperties = {
+  return <Subtitle caption={caption} subtitleStyling={subtitleStyling} extraContainerStyle={{
     WebkitTextFillColor: subtitleStyling.text.color,
     WebkitTextStrokeColor: subtitleStyling.stroke.color,
     WebkitTextStrokeWidth: subtitleStyling.stroke.width,
+  }}/>
+};
+export const Subtitle = (
+    {
+      caption,
+      extraClass = "",
+      subtitleStyling,
+      extraContainerStyle = {}
+    }: {
+      caption: any[],
+      extraClass?: string,
+      subtitleStyling: CJKStyling,
+      extraContainerStyle?: React.CSSProperties
+    }) => {
+  let currentContainerStyle: React.CSSProperties = {
+    ...extraContainerStyle,
     fontFamily: "Arial",
   }
   currentContainerStyle[subtitleStyling.positionFromTop ? 'top' : 'bottom'] = subtitleStyling.position;
