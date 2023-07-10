@@ -5,8 +5,8 @@ import {parse as parseASS} from 'ass-compiler';
 import languageEncoding from "detect-file-encoding-and-language";
 import iconv from "iconv-lite"
 import {ipcRenderer} from "electron";
-import {isHiragana, isKatakana} from 'wanakana'
-import {japaneseConstants} from "../utils/constants";
+import {isHiragana, isKatakana, isMixed, isKanji} from 'wanakana'
+import {japaneseConstants, videoConstants} from "../utils/constants";
 
 
 const languageMap = {
@@ -97,12 +97,20 @@ export class SubtitleContainer {
       const data = parseSRT(text);
       entries = data.entries;
     }
-
-    try {
-      subtitleContainer.language = languageMap[currentData.language];
-    } catch (e) {
-      subtitleContainer.language = "EN";
+    let ans = 0;
+    for (let i = 0;i < Math.min(5, entries.length);i++) {
+      if (entries[i].text.match(videoConstants.cjkRegex)) {
+        ans++;
+      }
     }
+
+    subtitleContainer.language = "EN";
+    if (ans >= 3) subtitleContainer.language = "JP";
+    // try {
+    //   subtitleContainer.language = languageMap[currentData.language];
+    // } catch (e) {
+    //   subtitleContainer.language = "EN";
+    // }
     for (const {from, to, text} of entries) {
       // process transcript entry
       subtitleContainer.lines.push(new Line(from, to, removeTags(text), mecab, subtitleContainer.language === "JP"))
