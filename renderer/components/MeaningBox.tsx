@@ -3,20 +3,21 @@ import {getFurigana} from "shunou";
 import {Sentence} from "./Sentence";
 import {CJKStyling, defaultMeaningBoxStyling} from "../utils/CJKStyling";
 import {useMiteiruApi} from "../hooks/useMiteiruApi";
+import {MiteiruAPI} from "../../main/preload";
 
 const initialContentState = {sense: [], kanji: []};
 
 const MeaningBox = ({
+                      miteiruApi,
                       meaning,
                       setMeaning,
                       mecab,
-                      subtitleStyling = defaultMeaningBoxStyling
-                    }: { meaning: string, setMeaning: any, mecab: string, subtitleStyling?: CJKStyling }) => {
+                      subtitleStyling = defaultMeaningBoxStyling,
+                    }: { miteiruApi: typeof MiteiruAPI, meaning: string, setMeaning: any, mecab: string, subtitleStyling?: CJKStyling}) => {
   const [meaningContent, setMeaningContent] = useState(initialContentState)
   const [otherMeanings, setOtherMeanings] = useState([]);
   const [meaningIndex, setMeaningIndex] = useState(0);
   const [tags, setTags] = useState({})
-  const {miteiruApi} = useMiteiruApi();
   useEffect(() => {
     if (meaning === '') {
       setMeaningContent(initialContentState);

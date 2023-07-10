@@ -7,15 +7,14 @@ import {
   defaultSecondarySubtitleStyling
 } from "../utils/CJKStyling";
 import Toggle from "./Toggle";
-import {useMiteiruApi} from "../hooks/useMiteiruApi";
 
 const StylingBox = ({
+                      miteiruApi,
                       subtitleStyling,
                       setSubtitleStyling,
                       subtitleName,
                       defaultStyling
                     }) => {
-  const {miteiruApi} = useMiteiruApi();
   return <div className={"w-full mx-5 px-3 flex flex-col content-start gap-3 unselectable"}>
     {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
       <Toggle defaultCheck={subtitleStyling.showFurigana} onChange={(val) => {
@@ -225,6 +224,7 @@ const StylingBox = ({
 }
 
 export const Sidebar = ({
+                          miteiruApi,
                           showSidebar,
                           setShowSidebar,
                           primaryStyling,
@@ -249,10 +249,12 @@ export const Sidebar = ({
     <div className={"font-bold unselectable text-3xl m-4"}>
       Settings
     </div>
-    <StylingBox subtitleStyling={primaryStyling} setSubtitleStyling={setPrimaryStyling}
+    <StylingBox miteiruApi={miteiruApi} subtitleStyling={primaryStyling}
+                setSubtitleStyling={setPrimaryStyling}
                 subtitleName={"CJK"} defaultStyling={defaultPrimarySubtitleStyling}/>
     <hr className={"w-full h-1 m-5"}/>
-    <StylingBox subtitleStyling={secondaryStyling} setSubtitleStyling={setSecondaryStyling}
+    <StylingBox miteiruApi={miteiruApi} subtitleStyling={secondaryStyling}
+                setSubtitleStyling={setSecondaryStyling}
                 subtitleName={"Other"} defaultStyling={defaultSecondarySubtitleStyling}/>
   </div>
 }

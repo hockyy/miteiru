@@ -22,9 +22,11 @@ import {
   useVideoTimeChanger
 } from "../hooks/useVideoController";
 import {usePlayNextAfterEnd} from "../hooks/usePlayNextAfterEnd";
+import {useMiteiruApi} from "../hooks/useMiteiruApi";
 
 function Video() {
-  const mecab = useMecab();
+  const {miteiruApi} = useMiteiruApi();
+  const mecab = useMecab(miteiruApi);
   const {toastInfo, setToastInfo} = useMiteiruToast();
   const {
     readyCallback,
@@ -56,7 +58,7 @@ function Video() {
     setEnableSeeker
   } = useVideoTimeChanger(player, setCurrentTime, metadata);
   const {videoSrc, onLoadFiles, onVideoChangeHandler} =
-      useLoadFiles(setToastInfo,
+      useLoadFiles(miteiruApi, setToastInfo,
           primarySub, setPrimarySub,
           secondarySub, setSecondarySub,
           mecab, setEnableSeeker, changeTimeTo, player);
@@ -72,7 +74,8 @@ function Video() {
         </Head>
         <div>
           <Toast info={toastInfo}/>
-          <MeaningBox meaning={meaning} setMeaning={setMeaning} mecab={mecab}/>
+          <MeaningBox miteiruApi={miteiruApi} meaning={meaning} setMeaning={setMeaning}
+                      mecab={mecab}/>
           <VideoJS options={{
             responsive: true,
             sources: [videoSrc],
@@ -84,7 +87,10 @@ function Video() {
               playbackRateMenuButton: false,
               durationDisplay: true
             }
-          }} onReady={readyCallback} setCurrentTime={setCurrentTime}/>
+          }}
+                   onReady={readyCallback}
+                   setCurrentTime={setCurrentTime}
+                   miteiruApi={miteiruApi}/>
           <div>
             <PrimarySubtitle setMeaning={setMeaning}
                              currentTime={currentTime}
@@ -114,7 +120,8 @@ function Video() {
           </div>
           {mecab !== '' && <MiteiruDropzone onDrop={onLoadFiles}/>}
         </div>
-        <Sidebar showSidebar={showSidebar} setShowSidebar={setShowSidebar}
+        <Sidebar miteiruApi={miteiruApi}
+                 showSidebar={showSidebar} setShowSidebar={setShowSidebar}
                  primaryStyling={primaryStyling}
                  setPrimaryStyling={setPrimaryStyling}
                  secondaryStyling={secondaryStyling}

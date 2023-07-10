@@ -1,6 +1,7 @@
 import {contextBridge, ipcRenderer} from "electron";
 import Store from "electron-store";
 import fs from "fs";
+import videojs from 'video.js';
 
 export const ElectronStore = new Store();
 
@@ -25,7 +26,8 @@ export const MiteiruAPI = {
   },
   getDir: (path) => {
     return fs.readdirSync(path);
-  }
+  },
+  videoJs: videojs
 };
 
 contextBridge.exposeInMainWorld('miteiru', MiteiruAPI);

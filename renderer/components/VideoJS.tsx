@@ -1,8 +1,7 @@
 import {useEffect, useRef} from 'react';
-import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 
-export const VideoJS = ({options, onReady, setCurrentTime}) => {
+export const VideoJS = ({miteiruApi, options, onReady, setCurrentTime}) => {
   const videoRef = useRef(null);
   const playerRef = useRef(null);
   const handle = () => {
@@ -17,8 +16,8 @@ export const VideoJS = ({options, onReady, setCurrentTime}) => {
       videoElement.classList.add('vjs-big-play-centered');
       videoRef.current.appendChild(videoElement);
 
-      const player = playerRef.current = videojs(videoElement, options, () => {
-        videojs.log('player is ready');
+      const player = playerRef.current = miteiruApi.videojs(videoElement, options, () => {
+        miteiruApi.videojs.log('player is ready');
         onReady && onReady(player);
       });
     } else {
