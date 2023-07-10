@@ -30,8 +30,8 @@
     "react-smooth-collapse": "^2.1.2",
     "react-video-seek-slider": "^6.0.4",
     "shunou": "^0.0.36",
-    "styled-components": "^5.3.11",
-    "video.js": "^7.21.4"
+    "styled-components": "^6.0.3",
+    "video.js": "^8.3.0"
   },
   "devDependencies": {
     "@types/node": "^16.18.38",
