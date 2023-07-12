@@ -5,7 +5,7 @@ import {CJKStyling} from "../utils/CJKStyling";
 import React, {useCallback} from "react";
 import {randomUUID} from "crypto";
 
-const StyledSentence = styled.button<{subtitleStyling: CJKStyling}>`
+const StyledSentence = styled.button<{ subtitleStyling: CJKStyling }>`
   &:hover, &:hover ruby, &:hover rt {
     -webkit-text-fill-color: ${props => props.subtitleStyling.text.hoverColor};
     -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
@@ -68,7 +68,10 @@ export const Sentence = ({
           <rt className={"unselectable"}>{subtitleStyling.showRomaji && showRomaji && romaji}</rt>
         </ruby>
       })}
-      <rt className={"unselectable"}>{subtitleStyling.showMeaning && wordMeaning}</rt>
+      <rt className={"unselectable"}>{
+          subtitleStyling.showMeaning
+          && wordMeaning.length <= subtitleStyling.maximalMeaningLengthPerCharacter * origin.length
+          && wordMeaning}</rt>
 
     </ruby>
   </StyledSentence>

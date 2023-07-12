@@ -18,6 +18,7 @@ export interface CJKStyling {
   position: string,
   positionFromTop: boolean,
   positionMeaningTop?: boolean
+  maximalMeaningLengthPerCharacter?: number
   showFuriganaOnKana: boolean,
   showRomaji: boolean,
   showFurigana: boolean;
@@ -69,7 +70,8 @@ export const defaultPrimarySubtitleStyling: CJKStyling = {
   showFuriganaOnKana: false,
   showFurigana: true,
   showRomaji: true,
-  showMeaning: true
+  showMeaning: true,
+  maximalMeaningLengthPerCharacter: 7,
 }
 
 export const defaultSecondarySubtitleStyling: CJKStyling = {
