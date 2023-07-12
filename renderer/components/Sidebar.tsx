@@ -110,7 +110,7 @@ const StylingBox = ({
       {subtitleName} Background Color
     </div>
     <div className={"flex w-full justify-center items-center"}>
-      Stroke Width
+      Stroke Width <span>{subtitleStyling.stroke.width}</span> &nbsp;
       <input
           className={"slider"}
           type="range"
@@ -126,7 +126,7 @@ const StylingBox = ({
       />
     </div>
     <div className={"flex w-full justify-center items-center"}>
-      Font Size
+      Font Size <span>{subtitleStyling.text.fontSize}</span> &nbsp;
       <input
           className={"slider"}
           type="range"
@@ -148,7 +148,7 @@ const StylingBox = ({
         setSubtitleStyling(newCopy)
       }
       }/>
-      {subtitleName} Subtitle Position From Top
+      {subtitleName} Subtitle Position from Top
     </div>
     {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
       <Toggle defaultCheck={subtitleStyling.positionMeaningTop} onChange={(val) => {
@@ -158,6 +158,22 @@ const StylingBox = ({
       }
       }/>
       {subtitleName} Subtitle Meaning at Top
+    </div>}
+    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
+      Max Meaning Length/Character <span>{subtitleStyling.maximalMeaningLengthPerCharacter}</span>
+      <input
+          className={"slider"}
+          type="range"
+          min={0}
+          max={20}
+          step={1}
+          value={parseInt(subtitleStyling.maximalMeaningLengthPerCharacter)}
+          onChange={event => {
+            const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+            newCopy.maximalMeaningLengthPerCharacter = parseInt(event.target.value);
+            setSubtitleStyling(newCopy)
+          }}
+      />
     </div>}
     <div className={"flex w-full justify-center items-center"}>
       Position from {subtitleStyling.positionFromTop ? 'top' : 'bottom'}

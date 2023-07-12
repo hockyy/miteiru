@@ -5,8 +5,8 @@ import {parse as parseASS} from 'ass-compiler';
 import languageEncoding from "detect-file-encoding-and-language";
 import iconv from "iconv-lite"
 import {ipcRenderer} from "electron";
-import {isHiragana, isKatakana, isMixed, isKanji, toHiragana} from 'wanakana'
-import {japaneseConstants, videoConstants} from "../utils/constants";
+import {isHiragana, isKatakana, toHiragana} from 'wanakana'
+import {videoConstants} from "../utils/constants";
 
 
 const languageMap = {
@@ -62,9 +62,6 @@ export class Line {
             if (got) {
               this.meaning[i] = entry.sense[0].gloss[0].text;
               this.meaning[i] = this.meaning[i].replace(/\((.*?)\)/g, '').trim();
-              if (this.meaning[i].length > japaneseConstants.meaningLengthLimit) {
-                this.meaning[i] = ''
-              }
               break;
             }
           } catch (ignored) {
