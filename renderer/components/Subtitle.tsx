@@ -29,13 +29,17 @@ export const PrimarySubtitle = ({
       return;
     }
     let current = content.map((val, index) => {
-      return <Sentence key={index}
-                       origin={val.origin}
-                       separation={val.separation}
-                       setMeaning={setMeaning}
-                       extraClass={"subtitle"}
-                       subtitleStyling={subtitleStyling}
-                       wordMeaning={wordMeaning[index]}/>
+      return <><Sentence
+          key={index}
+          origin={val.origin}
+          separation={val.separation}
+          setMeaning={setMeaning}
+          extraClass={"subtitle"}
+          subtitleStyling={subtitleStyling}
+          wordMeaning={wordMeaning[index]}/>{
+        index + 1 < content.length
+        && subtitleStyling.showSpace ? " " : " "
+      }</>
     })
     setCaption(current)
   }, [subtitleStyling, subtitle])
