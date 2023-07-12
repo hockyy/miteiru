@@ -40,7 +40,7 @@ export class Line {
     this.meaning = Array(this.content.length).fill('');
     for (let i = 0; i < this.content.length; i++) {
       const word = this.content[i];
-      if ((isHiragana(word.origin) || isKatakana(word.origin)) && word.origin.length <= 2) continue;
+      if ((isHiragana(word.origin) || isKatakana(word.origin)) && word.origin.length <= 3) continue;
       await ipcRenderer.invoke('query', word.origin, 2).then(val => {
         let got = 0;
         for (const entry of val) {
