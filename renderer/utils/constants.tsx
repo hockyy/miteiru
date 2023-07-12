@@ -9,7 +9,3 @@ export const videoConstants = {
   playingClass: ["", "playing"],
   cjkRegex: /\p{Script=Han}|\p{Script=Hiragana}|\p{Script=Katakana}|\p{Script=Hangul}/gu
 }
-
-export const japaneseConstants = {
-  meaningLengthLimit: 100
-}
