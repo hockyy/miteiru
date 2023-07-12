@@ -150,6 +150,15 @@ const StylingBox = ({
       }/>
       {subtitleName} Subtitle Position From Top
     </div>
+    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
+      <Toggle defaultCheck={subtitleStyling.positionMeaningTop} onChange={(val) => {
+        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+        newCopy.positionMeaningTop = val;
+        setSubtitleStyling(newCopy)
+      }
+      }/>
+      {subtitleName} Subtitle Meaning at Top
+    </div>}
     <div className={"flex w-full justify-center items-center"}>
       Position from {subtitleStyling.positionFromTop ? 'top' : 'bottom'}
       <input
