@@ -23,6 +23,7 @@ export interface CJKStyling {
   showRomaji: boolean,
   showFurigana: boolean;
   showMeaning: boolean;
+  showSpace?: boolean;
 }
 
 
@@ -71,6 +72,7 @@ export const defaultPrimarySubtitleStyling: CJKStyling = {
   showFurigana: true,
   showRomaji: true,
   showMeaning: true,
+  showSpace: true,
   maximalMeaningLengthPerCharacter: 7,
 }
 

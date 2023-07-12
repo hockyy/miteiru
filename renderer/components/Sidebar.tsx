@@ -53,6 +53,15 @@ const StylingBox = ({
       }/>
       {subtitleName} Show Meaning
     </div>}
+    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
+      <Toggle defaultCheck={subtitleStyling.showSpace} onChange={(val) => {
+        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+        newCopy.showSpace = val;
+        setSubtitleStyling(newCopy)
+      }
+      }/>
+      {subtitleName} Show More Space Between Each Token
+    </div>}
     <div className={"flex flex-row items-center gap-3"}>
       <PopoverPicker color={subtitleStyling.text.color} onChange={(val) => {
         const newCopy = JSON.parse(JSON.stringify(subtitleStyling))

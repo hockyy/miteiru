@@ -77,6 +77,6 @@ export const Sentence = ({
   </StyledSentence>
 }
 
-export const PlainSentence = ({origin}) => {
-  return <div key={randomUUID()}>{parse(origin)}</div>
-}
+  export const PlainSentence = ({origin}) => {
+    return <div key={randomUUID()}>{parse(origin)}</div>
+  }
