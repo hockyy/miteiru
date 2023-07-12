@@ -11,5 +11,5 @@ export const videoConstants = {
 }
 
 export const japaneseConstants = {
-  meaningLengthLimit: 15
+  meaningLengthLimit: 100
 }
