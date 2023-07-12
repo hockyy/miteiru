@@ -5,7 +5,7 @@ import {parse as parseASS} from 'ass-compiler';
 import languageEncoding from "detect-file-encoding-and-language";
 import iconv from "iconv-lite"
 import {ipcRenderer} from "electron";
-import {isHiragana, isKatakana, isMixed, isKanji} from 'wanakana'
+import {isHiragana, isKatakana, isMixed, isKanji, toHiragana} from 'wanakana'
 import {japaneseConstants, videoConstants} from "../utils/constants";
 
 
@@ -45,25 +45,33 @@ export class Line {
         let got = 0;
         for (const entry of val) {
           if (got) break;
-          for (const reading of entry.kana) {
-            if (got) break;
-            try {
-              if (reading.text === word.hiragana || (entry.kanji.length >= 1 && word.origin === entry.kanji[0].text)) {
-                this.meaning[i] = entry.sense[0].gloss[0].text;
-                this.meaning[i] = this.meaning[i].replace(/\((.*?)\)/g, '').trim();
-                if (this.meaning[i].length > japaneseConstants.meaningLengthLimit) {
-                  this.meaning[i] = ''
-                }
+          try {
+            for (const reading of entry.kana) {
+              if (toHiragana(reading.text) === word.hiragana) {
                 got = 1;
                 break;
               }
-            } catch (ignored) {
-              console.log(ignored)
             }
+            // loop all kanji entry
+            for (const kanjiEntry of entry.kanji) {
+              if (word.origin === kanjiEntry.text) {
+                got = 1;
+                break;
+              }
+            }
+            if (got) {
+              this.meaning[i] = entry.sense[0].gloss[0].text;
+              this.meaning[i] = this.meaning[i].replace(/\((.*?)\)/g, '').trim();
+              if (this.meaning[i].length > japaneseConstants.meaningLengthLimit) {
+                this.meaning[i] = ''
+              }
+              break;
+            }
+          } catch (ignored) {
+            console.log(ignored)
           }
         }
       })
-
     }
   }
 }
@@ -98,7 +106,7 @@ export class SubtitleContainer {
       entries = data.entries;
     }
     let ans = 0;
-    for (let i = 0;i < Math.min(5, entries.length);i++) {
+    for (let i = 0; i < Math.min(5, entries.length); i++) {
       if (entries[i].text.match(videoConstants.cjkRegex)) {
         ans++;
       }
