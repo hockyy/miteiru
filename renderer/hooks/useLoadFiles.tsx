@@ -10,7 +10,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
   const [videoSrc, setVideoSrc] = useState({src: '', type: '', path: ''});
   const queue = useAsyncAwaitQueue();
   const resetSub = useCallback((subSetter) => {
-    subSetter(new SubtitleContainer('', mecab));
+    subSetter(new SubtitleContainer(''));
   }, [mecab]);
   const onLoadFiles = useCallback(async acceptedFiles => {
     const currentHash = Symbol();
@@ -36,7 +36,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
         type: 'text/plain',
         src: `${currentPath}`
       };
-      SubtitleContainer.create(draggedSubtitle.src, mecab).then(tmpSub => {
+      SubtitleContainer.create(draggedSubtitle.src).then(tmpSub => {
         clearInterval(toastSetter);
         if (tmpSub.language === "JP") {
           setPrimarySub(tmpSub);
@@ -47,6 +47,9 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
           message: 'Subtitle loaded',
           update: randomUUID()
         });
+        if(tmpSub.language === "JP") {
+          tmpSub.adjustJapanese(mecab)
+        }
       });
     } else if (isVideo(currentPath)) {
       const draggedVideo = {

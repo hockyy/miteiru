@@ -28,6 +28,16 @@ export const PrimarySubtitle = ({
       setCaption([])
       return;
     }
+    if (typeof content === 'string') {
+      setCaption([<Sentence
+          origin={""}
+          separation={[{main: content}]}
+          setMeaning={() => {}}
+          extraClass={"subtitle"}
+          subtitleStyling={subtitleStyling}
+          wordMeaning={''}/>]);
+      return;
+    }
     let current = content.map((val, index) => {
       return <><Sentence
           key={index}

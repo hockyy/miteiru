@@ -23,17 +23,17 @@ function removeTags(text) {
 export class Line {
   timeStart: number;
   timeEnd: number;
-  content: any[];
+  content: any[] | string;
   meaning: string[];
 
-  constructor(start, end, strContent, mecab, isInJapanese = true) {
+  constructor(start, end, strContent: string) {
     this.timeStart = start
     this.timeEnd = end
-    if (isInJapanese) {
-      this.content = getFurigana(strContent, mecab);
-    } else {
-      this.content = strContent;
-    }
+    this.content = strContent;
+  }
+
+  fillContentFurigana(mecab) {
+    this.content = getFurigana(this.content as string, mecab);
   }
 
   async fillContentWithLearningKotoba() {
@@ -78,17 +78,17 @@ export class SubtitleContainer {
   language: string;
   path: string = '';
 
-  constructor(content: string, mecab: string) {
+  constructor(content: string = '') {
     this.lines = []
     if (content === '') return
     this.language = "JP"
-    this.lines.push(new Line(0, 1000000, content, mecab, this.language === "JP"))
+    this.lines.push(new Line(0, 1000000, content));
     return
   }
 
-  static async create(filename: string, mecab: string) {
+  static async create(filename: string) {
     if (filename === '') return
-    const subtitleContainer = new SubtitleContainer('', mecab);
+    const subtitleContainer = new SubtitleContainer();
     subtitleContainer.path = filename;
     let entries;
     const buffer = await fs.promises.readFile(filename)
@@ -118,11 +118,18 @@ export class SubtitleContainer {
     // }
     for (const {from, to, text} of entries) {
       // process transcript entry
-      subtitleContainer.lines.push(new Line(from, to, removeTags(text), mecab, subtitleContainer.language === "JP"))
-      const back = subtitleContainer.lines[subtitleContainer.lines.length - 1];
-      await back.fillContentWithLearningKotoba();
+      subtitleContainer.lines.push(new Line(from, to, removeTags(text)))
     }
     return subtitleContainer
+  }
+
+  async adjustJapanese(mecab) {
+    for (let i = 0;i < this.lines.length;i++) {
+      const line = this.lines[i];
+      await line.fillContentFurigana(mecab)
+      await line.fillContentWithLearningKotoba();
+      console.log(`${i + 1}/${this.lines.length}`);
+    }
   }
 }
 
