@@ -41,8 +41,7 @@ if (isProd) {
       }
       return true;
     } catch (e) {
-      console.log(e);
-
+      console.error(e);
       return false;
     }
   }
@@ -57,7 +56,7 @@ if (isProd) {
         force: true
       })
     } catch (e) {
-      console.log(e)
+      console.error(e)
     }
   }
 
@@ -103,7 +102,7 @@ if (isProd) {
       }
       return matches
     } catch (e) {
-      console.log(e)
+      console.error(e)
       return []
     }
   })
