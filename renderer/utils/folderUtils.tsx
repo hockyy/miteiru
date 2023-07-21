@@ -4,10 +4,12 @@ import {readdirSync} from "fs";
 
 export const findPositionDeltaInFolder = (path: string, delta: number = 1) => {
   let matcher = [];
-  console.log(path)
+  if (process.platform === 'win32') {
+    // Removes extra / from the front
+    path = path.substring(1);
+  }
   if (isVideo(path)) matcher = videoConstants.supportedVideoFormats;
   if (isSubtitle(path)) matcher = videoConstants.supportedSubtitleFormats;
-  path = path.trim()
   const folderPathSplitted = path.split('/');
   folderPathSplitted.pop();
   const folderPath = folderPathSplitted.join('/');
