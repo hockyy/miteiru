@@ -77,7 +77,6 @@ export class Line {
 let globalSubtitleId = "";
 
 export const setGlobalSubtitleId = (id) => {
-  console.log(id)
   globalSubtitleId = id;
 };
 
@@ -86,6 +85,7 @@ export class SubtitleContainer {
   lines: Line[];
   language: string;
   path: string = '';
+  progress: string = '';
 
   constructor(content: string = '') {
     this.id = randomUUID();
@@ -139,7 +139,7 @@ export class SubtitleContainer {
       const line = this.lines[i];
       await line.fillContentFurigana(mecab)
       await line.fillContentWithLearningKotoba();
-      console.log(`${i + 1}/${this.lines.length}`);
+      this.progress = `${((i + 1) * 100 / this.lines.length).toFixed(2)}%`;
     }
   }
 }

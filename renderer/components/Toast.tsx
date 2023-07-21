@@ -16,7 +16,7 @@ export const Toast = ({info}) => {
     return;
   }, [info])
   return <div
-      className={"animation z-[18] right-3 top-3 fixed bg-gray-800 p-3 rounded-lg " + toastHidden[+(lastToast === info)]}>
+      className={"animation z-[18] right-3 top-3 fixed bg-gray-800 p-3 rounded-lg unselectable " + toastHidden[+(lastToast === info)]}>
     {info.message}
   </div>
 }

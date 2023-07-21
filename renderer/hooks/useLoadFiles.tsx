@@ -49,7 +49,15 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
           update: randomUUID()
         });
         if (tmpSub.language === "JP") {
-          tmpSub.adjustJapanese(mecab)
+          const toastSetter = setInterval(() => {
+            setToastInfo({
+              message: `JP cache: ${tmpSub.progress}`,
+              update: randomUUID()
+            });
+          }, TOAST_TIMEOUT / 10);
+          tmpSub.adjustJapanese(mecab).then(() => {
+            clearInterval(toastSetter);
+          })
         }
       });
     } else if (isVideo(currentPath)) {
