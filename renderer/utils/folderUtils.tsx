@@ -4,8 +4,10 @@ import {readdirSync} from "fs";
 
 export const findPositionDeltaInFolder = (path: string, delta: number = 1) => {
   let matcher = [];
+  console.log(path)
   if (isVideo(path)) matcher = videoConstants.supportedVideoFormats;
   if (isSubtitle(path)) matcher = videoConstants.supportedSubtitleFormats;
+  path = path.trim()
   const folderPathSplitted = path.split('/');
   folderPathSplitted.pop();
   const folderPath = folderPathSplitted.join('/');
@@ -18,17 +20,17 @@ export const findPositionDeltaInFolder = (path: string, delta: number = 1) => {
   filesMatched = filesMatched.sort();
   let low = 0;
   let high = filesMatched.length - 1;
-  while(low < high) {
+  while (low < high) {
     let mid = (low + high + 1) >> 1;
-    if(filesMatched[mid] <= path) {
+    if (filesMatched[mid] <= path) {
       low = mid;
     } else {
       high = mid - 1;
     }
   }
-  if(filesMatched.length === 0) return '';
-  if(filesMatched[low] !== path) {
-    if(delta < 0) delta++;
+  if (filesMatched.length === 0) return '';
+  if (filesMatched[low] !== path) {
+    if (delta < 0) delta++;
   }
   const nextIndex = low + delta;
   if (0 <= nextIndex && nextIndex < filesMatched.length) {
