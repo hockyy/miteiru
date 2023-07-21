@@ -4,7 +4,7 @@ import {readdirSync} from "fs";
 
 export const findPositionDeltaInFolder = (path: string, delta: number = 1) => {
   let matcher = [];
-  if (process.platform === 'win32') {
+  if (process.platform === 'win32' && path.at(0) === '/') {
     // Removes extra / from the front
     path = path.substring(1);
   }
