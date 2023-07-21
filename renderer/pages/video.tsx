@@ -46,7 +46,7 @@ function Video() {
     setPrimaryStyling,
     secondaryStyling,
     setSecondaryStyling
-  } = useSubtitle(mecab);
+  } = useSubtitle();
   const {meaning, setMeaning} = useMeaning();
   const {
     duration,
@@ -61,7 +61,7 @@ function Video() {
           secondarySub, setSecondarySub,
           mecab, setEnableSeeker, changeTimeTo, player);
   const {showController, setShowController, showSidebar, setShowSidebar} = useMenuDisplay();
-  useKeyBind(setMeaning, setShowController, setShowSidebar, setPrimarySub, setSecondarySub, mecab);
+  useKeyBind(setMeaning, setShowController, setShowSidebar, setPrimarySub, setSecondarySub, primarySub);
   const {togglePlay, isPlaying} = useVideoPlayingToggle(player, metadata);
   useVideoKeyboardControls(togglePlay, deltaTime, setPrimaryShift, setSecondaryShift, setToastInfo);
   usePlayNextAfterEnd(player, currentTime, onVideoChangeHandler, duration, setEnableSeeker)

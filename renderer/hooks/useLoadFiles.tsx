@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useState} from 'react';
-import {SubtitleContainer} from "../components/DataStructures";
+import {setGlobalSubtitleId, SubtitleContainer} from "../components/DataStructures";
 import {randomUUID} from "crypto";
 import {TOAST_TIMEOUT} from "../components/Toast";
 import {isSubtitle, isVideo} from "../utils/utils";
@@ -40,6 +40,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
         clearInterval(toastSetter);
         if (tmpSub.language === "JP") {
           setPrimarySub(tmpSub);
+          setGlobalSubtitleId(tmpSub.id);
         } else {
           setSecondarySub(tmpSub);
         }
@@ -47,7 +48,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
           message: 'Subtitle loaded',
           update: randomUUID()
         });
-        if(tmpSub.language === "JP") {
+        if (tmpSub.language === "JP") {
           tmpSub.adjustJapanese(mecab)
         }
       });
