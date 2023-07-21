@@ -220,7 +220,7 @@ const StylingBox = ({
                 const parsed = JSON.parse(val) as CJKStyling;
                 setSubtitleStyling(parsed)
               } catch (e) {
-                console.log(e)
+                console.error(e)
               }
 
             })

@@ -59,7 +59,7 @@ export const PrimarySubtitle = ({
       const primaryContent = line.content;
       setFromContent(primaryContent, line.meaning);
     } catch (e) {
-      console.log(e)
+      console.error(e)
     }
   }, [currentTime, subtitleStyling, subtitle])
   return <Subtitle caption={caption} subtitleStyling={subtitleStyling}/>
@@ -91,7 +91,7 @@ export const SecondarySubtitle = ({
       const secondaryContent = getLineByTime(subtitle, shift, Math.trunc(currentTime * 1000));
       setFromContent(secondaryContent.content);
     } catch (e) {
-      console.log(e)
+      console.error(e)
     }
   }, [currentTime, subtitleStyling])
   return <Subtitle caption={caption} subtitleStyling={subtitleStyling} extraContainerStyle={{
