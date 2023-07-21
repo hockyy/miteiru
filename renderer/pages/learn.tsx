@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import Head from "next/head";
 import {ContainerHome} from "../components/ContainerHome";
 import {PrimarySubtitle} from "../components/Subtitle";
-import {SubtitleContainer} from "../components/DataStructures";
+import {setGlobalSubtitleId, SubtitleContainer} from "../components/DataStructures";
 import {ipcRenderer} from "electron";
 import {defaultPrimarySubtitleStyling} from "../utils/CJKStyling";
 import MeaningBox from "../components/MeaningBox";
@@ -14,7 +14,7 @@ function Learn() {
   const {meaning, setMeaning} = useMeaning();
   const [currentTime, setCurrentTime] = useState(0);
   const [mecab, setMecab] = useState('')
-  const [primarySub, setPrimarySub] = useState(new SubtitleContainer('', mecab))
+  const [primarySub, setPrimarySub] = useState(new SubtitleContainer(''))
   const [primaryStyling, setPrimaryStyling] = useState(defaultPrimarySubtitleStyling);
   const [directInput, setDirectInput] = useState('');
   useEffect(() => {
@@ -24,7 +24,8 @@ function Learn() {
   }, []);
   useEffect(() => {
     if (mecab !== '') {
-      setPrimarySub(new SubtitleContainer(directInput, mecab))
+      setPrimarySub(new SubtitleContainer(directInput))
+      setGlobalSubtitleId(primarySub.id);
       setCurrentTime(old => (old ^ 1))
     }
   }, [mecab, directInput])

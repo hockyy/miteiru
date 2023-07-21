@@ -1,5 +1,8 @@
 import {useEffect} from 'react';
-import {SubtitleContainer} from "../components/DataStructures";
+import {
+  setGlobalSubtitleId,
+  SubtitleContainer
+} from "../components/DataStructures";
 import {useRouter} from "next/router";
 
 export default function useKeyBind(
@@ -8,7 +11,7 @@ export default function useKeyBind(
     setShowSidebar,
     setPrimarySub,
     setSecondarySub,
-    mecab
+    primarySub
 ) {
   const router = useRouter();
   useEffect(() => {
@@ -28,9 +31,10 @@ export default function useKeyBind(
           return !old;
         });
       } else if (event.code === "KeyO") {
-        setPrimarySub(new SubtitleContainer('', mecab));
+        setPrimarySub(new SubtitleContainer(''));
+        setGlobalSubtitleId(primarySub.id);
       } else if (event.code === "KeyP") {
-        setSecondarySub(new SubtitleContainer('', mecab));
+        setSecondarySub(new SubtitleContainer(''));
       } else if (event.code === "Space") {
         event.preventDefault();
         event.stopPropagation();

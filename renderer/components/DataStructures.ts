@@ -7,6 +7,7 @@ import iconv from "iconv-lite"
 import {ipcRenderer} from "electron";
 import {isHiragana, isKatakana, toHiragana} from 'wanakana'
 import {videoConstants} from "../utils/constants";
+import {randomUUID} from "crypto";
 
 
 const languageMap = {
@@ -73,12 +74,21 @@ export class Line {
   }
 }
 
+let globalSubtitleId = "";
+
+export const setGlobalSubtitleId = (id) => {
+  console.log(id)
+  globalSubtitleId = id;
+};
+
 export class SubtitleContainer {
+  id: string;
   lines: Line[];
   language: string;
   path: string = '';
 
   constructor(content: string = '') {
+    this.id = randomUUID();
     this.lines = []
     if (content === '') return
     this.language = "JP"
@@ -124,7 +134,8 @@ export class SubtitleContainer {
   }
 
   async adjustJapanese(mecab) {
-    for (let i = 0;i < this.lines.length;i++) {
+    for (let i = 0; i < this.lines.length; i++) {
+      if (globalSubtitleId !== this.id) return;
       const line = this.lines[i];
       await line.fillContentFurigana(mecab)
       await line.fillContentWithLearningKotoba();
