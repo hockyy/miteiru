@@ -5,6 +5,18 @@
   "version": "1.2.0",
   "author": "Hocky Yudhiono <hocky.yudhiono@gmail.com>",
   "main": "app/background.js",
+  "build": {
+    "appId": "id.hocky.miteiru",
+    "mac": {
+      "icon": "resources/icon.icns"
+    },
+    "win": {
+      "icon": "resources/icon.ico"
+    },
+    "linux": {
+      "icon": "resources/icon.ico"
+    }
+  },
   "scripts": {
     "dev": "nextron",
     "build": "nextron build",
