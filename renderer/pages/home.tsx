@@ -1,9 +1,10 @@
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import {ipcRenderer} from 'electron';
 import {ContainerHome} from "../components/ContainerHome";
 import {KeyboardHelp} from "../components/KeyboardHelp";
+import useMiteiruVersion from "../hooks/useMiteiruVersion";
 
 const checkSymbol = ['❌', '✅', '🙃']
 const initialCheck = {ok: 0, message: 'Check is not run yet'}
@@ -52,10 +53,11 @@ function Home() {
       setCheck(initialCheck);
     });
   }, []);
+  const {miteiruVersion} = useMiteiruVersion();
   return (
       <React.Fragment>
         <Head>
-          <title>Miteiru</title>
+          <title>Miteiru v{miteiruVersion}</title>
         </Head>
         <div
             className={"flex flex-col justify-center items-center bg-white min-h-screen w-[100vw]"}>
