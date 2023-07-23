@@ -64,6 +64,7 @@ if (isProd) {
   const mainWindow = createWindow('main', {
     width: 1000,
     height: 600,
+    icon: path.join(__dirname, 'images/logo.png')
   });
   ipcMain.handle('query', async (event, query, limit) => {
     let matches = []

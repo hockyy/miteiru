@@ -1,6 +1,6 @@
 appId: id.hocky.miteiru
 productName: Miteiru
-copyright: Copyright © 2022 Hocky Yudhiono
+copyright: Copyright © 2022-2023 Hocky Yudhiono
 directories:
   output: dist
   buildResources: resources
