@@ -256,6 +256,11 @@ if (isProd) {
   ipcMain.handle('appDataPath', () => {
     return appDataDirectory
   })
+  let packageJsonPath = path.join(app.getAppPath(), 'package.json');
+  let packageJson = JSON.parse(fs.readFileSync(packageJsonPath).toString());
+  ipcMain.handle('getAppVersion', async (event, ...args) => {
+    return packageJson.version;
+  });
   protocol.registerFileProtocol(scheme, requestHandler); /* eng-disable PROTOCOL_HANDLER_JS_CHECK */
   if (isProd) {
     await mainWindow.loadURL('app://./home.html');
