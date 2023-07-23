@@ -1,6 +1,6 @@
 # Miteiru (見ている)
 
-<table>
+<table style="border: none;">
   <tr>
     <td><img src="resources/icon.ico" alt="" /></td>
     <td> Miteiru is an open source Electron video player to learn Japanese. It has modular main language dictionary and tokenizer (morphological analyzer), heavily based on External software <a href="https://taku910.github.io/mecab/">MeCab</a>, and optinally needs <a href="https://github.com/scriptin/jmdict-simplified">JMDict</a> to give language info box. This software is heavily inspired by <a href="https://ookii-tsuki.github.io/Anisubber/">Anisubber</a>. </td>
