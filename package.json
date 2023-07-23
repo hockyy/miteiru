@@ -14,7 +14,11 @@
       "icon": "resources/icon.ico"
     },
     "linux": {
-      "icon": "resources/icon.ico"
+      "icon": "resources/icon.icns",
+      "target": [
+        "deb",
+        "AppImage"
+      ]
     }
   },
   "scripts": {
