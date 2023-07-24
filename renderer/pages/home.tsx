@@ -1,6 +1,5 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import Head from 'next/head';
-import Link from 'next/link';
 import {ipcRenderer} from 'electron';
 import {ContainerHome} from "../components/ContainerHome";
 import {KeyboardHelp} from "../components/KeyboardHelp";
@@ -8,6 +7,7 @@ import useMiteiruVersion from "../hooks/useMiteiruVersion";
 import 'react-awesome-button/dist/styles.css';
 import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
 import {AwesomeButton} from "react-awesome-button";
+import {useRouter} from "next/router";
 
 const checkSymbol = ['❌', '✅', '🙃']
 const initialCheck = {ok: 0, message: 'Check is not run yet'}
@@ -18,9 +18,15 @@ const mecabDefaultDirectory = {
 }
 
 function Home() {
+  const router = useRouter();
   const [mecab, setMecab] = useState(mecabDefaultDirectory[process.platform] ?? mecabDefaultDirectory['linux']);
   const [jmdict, setJmdict] = useState('');
   const [check, setCheck] = useState(initialCheck);
+  const handleClick = useCallback(async () => {
+    if (check.ok === 1) {
+      await router.push('/video');
+    }
+  }, [check, router]);
 
   const handleSelectMecabPath = useCallback(() => {
     ipcRenderer.invoke('pickFile', ['*']).then((val) => {
@@ -132,11 +138,11 @@ function Home() {
                     onPress={handleRemoveJMDictCache}>
                   Remove JMDict Cache
                 </AwesomeButton>
-                <Link href='/video'>
-                  <AwesomeButton type={'primary'} disabled={check.ok !== 1}>
-                    Video
-                  </AwesomeButton>
-                </Link>
+                <AwesomeButton type={'primary'} onPress={handleClick}
+                               className={check.ok !== 1 ? 'buttonDisabled' : ''}
+                               disabled={check.ok !== 1}>
+                  Video
+                </AwesomeButton>
               </div>
             </ContainerHome>
 
