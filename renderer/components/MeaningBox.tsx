@@ -9,9 +9,9 @@ const initialContentState = {sense: [], kanji: []};
 const MeaningBox = ({
                       meaning,
                       setMeaning,
-                      mecab,
+                      tokenizeMiteiru,
                       subtitleStyling = defaultMeaningBoxStyling
-                    }: { meaning: string, setMeaning: any, mecab: string, subtitleStyling?: CJKStyling }) => {
+                    }: { meaning: string, setMeaning: any, tokenizeMiteiru: (value: string) => Promise<any[]>, subtitleStyling?: CJKStyling }) => {
   const [meaningContent, setMeaningContent] = useState(initialContentState)
   const [otherMeanings, setOtherMeanings] = useState([]);
   const [meaningIndex, setMeaningIndex] = useState(0);
@@ -69,8 +69,8 @@ const MeaningBox = ({
           <div className={"flex flex-wrap gap-2"} style={{
             fontFamily: "Arial",
             fontSize: "40px",
-          }}>{meaningContent.kanji.map((val, meanKey) => {
-            const furiganized = getFurigana(val.text, mecab);
+          }}>{meaningContent.kanji.map(async (val, meanKey) => {
+            const furiganized = await tokenizeMiteiru(val.text);
             return (
                 <div key={meanKey}
                      className={"bg-white rounded-xl p-2 border-2 border-blue-700 w-fit unselectable"}>

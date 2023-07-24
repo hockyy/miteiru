@@ -32,7 +32,7 @@ function Home() {
   const handleClick = useCallback(async () => {
     if (!isUsingMecab) {
       setCheck(checkingMessage);
-      const res = await ipcRenderer.invoke('loadDefaultJmdict');
+      const res = await ipcRenderer.invoke('loadDefaultMode');
       setCheck(res);
       if (res.ok !== 1) {
         return;
