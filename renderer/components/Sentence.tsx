@@ -1,9 +1,9 @@
-import {isMixedJapanese} from "shunou";
 import parse from "html-react-parser";
 import styled from "styled-components";
 import {CJKStyling} from "../utils/CJKStyling";
 import React, {useCallback} from "react";
 import {randomUUID} from "crypto";
+import {isMixed} from "wanakana"
 
 const StyledSentence = styled.button<{ subtitleStyling: CJKStyling }>`
   &:hover, &:hover ruby, &:hover rt {
@@ -29,6 +29,7 @@ export const Sentence = ({
                          }
 ) => {
   const handleChange = useCallback((origin) => {
+    navigator.clipboard.writeText(origin);
     setMeaning(origin)
   }, [setMeaning]);
   return <StyledSentence
@@ -54,7 +55,7 @@ export const Sentence = ({
               <rp>)</rp>
             </>
         )
-        const showHelp = val.isKanji || val.isMixed || isMixedJapanese(origin);
+        const showHelp = val.isKanji || val.isMixed || isMixed(origin);
         const showRomaji = (val.isKana || showHelp);
         const showFurigana = ((val.isKana && subtitleStyling.showFuriganaOnKana) || showHelp);
         return <ruby style={{
@@ -77,6 +78,6 @@ export const Sentence = ({
   </StyledSentence>
 }
 
-  export const PlainSentence = ({origin}) => {
-    return <div key={randomUUID()}>{parse(origin)}</div>
-  }
+export const PlainSentence = ({origin}) => {
+  return <div key={randomUUID()}>{parse(origin)}</div>
+}

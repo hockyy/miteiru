@@ -39,3 +39,12 @@ export const toTime = (time: number) => {
 
   return `${hours > 0 ? (hours + ':') : ''}${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
 }
+
+export const joinString = (arr, separator = '; ') => {
+  let total = "";
+  arr.forEach(val => {
+    if (total !== '') total += separator
+    total += val.toString();
+  })
+  return total;
+}
