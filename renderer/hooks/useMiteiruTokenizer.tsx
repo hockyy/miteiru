@@ -17,8 +17,7 @@ const useMiteiruTokenizer = (): { tokenizeMiteiru: (sentence: string) => Promise
       res = processKuromojinToSeparations(res);
       return res;
     }
-    const res = getFurigana(sentence, tokenizerMode)
-    return res;
+    return getFurigana(sentence, tokenizerMode);
   }, [tokenizerMode])
   return {tokenizeMiteiru, tokenizerMode};
 };
