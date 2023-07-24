@@ -1,6 +1,6 @@
-import {useState, useEffect, useCallback} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {ipcRenderer} from "electron";
-import {getFurigana} from "shunou";
+import {getFurigana, processKuromojinToSeparations} from "shunou";
 
 const useMiteiruTokenizer = (): { tokenizeMiteiru: (sentence: string) => Promise<any[]>, tokenizerMode: string } => {
   const [tokenizerMode, setMode] = useState('');
@@ -12,8 +12,13 @@ const useMiteiruTokenizer = (): { tokenizeMiteiru: (sentence: string) => Promise
   }, []);
   const tokenizeMiteiru = useCallback(async (sentence) => {
     if (tokenizerMode === '') return '';
-    if (tokenizerMode === 'kuromoji') return await ipcRenderer.invoke('tokenizeUsingKuromoji', sentence);
-    return getFurigana(sentence, tokenizerMode);
+    if (tokenizerMode === 'kuromoji') {
+      let res = await ipcRenderer.invoke('tokenizeUsingKuromoji', sentence)
+      res = processKuromojinToSeparations(res);
+      return res;
+    }
+    const res = getFurigana(sentence, tokenizerMode)
+    return res;
   }, [tokenizerMode])
   return {tokenizeMiteiru, tokenizerMode};
 };

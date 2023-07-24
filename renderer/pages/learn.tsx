@@ -7,6 +7,7 @@ import {ipcRenderer} from "electron";
 import {defaultPrimarySubtitleStyling} from "../utils/CJKStyling";
 import MeaningBox from "../components/MeaningBox";
 import useMeaning from "../hooks/useMeaning";
+import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
 
 
 function Learn() {
@@ -30,6 +31,8 @@ function Learn() {
     }
   }, [mecab, directInput])
 
+  const {tokenizeMiteiru} = useMiteiruTokenizer();
+
   return (
       <React.Fragment>
         <Head>
@@ -38,7 +41,7 @@ function Learn() {
         <div
             className={"flex flex-col justify-center items-center bg-white min-h-screen w-[100vw]"}>
 
-          <MeaningBox meaning={meaning} setMeaning={setMeaning} mecab={mecab}/>
+          <MeaningBox meaning={meaning} setMeaning={setMeaning} tokenizeMiteiru={tokenizeMiteiru}/>
           <div
               className={"flex flex-col h-[100vh] w-full items-center bg-blue-50 gap-4 p-5 border rounded-lg border-blue-800"}>
             <ContainerHome>

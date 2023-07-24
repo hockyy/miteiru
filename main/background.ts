@@ -274,7 +274,6 @@ if (isProd) {
     console.log(e)
   })
   ipcMain.handle('tokenizeUsingKuromoji', async (event, sentence) => {
-    console.log(sentence)
     return tokenizer.tokenizeForSentence(sentence);
   });
   protocol.registerFileProtocol(scheme, requestHandler); /* eng-disable PROTOCOL_HANDLER_JS_CHECK */

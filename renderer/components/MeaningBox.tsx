@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import {ipcRenderer} from "electron";
 import {Sentence} from "./Sentence";
 import {CJKStyling, defaultMeaningBoxStyling} from "../utils/CJKStyling";
+import {joinString} from "../utils/utils";
 
 const initialContentState = {sense: [], kanji: []};
 
@@ -33,14 +34,25 @@ const MeaningBox = ({
       setTags(val)
     })
   }, [meaning]);
-  const joinString = (arr, separator = '; ') => {
-    let total = "";
-    arr.forEach(val => {
-      if (total !== '') total += separator
-      total += val.toString();
-    })
-    return total;
-  }
+
+
+  const [furiganizedData, setFuriganizedData] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await Promise.all(meaningContent.kanji.map(async (val) => {
+        const furiganized = await tokenizeMiteiru(val.text);
+        return {
+          key: val.key,
+          furiganized
+        };
+      }));
+
+      setFuriganizedData(data);
+    };
+    if (meaningContent.kanji.length) fetchData();
+  }, [meaningContent.kanji]); // Add your dependencies here
+
 
   if (meaningContent.kanji.length > 0) {
     return (<div onClick={() => {
@@ -68,23 +80,23 @@ const MeaningBox = ({
           <div className={"flex flex-wrap gap-2"} style={{
             fontFamily: "Arial",
             fontSize: "40px",
-          }}>{meaningContent.kanji.map(async (val, meanKey) => {
-            const furiganized = await tokenizeMiteiru(val.text);
-            return (
-                <div key={meanKey}
+          }}>
+            {furiganizedData.map(({key, furiganized}) => (
+                <div key={key}
                      className={"bg-white rounded-xl p-2 border-2 border-blue-700 w-fit unselectable"}>
-                  {[...furiganized.map((val, idx) => {
-                    return (<Sentence key={idx}
-                                      origin={val.origin}
-                                      setMeaning={setMeaning}
-                                      separation={val.separation}
-                                      extraClass={"meaning-kanji text-md"}
-                                      subtitleStyling={subtitleStyling}/>)
-                  })]}
-                </div>);
-          })}</div>
+                  {[...furiganized.map((val, idx) => (
+                      <Sentence key={idx}
+                                origin={val.origin}
+                                setMeaning={setMeaning}
+                                separation={val.separation}
+                                extraClass={"meaning-kanji text-md"}
+                                subtitleStyling={subtitleStyling}/>
+                  ))]}
+                </div>
+            ))}
+          </div>
           {meaningIndex + 1 < otherMeanings.length &&
-              < button className={"bg-blue-800 p-3 rounded-md m-4"} onClick={(e) => {
+              <button className={"bg-blue-800 p-3 rounded-md m-4"} onClick={(e) => {
                 e.stopPropagation()
                 setMeaningIndex((old) => {
                   setMeaningContent(otherMeanings[old + 1])
