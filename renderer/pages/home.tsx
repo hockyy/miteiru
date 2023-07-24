@@ -1,11 +1,10 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import Head from 'next/head';
 import {ipcRenderer} from 'electron';
 import {ContainerHome} from "../components/ContainerHome";
 import {KeyboardHelp} from "../components/KeyboardHelp";
 import useMiteiruVersion from "../hooks/useMiteiruVersion";
 import 'react-awesome-button/dist/styles.css';
-import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
 import {AwesomeButton} from "react-awesome-button";
 import {useRouter} from "next/router";
 import Toggle from "../components/Toggle";
