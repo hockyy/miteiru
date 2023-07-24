@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from "react";
 import {ipcRenderer} from "electron";
-import {getFurigana} from "shunou";
 import {Sentence} from "./Sentence";
 import {CJKStyling, defaultMeaningBoxStyling} from "../utils/CJKStyling";
 

@@ -14,7 +14,7 @@ const useMiteiruTokenizer = (): { tokenizeMiteiru: (sentence: string) => Promise
     if (tokenizerMode === '') return '';
     if (tokenizerMode === 'kuromoji') return await ipcRenderer.invoke('tokenizeUsingKuromoji', sentence);
     return getFurigana(sentence, tokenizerMode);
-  }, [])
+  }, [tokenizerMode])
   return {tokenizeMiteiru, tokenizerMode};
 };
 
