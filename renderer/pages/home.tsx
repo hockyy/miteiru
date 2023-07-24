@@ -8,6 +8,7 @@ import 'react-awesome-button/dist/styles.css';
 import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
 import {AwesomeButton} from "react-awesome-button";
 import {useRouter} from "next/router";
+import Toggle from "../components/Toggle";
 
 const checkSymbol = ['❌', '✅', '🙃']
 const initialCheck = {ok: 0, message: 'Check is not run yet'}
@@ -22,6 +23,7 @@ function Home() {
   const [mecab, setMecab] = useState(mecabDefaultDirectory[process.platform] ?? mecabDefaultDirectory['linux']);
   const [jmdict, setJmdict] = useState('');
   const [check, setCheck] = useState(initialCheck);
+  const [isUsingKuromoji, setUsingKuromoji] = useState(true);
   const handleClick = useCallback(async () => {
     if (check.ok === 1) {
       await router.push('/video');
@@ -80,6 +82,9 @@ function Home() {
             className={"flex flex-col justify-center items-center bg-white min-h-screen w-[100vw]"}>
           <div
               className={"flex flex-col h-fit items-center bg-blue-50 gap-4 w-fit p-5 border rounded-lg border-blue-800"}>
+            <Toggle defaultCheck={true} onChange={(val) => {
+              setUsingKuromoji(val);
+            }}/>
             <ContainerHome>
               <div className={"flex justify-between  gap-3 p-3 w-full"}>
                 <AwesomeButton
@@ -93,7 +98,7 @@ function Home() {
                       setMecab(val.target.value)
                     }}></input>
               </div>
-              <div className={"flex justify-between  gap-3 p-3 w-full"}>
+              <div className={"flex justify-between gap-3 p-3 w-full"}>
                 <AwesomeButton
                     onPress={handleSelectJMDictJson}>
                   Select JMDict Json
@@ -105,9 +110,7 @@ function Home() {
                       setJmdict(val.target.value)
                     }}></input>
               </div>
-            </ContainerHome>
-            <ContainerHome>
-              <div className={'flex flex-col justify-center items-center gap-2'}>
+              <div className={'flex flex-col items-center gap-4'}>
                 <div className={'flex flex-row gap-3'}>
                   <AwesomeButton
                       type={'secondary'}
@@ -122,30 +125,21 @@ function Home() {
                     Check With Cache
                   </AwesomeButton>
                 </div>
-                <div className={'text-black'}>
-                  {checkSymbol[check.ok]}{' '}{check.message}
-                </div>
-
-
-              </div>
-
-
-            </ContainerHome>
-            <ContainerHome>
-              <div className={'flex flex-row gap-3'}>
                 <AwesomeButton
                     type={"danger"}
                     onPress={handleRemoveJMDictCache}>
                   Remove JMDict Cache
                 </AwesomeButton>
-                <AwesomeButton type={'primary'} onPress={handleClick}
-                               className={check.ok !== 1 ? 'buttonDisabled' : ''}
-                               disabled={check.ok !== 1}>
-                  Video
-                </AwesomeButton>
+                <div className={'text-black'}>
+                  {checkSymbol[check.ok]}{' '}{check.message}
+                </div>
               </div>
             </ContainerHome>
-
+            <AwesomeButton type={'primary'} onPress={handleClick}
+                           className={check.ok !== 1 ? 'buttonDisabled' : ''}
+                           disabled={check.ok !== 1}>
+              Video
+            </AwesomeButton>
           </div>
           <KeyboardHelp/>
         </div>
