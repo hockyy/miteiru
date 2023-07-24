@@ -5,6 +5,9 @@ import {ipcRenderer} from 'electron';
 import {ContainerHome} from "../components/ContainerHome";
 import {KeyboardHelp} from "../components/KeyboardHelp";
 import useMiteiruVersion from "../hooks/useMiteiruVersion";
+import 'react-awesome-button/dist/styles.css';
+import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
+import {AwesomeButton} from "react-awesome-button";
 
 const checkSymbol = ['❌', '✅', '🙃']
 const initialCheck = {ok: 0, message: 'Check is not run yet'}
@@ -15,7 +18,6 @@ const mecabDefaultDirectory = {
 }
 
 function Home() {
-  const [dicdir, setDicdir] = useState('');
   const [mecab, setMecab] = useState(mecabDefaultDirectory[process.platform] ?? mecabDefaultDirectory['linux']);
   const [jmdict, setJmdict] = useState('');
   const [check, setCheck] = useState(initialCheck);
@@ -38,11 +40,11 @@ function Home() {
       message: "checking..."
     });
     ipcRenderer.invoke('validateConfig', {
-      mecab, dicdir, jmdict, cached
+      mecab, jmdict, cached
     }).then(val => {
       setCheck(val);
     });
-  }, [mecab, dicdir, jmdict]);
+  }, [mecab, jmdict]);
 
   const handleRemoveJMDictCache = useCallback(() => {
     setCheck({
@@ -54,6 +56,15 @@ function Home() {
     });
   }, []);
   const {miteiruVersion} = useMiteiruVersion();
+  const {tokenizeMiteiru} = useMiteiruTokenizer();
+  useEffect(() => {
+    const fetchData = async () => {
+      const test = await tokenizeMiteiru("１００円で　１ポイントに変換できる\nって言ってたしな。");
+      console.log(test);
+    };
+
+    // fetchData()
+  }, []);
   return (
       <React.Fragment>
         <Head>
@@ -64,30 +75,11 @@ function Home() {
           <div
               className={"flex flex-col h-fit items-center bg-blue-50 gap-4 w-fit p-5 border rounded-lg border-blue-800"}>
             <ContainerHome>
-              {/*<div className={"flex flex-row gap-3 p-3"}>*/}
-              {/*  <button*/}
-              {/*      className='bg-blue-400 hover:bg-blue-500 rounded-sm text-white p-2 w-full'*/}
-              {/*      onClick={() => {*/}
-              {/*        ipcRenderer.invoke('pickDirectory').then((val) => {*/}
-              {/*          if (!val.canceled) setDicdir(val.filePaths[0])*/}
-              {/*        })*/}
-              {/*      }*/}
-              {/*      }>*/}
-              {/*    Select MeCab Dictionary Directory*/}
-              {/*  </button>*/}
-              {/*  <input*/}
-              {/*      className={"text-blue-800 outline-none rounded-sm text-lg md:min-w-[50vw] border border-gray-300 focus:border-blue-500 ring-1 ring-blue-400 focus:ring-blue-500 rounded-lg"}*/}
-              {/*      type={"text"} value={dicdir}*/}
-              {/*      onChange={(val) => {*/}
-              {/*        setDicdir(val.target.value)*/}
-              {/*      }}></input>*/}
-              {/*</div>*/}
               <div className={"flex justify-between  gap-3 p-3 w-full"}>
-                <button
-                    className='bg-blue-400 hover:bg-blue-500 rounded-sm text-white p-2 w-full'
-                    onClick={handleSelectMecabPath}>
+                <AwesomeButton
+                    onPress={handleSelectMecabPath}>
                   Select Mecab Path
-                </button>
+                </AwesomeButton>
                 <input
                     className={"text-blue-800 outline-none rounded-sm text-lg md:min-w-[50vw] border border-gray-300 focus:border-blue-500 ring-1 ring-blue-400 focus:ring-blue-500 rounded-lg"}
                     type={"text"} value={mecab}
@@ -96,11 +88,10 @@ function Home() {
                     }}></input>
               </div>
               <div className={"flex justify-between  gap-3 p-3 w-full"}>
-                <button
-                    className='bg-blue-400 hover:bg-blue-500 rounded-sm text-white p-2 w-full'
-                    onClick={handleSelectJMDictJson}>
+                <AwesomeButton
+                    onPress={handleSelectJMDictJson}>
                   Select JMDict Json
-                </button>
+                </AwesomeButton>
                 <input
                     className={"text-blue-800 outline-none rounded-sm text-lg md:min-w-[50vw] border border-gray-300 focus:border-blue-500 ring-1 ring-blue-400 focus:ring-blue-500 rounded-lg"}
                     type={"text"} value={jmdict}
@@ -112,18 +103,18 @@ function Home() {
             <ContainerHome>
               <div className={'flex flex-col justify-center items-center gap-2'}>
                 <div className={'flex flex-row gap-3'}>
-                  <button
+                  <AwesomeButton
+                      type={'secondary'}
                       disabled={check.ok === 2}
-                      className='disabled:cursor-not-allowed disabled:bg-amber-200 enabled:bg-amber-600 p-3 rounded-sm enabled:hover:bg-amber-700'
-                      onClick={() => handleCheck(false)}>
+                      onPress={() => handleCheck(false)}>
                     Check
-                  </button>
-                  <button
+                  </AwesomeButton>
+                  <AwesomeButton
+                      type={'secondary'}
                       disabled={check.ok === 2}
-                      className='disabled:cursor-not-allowed disabled:bg-amber-200 enabled:bg-amber-600 p-3 rounded-sm enabled:hover:bg-amber-700'
-                      onClick={() => handleCheck(true)}>
+                      onPress={() => handleCheck(true)}>
                     Check With Cache
-                  </button>
+                  </AwesomeButton>
                 </div>
                 <div className={'text-black'}>
                   {checkSymbol[check.ok]}{' '}{check.message}
@@ -136,31 +127,15 @@ function Home() {
             </ContainerHome>
             <ContainerHome>
               <div className={'flex flex-row gap-3'}>
-                <button
-                    type={"button"}
-                    className='bg-red-600 p-3 rounded-sm hover:bg-red-700'
-                    onClick={handleRemoveJMDictCache}>
+                <AwesomeButton
+                    type={"danger"}
+                    onPress={handleRemoveJMDictCache}>
                   Remove JMDict Cache
-                </button>
-                {/*<button*/}
-                {/*    type={"button"}*/}
-                {/*    className='bg-green-600 p-3 rounded-sm bg-green-700'*/}
-                {/*    onClick={() => {*/}
-                {/*      const text = '木ぃ切って 月収6万だろ~'*/}
-                {/*      ipcRenderer.invoke('getShunou', mecab, text).then(val => {*/}
-                {/*        console.log(val)*/}
-                {/*      })*/}
-                {/*    }*/}
-                {/*    }>*/}
-                {/*  tmp*/}
-                {/*</button>*/}
+                </AwesomeButton>
                 <Link href='/video'>
-                  <button
-                      type={"button"}
-                      disabled={check.ok !== 1}
-                      className='disabled:cursor-not-allowed disabled:bg-green-300 enabled:bg-green-600 p-3 rounded-sm enabled:hover:bg-green-700'>
+                  <AwesomeButton type={'primary'} disabled={check.ok !== 1}>
                     Video
-                  </button>
+                  </AwesomeButton>
                 </Link>
               </div>
             </ContainerHome>
