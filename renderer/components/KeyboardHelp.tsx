@@ -46,7 +46,7 @@ export const Key = ({value, extraClass = ""}) => {
 
 export const KeyboardHelp = () => {
   return <div
-      className={"grid grid-cols-2 gap-5 content-start w-auto px-5 py-3 m-2 bg-blue-50 rounded-lg border-2 border-black"}>
+      className={"grid grid-cols-2 gap-5 content-start w-full md:w-4/5 px-5 py-3 m-2 bg-blue-50 rounded-lg border-2 border-black"}>
     {shortcutInformation.map((val, idx) => {
       return <div
           className={"font-mono font-bold text-black flex flex-row items-center gap-3 font-bold"}
