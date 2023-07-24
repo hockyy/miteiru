@@ -72,15 +72,6 @@ function Home() {
     });
   }, []);
   const {miteiruVersion} = useMiteiruVersion();
-  const {tokenizeMiteiru} = useMiteiruTokenizer();
-  useEffect(() => {
-    const fetchData = async () => {
-      const test = await tokenizeMiteiru("１００円で　１ポイントに変換できる\nって言ってたしな。");
-      console.log(test);
-    };
-
-    // fetchData()
-  }, []);
   const ableToProceedToVideo = !isUsingMecab || (check.ok === 1)
   return (
       <React.Fragment>
