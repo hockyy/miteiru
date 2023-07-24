@@ -9,6 +9,7 @@ import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
 import {AwesomeButton} from "react-awesome-button";
 import {useRouter} from "next/router";
 import Toggle from "../components/Toggle";
+import SmoothCollapse from "react-smooth-collapse";
 
 const checkSymbol = ['❌', '✅', '🙃']
 const initialCheck = {ok: 0, message: 'Check is not run yet'}
@@ -23,7 +24,7 @@ function Home() {
   const [mecab, setMecab] = useState(mecabDefaultDirectory[process.platform] ?? mecabDefaultDirectory['linux']);
   const [jmdict, setJmdict] = useState('');
   const [check, setCheck] = useState(initialCheck);
-  const [isUsingKuromoji, setUsingKuromoji] = useState(true);
+  const [isUsingMecab, setUsingMecab] = useState(true);
   const handleClick = useCallback(async () => {
     if (check.ok === 1) {
       await router.push('/video');
@@ -73,6 +74,7 @@ function Home() {
 
     // fetchData()
   }, []);
+  const ableToProceedToVideo = !isUsingMecab || (check.ok === 1)
   return (
       <React.Fragment>
         <Head>
@@ -81,11 +83,15 @@ function Home() {
         <div
             className={"flex flex-col justify-center items-center bg-white min-h-screen w-[100vw]"}>
           <div
-              className={"flex flex-col h-fit items-center bg-blue-50 gap-4 w-fit p-5 border rounded-lg border-blue-800"}>
-            <Toggle defaultCheck={true} onChange={(val) => {
-              setUsingKuromoji(val);
-            }}/>
-            <ContainerHome>
+              className={"flex flex-col h-fit items-center bg-blue-50 gap-4 w-full p-5 border rounded-lg border-blue-800"}>
+            <div className={'flex flex-row gap-4 text-4xl text-black font-bold'}>
+              <Toggle defaultCheck={true} onChange={(val) => {
+                setUsingMecab(val);
+              }}/>
+              {isUsingMecab && <div>鬼畜 👹</div>}
+              {!isUsingMecab && <div>ヌル 🐣</div>}
+            </div>
+            <SmoothCollapse expanded={isUsingMecab}><ContainerHome>
               <div className={"flex justify-between  gap-3 p-3 w-full"}>
                 <AwesomeButton
                     onPress={handleSelectMecabPath}>
@@ -134,11 +140,12 @@ function Home() {
                   {checkSymbol[check.ok]}{' '}{check.message}
                 </div>
               </div>
-            </ContainerHome>
+            </ContainerHome></SmoothCollapse>
             <AwesomeButton type={'primary'} onPress={handleClick}
-                           className={check.ok !== 1 ? 'buttonDisabled' : ''}
-                           disabled={check.ok !== 1}>
-              Video
+                           className={ableToProceedToVideo ? '' : 'buttonDisabled'}
+                           disabled={!ableToProceedToVideo}>
+              {!isUsingMecab && <div className={'text-xl'}>うん、ちょっと<span className={'font-bold text-yellow-200'}>見てる</span>だけ 😏</div>}
+              {isUsingMecab && <div className={'text-xl'}>準備OK、船長！🫡</div>}
             </AwesomeButton>
           </div>
           <KeyboardHelp/>
