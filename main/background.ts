@@ -12,6 +12,7 @@ import {
 } from 'jmdict-simplified-node';
 import fs from "fs";
 import path from "path";
+import {getTokenizer} from "kuromojin";
 
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
@@ -165,6 +166,13 @@ if (isProd) {
 
 
   })
+
+  ipcMain.handle('loadDefaultMode', async (event) => {
+    mecabCommand = 'kuromoji';
+    return await checkJMDict({
+      jmdict: path.join(__dirname, 'dict/jmdict.json')
+    });
+  })
   ipcMain.handle('removeDictCache', (event) => {
     removeJMDictCache()
     return true;
@@ -235,13 +243,10 @@ if (isProd) {
     return okSetup;
   }
 
-  ipcMain.handle('getMecabCommand', async (event, mecab, text) => {
-    return mecabCommand
+  ipcMain.handle('getTokenizerMode', async () => {
+    return mecabCommand;
   })
   ipcMain.handle('validateConfig', async (event, config) => {
-
-    // const dicdirRes = checkDicdir(config);
-    // if (dicdirRes.ok !== 1) return dicdirRes
     let jmdictRes;
     if (!config.cached) {
       jmdictRes = await checkJMDict(config);
@@ -259,8 +264,17 @@ if (isProd) {
   })
   let packageJsonPath = path.join(app.getAppPath(), 'package.json');
   let packageJson = JSON.parse(fs.readFileSync(packageJsonPath).toString());
-  ipcMain.handle('getAppVersion', async (event, ...args) => {
+  ipcMain.handle('getAppVersion', async () => {
     return packageJson.version;
+  });
+  let tokenizer = null;
+  getTokenizer({dicPath: path.join(__dirname, 'dict/')}).then(loadedTokenizer => {
+    tokenizer = loadedTokenizer;
+  }).catch(e => {
+    console.log(e)
+  })
+  ipcMain.handle('tokenizeUsingKuromoji', async (event, sentence) => {
+    return tokenizer.tokenizeForSentence(sentence);
   });
   protocol.registerFileProtocol(scheme, requestHandler); /* eng-disable PROTOCOL_HANDLER_JS_CHECK */
   if (isProd) {
