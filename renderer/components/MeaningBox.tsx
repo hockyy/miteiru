@@ -89,7 +89,7 @@ const MeaningBox = ({
                                 origin={val.origin}
                                 setMeaning={setMeaning}
                                 separation={val.separation}
-                                extraClass={"meaning-kanji text-md"}
+                                extraClass={"unselectable meaning-kanji text-md"}
                                 subtitleStyling={subtitleStyling}/>
                   ))]}
                 </div>
