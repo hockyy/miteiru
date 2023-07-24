@@ -1,12 +1,21 @@
-import {useCallback, useEffect, useState} from "react";
-import {getTokenizer} from "kuromojin";
+import {useState, useEffect, useCallback} from 'react';
 import {ipcRenderer} from "electron";
+import {getFurigana} from "shunou";
 
-const useMiteiruTokenizer = () => {
+const useMiteiruTokenizer = (): { tokenizeMiteiru: (sentence: string) => Promise<any[]>, tokenizerMode: string } => {
+  const [tokenizerMode, setMode] = useState('');
+
+  useEffect(() => {
+    ipcRenderer.invoke('getTokenizerMode').then(val => {
+      setMode(val);
+    });
+  }, []);
   const tokenizeMiteiru = useCallback(async (sentence) => {
-    return await ipcRenderer.invoke('tokenizeUsingKuromoji', sentence);
+    if (tokenizerMode === '') return '';
+    if (tokenizerMode === 'kuromoji') return await ipcRenderer.invoke('tokenizeUsingKuromoji', sentence);
+    return getFurigana(sentence, tokenizerMode);
   }, [])
-  return {tokenizeMiteiru};
-}
+  return {tokenizeMiteiru, tokenizerMode};
+};
 
 export default useMiteiruTokenizer;

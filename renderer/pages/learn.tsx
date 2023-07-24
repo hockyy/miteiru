@@ -18,7 +18,7 @@ function Learn() {
   const [primaryStyling, setPrimaryStyling] = useState(defaultPrimarySubtitleStyling);
   const [directInput, setDirectInput] = useState('');
   useEffect(() => {
-    ipcRenderer.invoke('getMecabCommand').then(val => {
+    ipcRenderer.invoke('getTokenizerMode').then(val => {
       setMecab(val)
     })
   }, []);

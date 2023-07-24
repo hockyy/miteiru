@@ -167,7 +167,8 @@ if (isProd) {
 
   })
 
-  ipcMain.handle('loadDefaultJmdict', async (event) => {
+  ipcMain.handle('loadDefaultMode', async (event) => {
+    mecabCommand = 'kuromoji';
     return await checkJMDict({
       jmdict: path.join(__dirname, 'dict/jmdict.json')
     });
@@ -242,8 +243,8 @@ if (isProd) {
     return okSetup;
   }
 
-  ipcMain.handle('getMecabCommand', async () => {
-    return mecabCommand
+  ipcMain.handle('getTokenizerMode', async () => {
+    return mecabCommand;
   })
   ipcMain.handle('validateConfig', async (event, config) => {
     let jmdictRes;
