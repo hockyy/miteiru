@@ -118,7 +118,7 @@ export const Subtitle = (
   }
   currentContainerStyle[subtitleStyling.positionFromTop ? 'top' : 'bottom'] = subtitleStyling.position;
   return <div
-      className={"fixed w-[100vw] z-10 font-bold text-center " + extraClass}
+      className={"unselectable fixed w-[100vw] z-10 font-bold text-center " + extraClass}
       style={currentContainerStyle}>
     {caption.length > 0 &&
         <div className={"w-fit z-10 mx-auto rounded-lg px-3 pt-2 pb-1"} style={{
