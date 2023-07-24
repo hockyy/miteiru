@@ -1,8 +1,12 @@
 diff --git a/node_modules/jmdict-simplified-node/index.js b/node_modules/jmdict-simplified-node/index.js
-index b50ce2d..233738c 100644
+index b50ce2d..d81da04 100644
 --- a/node_modules/jmdict-simplified-node/index.js
 +++ b/node_modules/jmdict-simplified-node/index.js
-@@ -34,43 +34,48 @@ function setup(DBNAME, filename = '', verbose = false) {
+@@ -31,46 +31,52 @@ function setup(DBNAME, filename = '', verbose = false) {
+             // pass
+         }
+         if (!filename) {
++            db.close();
              throw new Error('database not found but cannot create it if no `filename` given');
          }
          const raw = JSON.parse(yield fs_1.promises.readFile(filename, 'utf8'));

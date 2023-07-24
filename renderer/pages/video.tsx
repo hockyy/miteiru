@@ -8,7 +8,6 @@ import Toast from "../components/Toast";
 import {Sidebar} from "../components/Sidebar";
 import useKeyBind from "../hooks/useKeyBind";
 import useSubtitle from "../hooks/useSubtitle";
-import useMecab from "../hooks/useMecab";
 import useLoadFiles from "../hooks/useLoadFiles";
 import useMenuDisplay from "../hooks/useMenuDisplay";
 import useReadyPlayerCallback from "../hooks/useReadyPlayerCallback";
@@ -22,9 +21,10 @@ import {
   useVideoTimeChanger
 } from "../hooks/useVideoController";
 import {usePlayNextAfterEnd} from "../hooks/usePlayNextAfterEnd";
+import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
 
 function Video() {
-  const mecab = useMecab();
+  const {tokenizerMode, tokenizeMiteiru} = useMiteiruTokenizer();
   const {toastInfo, setToastInfo} = useMiteiruToast();
   const {
     readyCallback,
@@ -59,7 +59,7 @@ function Video() {
       useLoadFiles(setToastInfo,
           primarySub, setPrimarySub,
           secondarySub, setSecondarySub,
-          mecab, setEnableSeeker, changeTimeTo, player);
+          tokenizeMiteiru, setEnableSeeker, changeTimeTo, player);
   const {showController, setShowController, showSidebar, setShowSidebar} = useMenuDisplay();
   useKeyBind(setMeaning, setShowController, setShowSidebar, setPrimarySub, setSecondarySub, primarySub);
   const {togglePlay, isPlaying} = useVideoPlayingToggle(player, metadata);
@@ -72,7 +72,7 @@ function Video() {
         </Head>
         <div>
           <Toast info={toastInfo}/>
-          <MeaningBox meaning={meaning} setMeaning={setMeaning} mecab={mecab}/>
+          <MeaningBox meaning={meaning} setMeaning={setMeaning} tokenizeMiteiru={tokenizeMiteiru}/>
           <VideoJS options={{
             responsive: true,
             sources: [videoSrc],
@@ -112,7 +112,7 @@ function Video() {
                 setEnableSeeker={setEnableSeeker}
                 onVideoChangeHandler={onVideoChangeHandler}/>}
           </div>
-          {mecab !== '' && <MiteiruDropzone onDrop={onLoadFiles}/>}
+          {tokenizerMode !== '' && <MiteiruDropzone onDrop={onLoadFiles}/>}
         </div>
         <Sidebar showSidebar={showSidebar} setShowSidebar={setShowSidebar}
                  primaryStyling={primaryStyling}

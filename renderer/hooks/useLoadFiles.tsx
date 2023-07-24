@@ -6,12 +6,12 @@ import {isSubtitle, isVideo} from "../utils/utils";
 import {findPositionDeltaInFolder} from "../utils/folderUtils";
 import {useAsyncAwaitQueue} from "./useAsyncAwaitQueue";
 
-const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, setSecondarySub, mecab, setEnableSeeker, changeTimeTo, player) => {
+const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, setSecondarySub, tokenizeMiteiru, setEnableSeeker, changeTimeTo, player) => {
   const [videoSrc, setVideoSrc] = useState({src: '', type: '', path: ''});
   const queue = useAsyncAwaitQueue();
   const resetSub = useCallback((subSetter) => {
     subSetter(new SubtitleContainer(''));
-  }, [mecab]);
+  }, [tokenizeMiteiru]);
   const onLoadFiles = useCallback(async acceptedFiles => {
     const currentHash = Symbol();
     await queue.wait(currentHash);
@@ -55,7 +55,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
               update: randomUUID()
             });
           }, TOAST_TIMEOUT / 10);
-          tmpSub.adjustJapanese(mecab).then(() => {
+          tmpSub.adjustJapanese(tokenizeMiteiru).then(() => {
             clearInterval(toastSetter);
           })
         }
@@ -71,7 +71,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
       resetSub(setSecondarySub)
     }
     await queue.end(currentHash);
-  }, [mecab]);
+  }, [tokenizeMiteiru]);
   const onVideoChangeHandler = useCallback(async (delta: number = 1) => {
     if (videoSrc.path) {
       const nextVideo = findPositionDeltaInFolder(videoSrc.path, delta);
