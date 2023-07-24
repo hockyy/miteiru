@@ -141,3 +141,9 @@ button {
   border-radius: 9px;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
+
+
+.buttonDisabled {
+  cursor: not-allowed !important;
+  /* any other styles for the disabled state */
+}
