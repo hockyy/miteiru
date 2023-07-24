@@ -29,6 +29,7 @@ export const Sentence = ({
                          }
 ) => {
   const handleChange = useCallback((origin) => {
+    navigator.clipboard.writeText(origin);
     setMeaning(origin)
   }, [setMeaning]);
   return <StyledSentence
