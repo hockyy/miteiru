@@ -166,6 +166,12 @@ if (isProd) {
 
 
   })
+
+  ipcMain.handle('loadDefaultJmdict', async (event) => {
+    return await checkJMDict({
+      jmdict: path.join(__dirname, 'dict/jmdict.json')
+    });
+  })
   ipcMain.handle('removeDictCache', (event) => {
     removeJMDictCache()
     return true;

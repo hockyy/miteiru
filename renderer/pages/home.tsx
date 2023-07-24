@@ -11,12 +11,16 @@ import {useRouter} from "next/router";
 import Toggle from "../components/Toggle";
 import SmoothCollapse from "react-smooth-collapse";
 
-const checkSymbol = ['❌', '✅', '🙃']
-const initialCheck = {ok: 0, message: 'Check is not run yet'}
+const checkSymbol = ['❓', '✅', '🙃']
+const initialCheck = {ok: 0, message: '🐸 ゲロゲロ'}
 const mecabDefaultDirectory = {
   'darwin': '/opt/homebrew/bin/mecab',
   'linux': '/usr/bin/mecab',
   'win32': 'C:\\Program Files (x86)\\MeCab\\bin\\mecab.exe'
+}
+const checkingMessage = {
+  ok: 2,
+  message: "checking..."
 }
 
 function Home() {
@@ -24,11 +28,17 @@ function Home() {
   const [mecab, setMecab] = useState(mecabDefaultDirectory[process.platform] ?? mecabDefaultDirectory['linux']);
   const [jmdict, setJmdict] = useState('');
   const [check, setCheck] = useState(initialCheck);
-  const [isUsingMecab, setUsingMecab] = useState(true);
+  const [isUsingMecab, setUsingMecab] = useState(false);
   const handleClick = useCallback(async () => {
-    if (check.ok === 1) {
-      await router.push('/video');
+    if (!isUsingMecab) {
+      setCheck(checkingMessage);
+      const res = await ipcRenderer.invoke('loadDefaultJmdict');
+      setCheck(res);
+      if (res.ok !== 1) {
+        return;
+      }
     }
+    await router.push('/video');
   }, [check, router]);
 
   const handleSelectMecabPath = useCallback(() => {
@@ -44,10 +54,7 @@ function Home() {
   }, []);
 
   const handleCheck = useCallback((cached = false) => {
-    setCheck({
-      ok: 2,
-      message: "checking..."
-    });
+    setCheck(checkingMessage);
     ipcRenderer.invoke('validateConfig', {
       mecab, jmdict, cached
     }).then(val => {
@@ -83,9 +90,9 @@ function Home() {
         <div
             className={"flex flex-col justify-center items-center bg-white min-h-screen w-[100vw]"}>
           <div
-              className={"flex flex-col h-fit items-center bg-blue-50 gap-4 w-full p-5 border rounded-lg border-blue-800"}>
+              className={"flex flex-col h-fit items-center bg-blue-50 gap-4 w-full md:w-4/5 p-5 border rounded-lg border-blue-800 border-2"}>
             <div className={'flex flex-row gap-4 text-4xl text-black font-bold'}>
-              <Toggle defaultCheck={true} onChange={(val) => {
+              <Toggle defaultCheck={isUsingMecab} onChange={(val) => {
                 setUsingMecab(val);
               }}/>
               {isUsingMecab && <div>鬼畜 👹</div>}
@@ -136,15 +143,16 @@ function Home() {
                     onPress={handleRemoveJMDictCache}>
                   Remove JMDict Cache
                 </AwesomeButton>
-                <div className={'text-black'}>
-                  {checkSymbol[check.ok]}{' '}{check.message}
-                </div>
               </div>
             </ContainerHome></SmoothCollapse>
+            <div className={'text-black'}>
+              {checkSymbol[check.ok]}{' '}{check.message}
+            </div>
             <AwesomeButton type={'primary'} onPress={handleClick}
                            className={ableToProceedToVideo ? '' : 'buttonDisabled'}
                            disabled={!ableToProceedToVideo}>
-              {!isUsingMecab && <div className={'text-xl'}>うん、ちょっと<span className={'font-bold text-yellow-200'}>見てる</span>だけ 😏</div>}
+              {!isUsingMecab && <div className={'text-xl'}>うん、ちょっと<span
+                  className={'font-bold text-yellow-200'}>見てる</span>だけ 😏</div>}
               {isUsingMecab && <div className={'text-xl'}>準備OK、船長！🫡</div>}
             </AwesomeButton>
           </div>
