@@ -33,8 +33,8 @@ export class Line {
     this.content = strContent;
   }
 
-  fillContentFurigana(mecab) {
-    this.content = getFurigana(this.content as string, mecab);
+  async fillContentFurigana(tokenizeMiteiru: (string) => Promise<any[]>) {
+    this.content = await tokenizeMiteiru(this.content as string);
   }
 
   async fillContentWithLearningKotoba() {
@@ -133,11 +133,11 @@ export class SubtitleContainer {
     return subtitleContainer
   }
 
-  async adjustJapanese(mecab) {
+  async adjustJapanese(tokenizeMiteiru: (string) => Promise<any[]>) {
     for (let i = 0; i < this.lines.length; i++) {
       if (globalSubtitleId !== this.id) return;
       const line = this.lines[i];
-      await line.fillContentFurigana(mecab)
+      await line.fillContentFurigana(tokenizeMiteiru)
       await line.fillContentWithLearningKotoba();
       this.progress = `${((i + 1) * 100 / this.lines.length).toFixed(2)}%`;
     }
