@@ -72,7 +72,7 @@ function Home() {
     });
   }, []);
   const {miteiruVersion} = useMiteiruVersion();
-  const ableToProceedToVideo = !isUsingMecab || (check.ok === 1)
+  const ableToProceedToVideo = (!isUsingMecab && check.ok !== 2) || (isUsingMecab && check.ok === 1)
   return (
       <React.Fragment>
         <Head>
