@@ -1,24 +1,45 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import Head from 'next/head';
-import Link from 'next/link';
 import {ipcRenderer} from 'electron';
 import {ContainerHome} from "../components/ContainerHome";
 import {KeyboardHelp} from "../components/KeyboardHelp";
 import useMiteiruVersion from "../hooks/useMiteiruVersion";
+import 'react-awesome-button/dist/styles.css';
+import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
+import {AwesomeButton} from "react-awesome-button";
+import {useRouter} from "next/router";
+import Toggle from "../components/Toggle";
+import SmoothCollapse from "react-smooth-collapse";
 
-const checkSymbol = ['❌', '✅', '🙃']
-const initialCheck = {ok: 0, message: 'Check is not run yet'}
+const checkSymbol = ['❓', '✅', '🙃']
+const initialCheck = {ok: 0, message: '🐸 ゲロゲロ'}
 const mecabDefaultDirectory = {
   'darwin': '/opt/homebrew/bin/mecab',
   'linux': '/usr/bin/mecab',
   'win32': 'C:\\Program Files (x86)\\MeCab\\bin\\mecab.exe'
 }
+const checkingMessage = {
+  ok: 2,
+  message: "checking..."
+}
 
 function Home() {
-  const [dicdir, setDicdir] = useState('');
+  const router = useRouter();
   const [mecab, setMecab] = useState(mecabDefaultDirectory[process.platform] ?? mecabDefaultDirectory['linux']);
   const [jmdict, setJmdict] = useState('');
   const [check, setCheck] = useState(initialCheck);
+  const [isUsingMecab, setUsingMecab] = useState(false);
+  const handleClick = useCallback(async () => {
+    if (!isUsingMecab) {
+      setCheck(checkingMessage);
+      const res = await ipcRenderer.invoke('loadDefaultMode');
+      setCheck(res);
+      if (res.ok !== 1) {
+        return;
+      }
+    }
+    await router.push('/video');
+  }, [check, router]);
 
   const handleSelectMecabPath = useCallback(() => {
     ipcRenderer.invoke('pickFile', ['*']).then((val) => {
@@ -33,16 +54,13 @@ function Home() {
   }, []);
 
   const handleCheck = useCallback((cached = false) => {
-    setCheck({
-      ok: 2,
-      message: "checking..."
-    });
+    setCheck(checkingMessage);
     ipcRenderer.invoke('validateConfig', {
-      mecab, dicdir, jmdict, cached
+      mecab, jmdict, cached
     }).then(val => {
       setCheck(val);
     });
-  }, [mecab, dicdir, jmdict]);
+  }, [mecab, jmdict]);
 
   const handleRemoveJMDictCache = useCallback(() => {
     setCheck({
@@ -54,6 +72,7 @@ function Home() {
     });
   }, []);
   const {miteiruVersion} = useMiteiruVersion();
+  const ableToProceedToVideo = !isUsingMecab || (check.ok === 1)
   return (
       <React.Fragment>
         <Head>
@@ -62,32 +81,20 @@ function Home() {
         <div
             className={"flex flex-col justify-center items-center bg-white min-h-screen w-[100vw]"}>
           <div
-              className={"flex flex-col h-fit items-center bg-blue-50 gap-4 w-fit p-5 border rounded-lg border-blue-800"}>
-            <ContainerHome>
-              {/*<div className={"flex flex-row gap-3 p-3"}>*/}
-              {/*  <button*/}
-              {/*      className='bg-blue-400 hover:bg-blue-500 rounded-sm text-white p-2 w-full'*/}
-              {/*      onClick={() => {*/}
-              {/*        ipcRenderer.invoke('pickDirectory').then((val) => {*/}
-              {/*          if (!val.canceled) setDicdir(val.filePaths[0])*/}
-              {/*        })*/}
-              {/*      }*/}
-              {/*      }>*/}
-              {/*    Select MeCab Dictionary Directory*/}
-              {/*  </button>*/}
-              {/*  <input*/}
-              {/*      className={"text-blue-800 outline-none rounded-sm text-lg md:min-w-[50vw] border border-gray-300 focus:border-blue-500 ring-1 ring-blue-400 focus:ring-blue-500 rounded-lg"}*/}
-              {/*      type={"text"} value={dicdir}*/}
-              {/*      onChange={(val) => {*/}
-              {/*        setDicdir(val.target.value)*/}
-              {/*      }}></input>*/}
-              {/*</div>*/}
+              className={"flex flex-col h-fit items-center bg-blue-50 gap-4 w-full md:w-4/5 p-5 border rounded-lg border-blue-800 border-2"}>
+            <div className={'flex flex-row gap-4 text-4xl text-black font-bold'}>
+              <Toggle defaultCheck={isUsingMecab} onChange={(val) => {
+                setUsingMecab(val);
+              }}/>
+              {isUsingMecab && <div>鬼畜 👹</div>}
+              {!isUsingMecab && <div>ヌル 🐣</div>}
+            </div>
+            <SmoothCollapse expanded={isUsingMecab}><ContainerHome>
               <div className={"flex justify-between  gap-3 p-3 w-full"}>
-                <button
-                    className='bg-blue-400 hover:bg-blue-500 rounded-sm text-white p-2 w-full'
-                    onClick={handleSelectMecabPath}>
+                <AwesomeButton
+                    onPress={handleSelectMecabPath}>
                   Select Mecab Path
-                </button>
+                </AwesomeButton>
                 <input
                     className={"text-blue-800 outline-none rounded-sm text-lg md:min-w-[50vw] border border-gray-300 focus:border-blue-500 ring-1 ring-blue-400 focus:ring-blue-500 rounded-lg"}
                     type={"text"} value={mecab}
@@ -95,12 +102,11 @@ function Home() {
                       setMecab(val.target.value)
                     }}></input>
               </div>
-              <div className={"flex justify-between  gap-3 p-3 w-full"}>
-                <button
-                    className='bg-blue-400 hover:bg-blue-500 rounded-sm text-white p-2 w-full'
-                    onClick={handleSelectJMDictJson}>
+              <div className={"flex justify-between gap-3 p-3 w-full"}>
+                <AwesomeButton
+                    onPress={handleSelectJMDictJson}>
                   Select JMDict Json
-                </button>
+                </AwesomeButton>
                 <input
                     className={"text-blue-800 outline-none rounded-sm text-lg md:min-w-[50vw] border border-gray-300 focus:border-blue-500 ring-1 ring-blue-400 focus:ring-blue-500 rounded-lg"}
                     type={"text"} value={jmdict}
@@ -108,63 +114,38 @@ function Home() {
                       setJmdict(val.target.value)
                     }}></input>
               </div>
-            </ContainerHome>
-            <ContainerHome>
-              <div className={'flex flex-col justify-center items-center gap-2'}>
+              <div className={'flex flex-col items-center gap-4'}>
                 <div className={'flex flex-row gap-3'}>
-                  <button
+                  <AwesomeButton
+                      type={'secondary'}
                       disabled={check.ok === 2}
-                      className='disabled:cursor-not-allowed disabled:bg-amber-200 enabled:bg-amber-600 p-3 rounded-sm enabled:hover:bg-amber-700'
-                      onClick={() => handleCheck(false)}>
+                      onPress={() => handleCheck(false)}>
                     Check
-                  </button>
-                  <button
+                  </AwesomeButton>
+                  <AwesomeButton
+                      type={'secondary'}
                       disabled={check.ok === 2}
-                      className='disabled:cursor-not-allowed disabled:bg-amber-200 enabled:bg-amber-600 p-3 rounded-sm enabled:hover:bg-amber-700'
-                      onClick={() => handleCheck(true)}>
+                      onPress={() => handleCheck(true)}>
                     Check With Cache
-                  </button>
+                  </AwesomeButton>
                 </div>
-                <div className={'text-black'}>
-                  {checkSymbol[check.ok]}{' '}{check.message}
-                </div>
-
-
-              </div>
-
-
-            </ContainerHome>
-            <ContainerHome>
-              <div className={'flex flex-row gap-3'}>
-                <button
-                    type={"button"}
-                    className='bg-red-600 p-3 rounded-sm hover:bg-red-700'
-                    onClick={handleRemoveJMDictCache}>
+                <AwesomeButton
+                    type={"danger"}
+                    onPress={handleRemoveJMDictCache}>
                   Remove JMDict Cache
-                </button>
-                {/*<button*/}
-                {/*    type={"button"}*/}
-                {/*    className='bg-green-600 p-3 rounded-sm bg-green-700'*/}
-                {/*    onClick={() => {*/}
-                {/*      const text = '木ぃ切って 月収6万だろ~'*/}
-                {/*      ipcRenderer.invoke('getShunou', mecab, text).then(val => {*/}
-                {/*        console.log(val)*/}
-                {/*      })*/}
-                {/*    }*/}
-                {/*    }>*/}
-                {/*  tmp*/}
-                {/*</button>*/}
-                <Link href='/video'>
-                  <button
-                      type={"button"}
-                      disabled={check.ok !== 1}
-                      className='disabled:cursor-not-allowed disabled:bg-green-300 enabled:bg-green-600 p-3 rounded-sm enabled:hover:bg-green-700'>
-                    Video
-                  </button>
-                </Link>
+                </AwesomeButton>
               </div>
-            </ContainerHome>
-
+            </ContainerHome></SmoothCollapse>
+            <div className={'text-black'}>
+              {checkSymbol[check.ok]}{' '}{check.message}
+            </div>
+            <AwesomeButton type={'primary'} onPress={handleClick}
+                           className={ableToProceedToVideo ? '' : 'buttonDisabled'}
+                           disabled={!ableToProceedToVideo}>
+              {!isUsingMecab && <div className={'text-xl'}>うん、ちょっと<span
+                  className={'font-bold text-yellow-200'}>見てる</span>だけ 😏</div>}
+              {isUsingMecab && <div className={'text-xl'}>準備OK、船長！🫡</div>}
+            </AwesomeButton>
           </div>
           <KeyboardHelp/>
         </div>
