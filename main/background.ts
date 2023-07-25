@@ -13,6 +13,7 @@ import {
 import fs from "fs";
 import path from "path";
 import {getTokenizer} from "kuromojin";
+import {getSubtitles} from "./helpers/getSubtitles";
 
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
@@ -118,6 +119,16 @@ if (isProd) {
   ipcMain.handle('tags', (event) => {
     return JMDict.tags;
   })
+  ipcMain.handle('getYoutubeSubtitle', async (event, videoID, lang) => {
+    // Fetching Subtitles
+    try {
+      return await getSubtitles({videoID, lang})
+    } catch (error) {
+      console.error('Error fetching subtitles:', error);
+      return []
+    }
+
+  })
   ipcMain.handle('pickDirectory', async (event) => {
     return await dialog.showOpenDialog({
       properties:
@@ -160,7 +171,7 @@ if (isProd) {
     if (filePath && !canceled) {
       fs.writeFile(filePath, saveData, (err) => {
         if (err) throw err;
-        console.log('The file has been saved!');
+        console.info('The file has been saved!');
       });
     }
 
@@ -271,7 +282,7 @@ if (isProd) {
   getTokenizer({dicPath: path.join(__dirname, 'dict/')}).then(loadedTokenizer => {
     tokenizer = loadedTokenizer;
   }).catch(e => {
-    console.log(e)
+    console.error(e)
   })
   ipcMain.handle('tokenizeUsingKuromoji', async (event, sentence) => {
     return tokenizer.tokenizeForSentence(sentence);
