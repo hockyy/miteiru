@@ -17,6 +17,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
     await queue.wait(currentHash);
     let currentPath = acceptedFiles[0].path;
     let pathUri;
+    console.log(acceptedFiles)
     if (isLocalPath(currentPath)) {
       currentPath = currentPath.replaceAll('\\', '/')
       pathUri = currentPath;
