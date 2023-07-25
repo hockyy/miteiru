@@ -1,5 +1,5 @@
 import React, {useEffect, useRef} from "react";
-import {isYoutube} from "../utils/utils";
+import {extractVideoId, isYoutube} from "../utils/utils";
 
 export const MiteiruDropzone = ({onDrop}) => {
   const dropRef = useRef<HTMLDivElement>(null);  // Explicitly declaring the type of the ref
@@ -23,6 +23,26 @@ export const MiteiruDropzone = ({onDrop}) => {
       onDrop(filesWithPath);
     }
   };
+
+  useEffect(() => {
+    const pasteEvent = () => {
+      navigator.clipboard.readText().then((clipText) => {
+        const videoId = extractVideoId(clipText);
+        if (videoId) {
+          const path = [{path: clipText}]
+          onDrop(path)
+        }
+      });
+    };
+
+    window.addEventListener("paste", pasteEvent);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener("paste", pasteEvent);
+    };
+  }, [onDrop]);
+
   useEffect(() => {
     const div = dropRef.current;
 

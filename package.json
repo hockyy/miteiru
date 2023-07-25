@@ -51,7 +51,8 @@
     "shunou": "^1.0.2",
     "styled-components": "^6.0.3",
     "video.js": "^8.3.0",
-    "videojs-youtube": "^3.0.1"
+    "videojs-youtube": "^3.0.1",
+    "youtube-caption-extractor": "^1.4.3"
   },
   "devDependencies": {
     "@types/node": "^16.18.38",
