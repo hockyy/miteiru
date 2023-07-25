@@ -30,7 +30,11 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
       }
     }
     if (isVideo(currentPath) || isYoutube(currentPath)) {
-      const draggedVideo = {
+      const draggedVideo = isYoutube(currentPath) ? {
+        type: 'video/youtube',
+        src: currentPath + '?cc_load_policy=0',
+        path: currentPath
+      } : {
         type: 'video/webm',
         src: `miteiru://${pathUri}`,
         path: pathUri
@@ -79,7 +83,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
         }
       };
       if (isYoutube(currentPath)) {
-        ipcRenderer.invoke("getYoutubeSubtitle", extractVideoId(currentPath)).then(entries => {
+        ipcRenderer.invoke("getYoutubeSubtitle", extractVideoId(currentPath), "jp").then(entries => {
           entries = convertSubtitlesToEntries(entries)
           const tmpSub = SubtitleContainer.createFromArrayEntries(null, entries)
           subLoader(tmpSub);
