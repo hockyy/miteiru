@@ -2,6 +2,8 @@ import {app, dialog, ipcMain, protocol} from 'electron';
 import serve from 'electron-serve';
 import {createWindow} from './helpers';
 import {requestHandler, scheme} from "./protocol";
+import {getSubtitles, getVideoDetails} from 'youtube-caption-extractor';
+
 import {
   getTags,
   kanjiAnywhere,
@@ -117,6 +119,19 @@ if (isProd) {
 
   ipcMain.handle('tags', (event) => {
     return JMDict.tags;
+  })
+  ipcMain.handle('getYoutubeSubtitle', async (event, videoID, lang) => {
+    console.log(videoID)
+    // Fetching Subtitles
+    try {
+      const subtitles = await getSubtitles({videoID, lang})
+      console.log(subtitles)
+      return subtitles
+    } catch (error) {
+      console.error('Error fetching subtitles:', error);
+      return []
+    }
+
   })
   ipcMain.handle('pickDirectory', async (event) => {
     return await dialog.showOpenDialog({
