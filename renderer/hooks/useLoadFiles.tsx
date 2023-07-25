@@ -1,5 +1,9 @@
 import {useCallback, useEffect, useState} from 'react';
-import {setGlobalSubtitleId, SubtitleContainer} from "../components/DataStructures";
+import {
+  convertSubtitlesToEntries,
+  setGlobalSubtitleId,
+  SubtitleContainer
+} from "../components/DataStructures";
 import {randomUUID} from "crypto";
 import {TOAST_TIMEOUT} from "../components/Toast";
 import {extractVideoId, isLocalPath, isSubtitle, isVideo, isYoutube} from "../utils/utils";
@@ -80,8 +84,30 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
         path: currentPath
       };
       setVideoSrc(draggedVideo);
-      ipcRenderer.invoke("getYoutubeSubtitle", extractVideoId(currentPath)).then(r => {
-        console.log(r)
+      ipcRenderer.invoke("getYoutubeSubtitle", extractVideoId(currentPath)).then(entries => {
+        entries = convertSubtitlesToEntries(entries)
+        const tmpSub = SubtitleContainer.createFromArrayEntries(null, entries)
+        if (tmpSub.language === "JP") {
+          setPrimarySub(tmpSub);
+          setGlobalSubtitleId(tmpSub.id);
+        } else {
+          setSecondarySub(tmpSub);
+        }
+        setToastInfo({
+          message: 'Subtitle loaded',
+          update: randomUUID()
+        });
+        if (tmpSub.language === "JP") {
+          const toastSetter = setInterval(() => {
+            setToastInfo({
+              message: `JP cache: ${tmpSub.progress}`,
+              update: randomUUID()
+            });
+          }, TOAST_TIMEOUT / 10);
+          tmpSub.adjustJapanese(tokenizeMiteiru).then(() => {
+            clearInterval(toastSetter);
+          })
+        }
       })
       resetSub(setPrimarySub)
       resetSub(setSecondarySub)
