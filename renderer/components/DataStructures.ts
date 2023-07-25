@@ -118,7 +118,7 @@ export class SubtitleContainer {
 
 
   static createFromArrayEntries(subtitleContainer: SubtitleContainer, entries: Entry[]) {
-    if(subtitleContainer === null){
+    if (subtitleContainer === null) {
       subtitleContainer = new SubtitleContainer();
     }
     let ans = 0;
@@ -127,7 +127,6 @@ export class SubtitleContainer {
         ans++;
       }
     }
-
     subtitleContainer.language = "EN";
     if (ans >= 3) subtitleContainer.language = "JP";
     // try {
@@ -193,3 +192,23 @@ function parseAssSubtitle(text: string) {
     };
   });
 }
+
+interface YoutubeSubtitleEntry {
+  start: string;
+  dur: string;
+  text: string;
+}
+
+export const convertSubtitlesToEntries = (subtitles: YoutubeSubtitleEntry[]): Entry[] => {
+  const entries: Entry[] = subtitles.map((subtitle, index) => {
+    const start = Math.round(parseFloat(subtitle.start) * 1000);
+    const dur = Math.round(parseFloat(subtitle.dur) * 1000);
+    return {
+      id: `subtitle-${index}`,
+      from: start,
+      to: start + dur,
+      text: subtitle.text,
+    };
+  });
+  return entries;
+};
