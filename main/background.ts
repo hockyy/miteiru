@@ -120,11 +120,9 @@ if (isProd) {
     return JMDict.tags;
   })
   ipcMain.handle('getYoutubeSubtitle', async (event, videoID, lang) => {
-    console.log(videoID)
     // Fetching Subtitles
     try {
       const subtitles = await getSubtitles({videoID, lang})
-      console.log(subtitles)
       return subtitles
     } catch (error) {
       console.error('Error fetching subtitles:', error);
