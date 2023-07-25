@@ -1,10 +1,15 @@
 import {useCallback, useEffect, useState} from 'react';
-import {setGlobalSubtitleId, SubtitleContainer} from "../components/DataStructures";
+import {
+  convertSubtitlesToEntries,
+  setGlobalSubtitleId,
+  SubtitleContainer
+} from "../components/DataStructures";
 import {randomUUID} from "crypto";
 import {TOAST_TIMEOUT} from "../components/Toast";
-import {isSubtitle, isVideo} from "../utils/utils";
+import {extractVideoId, isLocalPath, isSubtitle, isVideo, isYoutube} from "../utils/utils";
 import {findPositionDeltaInFolder} from "../utils/folderUtils";
 import {useAsyncAwaitQueue} from "./useAsyncAwaitQueue";
+import {ipcRenderer} from 'electron';
 
 const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, setSecondarySub, tokenizeMiteiru, setEnableSeeker, changeTimeTo, player) => {
   const [videoSrc, setVideoSrc] = useState({src: '', type: '', path: ''});
@@ -16,12 +21,29 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
     const currentHash = Symbol();
     await queue.wait(currentHash);
     let currentPath = acceptedFiles[0].path;
-    currentPath = currentPath.replaceAll('\\', '/')
-    let pathUri = currentPath;
-    if (process.platform === 'win32') {
-      pathUri = '/' + currentPath;
+    let pathUri;
+    if (isLocalPath(currentPath)) {
+      currentPath = currentPath.replaceAll('\\', '/')
+      pathUri = currentPath;
+      if (process.platform === 'win32') {
+        pathUri = '/' + currentPath;
+      }
     }
-    if (isSubtitle(currentPath)) {
+    if (isVideo(currentPath) || isYoutube(currentPath)) {
+      const draggedVideo = isYoutube(currentPath) ? {
+        type: 'video/youtube',
+        src: currentPath,
+        path: currentPath
+      } : {
+        type: 'video/webm',
+        src: `miteiru://${pathUri}`,
+        path: pathUri
+      };
+      setVideoSrc(draggedVideo);
+      resetSub(setPrimarySub)
+      resetSub(setSecondarySub)
+    }
+    if (isSubtitle(currentPath) || isYoutube(currentPath)) {
       setToastInfo({
         message: 'Loading subtitle, please wait!',
         update: randomUUID()
@@ -36,7 +58,8 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
         type: 'text/plain',
         src: `${currentPath}`
       };
-      SubtitleContainer.create(draggedSubtitle.src).then(tmpSub => {
+      const subLoader = (tmpSub, mustMatch = null) => {
+        if(mustMatch !== null && tmpSub.language !== mustMatch) return;
         clearInterval(toastSetter);
         if (tmpSub.language === "JP") {
           setPrimarySub(tmpSub);
@@ -59,20 +82,26 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
             clearInterval(toastSetter);
           })
         }
-      });
-    } else if (isVideo(currentPath)) {
-      const draggedVideo = {
-        type: 'video/webm',
-        src: `miteiru://${pathUri}`,
-        path: pathUri
       };
-      setVideoSrc(draggedVideo);
-      resetSub(setPrimarySub)
-      resetSub(setSecondarySub)
+      if (isYoutube(currentPath)) {
+        ipcRenderer.invoke("getYoutubeSubtitle", extractVideoId(currentPath), "en").then(entries => {
+          entries = convertSubtitlesToEntries(entries)
+          const tmpSub = SubtitleContainer.createFromArrayEntries(null, entries)
+          subLoader(tmpSub, "EN");
+        })
+        ipcRenderer.invoke("getYoutubeSubtitle", extractVideoId(currentPath), "ja").then(entries => {
+          entries = convertSubtitlesToEntries(entries)
+          const tmpSub = SubtitleContainer.createFromArrayEntries(null, entries)
+          subLoader(tmpSub, "JP");
+        })
+      } else {
+        SubtitleContainer.create(draggedSubtitle.src).then(subLoader);
+      }
     }
     await queue.end(currentHash);
   }, [tokenizeMiteiru]);
   const onVideoChangeHandler = useCallback(async (delta: number = 1) => {
+    if (!isLocalPath(videoSrc.path)) return;
     if (videoSrc.path) {
       const nextVideo = findPositionDeltaInFolder(videoSrc.path, delta);
       if (nextVideo !== '') {
