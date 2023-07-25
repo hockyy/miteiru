@@ -2,7 +2,7 @@ import {useCallback, useEffect, useState} from 'react';
 import {setGlobalSubtitleId, SubtitleContainer} from "../components/DataStructures";
 import {randomUUID} from "crypto";
 import {TOAST_TIMEOUT} from "../components/Toast";
-import {isSubtitle, isVideo} from "../utils/utils";
+import {isLocalPath, isSubtitle, isVideo, isYoutube} from "../utils/utils";
 import {findPositionDeltaInFolder} from "../utils/folderUtils";
 import {useAsyncAwaitQueue} from "./useAsyncAwaitQueue";
 
@@ -16,10 +16,13 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
     const currentHash = Symbol();
     await queue.wait(currentHash);
     let currentPath = acceptedFiles[0].path;
-    currentPath = currentPath.replaceAll('\\', '/')
-    let pathUri = currentPath;
-    if (process.platform === 'win32') {
-      pathUri = '/' + currentPath;
+    let pathUri;
+    if (isLocalPath(currentPath)) {
+      currentPath = currentPath.replaceAll('\\', '/')
+      pathUri = currentPath;
+      if (process.platform === 'win32') {
+        pathUri = '/' + currentPath;
+      }
     }
     if (isSubtitle(currentPath)) {
       setToastInfo({
@@ -69,6 +72,16 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
       setVideoSrc(draggedVideo);
       resetSub(setPrimarySub)
       resetSub(setSecondarySub)
+    } else if (isYoutube(currentPath)) {
+      const draggedVideo = {
+        type: 'video/webm',
+        src: `miteiru://${pathUri}`,
+        path: pathUri
+      };
+      setVideoSrc(draggedVideo);
+      resetSub(setPrimarySub)
+      resetSub(setSecondarySub)
+
     }
     await queue.end(currentHash);
   }, [tokenizeMiteiru]);

@@ -12,6 +12,34 @@ export const isArrayEndsWithMatcher = (path, arrayMatcher) => {
 export const isVideo = (path) => {
   return isArrayEndsWithMatcher(path, videoConstants.supportedVideoFormats);
 }
+export const isYoutube = (url) => {
+  // Regular expression to match YouTube URLs.
+  // It matches following formats:
+  //  - www.youtube.com/watch?v=VIDEO_ID
+  //  - m.youtube.com/watch?v=VIDEO_ID
+  //  - youtube.com/watch?v=VIDEO_ID
+  //  - www.youtube.com/v/VIDEO_ID
+  //  - http://youtu.be/VIDEO_ID
+  //  - youtube.com/embed/VIDEO_ID
+  //  - https://www.youtube.com/shorts/VIDEO_ID
+  const pattern = /^(http(s)?:\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/(watch|embed|v|shorts)?(\?v=)?(\?embed)?\/?(\S+)?$/;
+  return pattern.test(url);
+}
+
+export const isDomainUri = (url) => {
+  try {
+    new URL(url);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+export const isLocalPath = (url) => {
+  // If it's not a valid URL, it might be a local path
+  return !isDomainUri(url);
+}
+
 
 export const isSubtitle = (path) => {
   return isArrayEndsWithMatcher(path, videoConstants.supportedSubtitleFormats);
