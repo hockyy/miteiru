@@ -2,7 +2,6 @@ import {app, dialog, ipcMain, protocol} from 'electron';
 import serve from 'electron-serve';
 import {createWindow} from './helpers';
 import {requestHandler, scheme} from "./protocol";
-import {getSubtitles} from 'youtube-captions-scraper';
 import {
   getTags,
   kanjiAnywhere,
@@ -14,6 +13,7 @@ import {
 import fs from "fs";
 import path from "path";
 import {getTokenizer} from "kuromojin";
+import {getSubtitles} from "../renderer/utils/getSubtitles";
 
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
@@ -122,8 +122,7 @@ if (isProd) {
   ipcMain.handle('getYoutubeSubtitle', async (event, videoID, lang) => {
     // Fetching Subtitles
     try {
-      const subtitles = await getSubtitles({videoID, lang})
-      return subtitles
+      return await getSubtitles({videoID, lang: 'en'})
     } catch (error) {
       console.error('Error fetching subtitles:', error);
       return []

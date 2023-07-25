@@ -36,6 +36,7 @@
     "@plussub/srt-vtt-parser": "^1.1.0",
     "ass-compiler": "^0.1.8",
     "async-await-queue": "^2.1.4",
+    "axios": "^1.4.0",
     "detect-file-encoding-and-language": "^2.4.0",
     "electron-serve": "^1.1.0",
     "electron-store": "^8.1.0",
@@ -51,8 +52,7 @@
     "shunou": "^1.0.2",
     "styled-components": "^6.0.3",
     "video.js": "^8.3.0",
-    "videojs-youtube": "^3.0.1",
-    "youtube-captions-scraper": "^2.0.0"
+    "videojs-youtube": "^3.0.1"
   },
   "devDependencies": {
     "@types/node": "^16.18.38",
