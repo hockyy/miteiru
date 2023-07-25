@@ -74,9 +74,9 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
       resetSub(setSecondarySub)
     } else if (isYoutube(currentPath)) {
       const draggedVideo = {
-        type: 'video/webm',
-        src: `miteiru://${pathUri}`,
-        path: pathUri
+        type: 'video/youtube',
+        src: currentPath,
+        path: currentPath
       };
       setVideoSrc(draggedVideo);
       resetSub(setPrimarySub)
@@ -86,6 +86,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
     await queue.end(currentHash);
   }, [tokenizeMiteiru]);
   const onVideoChangeHandler = useCallback(async (delta: number = 1) => {
+    if (!isLocalPath(videoSrc.path)) return;
     if (videoSrc.path) {
       const nextVideo = findPositionDeltaInFolder(videoSrc.path, delta);
       if (nextVideo !== '') {
