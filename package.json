@@ -22,7 +22,7 @@
     }
   },
   "scripts": {
-    "copy": "if \"%OS%\" == \"Windows_NT\" (robocopy renderer/public app /E || exit 0) else rsync -r renderer/public/ app/"
+    "copy": "if \"%OS%\" == \"Windows_NT\" (robocopy renderer/public app /E || exit 0) else rsync -r renderer/public/ app/",
     "predev": "npm run copy",
     "dev": "nextron",
     "build": "nextron build",
