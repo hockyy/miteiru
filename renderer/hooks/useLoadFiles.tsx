@@ -58,7 +58,8 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
         type: 'text/plain',
         src: `${currentPath}`
       };
-      const subLoader = tmpSub => {
+      const subLoader = (tmpSub, mustMatch = null) => {
+        if(mustMatch !== null && tmpSub.language !== mustMatch) return;
         clearInterval(toastSetter);
         if (tmpSub.language === "JP") {
           setPrimarySub(tmpSub);
@@ -83,10 +84,15 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
         }
       };
       if (isYoutube(currentPath)) {
+        ipcRenderer.invoke("getYoutubeSubtitle", extractVideoId(currentPath), "en").then(entries => {
+          entries = convertSubtitlesToEntries(entries)
+          const tmpSub = SubtitleContainer.createFromArrayEntries(null, entries)
+          subLoader(tmpSub, "EN");
+        })
         ipcRenderer.invoke("getYoutubeSubtitle", extractVideoId(currentPath), "ja").then(entries => {
           entries = convertSubtitlesToEntries(entries)
           const tmpSub = SubtitleContainer.createFromArrayEntries(null, entries)
-          subLoader(tmpSub);
+          subLoader(tmpSub, "JP");
         })
       } else {
         SubtitleContainer.create(draggedSubtitle.src).then(subLoader);
