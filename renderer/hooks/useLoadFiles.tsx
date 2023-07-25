@@ -2,9 +2,10 @@ import {useCallback, useEffect, useState} from 'react';
 import {setGlobalSubtitleId, SubtitleContainer} from "../components/DataStructures";
 import {randomUUID} from "crypto";
 import {TOAST_TIMEOUT} from "../components/Toast";
-import {isLocalPath, isSubtitle, isVideo, isYoutube} from "../utils/utils";
+import {extractVideoId, isLocalPath, isSubtitle, isVideo, isYoutube} from "../utils/utils";
 import {findPositionDeltaInFolder} from "../utils/folderUtils";
 import {useAsyncAwaitQueue} from "./useAsyncAwaitQueue";
+import {ipcRenderer} from 'electron';
 
 const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, setSecondarySub, tokenizeMiteiru, setEnableSeeker, changeTimeTo, player) => {
   const [videoSrc, setVideoSrc] = useState({src: '', type: '', path: ''});
@@ -17,7 +18,6 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
     await queue.wait(currentHash);
     let currentPath = acceptedFiles[0].path;
     let pathUri;
-    console.log(acceptedFiles)
     if (isLocalPath(currentPath)) {
       currentPath = currentPath.replaceAll('\\', '/')
       pathUri = currentPath;
@@ -80,6 +80,9 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
         path: currentPath
       };
       setVideoSrc(draggedVideo);
+      ipcRenderer.invoke("getYoutubeSubtitle", extractVideoId(currentPath)).then(r => {
+        console.log(r)
+      })
       resetSub(setPrimarySub)
       resetSub(setSecondarySub)
 

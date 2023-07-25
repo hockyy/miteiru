@@ -45,6 +45,15 @@ export const isSubtitle = (path) => {
   return isArrayEndsWithMatcher(path, videoConstants.supportedSubtitleFormats);
 }
 
+export const extractVideoId = (url) => {
+  const regex = /(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/(watch\?v=)?([^&]+)/;
+  const results = regex.exec(url);
+  if (!results) {
+    return null;
+  }
+  return results[5];
+}
+
 const getFormattedNameFromPath = (path) => {
   const pathList = path.split('/');
   return path ? (' - ' + pathList[pathList.length - 1]) : ''
