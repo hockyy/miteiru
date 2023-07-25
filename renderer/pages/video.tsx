@@ -78,6 +78,7 @@ function Video() {
             sources: [videoSrc],
             youtube: {
               customVars: {
+                cc_load_policy: 0,
                 autoplay: 1,
                 loop: 0,
                 disablekb: 1,
