@@ -29,7 +29,17 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
         pathUri = '/' + currentPath;
       }
     }
-    if (isSubtitle(currentPath)) {
+    if (isVideo(currentPath) || isYoutube(currentPath)) {
+      const draggedVideo = {
+        type: 'video/webm',
+        src: `miteiru://${pathUri}`,
+        path: pathUri
+      };
+      setVideoSrc(draggedVideo);
+      resetSub(setPrimarySub)
+      resetSub(setSecondarySub)
+    }
+    if (isSubtitle(currentPath) || isYoutube(currentPath)) {
       setToastInfo({
         message: 'Loading subtitle, please wait!',
         update: randomUUID()
@@ -44,7 +54,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
         type: 'text/plain',
         src: `${currentPath}`
       };
-      SubtitleContainer.create(draggedSubtitle.src).then(tmpSub => {
+      const subLoader = tmpSub => {
         clearInterval(toastSetter);
         if (tmpSub.language === "JP") {
           setPrimarySub(tmpSub);
@@ -67,51 +77,16 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
             clearInterval(toastSetter);
           })
         }
-      });
-    } else if (isVideo(currentPath)) {
-      const draggedVideo = {
-        type: 'video/webm',
-        src: `miteiru://${pathUri}`,
-        path: pathUri
       };
-      setVideoSrc(draggedVideo);
-      resetSub(setPrimarySub)
-      resetSub(setSecondarySub)
-    } else if (isYoutube(currentPath)) {
-      const draggedVideo = {
-        type: 'video/youtube',
-        src: currentPath + '?cc_load_policy=0',
-        path: currentPath
-      };
-      setVideoSrc(draggedVideo);
-      ipcRenderer.invoke("getYoutubeSubtitle", extractVideoId(currentPath)).then(entries => {
-        entries = convertSubtitlesToEntries(entries)
-        const tmpSub = SubtitleContainer.createFromArrayEntries(null, entries)
-        if (tmpSub.language === "JP") {
-          setPrimarySub(tmpSub);
-          setGlobalSubtitleId(tmpSub.id);
-        } else {
-          setSecondarySub(tmpSub);
-        }
-        setToastInfo({
-          message: 'Subtitle loaded',
-          update: randomUUID()
-        });
-        if (tmpSub.language === "JP") {
-          const toastSetter = setInterval(() => {
-            setToastInfo({
-              message: `JP cache: ${tmpSub.progress}`,
-              update: randomUUID()
-            });
-          }, TOAST_TIMEOUT / 10);
-          tmpSub.adjustJapanese(tokenizeMiteiru).then(() => {
-            clearInterval(toastSetter);
-          })
-        }
-      })
-      resetSub(setPrimarySub)
-      resetSub(setSecondarySub)
-
+      if (isYoutube(currentPath)) {
+        ipcRenderer.invoke("getYoutubeSubtitle", extractVideoId(currentPath)).then(entries => {
+          entries = convertSubtitlesToEntries(entries)
+          const tmpSub = SubtitleContainer.createFromArrayEntries(null, entries)
+          subLoader(tmpSub);
+        })
+      } else {
+        SubtitleContainer.create(draggedSubtitle.src).then(subLoader);
+      }
     }
     await queue.end(currentHash);
   }, [tokenizeMiteiru]);
