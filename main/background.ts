@@ -2,8 +2,7 @@ import {app, dialog, ipcMain, protocol} from 'electron';
 import serve from 'electron-serve';
 import {createWindow} from './helpers';
 import {requestHandler, scheme} from "./protocol";
-import {getSubtitles, getVideoDetails} from 'youtube-caption-extractor';
-
+import {getSubtitles} from 'youtube-captions-scraper';
 import {
   getTags,
   kanjiAnywhere,

@@ -82,7 +82,6 @@ function Video() {
                 loop: 0,
                 disablekb: 1,
                 controls: 0,
-                cc_load_policy: 0,
                 playsinline: 1,
                 rel: 0,
                 modestbranding: 1
