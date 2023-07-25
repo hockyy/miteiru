@@ -37,7 +37,7 @@ export const VideoJS = ({options, onReady, setCurrentTime}) => {
   }, []);
 
   return (
-      <div className={'z-0'}>
+      <div className={'z-0'} style={{pointerEvents: 'none'}}>
         <div className={"video-container"}>
           <div className={'video'} ref={videoRef}></div>
         </div>
