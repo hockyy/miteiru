@@ -51,7 +51,8 @@
     "react-video-seek-slider": "^6.0.4",
     "shunou": "^1.0.2",
     "styled-components": "^6.0.3",
-    "video.js": "^8.3.0"
+    "video.js": "^8.3.0",
+    "videojs-youtube": "^3.0.1"
   },
   "devDependencies": {
     "@types/node": "^16.18.38",
