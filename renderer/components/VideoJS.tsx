@@ -1,6 +1,8 @@
 import {useEffect, useRef} from 'react';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
+import 'videojs-youtube';  // Import the YouTube plugin
+
 
 export const VideoJS = ({options, onReady, setCurrentTime}) => {
   const videoRef = useRef(null);
@@ -18,7 +20,6 @@ export const VideoJS = ({options, onReady, setCurrentTime}) => {
       videoRef.current.appendChild(videoElement);
 
       const player = playerRef.current = videojs(videoElement, options, () => {
-        videojs.log('player is ready');
         onReady && onReady(player);
       });
     } else {
@@ -36,7 +37,7 @@ export const VideoJS = ({options, onReady, setCurrentTime}) => {
   }, []);
 
   return (
-      <div className={'z-0'}>
+      <div className={'z-0'} style={{pointerEvents: 'none'}}>
         <div className={"video-container"}>
           <div className={'video'} ref={videoRef}></div>
         </div>
