@@ -13,7 +13,7 @@ import {
 import fs from "fs";
 import path from "path";
 import {getTokenizer} from "kuromojin";
-import {getSubtitles} from "../renderer/utils/getSubtitles";
+import {getSubtitles} from "./helpers/getSubtitles";
 
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
@@ -122,7 +122,7 @@ if (isProd) {
   ipcMain.handle('getYoutubeSubtitle', async (event, videoID, lang) => {
     // Fetching Subtitles
     try {
-      return await getSubtitles({videoID, lang: 'en'})
+      return await getSubtitles({videoID, lang})
     } catch (error) {
       console.error('Error fetching subtitles:', error);
       return []

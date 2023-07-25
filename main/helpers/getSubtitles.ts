@@ -2,6 +2,7 @@
 
 import axios from 'axios';
 import {find} from 'lodash';
+import {decode} from 'html-entities';
 
 function stripTags(input, allowedTags = [], replacement = '') {
   // Create a string of allowed tags, joined by '|'
@@ -14,20 +15,7 @@ function stripTags(input, allowedTags = [], replacement = '') {
   return input.replace(regex, replacement);
 }
 
-function decodeHTMLEntities(text) {
-  let parser = new DOMParser();
-  let dom = parser.parseFromString(text, 'text/html');
-  return dom.body.textContent;
-}
-
-
-export async function getSubtitles({
-                                     videoID,
-                                     lang = 'jp',
-                                   }: {
-  videoID: string,
-  lang: string,
-}) {
+export async function getSubtitles({videoID, lang = 'ja'}) {
   const {data} = await axios.get(
       `https://youtube.com/watch?v=${videoID}`
   );
@@ -39,6 +27,7 @@ export async function getSubtitles({
   const regex = /({"captionTracks":.*isTranslatable":(true|false)}])/;
   const [match] = regex.exec(data);
   const {captionTracks} = JSON.parse(`${match}}`);
+  console.log(captionTracks)
 
   const subtitle =
       find(captionTracks, {
@@ -70,8 +59,7 @@ export async function getSubtitles({
     .replace(/<text.+>/, '')
     .replace(/&amp;/gi, '&')
     .replace(/<\/?[^>]+(>|$)/g, '');
-
-    const decodedText = decodeHTMLEntities(htmlText);
+    const decodedText = decode(htmlText);
     const text = stripTags(decodedText);
 
     return {
