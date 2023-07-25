@@ -76,7 +76,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, set
     } else if (isYoutube(currentPath)) {
       const draggedVideo = {
         type: 'video/youtube',
-        src: currentPath,
+        src: currentPath + '?cc_load_policy=0',
         path: currentPath
       };
       setVideoSrc(draggedVideo);
