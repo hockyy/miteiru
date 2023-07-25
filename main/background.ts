@@ -171,7 +171,7 @@ if (isProd) {
     if (filePath && !canceled) {
       fs.writeFile(filePath, saveData, (err) => {
         if (err) throw err;
-        console.log('The file has been saved!');
+        console.info('The file has been saved!');
       });
     }
 
@@ -282,7 +282,7 @@ if (isProd) {
   getTokenizer({dicPath: path.join(__dirname, 'dict/')}).then(loadedTokenizer => {
     tokenizer = loadedTokenizer;
   }).catch(e => {
-    console.log(e)
+    console.error(e)
   })
   ipcMain.handle('tokenizeUsingKuromoji', async (event, sentence) => {
     return tokenizer.tokenizeForSentence(sentence);
