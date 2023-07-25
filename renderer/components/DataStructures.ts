@@ -1,4 +1,3 @@
-import {getFurigana} from "shunou";
 import fs from 'fs';
 import {parse as parseSRT} from '@plussub/srt-vtt-parser';
 import {parse as parseASS} from 'ass-compiler';
@@ -8,6 +7,7 @@ import {ipcRenderer} from "electron";
 import {isHiragana, isKatakana, toHiragana} from 'wanakana'
 import {videoConstants} from "../utils/constants";
 import {randomUUID} from "crypto";
+import {Entry} from "@plussub/srt-vtt-parser/dist/src/types";
 
 
 const languageMap = {
@@ -112,13 +112,21 @@ export class SubtitleContainer {
       const data = parseSRT(text);
       entries = data.entries;
     }
+    this.createFromArrayEntries(subtitleContainer, entries);
+    return subtitleContainer;
+  }
+
+
+  static createFromArrayEntries(subtitleContainer: SubtitleContainer, entries: Entry[]) {
+    if (subtitleContainer === null) {
+      subtitleContainer = new SubtitleContainer();
+    }
     let ans = 0;
     for (let i = 0; i < Math.min(5, entries.length); i++) {
       if (entries[i].text.match(videoConstants.cjkRegex)) {
         ans++;
       }
     }
-
     subtitleContainer.language = "EN";
     if (ans >= 3) subtitleContainer.language = "JP";
     // try {
@@ -130,7 +138,7 @@ export class SubtitleContainer {
       // process transcript entry
       subtitleContainer.lines.push(new Line(from, to, removeTags(text)))
     }
-    return subtitleContainer
+    return subtitleContainer;
   }
 
   async adjustJapanese(tokenizeMiteiru: (string) => Promise<any[]>) {
@@ -184,3 +192,23 @@ function parseAssSubtitle(text: string) {
     };
   });
 }
+
+interface YoutubeSubtitleEntry {
+  start: string;
+  dur: string;
+  text: string;
+}
+
+export const convertSubtitlesToEntries = (subtitles: YoutubeSubtitleEntry[]): Entry[] => {
+  const entries: Entry[] = subtitles.map((subtitle, index) => {
+    const start = Math.round(parseFloat(subtitle.start) * 1000);
+    const dur = Math.round(parseFloat(subtitle.dur) * 1000);
+    return {
+      id: `subtitle-${index}`,
+      from: start,
+      to: start + dur,
+      text: subtitle.text,
+    };
+  });
+  return entries;
+};
