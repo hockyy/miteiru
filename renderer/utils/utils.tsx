@@ -28,8 +28,8 @@ export const isYoutube = (url) => {
 
 export const isDomainUri = (url) => {
   try {
-    new URL(url);
-    return true;
+    const parsedUrl = new URL(url);
+    return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
   } catch (e) {
     return false;
   }
