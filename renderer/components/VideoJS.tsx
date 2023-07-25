@@ -1,6 +1,8 @@
 import {useEffect, useRef} from 'react';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
+import 'videojs-youtube';  // Import the YouTube plugin
+
 
 export const VideoJS = ({options, onReady, setCurrentTime}) => {
   const videoRef = useRef(null);
