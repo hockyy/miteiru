@@ -11,7 +11,11 @@
       "icon": "resources/icon.icns"
     },
     "win": {
-      "icon": "resources/icon.ico"
+      "icon": "resources/icon.ico",
+      "target": [
+        "nsis",
+        "portable"
+      ]
     },
     "linux": {
       "icon": "resources/icon.icns",
