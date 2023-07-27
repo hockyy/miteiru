@@ -26,12 +26,16 @@ export class Line {
   timeEnd: number;
   content: any[] | string;
   meaning: string[];
+  static removeHearingImpairedFlag: boolean;
 
   constructor(start, end, strContent: string) {
     this.timeStart = start
     this.timeEnd = end
-    console.log(cleanHearingImpaired(strContent))
-    this.content = cleanHearingImpaired(strContent);
+    if(Line.removeHearingImpairedFlag) {
+      this.content = cleanHearingImpaired(strContent)
+    } else {
+      this.content = strContent;
+    }
   }
 
   async fillContentFurigana(tokenizeMiteiru: (string) => Promise<any[]>) {
