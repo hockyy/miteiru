@@ -66,7 +66,7 @@ const MeaningBox = ({
           }
           className={"overflow-auto border-2 border-blue-700 inset-x-0 mx-auto mt-10 bg-blue-100 z-[101] fixed rounded-lg w-[80vw] h-[80vh]"}>
         <div
-            className={"sticky top-0 h-auto flex flex-row gap-3 justify-center items-center bg-blue-100 p-5 rounded-t-lg"}>
+            className={"z-[100] sticky top-0 h-auto flex flex-row gap-3 justify-center items-center bg-white p-5 rounded-t-lg"}>
 
           {meaningIndex - 1 >= 0 &&
               < AwesomeButton type={"primary"} onPress={(e) => {
@@ -84,7 +84,7 @@ const MeaningBox = ({
           }}>
             {furiganizedData.map(({key, furiganized}) => (
                 <div key={key}
-                     className={"bg-white rounded-xl p-2 border-2 border-blue-700 w-fit unselectable"}>
+                     className={"bg-white rounded-xl p-2 border-2 border-blue-700 w-fit unselectable hovery"}>
                   {[...furiganized.map((val, idx) => (
                       <KanjiSentence key={idx}
                                 origin={val.origin}
@@ -107,7 +107,7 @@ const MeaningBox = ({
               }>Next
               </AwesomeButton>}
         </div>
-        <div className={"overflow-scroll bg-white h-full rounded-b-lg text-blue-800 text-lg p-2"}>
+        <div className={"rounded-b-lg text-blue-800 text-lg p-2"}>
           {
             meaningContent.sense.map((sense, idxSense) => {
 
