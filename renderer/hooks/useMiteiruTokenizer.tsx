@@ -9,9 +9,13 @@ const parseVerbs = async (res) => {
   const RARERU = "られる";
   const IRU = "いる";
   const ARU = "ある";
-  const YARI = "やり";
-  const SURU = 'する';
   const SERU = 'せる';
+
+  const YARI = "やり";
+  const YARU = "やる";
+  const SURU = 'する';
+  const whitelist = [RARERU, IRU, ARU, SERU];
+  const blacklist = [YARI, YARU, SURU];
   for (let i = 0; i < res.length; i++) {
     const entry = res[i];
     const isVerb = entry.pos.split('-').includes("動詞");
@@ -19,20 +23,16 @@ const parseVerbs = async (res) => {
       newRes.push(res[i]);
       continue;
     }
-    const taken = ['助動詞', '助詞'];
-    const ignorable = ['記号', '名詞'];
+    const whitelistPos = ['助動詞', '助詞'];
+    // const ignorable = ['記号', '名詞'];
     // Multiple verb merged! uncomment if want to use
-    taken.push(VERB);
+    // taken.push(VERB);
     const isSpecialRule = (firstOne, index) => {
       const currentEntry = res[index];
       const currentPos = res[index].pos.split('-')[0];
-      if (firstOne === SURU &&
-          currentPos === VERB &&
-          currentEntry.basicForm != IRU &&
-          currentEntry.basicForm != ARU &&
-          currentEntry.basicForm != SERU) return false;
-      if (currentEntry.basicForm === YARI || currentEntry.basicForm === SURU) return false;
-      if (!taken.includes(currentPos)) {
+      if (whitelist.includes(currentEntry.basicForm)) return true;
+      if (blacklist.includes(currentEntry.basicForm)) return false;
+      if (!whitelistPos.includes(currentPos)) {
         return false;
       }
       if (['と', 'でしょ', 'の', 'という'].includes(currentEntry.origin)) {
