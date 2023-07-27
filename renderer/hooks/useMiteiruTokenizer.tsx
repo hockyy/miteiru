@@ -3,7 +3,7 @@ import {ipcRenderer} from "electron";
 import {getFurigana, processKuromojinToSeparations, ShunouWordWithSeparations} from "shunou";
 import Conjugator from 'jp-verbs';
 
-const parseRes = async (res) => {
+const parseVerbs = async (res) => {
   const newRes: ShunouWordWithSeparations[] = [];
   const VERB = "動詞";
   const RARERU = "られる";
@@ -135,7 +135,7 @@ const useMiteiruTokenizer = (): { tokenizeMiteiru: (sentence: string) => Promise
     } else if (tokenizerMode !== '') {
       res = getFurigana(sentence, tokenizerMode);
     }
-    res = await parseRes(res);
+    res = await parseVerbs(res);
     return res;
   }, [tokenizerMode])
   return {tokenizeMiteiru, tokenizerMode};
