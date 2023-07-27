@@ -11,6 +11,7 @@ const parseRes = async (res) => {
   const ARU = "ある";
   const YARI = "やり";
   const SURU = 'する';
+  const SERU = 'せる';
   for (let i = 0; i < res.length; i++) {
     const entry = res[i];
     const isVerb = entry.pos.split('-').includes("動詞");
@@ -22,19 +23,19 @@ const parseRes = async (res) => {
     const ignorable = ['記号', '名詞'];
     // Multiple verb merged! uncomment if want to use
     taken.push(VERB);
-    const isSpecialRule = (firstOne, itr) => {
-      const currentEntry = res[itr];
-      const currentPos = res[itr].pos.split('-')[0];
+    const isSpecialRule = (firstOne, index) => {
+      const currentEntry = res[index];
+      const currentPos = res[index].pos.split('-')[0];
       if (firstOne === SURU &&
           currentPos === VERB &&
-          currentEntry.origin != IRU &&
-          currentEntry.origin != ARU) return false;
-
-      if (currentEntry.origin === YARI || currentEntry.origin === SURU) return false;
+          currentEntry.basicForm != IRU &&
+          currentEntry.basicForm != ARU &&
+          currentEntry.basicForm != SERU) return false;
+      if (currentEntry.basicForm === YARI || currentEntry.basicForm === SURU) return false;
       if (!taken.includes(currentPos)) {
         return false;
       }
-      if (['と', 'でしょ', 'の'].includes(currentEntry.origin)) {
+      if (['と', 'でしょ', 'の', 'という'].includes(currentEntry.origin)) {
         return false;
       }
       return true;
@@ -60,7 +61,6 @@ const parseRes = async (res) => {
         return pre + res[curval].origin;
       }, '');
       let currentUnconjugation: any[] = Conjugator.unconjugate(accumVerb);
-
 
       // baseVerb = V + P + P + V + P + V.base
       const baseIndex: number[] = [...accumIndex];
@@ -116,7 +116,6 @@ const parseRes = async (res) => {
     })
     i = accumIndex.pop();
   }
-  console.log(res, newRes)
   return newRes;
 }
 
