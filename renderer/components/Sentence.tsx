@@ -12,24 +12,20 @@ const StyledSentence = styled.button<{ subtitleStyling: CJKStyling }>`
   }
 `
 
+interface SentenceParam {
+  origin: string,
+  setMeaning: any,
+  separation: any,
+  extraClass: string,
+  subtitleStyling: CJKStyling,
+  wordMeaning?: string,
+  basicForm?: string
+}
+
 export const Sentence = ({
-                           origin,
-                           setMeaning,
-                           separation,
-                           extraClass,
-                           subtitleStyling,
-                           basicForm = '',
-                           wordMeaning = '',
-                         }: {
-                           origin: string,
-                           setMeaning: any,
-                           separation: any,
-                           extraClass: string,
-                           subtitleStyling: CJKStyling,
-                           wordMeaning?: string,
-                           basicForm?: string
-                         }
-) => {
+                           origin, setMeaning, separation, extraClass,
+                           subtitleStyling, basicForm = '', wordMeaning = '',
+                         }: SentenceParam) => {
   const handleChange = useCallback((origin) => {
     navigator.clipboard.writeText(origin);
     setMeaning(origin)
@@ -84,4 +80,43 @@ export const Sentence = ({
 
 export const PlainSentence = ({origin}) => {
   return <div key={randomUUID()}>{parse(origin)}</div>
+}
+
+export const KanjiSentence = ({
+                                origin, setMeaning, separation,
+                                extraClass, subtitleStyling,
+                              }: SentenceParam) => {
+  const handleChange = useCallback((newWord) => {
+    navigator.clipboard.writeText(newWord);
+    console.log(newWord)
+  }, [setMeaning]);
+  return <>
+    {separation.map((val, index) => {
+      const hiragana = (<>
+            <rp>(</rp>
+            <rt>{val.hiragana ?? ''}</rt>
+            <rp>)</rp>
+          </>
+      )
+      const showHelp = val.isKanji || val.isMixed || isMixed(origin);
+      const showFurigana = ((val.isKana && subtitleStyling.showFuriganaOnKana) || showHelp);
+      return <ruby style={{
+        rubyPosition: "under",
+        WebkitTextFillColor: subtitleStyling.text.color,
+      }} key={index}>
+        <ruby style={{rubyPosition: "over"}}>
+          {Array.from(val.main).map(char => {
+            return <StyledSentence
+                subtitleStyling={subtitleStyling}
+                className={extraClass}
+                onClick={() => {
+                  handleChange(char)
+                }}><>{char}</>
+            </StyledSentence>
+          })}
+          <rt className={"unselectable"}>{subtitleStyling.showFurigana && showFurigana && hiragana}</rt>
+        </ruby>
+      </ruby>
+    })}
+  </>
 }
