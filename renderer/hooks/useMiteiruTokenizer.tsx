@@ -8,7 +8,9 @@ const parseRes = async (res) => {
   const VERB = "動詞";
   const RARERU = "られる";
   const IRU = "いる";
+  const ARU = "ある";
   const YARI = "やり";
+  const SURU = 'する';
   for (let i = 0; i < res.length; i++) {
     const entry = res[i];
     const isVerb = entry.pos.split('-').includes("動詞");
@@ -23,8 +25,12 @@ const parseRes = async (res) => {
     const isSpecialRule = (firstOne, itr) => {
       const currentEntry = res[itr];
       const currentPos = res[itr].pos.split('-')[0];
-      if (firstOne === 'する' && currentPos === VERB && currentEntry.origin != IRU) return false;
-      if (currentEntry.origin === YARI) return false;
+      if (firstOne === SURU &&
+          currentPos === VERB &&
+          currentEntry.origin != IRU &&
+          currentEntry.origin != ARU) return false;
+
+      if (currentEntry.origin === YARI || currentEntry.origin === SURU) return false;
       if (!taken.includes(currentPos)) {
         return false;
       }
@@ -60,7 +66,9 @@ const parseRes = async (res) => {
       const baseIndex: number[] = [...accumIndex];
       do {
         const lastElement: number = baseIndex.pop();
-        if (res[lastElement].origin === RARERU && baseIndex.length > 0) continue;
+        if (res[lastElement].basicForm === RARERU && baseIndex.length > 0) continue;
+        if (res[lastElement].basicForm === IRU && baseIndex.length > 0) continue;
+        if (res[lastElement].basicForm === ARU && baseIndex.length > 0) continue;
         if (res[lastElement].pos.split('-')[0] === VERB) {
           baseIndex.push(lastElement);
           break;
