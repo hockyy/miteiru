@@ -98,8 +98,6 @@ export const KanjiSentence = ({
             <rp>)</rp>
           </>
       )
-      const showHelp = val.isKanji || val.isMixed || isMixed(origin);
-      const showFurigana = ((val.isKana && subtitleStyling.showFuriganaOnKana) || showHelp);
       return <ruby style={{
         rubyPosition: "under",
         WebkitTextFillColor: subtitleStyling.text.color,
@@ -114,7 +112,7 @@ export const KanjiSentence = ({
                 }}><>{char}</>
             </StyledSentence>
           })}
-          <rt className={"unselectable"}>{subtitleStyling.showFurigana && showFurigana && hiragana}</rt>
+          <rt className={"unselectable"}>{hiragana}</rt>
         </ruby>
       </ruby>
     })}
