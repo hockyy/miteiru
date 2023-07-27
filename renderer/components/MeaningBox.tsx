@@ -3,6 +3,7 @@ import {ipcRenderer} from "electron";
 import {KanjiSentence, Sentence} from "./Sentence";
 import {CJKStyling, defaultMeaningBoxStyling} from "../utils/CJKStyling";
 import {joinString} from "../utils/utils";
+import {AwesomeButton} from "react-awesome-button";
 
 const initialContentState = {sense: [], kanji: []};
 
@@ -63,12 +64,12 @@ const MeaningBox = ({
             e.stopPropagation()
           }
           }
-          className={"overflow-clip border-2 border-blue-700 inset-x-0 mx-auto mt-10 bg-blue-100 z-[101] fixed rounded-lg w-[80vw] h-[80vh]"}>
+          className={"overflow-auto border-2 border-blue-700 inset-x-0 mx-auto mt-10 bg-blue-100 z-[101] fixed rounded-lg w-[80vw] h-[80vh]"}>
         <div
-            className={"overflow-scroll h-auto flex flex-row justify-center text-center content-center align-middle bg-blue-100 p-5 rounded-t-lg"}>
+            className={"sticky top-0 h-auto flex flex-row gap-3 justify-center items-center bg-blue-100 p-5 rounded-t-lg"}>
 
           {meaningIndex - 1 >= 0 &&
-              < button className={"bg-blue-800 p-3 rounded-md m-4"} onClick={(e) => {
+              < AwesomeButton type={"primary"} onPress={(e) => {
                 e.stopPropagation()
                 setMeaningIndex((old) => {
                   setMeaningContent(otherMeanings[old - 1])
@@ -76,7 +77,7 @@ const MeaningBox = ({
                 })
               }
               }>Previous
-              </button>}
+              </AwesomeButton>}
           <div className={"flex flex-wrap gap-2"} style={{
             fontFamily: "Arial",
             fontSize: "40px",
@@ -96,7 +97,7 @@ const MeaningBox = ({
             ))}
           </div>
           {meaningIndex + 1 < otherMeanings.length &&
-              <button className={"bg-blue-800 p-3 rounded-md m-4"} onClick={(e) => {
+              <AwesomeButton type={"primary"} onPress={(e) => {
                 e.stopPropagation()
                 setMeaningIndex((old) => {
                   setMeaningContent(otherMeanings[old + 1])
@@ -104,14 +105,14 @@ const MeaningBox = ({
                 })
               }
               }>Next
-              </button>}
+              </AwesomeButton>}
         </div>
         <div className={"overflow-scroll bg-white h-full rounded-b-lg text-blue-800 text-lg p-2"}>
           {
             meaningContent.sense.map((sense, idxSense) => {
 
               return <div
-                  className={"bg-white rounded-lg flex flex-col gap-2 border-2 border-blue-700 m-4"}
+                  className={"bg-white rounded-lg flex flex-col gap-2 border-2 border-blue-700 m-4 hovery"}
                   key={idxSense}>
                 <div
                     className={"flex flex-wrap container rounded-t-lg bg-blue-200 px-3"}>{
