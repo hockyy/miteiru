@@ -71,7 +71,7 @@ export class Line {
               break;
             }
           } catch (ignored) {
-            console.log(ignored)
+            console.error(ignored)
           }
         }
       })
@@ -229,7 +229,6 @@ export const cleanHearingImpaired = (text) => {
     const brackets = [/\[.*?]/g, /\(.*?\)/g, /（.*?）/g, /「.*?」/g, /『.*?』/g, /【.*?】/g];
     for (let bracket of brackets) {
       cleanedLine = cleanedLine.replace(bracket, '');
-      console.log(cleanedLine);
     }
 
     // Discard anything preceding a colon
