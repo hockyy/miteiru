@@ -45,6 +45,7 @@
     "html-react-parser": "^3.0.16",
     "iconv-lite": "^0.6.3",
     "jmdict-simplified-node": "^1.1.2",
+    "jp-verbs": "^1.0.1",
     "kuromojin": "^3.0.0",
     "patch-package": "^7.0.0",
     "react-awesome-button": "^7.0.5",
