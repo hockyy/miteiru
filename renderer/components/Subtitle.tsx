@@ -39,6 +39,7 @@ export const PrimarySubtitle = ({
       return;
     }
     let current = content.map((val, index) => {
+      console.log(val.base??'')
       return <><Sentence
           key={index}
           origin={val.origin}
@@ -46,6 +47,7 @@ export const PrimarySubtitle = ({
           setMeaning={setMeaning}
           extraClass={"subtitle"}
           subtitleStyling={subtitleStyling}
+          base={val.base??''}
           wordMeaning={wordMeaning[index]}/>{
         index + 1 < content.length
         && subtitleStyling.showSpace ? " " : " "
