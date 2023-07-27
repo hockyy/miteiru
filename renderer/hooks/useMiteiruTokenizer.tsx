@@ -1,6 +1,7 @@
 import {useCallback, useEffect, useState} from 'react';
 import {ipcRenderer} from "electron";
 import {getFurigana, processKuromojinToSeparations} from "shunou";
+import Conjugator from 'jp-verbs';
 
 const useMiteiruTokenizer = (): { tokenizeMiteiru: (sentence: string) => Promise<any[]>, tokenizerMode: string } => {
   const [tokenizerMode, setMode] = useState('');
@@ -18,32 +19,83 @@ const useMiteiruTokenizer = (): { tokenizeMiteiru: (sentence: string) => Promise
     } else if (tokenizerMode !== '') {
       res = getFurigana(sentence, tokenizerMode);
     }
-    for (let i = 0; i < res.length - 1; i++) {
+    const VERB = "動詞";
+    for (let i = 0; i < res.length; i++) {
       const entry = res[i];
       if (entry.pos.split('-').includes("動詞")) {
         const taken = ['助動詞', '助詞']
         const ignorable = ['記号', '名詞']
+        // Multiple verb merged! uncomment if want to use
+        // ignorable.push("動詞");
+        const isSpecialRule = (res) => {
+          if (res.origin === 'と') {
+            return false;
+          }
+          return true;
+        }
 
         let nextPos;
-        let accum = [entry];
-        let itr = i + 1;
-        do {
-          nextPos = res[itr].pos.split('-')[0]
-          if (!ignorable.includes(nextPos)) {
-            accum.push(res[itr]);
-            if (!taken.includes(nextPos)) {
-            }
+        let accumIndex = [i];
+        for (let itr = i + 1; itr < res.length; itr++) {
+          nextPos = res[itr].pos.split('-')[0];
+          if (!ignorable.includes(nextPos) && isSpecialRule(res[itr])) {
+            accumIndex.push(itr);
+            // if (!taken.includes(nextPos)) {
+            // }
           } else break;
-          itr++;
-        } while (itr < res.length);
-        console.log('--------')
-        console.log(accum);
-        const appended = accum.reduce((pre, curval) => {
-          return pre + curval.origin;
-        }, '');
+        }
+        let conjugationResult = null;
+        do {
+          if (accumIndex.length === 0) break;
+          // Generate current verb (conjugated)
+          // V = verb
+          // P = inflections
+          // V P P V P V P P
+          // accumVerb = V + P + P + V + P + V + P + P
+          const accumVerb: string = accumIndex.reduce((pre, curval) => {
+            return pre + res[curval].origin;
+          }, '');
+          let currentUnconjugation: any[] = Conjugator.unconjugate(accumVerb);
 
-        console.log(appended);
-        i = itr - 1;
+
+          // baseVerb = V + P + P + V + P + V.base
+          const baseIndex: number[] = [...accumIndex];
+          do {
+            const lastElement: number = baseIndex.pop();
+            if (res[lastElement].pos.split('-')[0] === VERB) {
+              baseIndex.push(lastElement);
+              break;
+            }
+          } while (baseIndex.length > 0);
+          let baseVerb = '';
+          for (let j = 0; j < baseIndex.length - 1; j++) {
+            baseVerb += res[baseIndex[j]].origin;
+          }
+          baseVerb += res[baseIndex[baseIndex.length - 1]].basicForm;
+
+          // Filter all unconjugation result and find the correct base
+          currentUnconjugation = currentUnconjugation.filter(result => {
+            return result.base === baseVerb;
+          });
+          if (currentUnconjugation.length > 0) {
+            conjugationResult = currentUnconjugation[0];
+          }
+
+          // If still null,
+          if (conjugationResult === null) {
+            // set accumVerb := V + P + P + V + P + V.base
+            accumIndex = baseIndex;
+            if (accumIndex.length === 1) {
+              // if accumVerb = V.base
+              conjugationResult = {base: baseVerb};
+            } else {
+              // set accumVerb := V + P + P + V + P
+              accumIndex.pop();
+            }
+          }
+        } while (conjugationResult === null);
+        console.log(conjugationResult);
+        i = accumIndex.pop();
       }
     }
     return res;
