@@ -32,13 +32,15 @@ export const PrimarySubtitle = ({
       setCaption([<Sentence
           origin={""}
           separation={[{main: content}]}
-          setMeaning={() => {}}
+          setMeaning={() => {
+          }}
           extraClass={"subtitle"}
           subtitleStyling={subtitleStyling}
           wordMeaning={''}/>]);
       return;
     }
     let current = content.map((val, index) => {
+      const validBasicForm = val.basicForm != '' && val.basicForm != '*';
       return <><Sentence
           key={index}
           origin={val.origin}
@@ -46,6 +48,7 @@ export const PrimarySubtitle = ({
           setMeaning={setMeaning}
           extraClass={"subtitle"}
           subtitleStyling={subtitleStyling}
+          basicForm={validBasicForm ? val.basicForm : ''}
           wordMeaning={wordMeaning[index]}/>{
         index + 1 < content.length
         && subtitleStyling.showSpace ? " " : " "
