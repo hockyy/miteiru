@@ -8,6 +8,7 @@ const parseRes = async (res) => {
   const VERB = "動詞";
   const RARERU = "られる";
   const IRU = "いる";
+  const YARI = "やり";
   for (let i = 0; i < res.length; i++) {
     const entry = res[i];
     const isVerb = entry.pos.split('-').includes("動詞");
@@ -23,6 +24,7 @@ const parseRes = async (res) => {
       const currentEntry = res[itr];
       const currentPos = res[itr].pos.split('-')[0];
       if (firstOne === 'する' && currentPos === VERB && currentEntry.origin != IRU) return false;
+      if (currentEntry.origin === YARI) return false;
       if (!taken.includes(currentPos)) {
         return false;
       }
@@ -73,7 +75,6 @@ const parseRes = async (res) => {
       // const existance = await ipcRenderer.invoke('exactQuery', baseVerb);
       // if(existance.length === 0) baseVerb = '';
       // Filter all unconjugation result and find the correct base
-      console.log(currentUnconjugation, baseVerb, accumVerb)
       currentUnconjugation = currentUnconjugation.filter(result => {
         return result.base === baseVerb;
       });
