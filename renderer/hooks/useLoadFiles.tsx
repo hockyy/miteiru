@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useState} from 'react';
 import {
-  convertSubtitlesToEntries,
+  convertSubtitlesToEntries, Line,
   setGlobalSubtitleId,
   SubtitleContainer
 } from "../components/DataStructures";
@@ -11,12 +11,18 @@ import {findPositionDeltaInFolder} from "../utils/folderUtils";
 import {useAsyncAwaitQueue} from "./useAsyncAwaitQueue";
 import {ipcRenderer} from 'electron';
 
-const useLoadFiles = (setToastInfo, primarySub, setPrimarySub, secondarySub, setSecondarySub, tokenizeMiteiru, setEnableSeeker, changeTimeTo, player) => {
+const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
+                      secondarySub, setSecondarySub,
+                      primaryStyling,
+                      tokenizeMiteiru, setEnableSeeker, changeTimeTo, player) => {
   const [videoSrc, setVideoSrc] = useState({src: '', type: '', path: ''});
   const queue = useAsyncAwaitQueue();
   const resetSub = useCallback((subSetter) => {
     subSetter(new SubtitleContainer(''));
   }, [tokenizeMiteiru]);
+  useEffect(() => {
+    Line.removeHearingImpairedFlag = primaryStyling.removeHearingImpaired
+  }, [primaryStyling])
   const onLoadFiles = useCallback(async acceptedFiles => {
     const currentHash = Symbol();
     await queue.wait(currentHash);
