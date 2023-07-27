@@ -7,6 +7,7 @@ const parseRes = async (res) => {
   const newRes: ShunouWordWithSeparations[] = [];
   const VERB = "動詞";
   const RARERU = "られる";
+  const IRU = "いる";
   for (let i = 0; i < res.length; i++) {
     const entry = res[i];
     const isVerb = entry.pos.split('-').includes("動詞");
@@ -19,9 +20,9 @@ const parseRes = async (res) => {
     // Multiple verb merged! uncomment if want to use
     taken.push(VERB);
     const isSpecialRule = (firstOne, itr) => {
-      if (firstOne === 'する') return false;
       const currentEntry = res[itr];
       const currentPos = res[itr].pos.split('-')[0];
+      if (firstOne === 'する' && currentPos === VERB && currentEntry.origin != IRU) return false;
       if (!taken.includes(currentPos)) {
         return false;
       }
