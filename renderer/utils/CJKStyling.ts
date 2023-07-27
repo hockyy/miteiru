@@ -24,6 +24,7 @@ export interface CJKStyling {
   showFurigana: boolean;
   showMeaning: boolean;
   showSpace?: boolean;
+  removeHearingImpaired:boolean;
 }
 
 
@@ -44,7 +45,8 @@ export const defaultMeaningBoxStyling: CJKStyling = {
   showFuriganaOnKana: false,
   showFurigana: true,
   showRomaji: true,
-  showMeaning: false
+  showMeaning: false,
+  removeHearingImpaired: false
 }
 
 
@@ -74,6 +76,7 @@ export const defaultPrimarySubtitleStyling: CJKStyling = {
   showMeaning: true,
   showSpace: true,
   maximalMeaningLengthPerCharacter: 7,
+  removeHearingImpaired: true
 }
 
 export const defaultSecondarySubtitleStyling: CJKStyling = {
@@ -93,5 +96,6 @@ export const defaultSecondarySubtitleStyling: CJKStyling = {
   showFuriganaOnKana: false,
   showFurigana: false,
   showRomaji: false,
-  showMeaning: false
+  showMeaning: false,
+  removeHearingImpaired: true
 }
