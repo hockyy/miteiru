@@ -11,13 +11,15 @@ const useMiteiruTokenizer = (): { tokenizeMiteiru: (sentence: string) => Promise
     });
   }, []);
   const tokenizeMiteiru = useCallback(async (sentence) => {
-    if (tokenizerMode === '') return '';
+    let res = []
     if (tokenizerMode === 'kuromoji') {
-      let res = await ipcRenderer.invoke('tokenizeUsingKuromoji', sentence)
-      res = processKuromojinToSeparations(res);
+      const kuromojiEntries = await ipcRenderer.invoke('tokenizeUsingKuromoji', sentence)
+      res = processKuromojinToSeparations(kuromojiEntries);
       return res;
+    } else if(tokenizerMode !== '') {
+      res = getFurigana(sentence, tokenizerMode);
     }
-    return getFurigana(sentence, tokenizerMode);
+    return res;
   }, [tokenizerMode])
   return {tokenizeMiteiru, tokenizerMode};
 };
