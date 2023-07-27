@@ -59,6 +59,7 @@ function Video() {
       useLoadFiles(setToastInfo,
           primarySub, setPrimarySub,
           secondarySub, setSecondarySub,
+          primaryStyling,
           tokenizeMiteiru, setEnableSeeker, changeTimeTo, player);
   const {showController, setShowController, showSidebar, setShowSidebar} = useMenuDisplay();
   useKeyBind(setMeaning, setShowController, setShowSidebar, setPrimarySub, setSecondarySub, primarySub);
