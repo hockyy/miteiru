@@ -38,14 +38,7 @@ export const Sentence = ({
       subtitleStyling={subtitleStyling}
       className={extraClass}
       onClick={() => {
-        if (basicForm !== '') {
-          console.log("Use basicForm")
-          console.log(basicForm)
-          handleChange(basicForm)
-        } else {
-          console.log(origin)
-          handleChange(origin);
-        }
+        handleChange(basicForm === '' ? origin : basicForm)
       }}>
     <ruby style={{
       rubyPosition: subtitleStyling.positionMeaningTop ? "over" : "under",
