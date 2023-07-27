@@ -74,8 +74,8 @@ if (isProd) {
 
       matches = matches.concat(await readingBeginning(JMDict.db, query, limit));
       matches = matches.concat(await kanjiBeginning(JMDict.db, query));
-      matches = matches.concat(await readingAnywhere(JMDict.db, query, limit));
-      matches = matches.concat(await kanjiAnywhere(JMDict.db, query));
+      // matches = matches.concat(await readingAnywhere(JMDict.db, query, limit));
+      // matches = matches.concat(await kanjiAnywhere(JMDict.db, query));
       const ids = matches.map(o => o.id)
       matches = matches.filter(({id}, index) => !ids.includes(id, index + 1))
 
@@ -111,8 +111,10 @@ if (isProd) {
   })
 
   ipcMain.handle('exactQuery', async (event, query, limit) => {
+    console.log(query)
     let matches = await kanjiBeginning(JMDict.db, query, limit);
     matches = matches.concat(await readingBeginning(JMDict.db, query, limit));
+    console.log(matches)
     return matches;
   })
 

@@ -18,14 +18,16 @@ export const Sentence = ({
                            separation,
                            extraClass,
                            subtitleStyling,
-                           wordMeaning = ''
+                           base = '',
+                           wordMeaning = '',
                          }: {
                            origin: string,
                            setMeaning: any,
                            separation: any,
                            extraClass: string,
                            subtitleStyling: CJKStyling,
-                           wordMeaning?: string
+                           wordMeaning?: string,
+                           base?: string
                          }
 ) => {
   const handleChange = useCallback((origin) => {
@@ -35,7 +37,17 @@ export const Sentence = ({
   return <StyledSentence
       subtitleStyling={subtitleStyling}
       className={extraClass}
-      onClick={() => handleChange(origin)}>
+      onClick={() => {
+        console.log(base)
+        if (base !== '') {
+          console.log("Use base")
+          console.log(base)
+          handleChange(base)
+        } else {
+          console.log(origin)
+          handleChange(origin);
+        }
+      }}>
     <ruby style={{
       rubyPosition: subtitleStyling.positionMeaningTop ? "over" : "under",
       WebkitTextFillColor: wordMeaning ? subtitleStyling.textMeaning.color : '',
