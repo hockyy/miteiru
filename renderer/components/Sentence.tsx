@@ -3,7 +3,7 @@ import styled from "styled-components";
 import {CJKStyling} from "../utils/CJKStyling";
 import React, {useCallback} from "react";
 import {randomUUID} from "crypto";
-import {isMixed} from "wanakana"
+import {isMixed, toRomaji} from "wanakana"
 
 const StyledSentence = styled.button<{ subtitleStyling: CJKStyling }>`
   &:hover, &:hover ruby, &:hover rt {
@@ -62,7 +62,7 @@ export const Sentence = ({
         )
         const romaji = (<>
               <rp>(</rp>
-              <rt>{val.romaji ?? ''}</rt>
+              <rt>{val.romaji != '' ? val.romaji : toRomaji(val.main)}</rt>
               <rp>)</rp>
             </>
         )
