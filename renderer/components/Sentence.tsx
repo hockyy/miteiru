@@ -18,7 +18,7 @@ export const Sentence = ({
                            separation,
                            extraClass,
                            subtitleStyling,
-                           base = '',
+                           basicForm = '',
                            wordMeaning = '',
                          }: {
                            origin: string,
@@ -27,7 +27,7 @@ export const Sentence = ({
                            extraClass: string,
                            subtitleStyling: CJKStyling,
                            wordMeaning?: string,
-                           base?: string
+                           basicForm?: string
                          }
 ) => {
   const handleChange = useCallback((origin) => {
@@ -38,11 +38,10 @@ export const Sentence = ({
       subtitleStyling={subtitleStyling}
       className={extraClass}
       onClick={() => {
-        console.log(base)
-        if (base !== '') {
-          console.log("Use base")
-          console.log(base)
-          handleChange(base)
+        if (basicForm !== '') {
+          console.log("Use basicForm")
+          console.log(basicForm)
+          handleChange(basicForm)
         } else {
           console.log(origin)
           handleChange(origin);
