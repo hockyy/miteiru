@@ -46,8 +46,9 @@ export class Line {
     this.meaning = Array(this.content.length).fill('');
     for (let i = 0; i < this.content.length; i++) {
       const word = this.content[i];
-      if ((isHiragana(word.origin) || isKatakana(word.origin)) && word.origin.length <= 3) continue;
-      await ipcRenderer.invoke('query', word.origin, 2).then(val => {
+      const target = word.basicForm;
+      if ((isHiragana(target) || isKatakana(target)) && target.length <= 3) continue;
+      await ipcRenderer.invoke('query', target, 2).then(val => {
         let got = 0;
         for (const entry of val) {
           if (got) break;
@@ -60,7 +61,7 @@ export class Line {
             }
             // loop all kanji entry
             for (const kanjiEntry of entry.kanji) {
-              if (word.origin === kanjiEntry.text) {
+              if (target === kanjiEntry.text) {
                 got = 1;
                 break;
               }
