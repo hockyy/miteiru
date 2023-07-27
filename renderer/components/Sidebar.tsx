@@ -150,6 +150,15 @@ const StylingBox = ({
           }}
       />
     </div>
+    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
+      <Toggle defaultCheck={subtitleStyling.removeHearingImpaired} onChange={(val) => {
+        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+        newCopy.removeHearingImpaired = val;
+        setSubtitleStyling(newCopy)
+      }
+      }/>
+      Remove Hearing Impaired
+    </div>}
     <div className={"flex flex-row items-center gap-3"}>
       <Toggle defaultCheck={subtitleStyling.positionFromTop} onChange={(val) => {
         const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
