@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {ipcRenderer} from "electron";
-import {Sentence} from "./Sentence";
+import {KanjiSentence, Sentence} from "./Sentence";
 import {CJKStyling, defaultMeaningBoxStyling} from "../utils/CJKStyling";
 import {joinString} from "../utils/utils";
 
@@ -85,7 +85,7 @@ const MeaningBox = ({
                 <div key={key}
                      className={"bg-white rounded-xl p-2 border-2 border-blue-700 w-fit unselectable"}>
                   {[...furiganized.map((val, idx) => (
-                      <Sentence key={idx}
+                      <KanjiSentence key={idx}
                                 origin={val.origin}
                                 setMeaning={setMeaning}
                                 separation={val.separation}
