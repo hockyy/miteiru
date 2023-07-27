@@ -147,3 +147,18 @@ button {
   cursor: not-allowed !important;
   /* any other styles for the disabled state */
 }
+
+.hovery {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  transition: transform 500ms;
+}
+
+.hovery:hover {
+  transform: scale(1.05);
+}
+
+.scrollable-container {
+  overflow-y: auto;
+  padding: 1rem;
+  border-radius: 0.5rem; /* tailwind rounded-b-lg */
+}
