@@ -30,7 +30,8 @@ export class Line {
   constructor(start, end, strContent: string) {
     this.timeStart = start
     this.timeEnd = end
-    this.content = strContent;
+    console.log(cleanHearingImpaired(strContent))
+    this.content = cleanHearingImpaired(strContent);
   }
 
   async fillContentFurigana(tokenizeMiteiru: (string) => Promise<any[]>) {
@@ -211,4 +212,28 @@ export const convertSubtitlesToEntries = (subtitles: YoutubeSubtitleEntry[]): En
     };
   });
   return entries;
+};
+
+export const cleanHearingImpaired = (text) => {
+  const lines = text.split('\n');
+
+  return lines.map(line => {
+    // Discard anything in square brackets
+    let cleanedLine = line.replace(/\[.*?]/g, '');
+
+    // Discard anything in brackets
+    const brackets = [/\[.*?]/g, /\(.*?\)/g, /（.*?）/g, /「.*?」/g, /『.*?』/g, /【.*?】/g];
+    for (let bracket of brackets) {
+      cleanedLine = cleanedLine.replace(bracket, '');
+      console.log(cleanedLine);
+    }
+
+    // Discard anything preceding a colon
+    cleanedLine = cleanedLine.replace(/.*?:/g, '');
+
+    // Remove multiple spaces
+    cleanedLine = cleanedLine.replace(/\s\s+/g, ' ').trim();
+
+    return cleanedLine;
+  }).join('\n');
 };
