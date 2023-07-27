@@ -3,7 +3,7 @@ import styled from "styled-components";
 import {CJKStyling} from "../utils/CJKStyling";
 import React, {useCallback} from "react";
 import {randomUUID} from "crypto";
-import {isMixed} from "wanakana"
+import {isMixed, toRomaji} from "wanakana"
 
 const StyledSentence = styled.button<{ subtitleStyling: CJKStyling }>`
   &:hover, &:hover ruby, &:hover rt {
@@ -18,14 +18,16 @@ export const Sentence = ({
                            separation,
                            extraClass,
                            subtitleStyling,
-                           wordMeaning = ''
+                           basicForm = '',
+                           wordMeaning = '',
                          }: {
                            origin: string,
                            setMeaning: any,
                            separation: any,
                            extraClass: string,
                            subtitleStyling: CJKStyling,
-                           wordMeaning?: string
+                           wordMeaning?: string,
+                           basicForm?: string
                          }
 ) => {
   const handleChange = useCallback((origin) => {
@@ -35,7 +37,9 @@ export const Sentence = ({
   return <StyledSentence
       subtitleStyling={subtitleStyling}
       className={extraClass}
-      onClick={() => handleChange(origin)}>
+      onClick={() => {
+        handleChange(basicForm === '' ? origin : basicForm)
+      }}>
     <ruby style={{
       rubyPosition: subtitleStyling.positionMeaningTop ? "over" : "under",
       WebkitTextFillColor: wordMeaning ? subtitleStyling.textMeaning.color : '',
@@ -51,7 +55,7 @@ export const Sentence = ({
         )
         const romaji = (<>
               <rp>(</rp>
-              <rt>{val.romaji ?? ''}</rt>
+              <rt>{val.romaji != '' ? val.romaji : toRomaji(val.main)}</rt>
               <rp>)</rp>
             </>
         )
