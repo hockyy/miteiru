@@ -1,1 +1,2 @@
 renderer/public/** filter=lfs diff=lfs merge=lfs -text
+archived/** filter=lfs diff=lfs merge=lfs -text
