@@ -7,7 +7,6 @@ import {useRouter} from "next/router";
 
 export default function useKeyBind(
     setMeaning,
-    setKanjiMeaning,
     setShowController,
     setShowSidebar,
     setPrimarySub,
