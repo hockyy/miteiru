@@ -26,9 +26,10 @@
     }
   },
   "scripts": {
-    "copy": "node copy.js",
-    "predev": "npm run copy",
-    "cleansvg": "node cleanSvg.js",
+    "predev": "npm run script:copy",
+    "script:copy": "node scripts/copy.js",
+    "script:cleansvg": "node scripts/cleanSvg.js",
+    "script:initkanji": "node scripts/initKanjiDic.js",
     "dev": "nextron",
     "build": "nextron build",
     "build:linux": "nextron build --linux",
@@ -44,6 +45,8 @@
     "detect-file-encoding-and-language": "^2.4.0",
     "electron-serve": "^1.1.0",
     "electron-store": "^8.1.0",
+    "extract-zip": "^2.0.1",
+    "fs": "^0.0.1-security",
     "fs-extra": "^11.1.1",
     "html-entities": "^2.4.0",
     "html-minifier": "^4.0.0",
