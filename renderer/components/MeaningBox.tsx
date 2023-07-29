@@ -188,18 +188,21 @@ const kanjiBoxEntry = (meaningKanji) => {
         </div>
       })}
     </div>
-    {ucs.length > 0 && <KanjiVGDisplay filename={`0${ucs[0]}.svg`}/>}
-    {groups.map((val, index) => {
-      return <div key={index} className={'flex flex-col gap-2 m-3'}>
-        {Object.entries(val).map(([key, value], index) => {
-          return <div className={containerClassName}>
-            <div className={headerClassName}>{key}:</div>
-            {bubbleEntryReading(value)}
-          </div>
-        })}
-        <hr/>
-      </div>
-    })}
+    <div className={'flex flex-row'}>
+
+      {ucs.length > 0 && <KanjiVGDisplay filename={`0${ucs[0]}.svg`}/>}
+      {groups.map((val, index) => {
+        return <div key={index} className={'flex flex-col gap-2 m-3'}>
+          {Object.entries(val).map(([key, value], index) => {
+            return <div className={containerClassName}>
+              <div className={headerClassName}>{key}:</div>
+              {bubbleEntryReading(value)}
+            </div>
+          })}
+          <hr/>
+        </div>
+      })}
+    </div>
   </div>
 }
 
