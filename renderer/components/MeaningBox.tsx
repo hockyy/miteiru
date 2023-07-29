@@ -149,7 +149,6 @@ const MeaningBox = ({
 const entryClasses = "bg-white rounded-lg flex flex-col gap-2 border-2 m-4 hovery "
 
 const kanjiBoxEntry = (meaningKanji) => {
-  console.log(meaningKanji)
   const jlpt = meaningKanji.misc.jlptLevel;
   const grade = meaningKanji.misc.grade;
   const frequency = meaningKanji.misc.frequency;
