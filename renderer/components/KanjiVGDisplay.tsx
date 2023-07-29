@@ -11,7 +11,6 @@ const KanjiVGDisplay = ({filename}) => {
   useEffect(() => {
     if (filename) {
       ipcRenderer.invoke("readKanjiSVG", filename).then(val => {
-        console.log(val)
         setSvgData(val);
       });
     }
