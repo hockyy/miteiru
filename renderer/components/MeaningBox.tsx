@@ -22,9 +22,16 @@ const MeaningBox = ({
       setMeaningContent(initialContentState);
       return;
     }
-    ipcRenderer.invoke('query', meaning, 5).then(val => {
-      if (val.length === 0) {
-        val.push({
+    ipcRenderer.invoke('query', meaning, 5).then(entries => {
+      for (const entry of entries) {
+        if (entry.kanji.length === 0) {
+          entry.kanji.push({
+            text: meaning
+          })
+        }
+      }
+      if (entries.length === 0) {
+        entries.push({
           id: "0",
           kanji: [{
             text: meaning
@@ -32,8 +39,8 @@ const MeaningBox = ({
           sense: []
         })
       }
-      setOtherMeanings(val)
-      setMeaningContent(val[0])
+      setOtherMeanings(entries)
+      setMeaningContent(entries[0])
       setMeaningIndex(0)
     })
     ipcRenderer.invoke('tags').then(val => {
