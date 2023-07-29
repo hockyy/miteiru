@@ -8,6 +8,11 @@ import {
   readingBeginning,
   setup as setupJmdict
 } from 'jmdict-wrapper';
+
+import {
+  search as searchKanji,
+  setup as setupKanjidic
+} from 'kanjidic-wrapper';
 import fs from "fs";
 import path from "path";
 import {getTokenizer} from "kuromojin";
@@ -27,17 +32,38 @@ if (isProd) {
   const appDataDirectory = app.getPath('userData');
 
   let JMDict = {db: null, tags: {}};
+  let KanjiDic = {db: null};
   let mecabCommand = 'mecab'
+
+  const jmdictDBDirectory = path.join(appDataDirectory, `jmdict-db`);
+  const kanjidicDBDirectory = path.join(appDataDirectory, `kanjidic-db`);
   const setUpJMDict = async (filename) => {
     try {
       if (JMDict.db) {
         JMDict.db.close()
       }
-      const jmSetup = await setupJmdict(path.join(appDataDirectory, `jmdict-db`), filename);
+      const jmSetup = await setupJmdict(jmdictDBDirectory, filename);
       const jmTags = await getTags(jmSetup.db);
       JMDict = {
         db: jmSetup.db,
         tags: jmTags
+      }
+      return true;
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
+  }
+
+
+  const setUpKanjiDic = async (filename) => {
+    try {
+      if (KanjiDic.db) {
+        KanjiDic.db.close()
+      }
+      const jmSetup = await setupKanjidic(kanjidicDBDirectory, filename);
+      KanjiDic = {
+        db: jmSetup.db
       }
       return true;
     } catch (e) {
@@ -51,7 +77,7 @@ if (isProd) {
       JMDict.db.close()
     }
     try {
-      fs.rmSync(path.join(appDataDirectory, `jmdict-db`), {
+      fs.rmSync(jmdictDBDirectory, {
         recursive: true,
         force: true
       })
@@ -59,6 +85,21 @@ if (isProd) {
       console.error(e)
     }
   }
+
+  const removeKanjiDicCache = () => {
+    if (KanjiDic.db) {
+      KanjiDic.db.close()
+    }
+    try {
+      fs.rmSync(kanjidicDBDirectory, {
+        recursive: true,
+        force: true
+      })
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
 
 
   const mainWindow = createWindow('main', {
@@ -178,11 +219,13 @@ if (isProd) {
 
   ipcMain.handle('loadDefaultMode', async (event) => {
     mecabCommand = 'kuromoji';
+    await setUpKanjiDic(path.join(__dirname, 'dict/kanjidic.json'))
     return await checkJMDict({
       jmdict: path.join(__dirname, 'dict/jmdict.json')
     });
   })
   ipcMain.handle('removeDictCache', (event) => {
+    removeKanjiDicCache();
     removeJMDictCache()
     return true;
   })
