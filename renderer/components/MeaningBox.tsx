@@ -15,18 +15,22 @@ const MeaningBox = ({
                       subtitleStyling = defaultMeaningBoxStyling
                     }: { meaning: string, setMeaning: any, tokenizeMiteiru: (value: string) => Promise<any[]>, subtitleStyling?: CJKStyling }) => {
   const [meaningContent, setMeaningContent] = useState(initialContentState)
+  const [meaningKanji, setMeaningKanji] = useState({})
   const [otherMeanings, setOtherMeanings] = useState([]);
   const [meaningIndex, setMeaningIndex] = useState(0);
   const [tags, setTags] = useState({})
   useEffect(() => {
     if (meaning === '') {
       setMeaningContent(initialContentState);
+      setMeaningKanji({});
       return;
     }
     if (meaning.length === 1 && isKanji(meaning)) {
       ipcRenderer.invoke("queryKanji", meaning).then(result => {
-        console.log(result);
+        setMeaningKanji(result);
       })
+    } else {
+      setMeaningKanji({});
     }
     ipcRenderer.invoke('query', meaning, 5).then(entries => {
       for (const entry of entries) {
@@ -126,37 +130,12 @@ const MeaningBox = ({
               </AwesomeButton>}
         </div>
         <div className={"rounded-b-lg text-blue-800 text-lg p-2"}>
+          <div
+              className={"bg-white rounded-lg flex flex-col gap-2 border-2 border-red-700 m-4 hovery"}
+              key={"kanji-entry"}></div>
           {
             meaningContent.sense.map((sense, idxSense) => {
-
-              return <div
-                  className={"bg-white rounded-lg flex flex-col gap-2 border-2 border-blue-700 m-4 hovery"}
-                  key={idxSense}>
-                <div
-                    className={"flex flex-wrap container rounded-t-lg bg-blue-200 px-3"}>{
-
-                  sense.partOfSpeech.map((val, keyTags) => {
-                        let ret = val;
-                        try {
-                          ret = tags[val];
-                        } catch (e) {
-                        }
-                        return <div
-                            key={keyTags}
-                            className={"bg-blue-500 w-fit p-1 rounded-lg px-2 m-3 text-white"}>{ret}</div>
-                      }
-                  )}</div>
-                <div className={"flex flex-row px-3"}>
-                  <div className={'mx-2 mb-3'}>
-                    <span className={"font-bold text-blue-8 mr-1"}>{idxSense + 1}.</span>
-                    {
-                      joinString(sense.gloss.map((gloss) => {
-                        return gloss.text
-                      }))
-                    }
-                  </div>
-                </div>
-              </div>
+              return meaningBoxEntry(sense, idxSense, tags)
             })
           }
         </div>
@@ -165,6 +144,38 @@ const MeaningBox = ({
   } else {
     return (<></>);
   }
+}
+
+const meaningBoxEntry = (sense, idxSense, tags) => {
+  console.log(sense)
+  return <div
+      className={"bg-white rounded-lg flex flex-col gap-2 border-2 border-blue-700 m-4 hovery"}
+      key={idxSense}>
+    <div
+        className={"flex flex-wrap container rounded-t-lg bg-blue-200 px-3"}>{
+
+      sense.partOfSpeech.map((val, keyTags) => {
+            let ret = val;
+            try {
+              ret = tags[val];
+            } catch (e) {
+            }
+            return <div
+                key={keyTags}
+                className={"bg-blue-500 w-fit p-1 rounded-lg px-2 m-3 text-white"}>{ret}</div>
+          }
+      )}</div>
+    <div className={"flex flex-row px-3"}>
+      <div className={'mx-2 mb-3'}>
+        <span className={"font-bold text-blue-8 mr-1"}>{idxSense + 1}.</span>
+        {
+          joinString(sense.gloss.map((gloss) => {
+            return gloss.text
+          }))
+        }
+      </div>
+    </div>
+  </div>
 }
 
 export default MeaningBox;
