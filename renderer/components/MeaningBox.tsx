@@ -23,13 +23,18 @@ const MeaningBox = ({
       return;
     }
     ipcRenderer.invoke('query', meaning, 5).then(val => {
-      setOtherMeanings(val)
-      if (val.length > 0) {
-        setMeaningContent(val[0])
-        setMeaningIndex(0)
-      } else {
-        setMeaningContent(initialContentState)
+      if (val.length === 0) {
+        val.push({
+          id: "0",
+          kanji: [{
+            text: meaning
+          }],
+          sense: []
+        })
       }
+      setOtherMeanings(val)
+      setMeaningContent(val[0])
+      setMeaningIndex(0)
     })
     ipcRenderer.invoke('tags').then(val => {
       setTags(val)
@@ -87,11 +92,11 @@ const MeaningBox = ({
                      className={"bg-white rounded-xl p-2 border-2 border-blue-700 w-fit unselectable hovery"}>
                   {[...furiganized.map((val, idx) => (
                       <KanjiSentence key={idx}
-                                origin={val.origin}
-                                setMeaning={setMeaning}
-                                separation={val.separation}
-                                extraClass={"unselectable meaning-kanji text-md"}
-                                subtitleStyling={subtitleStyling}/>
+                                     origin={val.origin}
+                                     setMeaning={setMeaning}
+                                     separation={val.separation}
+                                     extraClass={"unselectable meaning-kanji text-md"}
+                                     subtitleStyling={subtitleStyling}/>
                   ))]}
                 </div>
             ))}

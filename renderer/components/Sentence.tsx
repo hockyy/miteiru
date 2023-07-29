@@ -33,8 +33,8 @@ export const Sentence = ({
   return <StyledSentence
       subtitleStyling={subtitleStyling}
       className={extraClass}
-      onClick={() => {
-        handleChange(basicForm === '' ? origin : basicForm)
+      onClick={(e) => {
+        handleChange(e.shiftKey ? origin : basicForm);
       }}>
     <ruby style={{
       rubyPosition: subtitleStyling.positionMeaningTop ? "over" : "under",
