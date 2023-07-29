@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {ipcRenderer} from "electron";
+import {ipcRenderer, shell} from "electron";
 import {KanjiSentence} from "./Sentence";
 import {CJKStyling, defaultMeaningBoxStyling} from "../utils/CJKStyling";
 import {joinString} from "../utils/utils";
@@ -160,16 +160,28 @@ const kanjiBoxEntry = (meaningKanji) => {
     grade ? `Grade ${grade}` : null,
     frequency ? `Top ${meaningKanji.misc.frequency} kanji` : null,
     `${meaningKanji.misc.strokeCounts[0]} writing strokes`].filter(val => !!val)
+
   const groups = meaningKanji.readingMeaning.groups.map(member => {
     const onyomi = member.readings.filter(val => val.type === 'ja_on').map(val => {
       return val.value + `『${toHiragana(val.value)}』`
     })
     const kunyomi = member.readings.filter(val => val.type === 'ja_kun').map(val => val.value)
     const meanings = member.meanings.filter(val => val.lang === 'en').map(val => val.value)
+    const urls = [
+      <ExternalLink urlBase="https://jisho.org/search/" displayText="Jisho"
+                    query={meaningKanji.literal}/>,
+      <ExternalLink urlBase="https://www.wanikani.com/kanji/" displayText="Wanikani"
+                    query={meaningKanji.literal}/>,
+      <ExternalLink urlBase="https://tangorin.com/kanji/" displayText="Tangorin"
+                    query={meaningKanji.literal}/>,
+      <ExternalLink urlBase="https://kanji.koohii.com/study/kanji/" displayText="Koohii"
+                    query={meaningKanji.literal}/>
+    ];
     return {
       meanings,
       "音読み (Onyomi)": onyomi,
       "訓読み (Kunyomi)": kunyomi,
+      urls
     }
   })
   const containerClassName = "flex flex-row gap-2 text-red-600 text-xl"
@@ -244,5 +256,19 @@ const meaningBoxEntry = (sense, idxSense, tags) => {
     </div>
   </div>
 }
+
+const ExternalLink = ({urlBase, displayText, query}) => {
+  const handleClick = (event) => {
+    event.preventDefault();
+    shell.openExternal(`${urlBase}${query}`);
+  };
+
+  return (
+      <a className={"url-bubble"} href={`${urlBase}${query}`} onClick={handleClick}>
+        {displayText}
+      </a>
+  );
+};
+
 
 export default MeaningBox;
