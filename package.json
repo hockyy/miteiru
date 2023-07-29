@@ -28,6 +28,7 @@
   "scripts": {
     "copy": "node copy.js",
     "predev": "npm run copy",
+    "cleansvg": "node cleanSvg.js",
     "dev": "nextron",
     "build": "nextron build",
     "build:linux": "nextron build --linux",
@@ -45,6 +46,7 @@
     "electron-store": "^8.1.0",
     "fs-extra": "^11.1.1",
     "html-entities": "^2.4.0",
+    "html-minifier": "^4.0.0",
     "html-react-parser": "^3.0.16",
     "iconv-lite": "^0.6.3",
     "jmdict-wrapper": "^1.1.2",
@@ -55,6 +57,7 @@
     "react-awesome-button": "^7.0.5",
     "react-colorful": "^5.6.1",
     "react-smooth-collapse": "^2.1.2",
+    "react-svg": "^16.1.19",
     "react-video-seek-slider": "^6.0.4",
     "shunou": "^1.0.2",
     "styled-components": "^6.0.3",
