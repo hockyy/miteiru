@@ -17,7 +17,6 @@ const parseVerbs = async (res) => {
   const whitelist = [RARERU, IRU, ARU, SERU];
   const blacklist = [YARI, YARU, SURU];
   for (let i = 0; i < res.length; i++) {
-    console.log("Processing ", i, res)
     const entry = res[i];
     const isVerb = entry.pos.split('-').includes("動詞");
     if (!isVerb) {

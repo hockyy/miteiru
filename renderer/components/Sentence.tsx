@@ -27,7 +27,6 @@ export const Sentence = ({
                            subtitleStyling, basicForm = '', wordMeaning = '',
                          }: SentenceParam) => {
   const handleChange = useCallback((pressedString) => {
-    console.log(pressedString)
     navigator.clipboard.writeText(pressedString);
     setMeaning(pressedString)
   }, [setMeaning]);
@@ -89,7 +88,6 @@ export const Sentence = ({
                                 }: SentenceParam) => {
     const handleChange = useCallback((newWord) => {
       navigator.clipboard.writeText(newWord);
-      console.log(newWord)
     }, [setMeaning]);
     return <>
       {separation.map((val, index) => {
