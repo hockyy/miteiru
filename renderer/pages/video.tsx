@@ -22,6 +22,7 @@ import {
 } from "../hooks/useVideoController";
 import {usePlayNextAfterEnd} from "../hooks/usePlayNextAfterEnd";
 import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
+import 'react-awesome-button/dist/styles.css';
 
 function Video() {
   const {tokenizerMode, tokenizeMiteiru} = useMiteiruTokenizer();
