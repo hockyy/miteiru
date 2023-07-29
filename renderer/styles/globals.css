@@ -162,3 +162,16 @@ button {
   padding: 1rem;
   border-radius: 0.5rem; /* tailwind rounded-b-lg */
 }
+
+.url-bubble {
+  display: inline-block;
+  font-size: 18px;
+  text-decoration: none;
+  border-radius: 50px;
+  transition: background-color 0.2s ease-out, color 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+.url-bubble:hover {
+  text-decoration: underline;
+  transition: background-color 0.2s ease-out, color 0.2s ease-out, box-shadow 0.2s ease-out;
+}
