@@ -1,5 +1,6 @@
 import React, {useEffect, useState, useRef} from 'react';
 import {ipcRenderer} from 'electron';
+import {AwesomeButton} from "react-awesome-button";
 
 const KanjiVGDisplay = ({filename}) => {
   const [svgData, setSvgData] = useState("");
@@ -24,7 +25,7 @@ const KanjiVGDisplay = ({filename}) => {
       console.log(elementContainer.children)
       // const groups = elementContainer
 
-      const groups: Element[] = Array.from(elementContainer.children);
+      const groups: SVGPathElement[] = Array.from(elementContainer.children);
       // console.log(groups)
       const texts = svgContainer.querySelectorAll('text');
       let strokeIndex = 0;
@@ -32,20 +33,20 @@ const KanjiVGDisplay = ({filename}) => {
       groups.forEach(group => {
         console.log(group)
         const color = getRandomColor();
-        const paths = group.querySelectorAll('path[id^="kvg"]');
+        const paths: SVGPathElement[] = Array.from(group.querySelectorAll('path[id^="kvg"]'));
 
         paths.forEach((path, index) => {
           const length = path.getTotalLength();
           path.style.transition = "none";
           path.style.strokeDasharray = length + ' ' + length;
-          path.style.strokeDashoffset = length;
+          path.style.strokeDashoffset = String(length);
           path.style.strokeWidth = '5';
           path.style.stroke = color;
           path.getBoundingClientRect();
-          path.style.transition = "stroke-dashoffset 2s ease-in-out";
+          path.style.transition = "stroke-dashoffset 1s ease-in-out";
           setTimeout(() => {
             path.style.strokeDashoffset = "0";
-          }, strokeIndex * 2000);
+          }, strokeIndex * 1000);
           strokeIndex++;
         });
       });
@@ -54,10 +55,10 @@ const KanjiVGDisplay = ({filename}) => {
         text.style.transition = "none";
         text.style.opacity = "0";
         text.getBoundingClientRect();
-        text.style.transition = "opacity 2s ease-in-out";
+        text.style.transition = "opacity 1s ease-in-out";
         setTimeout(() => {
           text.style.opacity = "1";
-        }, index * 2000);
+        }, index * 1000);
       });
     }
   }, [svgData, animationKey]);
@@ -77,7 +78,7 @@ const KanjiVGDisplay = ({filename}) => {
 
   return (
       <div>
-        <button onClick={handleButtonClick}>Repeat Animation</button>
+        <AwesomeButton type={'primary'} onPress={handleButtonClick}>Repeat Animation</AwesomeButton>
         <div ref={svgRef} dangerouslySetInnerHTML={{__html: svgData}}/>
       </div>
   );
