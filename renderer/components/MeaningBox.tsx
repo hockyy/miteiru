@@ -148,10 +148,15 @@ const MeaningBox = ({
 const entryClasses = "bg-white rounded-lg flex flex-col gap-2 border-2 m-4 hovery "
 
 const kanjiBoxEntry = (meaningKanji) => {
-  const bubbleBox = [`${meaningKanji.literal}`, `JLPT N${meaningKanji.misc.jlptLevel}`,
-    `Grade ${meaningKanji.misc.grade}`,
-    `Top ${meaningKanji.misc.frequency} Kanji`,
-    `${meaningKanji.misc.strokeCounts[0]} writing strokes`]
+  const jlpt = meaningKanji.misc.jlptLevel;
+  const grade = meaningKanji.misc.grade;
+  const frequency = meaningKanji.misc.frequency;
+  const bubbleBox = [
+    `${meaningKanji.literal}`,
+    jlpt ? `JLPT N${jlpt}` : null,
+    grade ? `Grade ${grade}` : null,
+    frequency ? `Top ${meaningKanji.misc.frequency} kanji` : null,
+    `${meaningKanji.misc.strokeCounts[0]} writing strokes`].filter(val => !!val)
   const groups = meaningKanji.readingMeaning.groups.map(member => {
     const onyomi = member.readings.filter(val => val.type === 'ja_on').map(val => {
       return val.value + `『${toHiragana(val.value)}』`
