@@ -4,6 +4,7 @@ import {KanjiSentence, Sentence} from "./Sentence";
 import {CJKStyling, defaultMeaningBoxStyling} from "../utils/CJKStyling";
 import {joinString} from "../utils/utils";
 import {AwesomeButton} from "react-awesome-button";
+import {isKanji} from 'wanakana'
 
 const initialContentState = {sense: [], kanji: []};
 
@@ -21,6 +22,11 @@ const MeaningBox = ({
     if (meaning === '') {
       setMeaningContent(initialContentState);
       return;
+    }
+    if (meaning.length === 1 && isKanji(meaning)) {
+      ipcRenderer.invoke("queryKanji", meaning).then(result => {
+        console.log(result);
+      })
     }
     ipcRenderer.invoke('query', meaning, 5).then(entries => {
       for (const entry of entries) {
