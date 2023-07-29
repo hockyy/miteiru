@@ -7,7 +7,7 @@ import {
   kanjiBeginning,
   readingBeginning,
   setup as setupJmdict
-} from 'jmdict-simplified-node';
+} from 'jmdict-wrapper';
 import fs from "fs";
 import path from "path";
 import {getTokenizer} from "kuromojin";
