@@ -5,6 +5,7 @@ import {CJKStyling, defaultMeaningBoxStyling} from "../utils/CJKStyling";
 import {joinString} from "../utils/utils";
 import {AwesomeButton} from "react-awesome-button";
 import {isKanji, toHiragana} from 'wanakana'
+import KanjiVGDisplay from "./KanjiVGDisplay";
 
 const initialContentState = {sense: [], kanji: []};
 const initialKanjiContentState = {literal: null};
@@ -148,9 +149,11 @@ const MeaningBox = ({
 const entryClasses = "bg-white rounded-lg flex flex-col gap-2 border-2 m-4 hovery "
 
 const kanjiBoxEntry = (meaningKanji) => {
+  console.log(meaningKanji)
   const jlpt = meaningKanji.misc.jlptLevel;
   const grade = meaningKanji.misc.grade;
   const frequency = meaningKanji.misc.frequency;
+  const ucs = meaningKanji.codepoints.filter(val => val.type === 'ucs').map(val => val.value);
   const bubbleBox = [
     `${meaningKanji.literal}`,
     jlpt ? `JLPT N${jlpt}` : null,
@@ -185,6 +188,7 @@ const kanjiBoxEntry = (meaningKanji) => {
         </div>
       })}
     </div>
+    {ucs.length > 0 && <KanjiVGDisplay filename={`0${ucs[0]}.svg`}/>}
     {groups.map((val, index) => {
       return <div key={index} className={'flex flex-col gap-2 m-3'}>
         {Object.entries(val).map(([key, value], index) => {

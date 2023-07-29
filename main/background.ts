@@ -101,7 +101,6 @@ if (isProd) {
   }
 
 
-
   const mainWindow = createWindow('main', {
     width: 1000,
     height: 600,
@@ -171,7 +170,6 @@ if (isProd) {
       console.error('Error fetching subtitles:', error);
       return []
     }
-
   })
   ipcMain.handle('pickDirectory', async (event) => {
     return await dialog.showOpenDialog({
@@ -229,6 +227,13 @@ if (isProd) {
       jmdict: path.join(__dirname, 'dict/jmdict.json')
     });
   })
+
+
+  ipcMain.handle('readKanjiSVG', async (event, filename) => {
+    const kanjiFilePath = path.join(__dirname, `kanji/${filename}`);
+    return fs.readFileSync(kanjiFilePath).toString()
+  })
+
   ipcMain.handle('removeDictCache', (event) => {
     removeKanjiDicCache();
     removeJMDictCache()
