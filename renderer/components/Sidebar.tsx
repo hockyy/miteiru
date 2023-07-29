@@ -8,6 +8,7 @@ import {
 } from "../utils/CJKStyling";
 import {ipcRenderer} from "electron";
 import Toggle from "./Toggle";
+import {AwesomeButton} from "react-awesome-button";
 
 const StylingBox = ({
                       subtitleStyling,
@@ -209,21 +210,17 @@ const StylingBox = ({
           }}
       />
     </div>
-    <button
-        type={"button"}
-        className='enabled:bg-red-600 p-3 rounded-sm enabled:hover:bg-red-700'
-        onClick={() => {
+    <AwesomeButton
+        type={"danger"}
+        onPress={() => {
           setSubtitleStyling(defaultStyling)
-        }
-        }
-    >
-      Reset
-    </button>
-    <div className={"flex flex-row gap-2"}>
-      <button
-          type={"button"}
-          className='w-full enabled:bg-green-600 p-3 rounded-sm enabled:hover:bg-green-700'
-          onClick={() => {
+        }}
+    >Reset</AwesomeButton>
+    <div className={"flex flex-row gap-2 w-full"}>
+      <AwesomeButton
+          type={"primary"}
+          className={"w-full"}
+          onPress={() => {
             ipcRenderer.invoke("readFile", ["json"]).then((val) => {
               try {
                 const parsed = JSON.parse(val) as CJKStyling;
@@ -231,23 +228,15 @@ const StylingBox = ({
               } catch (e) {
                 console.error(e)
               }
-
             })
-          }
-          }
-      >
-        Import
-      </button>
-      <button
-          type={"button"}
-          className='w-full enabled:bg-blue-600 p-3 rounded-sm enabled:hover:bg-blue-700'
-          onClick={() => {
+          }}>Import</AwesomeButton>
+      <AwesomeButton
+          type={"secondary"}
+          className={"w-full"}
+          onPress={() => {
             ipcRenderer.invoke("saveFile", ["json"], JSON.stringify(subtitleStyling))
-          }
-          }
-      >
-        Export
-      </button>
+          }}>Export
+      </AwesomeButton>
     </div>
   </div>
 }

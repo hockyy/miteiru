@@ -36,7 +36,7 @@ export const defaultMeaningBoxStyling: CJKStyling = {
   },
   text: {
     color: "#001fc4",
-    hoverColor: "#001269",
+    hoverColor: "#5474ff",
     fontSize: "24px",
   },
   background: "#00000000",

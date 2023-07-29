@@ -4,6 +4,7 @@ import {CJKStyling} from "../utils/CJKStyling";
 import React, {useCallback} from "react";
 import {randomUUID} from "crypto";
 import {isMixed, toRomaji} from "wanakana"
+import {ipcRenderer} from "electron";
 
 const StyledSentence = styled.button<{ subtitleStyling: CJKStyling }>`
   &:hover, &:hover ruby, &:hover rt {
@@ -12,33 +13,29 @@ const StyledSentence = styled.button<{ subtitleStyling: CJKStyling }>`
   }
 `
 
+interface SentenceParam {
+  origin: string,
+  setMeaning: any,
+  separation: any,
+  extraClass: string,
+  subtitleStyling: CJKStyling,
+  wordMeaning?: string,
+  basicForm?: string
+}
+
 export const Sentence = ({
-                           origin,
-                           setMeaning,
-                           separation,
-                           extraClass,
-                           subtitleStyling,
-                           basicForm = '',
-                           wordMeaning = '',
-                         }: {
-                           origin: string,
-                           setMeaning: any,
-                           separation: any,
-                           extraClass: string,
-                           subtitleStyling: CJKStyling,
-                           wordMeaning?: string,
-                           basicForm?: string
-                         }
-) => {
-  const handleChange = useCallback((origin) => {
-    navigator.clipboard.writeText(origin);
-    setMeaning(origin)
+                           origin, setMeaning, separation, extraClass,
+                           subtitleStyling, basicForm = '', wordMeaning = '',
+                         }: SentenceParam) => {
+  const handleChange = useCallback((pressedString) => {
+    navigator.clipboard.writeText(pressedString);
+    setMeaning(pressedString)
   }, [setMeaning]);
   return <StyledSentence
       subtitleStyling={subtitleStyling}
       className={extraClass}
-      onClick={() => {
-        handleChange(basicForm === '' ? origin : basicForm)
+      onClick={(e) => {
+        handleChange(e.shiftKey ? origin : basicForm);
       }}>
     <ruby style={{
       rubyPosition: subtitleStyling.positionMeaningTop ? "over" : "under",
@@ -84,4 +81,41 @@ export const Sentence = ({
 
 export const PlainSentence = ({origin}) => {
   return <div key={randomUUID()}>{parse(origin)}</div>
+}
+
+export const KanjiSentence = ({
+                                origin, setMeaning, separation,
+                                extraClass, subtitleStyling,
+                              }: SentenceParam) => {
+  const handleChange = useCallback((newWord) => {
+    navigator.clipboard.writeText(newWord);
+    setMeaning(newWord)
+  }, [setMeaning]);
+  return <>
+    {separation.map((val, index) => {
+      const hiragana = (<>
+            <rp>(</rp>
+            <rt>{val.hiragana ?? ''}</rt>
+            <rp>)</rp>
+          </>
+      )
+      return <ruby style={{
+        rubyPosition: "under",
+        WebkitTextFillColor: subtitleStyling.text.color,
+      }} key={index}>
+        <ruby style={{rubyPosition: "over"}}>
+          {Array.from(val.main).map(char => {
+            return <StyledSentence
+                subtitleStyling={subtitleStyling}
+                className={extraClass}
+                onClick={() => {
+                  handleChange(char)
+                }}><>{char}</>
+            </StyledSentence>
+          })}
+          <rt className={"unselectable"}>{hiragana}</rt>
+        </ruby>
+      </ruby>
+    })}
+  </>
 }

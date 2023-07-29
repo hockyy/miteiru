@@ -1,8 +1,8 @@
 .DS_Store
-my-jmdict-simplified-db/
 .idea/
 node_modules
 *.log
 .next
 app
 dist
+renderer/public/kanji/**

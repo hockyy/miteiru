@@ -147,3 +147,31 @@ button {
   cursor: not-allowed !important;
   /* any other styles for the disabled state */
 }
+
+.hovery {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  transition: transform 500ms;
+}
+
+.hovery:hover {
+  transform: scale(1.05);
+}
+
+.scrollable-container {
+  overflow-y: auto;
+  padding: 1rem;
+  border-radius: 0.5rem; /* tailwind rounded-b-lg */
+}
+
+.url-bubble {
+  display: inline-block;
+  font-size: 18px;
+  text-decoration: none;
+  border-radius: 50px;
+  transition: background-color 0.2s ease-out, color 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+.url-bubble:hover {
+  text-decoration: underline;
+  transition: background-color 0.2s ease-out, color 0.2s ease-out, box-shadow 0.2s ease-out;
+}

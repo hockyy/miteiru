@@ -4,12 +4,15 @@ import {createWindow} from './helpers';
 import {requestHandler, scheme} from "./protocol";
 import {
   getTags,
-  kanjiAnywhere,
   kanjiBeginning,
-  readingAnywhere,
   readingBeginning,
   setup as setupJmdict
-} from 'jmdict-simplified-node';
+} from 'jmdict-wrapper';
+
+import {
+  search as searchKanji,
+  setup as setupKanjidic
+} from 'kanjidic-wrapper';
 import fs from "fs";
 import path from "path";
 import {getTokenizer} from "kuromojin";
@@ -29,17 +32,38 @@ if (isProd) {
   const appDataDirectory = app.getPath('userData');
 
   let JMDict = {db: null, tags: {}};
+  let KanjiDic = {db: null};
   let mecabCommand = 'mecab'
+
+  const jmdictDBDirectory = path.join(appDataDirectory, `jmdict-db`);
+  const kanjidicDBDirectory = path.join(appDataDirectory, `kanjidic-db`);
   const setUpJMDict = async (filename) => {
     try {
       if (JMDict.db) {
         JMDict.db.close()
       }
-      const jmSetup = await setupJmdict(path.join(appDataDirectory, `jmdict-db`), filename);
+      const jmSetup = await setupJmdict(jmdictDBDirectory, filename);
       const jmTags = await getTags(jmSetup.db);
       JMDict = {
         db: jmSetup.db,
         tags: jmTags
+      }
+      return true;
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
+  }
+
+
+  const setUpKanjiDic = async (filename) => {
+    try {
+      if (KanjiDic.db) {
+        KanjiDic.db.close()
+      }
+      const jmSetup = await setupKanjidic(kanjidicDBDirectory, filename);
+      KanjiDic = {
+        db: jmSetup.db
       }
       return true;
     } catch (e) {
@@ -53,7 +77,21 @@ if (isProd) {
       JMDict.db.close()
     }
     try {
-      fs.rmSync(path.join(appDataDirectory, `jmdict-db`), {
+      fs.rmSync(jmdictDBDirectory, {
+        recursive: true,
+        force: true
+      })
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const removeKanjiDicCache = () => {
+    if (KanjiDic.db) {
+      KanjiDic.db.close()
+    }
+    try {
+      fs.rmSync(kanjidicDBDirectory, {
         recursive: true,
         force: true
       })
@@ -110,6 +148,11 @@ if (isProd) {
     }
   })
 
+
+  ipcMain.handle('queryKanji', async (event, query) => {
+    return searchKanji(KanjiDic.db, query);
+  })
+
   ipcMain.handle('exactQuery', async (event, query, limit) => {
     let matches = await kanjiBeginning(JMDict.db, query, limit);
     matches = matches.concat(await readingBeginning(JMDict.db, query, limit));
@@ -127,7 +170,6 @@ if (isProd) {
       console.error('Error fetching subtitles:', error);
       return []
     }
-
   })
   ipcMain.handle('pickDirectory', async (event) => {
     return await dialog.showOpenDialog({
@@ -180,11 +222,20 @@ if (isProd) {
 
   ipcMain.handle('loadDefaultMode', async (event) => {
     mecabCommand = 'kuromoji';
+    await setUpKanjiDic(path.join(__dirname, 'dict/kanjidic.json'))
     return await checkJMDict({
       jmdict: path.join(__dirname, 'dict/jmdict.json')
     });
   })
+
+
+  ipcMain.handle('readKanjiSVG', async (event, filename) => {
+    const kanjiFilePath = path.join(__dirname, `kanji/${filename}`);
+    return fs.readFileSync(kanjiFilePath).toString()
+  })
+
   ipcMain.handle('removeDictCache', (event) => {
+    removeKanjiDicCache();
     removeJMDictCache()
     return true;
   })
