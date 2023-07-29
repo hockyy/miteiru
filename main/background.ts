@@ -4,9 +4,7 @@ import {createWindow} from './helpers';
 import {requestHandler, scheme} from "./protocol";
 import {
   getTags,
-  kanjiAnywhere,
   kanjiBeginning,
-  readingAnywhere,
   readingBeginning,
   setup as setupJmdict
 } from 'jmdict-simplified-node';
