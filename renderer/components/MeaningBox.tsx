@@ -1,12 +1,13 @@
 import React, {useEffect, useState} from "react";
 import {ipcRenderer} from "electron";
-import {KanjiSentence, Sentence} from "./Sentence";
+import {KanjiSentence} from "./Sentence";
 import {CJKStyling, defaultMeaningBoxStyling} from "../utils/CJKStyling";
 import {joinString} from "../utils/utils";
 import {AwesomeButton} from "react-awesome-button";
-import {isKanji} from 'wanakana'
+import {isKanji, toHiragana} from 'wanakana'
 
 const initialContentState = {sense: [], kanji: []};
+const initialKanjiContentState = {literal: null};
 
 const MeaningBox = ({
                       meaning,
@@ -15,22 +16,23 @@ const MeaningBox = ({
                       subtitleStyling = defaultMeaningBoxStyling
                     }: { meaning: string, setMeaning: any, tokenizeMiteiru: (value: string) => Promise<any[]>, subtitleStyling?: CJKStyling }) => {
   const [meaningContent, setMeaningContent] = useState(initialContentState)
-  const [meaningKanji, setMeaningKanji] = useState({})
+  const [meaningKanji, setMeaningKanji] = useState(initialKanjiContentState)
   const [otherMeanings, setOtherMeanings] = useState([]);
   const [meaningIndex, setMeaningIndex] = useState(0);
   const [tags, setTags] = useState({})
   useEffect(() => {
     if (meaning === '') {
       setMeaningContent(initialContentState);
-      setMeaningKanji({});
+      setMeaningKanji(initialKanjiContentState);
       return;
     }
     if (meaning.length === 1 && isKanji(meaning)) {
       ipcRenderer.invoke("queryKanji", meaning).then(result => {
+        console.log(result)
         setMeaningKanji(result);
       })
     } else {
-      setMeaningKanji({});
+      setMeaningKanji(initialKanjiContentState);
     }
     ipcRenderer.invoke('query', meaning, 5).then(entries => {
       for (const entry of entries) {
@@ -130,9 +132,7 @@ const MeaningBox = ({
               </AwesomeButton>}
         </div>
         <div className={"rounded-b-lg text-blue-800 text-lg p-2"}>
-          <div
-              className={"bg-white rounded-lg flex flex-col gap-2 border-2 border-red-700 m-4 hovery"}
-              key={"kanji-entry"}></div>
+          {meaningKanji.literal && [kanjiBoxEntry(meaningKanji)]}
           {
             meaningContent.sense.map((sense, idxSense) => {
               return meaningBoxEntry(sense, idxSense, tags)
@@ -146,10 +146,66 @@ const MeaningBox = ({
   }
 }
 
-const meaningBoxEntry = (sense, idxSense, tags) => {
-  console.log(sense)
+const entryClasses = "bg-white rounded-lg flex flex-col gap-2 border-2 m-4 hovery "
+
+const kanjiBoxEntry = (meaningKanji) => {
+  const bubbleBox = [`${meaningKanji.literal}`, `JLPT N${meaningKanji.misc.jlptLevel}`,
+    `Grade ${meaningKanji.misc.grade}`,
+    `Top ${meaningKanji.misc.frequency} Kanji`,
+    `${meaningKanji.misc.strokeCounts[0]} writing strokes`]
+  const groups = meaningKanji.readingMeaning.groups.map(member => {
+    const onyomi = member.readings.filter(val => val.type === 'ja_on').map(val => {
+      return val.value + `『${toHiragana(val.value)}』`
+    })
+    const kunyomi = member.readings.filter(val => val.type === 'ja_kun').map(val => val.value)
+    const meanings = member.meanings.filter(val => val.lang === 'en').map(val => val.value)
+    return {
+      meanings,
+      "音読み (Onyomi)": onyomi,
+      "訓読み (Kunyomi)": kunyomi,
+    }
+  })
+  const containerClassName = "flex flex-row gap-2 text-red-600 text-xl"
+  const headerClassName = "flex flex-row gap-2 font-bold capitalize"
+  // const onyomi = meaningKanji.readingMeaning.groups[0].readings.filter(val => val.type === 'ja_on')
   return <div
-      className={"bg-white rounded-lg flex flex-col gap-2 border-2 border-blue-700 m-4 hovery"}
+      className={entryClasses + " border-red-700"}
+      key={"kanji-entry"}>
+
+    <div className={"flex flex-wrap container rounded-t-lg bg-red-100 px-1"}>
+      {bubbleBox.map((val, index) => {
+        return <div
+            key={index}
+            className={"unselectable bg-red-600 w-fit p-1 rounded-lg px-2 ml-3 my-3 text-white"}>
+          {val}
+        </div>
+      })}
+    </div>
+    {groups.map((val, index) => {
+      return <div key={index} className={'flex flex-col gap-2 m-3'}>
+        {Object.entries(val).map(([key, value], index) => {
+          return <div className={containerClassName}>
+            <div className={headerClassName}>{key}:</div>
+            {bubbleEntryReading(value)}
+          </div>
+        })}
+        <hr/>
+      </div>
+    })}
+  </div>
+}
+
+const bubbleEntryReading = (readings) => {
+  return <div className={"flex flex-wrap gap-3"}>
+    {readings.map((val, index) => {
+      return <div key={`bubble-${index}`} className={`rounded-md px-2 bg-red-100`}>{val}</div>
+    })}
+  </div>
+}
+
+const meaningBoxEntry = (sense, idxSense, tags) => {
+  return <div
+      className={entryClasses + "border-blue-700"}
       key={idxSense}>
     <div
         className={"flex flex-wrap container rounded-t-lg bg-blue-200 px-3"}>{
