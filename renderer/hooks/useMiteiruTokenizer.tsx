@@ -104,7 +104,9 @@ const parseVerbs = async (res) => {
       }
     } while (conjugationResult === null);
     newRes.push({
-      origin: accumVerb,
+      origin: accumIndex.reduce((pre, curval) => {
+        return pre + res[curval].origin;
+      }, ''),
       hiragana: accumIndex.reduce((val, idx) => {
         return val + res[idx].hiragana;
       }, ''),
