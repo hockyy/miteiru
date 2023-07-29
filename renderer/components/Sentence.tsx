@@ -26,9 +26,10 @@ export const Sentence = ({
                            origin, setMeaning, separation, extraClass,
                            subtitleStyling, basicForm = '', wordMeaning = '',
                          }: SentenceParam) => {
-  const handleChange = useCallback((origin) => {
-    navigator.clipboard.writeText(origin);
-    setMeaning(origin)
+  const handleChange = useCallback((pressedString) => {
+    console.log(pressedString)
+    navigator.clipboard.writeText(pressedString);
+    setMeaning(pressedString)
   }, [setMeaning]);
   return <StyledSentence
       subtitleStyling={subtitleStyling}
@@ -36,61 +37,12 @@ export const Sentence = ({
       onClick={(e) => {
         handleChange(e.shiftKey ? origin : basicForm);
       }}>
-    <ruby style={{
-      rubyPosition: subtitleStyling.positionMeaningTop ? "over" : "under",
-      WebkitTextFillColor: wordMeaning ? subtitleStyling.textMeaning.color : '',
-      WebkitTextStrokeColor: subtitleStyling.stroke.color,
-      WebkitTextStrokeWidth: subtitleStyling.stroke.width,
-    }}>
-      {separation.map((val, index) => {
-        const hiragana = (<>
-              <rp>(</rp>
-              <rt>{val.hiragana ?? ''}</rt>
-              <rp>)</rp>
-            </>
-        )
-        const romaji = (<>
-              <rp>(</rp>
-              <rt>{val.romaji != '' ? val.romaji : toRomaji(val.main)}</rt>
-              <rp>)</rp>
-            </>
-        )
-        const showHelp = val.isKanji || val.isMixed || isMixed(origin);
-        const showRomaji = (val.isKana || showHelp);
-        const showFurigana = ((val.isKana && subtitleStyling.showFuriganaOnKana) || showHelp);
-        return <ruby style={{
-          rubyPosition: "under",
-          WebkitTextFillColor: subtitleStyling.text.color,
-        }} key={index}>
-          <ruby style={{rubyPosition: "over"}}>
-            {val.main}
-            <rt className={"unselectable"}>{subtitleStyling.showFurigana && showFurigana && hiragana}</rt>
-          </ruby>
-          <rt className={"unselectable"}>{subtitleStyling.showRomaji && showRomaji && romaji}</rt>
-        </ruby>
-      })}
-      <rt className={"unselectable"}>{
-          subtitleStyling.showMeaning
-          && wordMeaning.length <= subtitleStyling.maximalMeaningLengthPerCharacter * origin.length
-          && wordMeaning}</rt>
-
-    </ruby>
-  </StyledSentence>
-}
-
-export const PlainSentence = ({origin}) => {
-  return <div key={randomUUID()}>{parse(origin)}</div>
-}
-
-export const KanjiSentence = ({
-                                origin, setMeaning, separation,
-                                extraClass, subtitleStyling,
-                              }: SentenceParam) => {
-  const handleChange = useCallback((newWord) => {
-    navigator.clipboard.writeText(newWord);
-    console.log(newWord)
-  }, [setMeaning]);
-  return <>
+  <ruby style={{
+    rubyPosition: subtitleStyling.positionMeaningTop ? "over" : "under",
+    WebkitTextFillColor: wordMeaning ? subtitleStyling.textMeaning.color : '',
+    WebkitTextStrokeColor: subtitleStyling.stroke.color,
+    WebkitTextStrokeWidth: subtitleStyling.stroke.width,
+  }}>
     {separation.map((val, index) => {
       const hiragana = (<>
             <rp>(</rp>
@@ -98,23 +50,72 @@ export const KanjiSentence = ({
             <rp>)</rp>
           </>
       )
+      const romaji = (<>
+            <rp>(</rp>
+            <rt>{val.romaji != '' ? val.romaji : toRomaji(val.main)}</rt>
+            <rp>)</rp>
+          </>
+      )
+      const showHelp = val.isKanji || val.isMixed || isMixed(origin);
+      const showRomaji = (val.isKana || showHelp);
+      const showFurigana = ((val.isKana && subtitleStyling.showFuriganaOnKana) || showHelp);
       return <ruby style={{
         rubyPosition: "under",
         WebkitTextFillColor: subtitleStyling.text.color,
       }} key={index}>
         <ruby style={{rubyPosition: "over"}}>
-          {Array.from(val.main).map(char => {
-            return <StyledSentence
-                subtitleStyling={subtitleStyling}
-                className={extraClass}
-                onClick={() => {
-                  handleChange(char)
-                }}><>{char}</>
-            </StyledSentence>
-          })}
-          <rt className={"unselectable"}>{hiragana}</rt>
+          {val.main}
+          <rt className={"unselectable"}>{subtitleStyling.showFurigana && showFurigana && hiragana}</rt>
         </ruby>
+        <rt className={"unselectable"}>{subtitleStyling.showRomaji && showRomaji && romaji}</rt>
       </ruby>
     })}
-  </>
+    <rt className={"unselectable"}>{
+        subtitleStyling.showMeaning
+        && wordMeaning.length <= subtitleStyling.maximalMeaningLengthPerCharacter * origin.length
+        && wordMeaning}</rt>
+
+  </ruby>
+</StyledSentence>
 }
+
+  export const PlainSentence = ({origin}) => {
+    return <div key={randomUUID()}>{parse(origin)}</div>
+  }
+
+  export const KanjiSentence = ({
+                                  origin, setMeaning, separation,
+                                  extraClass, subtitleStyling,
+                                }: SentenceParam) => {
+    const handleChange = useCallback((newWord) => {
+      navigator.clipboard.writeText(newWord);
+      console.log(newWord)
+    }, [setMeaning]);
+    return <>
+      {separation.map((val, index) => {
+        const hiragana = (<>
+              <rp>(</rp>
+              <rt>{val.hiragana ?? ''}</rt>
+              <rp>)</rp>
+            </>
+        )
+        return <ruby style={{
+          rubyPosition: "under",
+          WebkitTextFillColor: subtitleStyling.text.color,
+        }} key={index}>
+          <ruby style={{rubyPosition: "over"}}>
+            {Array.from(val.main).map(char => {
+              return <StyledSentence
+                  subtitleStyling={subtitleStyling}
+                  className={extraClass}
+                  onClick={() => {
+                    handleChange(char)
+                  }}><>{char}</>
+              </StyledSentence>
+            })}
+            <rt className={"unselectable"}>{hiragana}</rt>
+          </ruby>
+        </ruby>
+      })}
+    </>
+  }
