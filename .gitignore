@@ -5,3 +5,4 @@ node_modules
 .next
 app
 dist
+renderer/public/kanji/**
