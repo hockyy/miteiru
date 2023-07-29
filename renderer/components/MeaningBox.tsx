@@ -28,7 +28,6 @@ const MeaningBox = ({
     }
     if (meaning.length === 1 && isKanji(meaning)) {
       ipcRenderer.invoke("queryKanji", meaning).then(result => {
-        console.log(result)
         setMeaningKanji(result);
       })
     } else {
