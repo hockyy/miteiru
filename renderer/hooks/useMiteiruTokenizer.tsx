@@ -17,6 +17,7 @@ const parseVerbs = async (res) => {
   const whitelist = [RARERU, IRU, ARU, SERU];
   const blacklist = [YARI, YARU, SURU];
   for (let i = 0; i < res.length; i++) {
+    console.log("Processing ", i, res)
     const entry = res[i];
     const isVerb = entry.pos.split('-').includes("動詞");
     if (!isVerb) {
@@ -104,7 +105,9 @@ const parseVerbs = async (res) => {
       }
     } while (conjugationResult === null);
     newRes.push({
-      origin: accumVerb,
+      origin: accumIndex.reduce((pre, curval) => {
+        return pre + res[curval].origin;
+      }, ''),
       hiragana: accumIndex.reduce((val, idx) => {
         return val + res[idx].hiragana;
       }, ''),
