@@ -11,11 +11,32 @@
 
 - Cross-platform! Available in Windows, MacOS, GNU/Linux.
 - Supports all videos that your [chromium](https://www.chromium.org/audio-video/) supports! In some OS's, it supports **x265**.
-- On-The-Fly Furigana generation! blazing-fast and no cache build needed.
+- On-The-Fly Furigana generation! blazing-fast and no severe cache build needed.
 - Instant definition of any terms that uses LevelDB on first start only!
 - Instant definition of any word in the subtitles.
+- Instant definition on Kanji
 - Translation subtitles alongside the Japanese subtitles.
 - Word/Token spacing in the Japanese subtitles
+- Youtube Support
+
+## How to start immersing
+
+- For the first run, you can press this button, and wait for about 2 minutes because it is caching the japanese dictionary..
+- ![image](https://github.com/hockyy/miteiru/assets/19528709/023e464d-ee80-4ddd-9a06-03d525e11e59)
+- You can start by dragging:
+  - Any videos (Anime is good) you can get subtitle at https://kitsunekko.net/
+  - Any youtube URL
+    - Or you can just literally paste any youtube watch video into the miteiru (just ctrl + v into the player)
+    - But youtube japanese will only show for videos that have japanese CC or auto-generated japanese CC.
+    - Try this:
+      - https://www.youtube.com/results?search_query=onomappu
+      - https://www.youtube.com/results?search_query=nihongo+no+mori+kenshi+yonezu
+      - ![image](https://github.com/hockyy/miteiru/assets/19528709/4396ad99-9961-41ec-9683-1778750ee9be)
+- Press `X` and `Z` for the configs
+- ![image](https://github.com/hockyy/miteiru/assets/19528709/46cd3065-29cf-4d0a-957b-62ef28386693)
+- Profit 💰
+
+
 
 ## For Casual Users: Installation Guide
 
