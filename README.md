@@ -15,16 +15,41 @@
 - Instant definition of any terms that uses LevelDB on first start only!
 - Instant definition of any word in the subtitles.
 - Translation subtitles alongside the Japanese subtitles.
-- Word/Token spacing in the Japanese subtitles 
+- Word/Token spacing in the Japanese subtitles
 
-## Installation Guide
+## For Casual Users: Installation Guide
 
-To directly run the edge version of the app in dev environment, you can run the followings on the cloned repository:
+- Checkout releases here: https://github.com/hockyy/miteiru/releases
+
+### Mac
+
+- Download the .pkg file
+- Because I'm too poor to afford the so called 99 USD apple developer program annual fee, you will encounter the unidentified developer warning.
+  - No worry, all codes are open source and I have no intend to harm your Mac... You can even build your own app by following the developer guide below
+- Run it this way: https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unidentified-developer-mh40616/mac
+- ![image](https://github.com/hockyy/miteiru/assets/19528709/a440a119-49cf-45f1-8c42-93289d20e01e)
+
+### Windows
+
+- Being such a good guy I am, I've provided both the portable one and the setup one, you can just pick any, install it.
+- There's this issue where some PC would recognize the setup as a virus... but you can try your own virus total test.
+
+### Ubuntu
+
+- I made the .deb and .AppImage, currently no other build is provided because I'm too lazy
+
+## For Developer: (Own Build) Installation Guide
+
+You can run the followings on the cloned repository: (don't forget to download the LFS files as well)
 
 ```bash
 npm install
-npm run dev
+npm run script:initkanji
+npm run dev # This to run dev
+npm run build # This to build
 ```
+
+## Mecab and Custom Dictionary Setup (Optional)
 
 Mecab can be downloaded through [brew](https://brew.sh/) by running:
 
