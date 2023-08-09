@@ -31,8 +31,9 @@
     - Try this:
       - https://www.youtube.com/results?search_query=onomappu
       - https://www.youtube.com/results?search_query=nihongo+no+mori+kenshi+yonezu
-      - ![image](https://github.com/hockyy/miteiru/assets/19528709/4396ad99-9961-41ec-9683-1778750ee9be)
+      - ![image](https://github.com/hockyy/miteiru/assets/19528709/b97c3ef1-18ee-40d4-a0ab-ff7d9de81d66)
 - Press `X` and `Z` for the configs
+- Just read the front page's keyboard shortcut, you can press `Q` to go back to the front page.
 - ![image](https://github.com/hockyy/miteiru/assets/19528709/46cd3065-29cf-4d0a-957b-62ef28386693)
 - Profit 💰
 
