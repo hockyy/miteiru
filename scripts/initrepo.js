@@ -25,7 +25,8 @@ extract(source, {dir: target})
     console.log(
         'Download public.zip from\n'
         + 'https://github.com/hockyy/miteiru/releases/download/v2.0.0/public.zip')
-    console.log('It contains some large dicts files')
+    console.log('and put it to archived/public.zip\n\n'
+        + 'It contains some large dicts files')
     console.log('Lol i can\'t afford lfs')
   } else {
     console.log('Extraction failed!', err);
