@@ -20,5 +20,14 @@ extract(source, {dir: target})
   console.log('Extraction completed!');
 })
 .catch((err) => {
-  console.log('Extraction failed!', err);
+  if (err.code === 'ENOENT') {
+    console.log('Extraction failed!');
+    console.log(
+        'Download public.zip from\n'
+        + 'https://github.com/hockyy/miteiru/releases/download/v2.0.0/public.zip')
+    console.log('It contains some large dicts files')
+    console.log('Lol i can\'t afford lfs')
+  } else {
+    console.log('Extraction failed!', err);
+  }
 });
