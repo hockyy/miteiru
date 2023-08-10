@@ -66,7 +66,7 @@ You can run the followings on the cloned repository: (don't forget to download t
 
 ```bash
 npm install
-npm run script:initkanji
+npm run script:initrepo
 npm run dev # This to run dev
 npm run build # This to build
 ```
