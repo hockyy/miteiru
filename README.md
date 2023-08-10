@@ -1,4 +1,12 @@
 # Miteiru (見ている)
+[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-blue.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+![GitHub release](https://img.shields.io/github/release/hockyy/miteiru.svg)
+![GitHub Stars](https://img.shields.io/github/stars/hockyy/miteiru.svg?style=social)
+![GitHub Forks](https://img.shields.io/github/forks/hockyy/miteiru.svg?style=social)
+![Open Issues](https://img.shields.io/github/issues/hockyy/miteiru)
+![Contributors](https://img.shields.io/github/contributors/hockyy/miteiru)
+![Last Commit](https://img.shields.io/github/last-commit/hockyy/miteiru)
+
 
 <table style="border: none;">
   <tr>
