@@ -11,20 +11,67 @@
 
 - Cross-platform! Available in Windows, MacOS, GNU/Linux.
 - Supports all videos that your [chromium](https://www.chromium.org/audio-video/) supports! In some OS's, it supports **x265**.
-- On-The-Fly Furigana generation! blazing-fast and no cache build needed.
+- On-The-Fly Furigana generation! blazing-fast and no severe cache build needed.
 - Instant definition of any terms that uses LevelDB on first start only!
 - Instant definition of any word in the subtitles.
+- Instant definition on Kanji
 - Translation subtitles alongside the Japanese subtitles.
-- Word/Token spacing in the Japanese subtitles 
+- Word/Token spacing in the Japanese subtitles
+- Youtube Support
 
-## Installation Guide
+## How to start immersing
 
-To directly run the edge version of the app in dev environment, you can run the followings on the cloned repository:
+- For the first run, you can press this button, and wait for about 2 minutes because it is caching the japanese dictionary..
+- ![image](https://github.com/hockyy/miteiru/assets/19528709/023e464d-ee80-4ddd-9a06-03d525e11e59)
+- You can start by dragging:
+  - Any videos (Anime is good) you can get subtitle at https://kitsunekko.net/
+  - Any youtube URL
+    - Or you can just literally paste any youtube watch video into the miteiru (just ctrl + v into the player)
+    - But youtube japanese will only show for videos that have japanese CC or auto-generated japanese CC.
+    - Try this:
+      - https://www.youtube.com/results?search_query=onomappu
+      - https://www.youtube.com/results?search_query=nihongo+no+mori+kenshi+yonezu
+      - ![image](https://github.com/hockyy/miteiru/assets/19528709/b97c3ef1-18ee-40d4-a0ab-ff7d9de81d66)
+- Press `X` and `Z` for the configs
+- Just read the front page's keyboard shortcut, you can press `Q` to go back to the front page.
+- ![image](https://github.com/hockyy/miteiru/assets/19528709/46cd3065-29cf-4d0a-957b-62ef28386693)
+- Profit 💰
+
+
+
+## For Casual Users: Installation Guide
+
+- Checkout releases here: https://github.com/hockyy/miteiru/releases
+
+### Mac
+
+- Download the .pkg file
+- Because I'm too poor to afford the so called 99 USD apple developer program annual fee, you will encounter the unidentified developer warning.
+  - No worry, all codes are open source and I have no intend to harm your Mac... You can even build your own app by following the developer guide below
+- Run it this way: https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unidentified-developer-mh40616/mac
+- ![image](https://github.com/hockyy/miteiru/assets/19528709/a440a119-49cf-45f1-8c42-93289d20e01e)
+
+### Windows
+
+- Being such a good guy I am, I've provided both the portable one and the setup one, you can just pick any, install it.
+- There's this issue where some PC would recognize the setup as a virus... but you can try your own virus total test.
+
+### Ubuntu
+
+- I made the .deb and .AppImage, currently no other build is provided because I'm too lazy
+
+## For Developer: (Own Build) Installation Guide
+
+You can run the followings on the cloned repository: (don't forget to download the LFS files as well)
 
 ```bash
 npm install
-npm run dev
+npm run script:initkanji
+npm run dev # This to run dev
+npm run build # This to build
 ```
+
+## Mecab and Custom Dictionary Setup (Optional)
 
 Mecab can be downloaded through [brew](https://brew.sh/) by running:
 
