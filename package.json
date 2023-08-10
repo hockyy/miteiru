@@ -32,7 +32,7 @@
     "predev": "npm run script:copy",
     "script:copy": "node scripts/copy.js",
     "script:cleansvg": "node scripts/cleanSvg.js",
-    "script:initkanji": "node scripts/initKanjiDic.js",
+    "script:initrepo": "node scripts/initDict.js",
     "dev": "nextron",
     "build": "nextron build",
     "build:linux": "nextron build --linux",
