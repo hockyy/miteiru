@@ -69,7 +69,7 @@
 
 ## How to integrate with Whisper
 
-- clone this repo git@github.com:ggerganov/whisper.cpp.git
+- clone this repo [git@github.com:ggerganov/whisper.cpp.git](https://github.com/ggerganov/whisper.cpp)
 - install ffmpeg
 - `cd whisper.cpp && bash ./models/download-ggml-model.sh large`
 
