@@ -6,3 +6,5 @@ node_modules
 app
 dist
 renderer/public/kanji/**
+renderer/public/dict/**
+archived/**
