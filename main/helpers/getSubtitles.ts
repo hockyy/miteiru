@@ -46,20 +46,28 @@ export async function getSubtitles({videoID, lang = 'ja'}) {
   .replace('<?xml version="1.0" encoding="utf-8" ?><transcript>', '')
   .replace('</transcript>', '')
   .split('</text>')
-  .filter(line => line && line.trim())
   .map(line => {
     const startRegex = /start="([\d.]+)"/;
     const durRegex = /dur="([\d.]+)"/;
+    let start = '0.00'
+    let dur = '0.00'
+    try {
+      start = startRegex.exec(line)[1];
+      dur = durRegex.exec(line)[1];
+    } catch (e) {
+    }
 
-    const [, start] = startRegex.exec(line);
-    const [, dur] = durRegex.exec(line);
-
-    const htmlText = line
-    .replace(/<text.+>/, '')
-    .replace(/&amp;/gi, '&')
-    .replace(/<\/?[^>]+(>|$)/g, '');
-    const decodedText = decode(htmlText);
-    const text = stripTags(decodedText);
+    let text = ''
+    try {
+      let htmlText = line
+      .replace(/<text.+>/, '')
+      .replace(/&amp;/gi, '&')
+      .replace(/<\/?[^>]+(>|$)/g, '');
+      if (!htmlText) htmlText = ''
+      const decodedText = decode(htmlText);
+      text = stripTags(decodedText);
+    } catch (e) {
+    }
 
     return {
       start,
