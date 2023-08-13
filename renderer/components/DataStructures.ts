@@ -128,6 +128,7 @@ export class SubtitleContainer {
       subtitleContainer = new SubtitleContainer();
     }
     let ans = 0;
+    entries = entries.filter(entry => entry.text != '');
     for (let i = 0; i < Math.min(5, entries.length); i++) {
       if (entries[i].text.match(videoConstants.cjkRegex)) {
         ans++;
