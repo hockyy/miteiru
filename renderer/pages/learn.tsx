@@ -4,7 +4,7 @@ import {ContainerHome} from "../components/ContainerHome";
 import {PrimarySubtitle} from "../components/Subtitle";
 import {setGlobalSubtitleId, SubtitleContainer} from "../components/DataStructures";
 import {ipcRenderer} from "electron";
-import {defaultPrimarySubtitleStyling} from "../utils/CJKStyling";
+import {defaultLearningStyling} from "../utils/CJKStyling";
 import MeaningBox from "../components/MeaningBox";
 import useMeaning from "../hooks/useMeaning";
 import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
@@ -16,7 +16,6 @@ function Learn() {
   const [currentTime, setCurrentTime] = useState(0);
   const [mecab, setMecab] = useState('')
   const [primarySub, setPrimarySub] = useState(new SubtitleContainer(''))
-  const [primaryStyling, setPrimaryStyling] = useState(defaultPrimarySubtitleStyling);
   const [directInput, setDirectInput] = useState('');
   useEffect(() => {
     ipcRenderer.invoke('getTokenizerMode').then(val => {
@@ -25,9 +24,12 @@ function Learn() {
   }, []);
   useEffect(() => {
     if (mecab !== '') {
-      setPrimarySub(new SubtitleContainer(directInput))
-      setGlobalSubtitleId(primarySub.id);
-      setCurrentTime(old => (old ^ 1))
+      const tmpSub = (new SubtitleContainer(directInput))
+      setPrimarySub(tmpSub)
+      setGlobalSubtitleId(tmpSub.id);
+      tmpSub.adjustJapanese(tokenizeMiteiru).then(() => {
+        setCurrentTime(old => (old ^ 1))
+      })
     }
   }, [mecab, directInput])
 
@@ -43,7 +45,7 @@ function Learn() {
 
           <MeaningBox meaning={meaning} setMeaning={setMeaning} tokenizeMiteiru={tokenizeMiteiru}/>
           <div
-              className={"flex flex-col h-[100vh] w-full items-center bg-blue-50 gap-4 p-5 border rounded-lg border-blue-800"}>
+              className={"flex flex-col h-[100vh] w-full items-center justify-end bg-blue-50 gap-4 p-5 border rounded-lg border-blue-800"}>
             <ContainerHome>
               <div className={"flex flex-col items-center justify-center gap-4"}>
 
@@ -55,7 +57,7 @@ function Learn() {
                                  currentTime={currentTime}
                                  subtitle={primarySub}
                                  shift={0}
-                                 subtitleStyling={primaryStyling}/>
+                                 subtitleStyling={defaultLearningStyling}/>
 
               </div>
             </ContainerHome>

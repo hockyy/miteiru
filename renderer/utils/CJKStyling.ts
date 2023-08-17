@@ -79,6 +79,37 @@ export const defaultPrimarySubtitleStyling: CJKStyling = {
   removeHearingImpaired: true
 }
 
+
+
+export const defaultLearningStyling: CJKStyling = {
+  stroke: {
+    width: "5px",
+    color: "#00000000",
+    hoverColor: "#00000000"
+  },
+  text: {
+    color: "#000000",
+    hoverColor: "#860000",
+    fontSize: "40px",
+  },
+  textMeaning: {
+    color: "#d70000",
+    hoverColor: "#860000",
+    fontSize: "35px",
+  },
+  background: "rgba(0,0,0,0)",
+  position: "2vh",
+  positionFromTop: true,
+  positionMeaningTop: true,
+  showFuriganaOnKana: false,
+  showFurigana: true,
+  showRomaji: true,
+  showMeaning: true,
+  showSpace: true,
+  maximalMeaningLengthPerCharacter: 7,
+  removeHearingImpaired: true
+}
+
 export const defaultSecondarySubtitleStyling: CJKStyling = {
   stroke: {
     width: "1px",
