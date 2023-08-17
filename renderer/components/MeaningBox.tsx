@@ -90,46 +90,64 @@ const MeaningBox = ({
           }
           className={"overflow-auto border-2 border-blue-700 inset-x-0 mx-auto mt-10 bg-blue-100 z-[101] fixed rounded-lg w-[80vw] h-[80vh]"}>
         <div
-            className={"z-[100] sticky top-0 h-auto flex flex-row gap-3 justify-center items-center bg-white p-5 rounded-t-lg"}>
+            className={"z-[100] sticky top-0 h-auto flex flex-row justify-between gap-3 items-center bg-white p-5 rounded-t-lg"}>
 
-          {meaningIndex - 1 >= 0 &&
-              < AwesomeButton type={"primary"} onPress={(e) => {
-                e.stopPropagation()
-                setMeaningIndex((old) => {
-                  setMeaningContent(otherMeanings[old - 1])
-                  return old - 1
-                })
-              }
-              }>Previous
-              </AwesomeButton>}
+
+          < AwesomeButton
+              type={"primary"}
+              disabled={meaningIndex - 1 < 0} onPress={(e) => {
+            e.stopPropagation()
+            if (meaningIndex - 1 < 0) return;
+            setMeaningIndex((old) => {
+              setMeaningContent(otherMeanings[old - 1])
+              return old - 1
+            })
+          }
+          }>Previous
+          </AwesomeButton>
           <div className={"flex flex-wrap gap-2"} style={{
             fontFamily: "Arial",
             fontSize: "40px",
           }}>
-            {furiganizedData.map(({key, furiganized}) => (
-                <div key={key}
-                     className={"bg-white rounded-xl p-2 border-2 border-blue-700 w-fit unselectable hovery"}>
-                  {[...furiganized.map((val, idx) => (
-                      <KanjiSentence key={idx}
-                                     origin={val.origin}
-                                     setMeaning={setMeaning}
-                                     separation={val.separation}
-                                     extraClass={"unselectable meaning-kanji text-md"}
-                                     subtitleStyling={subtitleStyling}/>
-                  ))]}
-                </div>
-            ))}
+            {furiganizedData.map(({key, furiganized}) => {
+              const queryText = furiganized.reduce((accumulator, nextValue) => {
+                return accumulator + nextValue.origin
+              }, "")
+              return (
+                  <div key={key}
+                       className={"flex flex-col justify-between items-center gap-2"}>
+                    <div
+                        className={"bg-white gap-0 rounded-xl p-2 border-2 border-blue-700 w-fit unselectable hovery"}>{[...furiganized.map((val, idx) => (
+                        <KanjiSentence key={idx}
+                                       origin={val.origin}
+                                       setMeaning={setMeaning}
+                                       separation={val.separation}
+                                       extraClass={"unselectable meaning-kanji text-md"}
+                                       subtitleStyling={subtitleStyling}/>
+                    ))]}</div>
+                    <ExternalLink style={{"color": "black"}} urlBase="https://jisho.org/search/"
+                                  displayText="Jisho"
+                                  query={queryText}/>
+
+                  </div>
+              );
+            })}
           </div>
-          {meaningIndex + 1 < otherMeanings.length &&
-              <AwesomeButton type={"primary"} onPress={(e) => {
-                e.stopPropagation()
-                setMeaningIndex((old) => {
-                  setMeaningContent(otherMeanings[old + 1])
-                  return old + 1
-                })
-              }
-              }>Next
-              </AwesomeButton>}
+
+          <AwesomeButton
+              type={"primary"}
+              disabled={meaningIndex + 1 >= otherMeanings.length} onPress={(e) => {
+            e.stopPropagation()
+            if (meaningIndex + 1 >= otherMeanings.length) {
+              return;
+            }
+            setMeaningIndex((old) => {
+              setMeaningContent(otherMeanings[old + 1])
+              return old + 1
+            })
+          }
+          }>Next
+          </AwesomeButton>
         </div>
         <div className={"rounded-b-lg text-blue-800 text-lg p-2"}>
           {meaningKanji.literal && [kanjiBoxEntry(meaningKanji)]}
@@ -256,14 +274,14 @@ const meaningBoxEntry = (sense, idxSense, tags) => {
   </div>
 }
 
-const ExternalLink = ({urlBase, displayText, query}) => {
+const ExternalLink = ({urlBase, displayText, query, style = {}}) => {
   const handleClick = (event) => {
     event.preventDefault();
     shell.openExternal(`${urlBase}${query}`);
   };
 
   return (
-      <a className={"url-bubble"} href={`${urlBase}${query}`} onClick={handleClick}>
+      <a style={style} className={"url-bubble"} href={`${urlBase}${query}`} onClick={handleClick}>
         {displayText}
       </a>
   );
