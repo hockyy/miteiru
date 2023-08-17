@@ -8,6 +8,9 @@ import {defaultLearningStyling} from "../utils/CJKStyling";
 import MeaningBox from "../components/MeaningBox";
 import useMeaning from "../hooks/useMeaning";
 import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
+import useMenuDisplay from "../hooks/useMenuDisplay";
+import {Sidebar} from "../components/Sidebar";
+import Toggle from "../components/Toggle";
 
 
 function Learn() {
@@ -35,6 +38,8 @@ function Learn() {
 
   const {tokenizeMiteiru} = useMiteiruTokenizer();
 
+  const [showRomaji, setShowRomaji] = useState(false)
+
   return (
       <React.Fragment>
         <Head>
@@ -53,11 +58,17 @@ function Learn() {
                           onChange={val => {
                             setDirectInput(val.target.value)
                           }}></textarea>
+                <Toggle defaultCheck={showRomaji} onChange={(val) => {
+                  setShowRomaji(val)
+                }}/>
                 <PrimarySubtitle setMeaning={setMeaning}
                                  currentTime={currentTime}
                                  subtitle={primarySub}
                                  shift={0}
-                                 subtitleStyling={defaultLearningStyling}/>
+                                 subtitleStyling={{
+                                   ...defaultLearningStyling,
+                                   showRomaji: showRomaji
+                                 }}/>
 
               </div>
             </ContainerHome>
