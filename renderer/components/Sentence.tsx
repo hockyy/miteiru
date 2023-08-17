@@ -4,7 +4,6 @@ import {CJKStyling} from "../utils/CJKStyling";
 import React, {useCallback} from "react";
 import {randomUUID} from "crypto";
 import {isMixed, toRomaji} from "wanakana"
-import {ipcRenderer} from "electron";
 
 const StyledSentence = styled.button<{ subtitleStyling: CJKStyling }>`
   &:hover, &:hover ruby, &:hover rt {

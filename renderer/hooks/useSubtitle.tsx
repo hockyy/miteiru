@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import {SubtitleContainer} from "../components/DataStructures";
-import {defaultPrimarySubtitleStyling, defaultSecondarySubtitleStyling} from "../utils/CJKStyling";
+import {defaultPrimarySubtitleStyling} from "../utils/CJKStyling";
 import {useStoreData} from "./useStoreData";
 
 const useSubtitle = () => {
