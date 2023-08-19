@@ -6,8 +6,13 @@ import {randomUUID} from "crypto";
 import {isMixed, toRomaji} from "wanakana"
 
 const StyledSentence = styled.button<{ subtitleStyling: CJKStyling }>`
-  &:hover, &:hover ruby, &:hover rt {
+  &:hover, &:hover ruby {
     -webkit-text-fill-color: ${props => props.subtitleStyling.text.hoverColor};
+    -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
+  }
+
+  &:hover rt {
+    -webkit-text-fill-color: ${props => props.subtitleStyling.textMeaning?.hoverColor ?? props.subtitleStyling.text.hoverColor};
     -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
   }
 `
@@ -69,7 +74,7 @@ export const Sentence = ({
           <rt className={"unselectable"}>{subtitleStyling.showRomaji && showRomaji && romaji}</rt>
         </ruby>
       })}
-      <rt className={"unselectable"}>{
+      <rt style={{fontWeight: subtitleStyling.textMeaning.weight}} className={"unselectable"}>{
           subtitleStyling.showMeaning
           && wordMeaning.length <= subtitleStyling.maximalMeaningLengthPerCharacter * origin.length
           && wordMeaning}</rt>
