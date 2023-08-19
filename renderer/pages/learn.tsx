@@ -8,9 +8,9 @@ import {defaultLearningStyling} from "../utils/CJKStyling";
 import MeaningBox from "../components/MeaningBox";
 import useMeaning from "../hooks/useMeaning";
 import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
-import useMenuDisplay from "../hooks/useMenuDisplay";
-import {Sidebar} from "../components/Sidebar";
 import Toggle from "../components/Toggle";
+import {AwesomeButton} from "react-awesome-button";
+import {useRouter} from "next/router";
 
 
 function Learn() {
@@ -20,6 +20,7 @@ function Learn() {
   const [mecab, setMecab] = useState('')
   const [primarySub, setPrimarySub] = useState(new SubtitleContainer(''))
   const [directInput, setDirectInput] = useState('');
+  const router = useRouter();
   useEffect(() => {
     ipcRenderer.invoke('getTokenizerMode').then(val => {
       setMecab(val)
@@ -61,6 +62,14 @@ function Learn() {
                 <Toggle defaultCheck={showRomaji} onChange={(val) => {
                   setShowRomaji(val)
                 }}/>
+                <AwesomeButton
+                    type={'secondary'}
+                    onPress={async () => {
+                      await router.push('/video')
+                    }
+                    }>
+                  Back to Video
+                </AwesomeButton>
                 <PrimarySubtitle setMeaning={setMeaning}
                                  currentTime={currentTime}
                                  subtitle={primarySub}
