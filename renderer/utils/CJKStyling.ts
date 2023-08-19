@@ -94,7 +94,7 @@ export const defaultLearningStyling: CJKStyling = {
   text: {
     color: "#000000",
     hoverColor: "#860000",
-    fontSize: "40px",
+    fontSize: "30px",
     weight: 200,
   },
   textMeaning: {

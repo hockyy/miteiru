@@ -11,6 +11,9 @@ import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
 import Toggle from "../components/Toggle";
 import {AwesomeButton} from "react-awesome-button";
 import {useRouter} from "next/router";
+import {LearningSidebar} from "../components/LearningSidebar";
+import {useStoreData} from "../hooks/useStoreData";
+import useLearningKeyBind from "../hooks/useLearningKeyBind";
 
 
 function Learn() {
@@ -20,6 +23,9 @@ function Learn() {
   const [mecab, setMecab] = useState('')
   const [primarySub, setPrimarySub] = useState(new SubtitleContainer(''))
   const [directInput, setDirectInput] = useState('');
+  const [showSidebar, setShowSidebar] = useState(0)
+  const [primaryStyling, setPrimaryStyling] = useStoreData('user.styling.learning', defaultLearningStyling);
+  useLearningKeyBind(setMeaning, setShowSidebar)
   const router = useRouter();
   useEffect(() => {
     ipcRenderer.invoke('getTokenizerMode').then(val => {
@@ -54,14 +60,10 @@ function Learn() {
               className={"flex flex-col h-[100vh] w-full items-center justify-end bg-blue-50 gap-4 p-5 border rounded-lg border-blue-800"}>
             <ContainerHome>
               <div className={"flex flex-col items-center justify-center gap-4"}>
-
                 <textarea className={"text-black m-auto p-4 min-w-[40vw]"} value={directInput}
                           onChange={val => {
                             setDirectInput(val.target.value)
                           }}></textarea>
-                <Toggle defaultCheck={showRomaji} onChange={(val) => {
-                  setShowRomaji(val)
-                }}/>
                 <AwesomeButton
                     type={'secondary'}
                     onPress={async () => {
@@ -74,15 +76,15 @@ function Learn() {
                                  currentTime={currentTime}
                                  subtitle={primarySub}
                                  shift={0}
-                                 subtitleStyling={{
-                                   ...defaultLearningStyling,
-                                   showRomaji: showRomaji
-                                 }}/>
+                                 subtitleStyling={primaryStyling}/>
 
               </div>
             </ContainerHome>
 
           </div>
+          <LearningSidebar showSidebar={showSidebar} setShowSidebar={setShowSidebar}
+                           primaryStyling={primaryStyling}
+                           setPrimaryStyling={setPrimaryStyling}/>
         </div>
       </React.Fragment>
   )

@@ -10,7 +10,7 @@ import {ipcRenderer} from "electron";
 import Toggle from "./Toggle";
 import {AwesomeButton} from "react-awesome-button";
 
-const StylingBox = ({
+export const StylingBox = ({
                       subtitleStyling,
                       setSubtitleStyling,
                       subtitleName,
