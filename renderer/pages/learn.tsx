@@ -8,12 +8,12 @@ import {defaultLearningStyling} from "../utils/CJKStyling";
 import MeaningBox from "../components/MeaningBox";
 import useMeaning from "../hooks/useMeaning";
 import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
-import Toggle from "../components/Toggle";
 import {AwesomeButton} from "react-awesome-button";
 import {useRouter} from "next/router";
 import {LearningSidebar} from "../components/LearningSidebar";
 import {useStoreData} from "../hooks/useStoreData";
 import useLearningKeyBind from "../hooks/useLearningKeyBind";
+import 'react-awesome-button/dist/styles.css';
 
 
 function Learn() {
