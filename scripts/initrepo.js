@@ -24,7 +24,7 @@ extract(source, {dir: target})
     console.log('Extraction failed!');
     console.log(
         'Download public.zip from\n'
-        + 'https://github.com/hockyy/miteiru/releases/download/v2.0.0/public.zip')
+        + 'https://github.com/hockyy/miteiru/releases/download/assets/public.zip')
     console.log('and put it to archived/public.zip\n\n'
         + 'It contains some large dicts files')
     console.log('Lol i can\'t afford lfs')
