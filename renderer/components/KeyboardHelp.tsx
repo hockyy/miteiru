@@ -21,6 +21,9 @@ const shortcutInformation = [{
     key: "P",
     description: "Remove Other/Secondary Subtitle"
   }, {
+    key: "L",
+    description: "Toggle Learning Mode"
+  }, {
     key: "[",
     description: "Shift CJK Subtitle Slower"
   }, {
