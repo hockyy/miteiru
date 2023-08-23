@@ -163,6 +163,20 @@ button {
   border-radius: 0.5rem; /* tailwind rounded-b-lg */
 }
 
+
+.radical-bubble {
+  font-size: 18px;
+  text-decoration: none;
+  border-radius: 50px;
+  transition: background-color 0.2s ease-out, color 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+.radical-bubble:hover {
+  text-decoration: underline;
+  transition: background-color 0.2s ease-out, color 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+
 .url-bubble {
   display: inline-block;
   font-size: 18px;

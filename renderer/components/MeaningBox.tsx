@@ -6,6 +6,7 @@ import {joinString} from "../utils/utils";
 import {AwesomeButton} from "react-awesome-button";
 import {isKanji, toHiragana} from 'wanakana'
 import KanjiVGDisplay from "./KanjiVGDisplay";
+import WanikaniRadicalDisplay from "./WanikaniRadicalDisplay";
 
 const initialContentState = {sense: [], kanji: []};
 const initialKanjiContentState = {literal: null};
@@ -29,7 +30,9 @@ const MeaningBox = ({
     }
     if (meaning.length === 1 && isKanji(meaning)) {
       ipcRenderer.invoke("queryKanji", meaning).then(result => {
-        setMeaningKanji(result);
+        ipcRenderer.invoke("getWaniKanji", meaning).then(waniResult => {
+          setMeaningKanji({...result, wanikani: waniResult});
+        })
       })
     } else {
       setMeaningKanji(initialKanjiContentState);
@@ -166,6 +169,22 @@ const MeaningBox = ({
 
 const entryClasses = "bg-white rounded-lg flex flex-col gap-2 border-2 m-4 hovery "
 
+
+const WaniKaniComponent = ({radicalName, style}) => {
+  const handleClick = (event) => {
+    event.preventDefault();
+    shell.openExternal(`https://www.wanikani.com/radicals/${radicalName}`);
+  };
+
+  return (
+      <div className={"flex flex-col p-1 pb-3 items-center justify-center text-center radical-bubble"} onClick={handleClick}>
+        {radicalName}
+        <WanikaniRadicalDisplay filename={`${radicalName}.svg`}/>
+      </div>
+  );
+};
+
+
 const kanjiBoxEntry = (meaningKanji) => {
   const jlpt = meaningKanji.misc.jlptLevel;
   const grade = meaningKanji.misc.grade;
@@ -198,7 +217,9 @@ const kanjiBoxEntry = (meaningKanji) => {
       meanings,
       "音読み (Onyomi)": onyomi,
       "訓読み (Kunyomi)": kunyomi,
-      urls
+      urls,
+      "Wanikani": meaningKanji.wanikani ? meaningKanji.wanikani.wk_radicals.map(radicalName =>
+          <WaniKaniComponent radicalName={radicalName.toLowerCase()} style={{}}/>) : []
     }
   })
   const containerClassName = "flex flex-row gap-2 text-red-600 text-xl"
@@ -281,7 +302,7 @@ const ExternalLink = ({urlBase, displayText, query, style = {}}) => {
   };
 
   return (
-      <a style={style} className={"url-bubble"} href={`${urlBase}${query}`} onClick={handleClick}>
+      <a style={style} className={"url-bubble"} onClick={handleClick}>
         {displayText}
       </a>
   );

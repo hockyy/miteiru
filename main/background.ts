@@ -33,8 +33,16 @@ if (isProd) {
 
   let JMDict = {db: null, tags: {}};
   let KanjiDic = {db: null};
+  let wanikanji = {};
   let mecabCommand = 'mecab'
-
+  const waniKaniDirectory = path.join(__dirname, 'wanikani/kanji.json');
+  fs.readFile(waniKaniDirectory, 'utf8', (err, data) => {
+    if (err) {
+      console.error('An error occurred:', err);
+      return;
+    }
+    wanikanji = JSON.parse(data);
+  });
   const jmdictDBDirectory = path.join(appDataDirectory, `jmdict-db`);
   const kanjidicDBDirectory = path.join(appDataDirectory, `kanjidic-db`);
   const setUpJMDict = async (filename) => {
@@ -228,6 +236,10 @@ if (isProd) {
     });
   })
 
+
+  ipcMain.handle('getWaniKanji', async (event, kanji) => {
+    return (wanikanji[kanji]);
+  })
 
   ipcMain.handle('readKanjiSVG', async (event, filename) => {
     const kanjiFilePath = path.join(__dirname, `kanji/${filename}`);
