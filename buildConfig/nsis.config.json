@@ -1,0 +1,7 @@
+{
+  "win": {
+    "icon": "resources/icon.ico",
+    "target": ["nsis"],
+    "artifactName": "miteiru-${version}-${os}-${arch}.${ext}"
+  }
+}

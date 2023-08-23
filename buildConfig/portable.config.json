@@ -1,0 +1,7 @@
+{
+  "win": {
+    "icon": "resources/icon.ico",
+    "target": ["portable"],
+    "artifactName": "miteiru-${version}-${os}-portable-${arch}.${ext}"
+  }
+}
