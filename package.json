@@ -7,6 +7,7 @@
   "main": "app/background.js",
   "build": {
     "appId": "id.hocky.miteiru",
+    "artifactName": "miteiru-${version}-${os}-${arch}.${ext}",
     "mac": {
       "icon": "resources/icon.icns",
       "target": [
