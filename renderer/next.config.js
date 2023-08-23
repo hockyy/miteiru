@@ -1,5 +1,5 @@
 module.exports = {
-  webpack: (config, { isServer }) => {
+  webpack: (config, {isServer}) => {
     if (!isServer) {
       config.target = 'electron-renderer';
     }
