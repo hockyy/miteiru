@@ -1,8 +1,8 @@
-const shortcutInformation = [{
-  key: "⎵",
-  description: "Toggle Pause"
-},
+const shortcutInformation = [
   {
+    key: "⎵",
+    description: "Toggle Pause"
+  }, {
     key: "Z",
     description: "Toggle Video Control Bar"
   }, {
