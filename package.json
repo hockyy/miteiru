@@ -70,15 +70,15 @@
     "videojs-youtube": "^3.0.1"
   },
   "devDependencies": {
-    "archiver": "^6.0.0",
-    "html-minifier": "^4.0.0",
-    "extract-zip": "^2.0.1",
     "@types/node": "^16.18.38",
     "@types/react": "^18.2.14",
+    "archiver": "^6.0.0",
     "autoprefixer": "^10.4.14",
     "electron": "^21.4.4",
     "electron-builder": "^24.4.0",
     "eslint-config-next": "^13.4.9",
+    "extract-zip": "^2.0.1",
+    "html-minifier": "^4.0.0",
     "next": "^13.4.9",
     "nextron": "^8.5.0",
     "postcss": "^8.4.25",
