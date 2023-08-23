@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const minify = require('html-minifier').minify;
 
-const directoryPath = path.join(__dirname, '../renderer/public/kanji');
+const directoryPath = path.join(__dirname, '../renderer/public/wanikani/radical');
 
 fs.readdir(directoryPath, function (err, files) {
   if (err) {

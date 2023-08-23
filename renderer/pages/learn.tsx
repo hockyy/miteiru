@@ -15,7 +15,6 @@ import {useStoreData} from "../hooks/useStoreData";
 import useLearningKeyBind from "../hooks/useLearningKeyBind";
 import 'react-awesome-button/dist/styles.css';
 
-
 function Learn() {
 
   const {meaning, setMeaning} = useMeaning();

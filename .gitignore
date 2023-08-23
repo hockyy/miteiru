@@ -7,4 +7,5 @@ app
 dist
 renderer/public/kanji/**
 renderer/public/dict/**
+renderer/public/wanikani/**
 archived/**
