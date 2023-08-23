@@ -329,6 +329,7 @@ if (isProd) {
       if (jmdictRes.ok === 1) jmdictRes.message = 'JMDict cache loaded successfuly'
     }
     if (jmdictRes.ok !== 1) return jmdictRes;
+    await setUpKanjiDic(path.join(__dirname, 'dict/kanjidic.json'));
     const mecabRes = checkMecab(config);
     if (mecabRes.ok !== 1) return mecabRes;
     return okSetup;
