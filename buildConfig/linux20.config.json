@@ -1,0 +1,7 @@
+{
+  "linux": {
+    "icon": "resources/icon.icns",
+    "target": ["deb", "AppImage"],
+    "artifactName": "miteiru-${version}-${os}-20.04-${arch}.${ext}"
+  }
+}
