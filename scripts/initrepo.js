@@ -3,7 +3,7 @@ const extract = require('extract-zip');
 const path = require("path");
 
 const source = path.join(__dirname, '../archived/public.zip');
-const target = path.join(__dirname, '../renderer');
+const target = path.join(__dirname, '../renderer/public');
 
 fs.access(target, fs.constants.F_OK, (err) => {
   if (err) {
