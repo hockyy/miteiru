@@ -9,8 +9,8 @@ let defaultHeaders = {
 
 const baseUrl = 'https://api.wanikani.com/v2/subjects?types=';
 
-let radicalJson;
-let kanjiJson;
+let radicalJson = {};
+let kanjiJson = {};
 
 async function fetchData(apiUrl, headers) {
   let allData = [];
@@ -35,11 +35,11 @@ async function fetchData(apiUrl, headers) {
 
 async function downloadImage(url, slug) {
   try {
-    const response = await axios.get(url, {responseType: 'arraybuffer'});
-    const buffer = Buffer.from(response.data, 'binary');
-    fs.writeFileSync(
-        path.join(__dirname, `./renderer/public/wanikani/radical/${slug}.png`),
-        buffer);
+    // const response = await axios.get(url, {responseType: 'arraybuffer'});
+    // const buffer = Buffer.from(response.data, 'binary');
+    // fs.writeFileSync(
+    //     path.join(__dirname, `./renderer/public/wanikani/radical/${slug}.png`),
+    //     buffer);
   } catch (error) {
     console.error(`Failed to download image. Error: ${error}`);
   }
@@ -49,12 +49,18 @@ async function fetchRadicals() {
   try {
     const tmpRes = await fetchData(`${baseUrl}radical`, defaultHeaders);
 
+    let totalProcessed = 0;
+
+    const totalRadicals = tmpRes.length;
+    console.log(`Total Radicals to process: ${totalRadicals}`);
+    const characterMap = {};
     for (const radical of tmpRes) {
       const slug = radical.data.slug;
-      radicalJson[tmpRes.id] = slug;
-      const characterImages = radical.data.characters
+      radicalJson[radical.id] = slug;
+      const characterImages = radical.data.character_images
           ? radical.data.character_images
           : [];
+      characterMap[slug] = radical.data.characters;
 
       let imageFound = false;
 
@@ -63,8 +69,9 @@ async function fetchRadicals() {
 
         if (
             metadata.color === '#000000' &&
-            metadata.dimensions === '128x128' &&
-            metadata.style_name === '128px'
+            (metadata.dimensions === '128x128' ||
+                metadata.dimensions === '128x128') &&
+            image.content_type === "image/png"
         ) {
           imageFound = true;
           const destPath = path.join(
@@ -75,17 +82,25 @@ async function fetchRadicals() {
           break;
         }
       }
-
-      if (!imageFound) {
-        if (/\s/.test(slug)) {
-          console.warn(`Warning: Slug name contains a space - ${slug}`);
-        }
-        console.warn(
-            `Warning: No image with specified metadata found for radical: ${slug}`
-        );
-        console.log(JSON.stringify(radical, null, 2));
+      if (/\s/.test(slug)) {
+        console.warn(`Warning: Slug name contains a space - ${slug}`);
       }
+      if (!imageFound && !radical.data.characters) {
+        console.warn(
+            `Warning: No image and/or characters found for radical: ${slug}`);
+      }
+
+      // Update and show progress
+      totalProcessed++;
+      if (totalProcessed % 50 === 0) {
+        console.log(
+            `Processed ${totalProcessed}/${totalRadicals}`);
+      }
+
     }
+    fs.writeFileSync("./renderer/public/wanikani/radical.json",
+        JSON.stringify(characterMap));
+
   } catch (error) {
     console.error(`Failed to fetch radicals. Error: ${error}`);
   }
@@ -99,19 +114,19 @@ async function fetchKanji() {
       const character = entry.data.characters;
       resultMap[character] = {
         component_subject_ids: entry.data.component_subject_ids.map(id => {
-          return radicalJson[id].slug;
+          return radicalJson[id];
         }),
         meaning_mnemonic: entry.data.meaning_mnemonic
       };
 
       if (index % 100 === 0) {
-        console.log(`Parsed ${index + 1}/${allData.length} kanji`);
+        console.log(`Parsed ${index + 1}/${kanjiJson.length} kanji`);
       }
     });
 
-    fs.writeFileSync("./renderer/public/wanikani/kanjiMap.json",
-        JSON.stringify(resultMap, null, 2));
-    console.log(`Parsing complete! Total kanji parsed: ${allData.length}`);
+    fs.writeFileSync("./renderer/public/wanikani/kanji.json",
+        JSON.stringify(resultMap));
+    console.log(`Parsing complete! Total kanji parsed: ${kanjiJson.length}`);
   } catch (error) {
     console.error(`Failed to fetch kanji. Error: ${error}`);
   }
