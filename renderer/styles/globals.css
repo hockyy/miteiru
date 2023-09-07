@@ -172,7 +172,7 @@ button {
 }
 
 .radical-bubble:hover {
-  text-decoration: underline;
+  cursor: pointer;
   transition: background-color 0.2s ease-out, color 0.2s ease-out, box-shadow 0.2s ease-out;
 }
 

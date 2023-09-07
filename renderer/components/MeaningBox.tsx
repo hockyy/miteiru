@@ -170,16 +170,30 @@ const MeaningBox = ({
 const entryClasses = "bg-white rounded-lg flex flex-col gap-2 border-2 m-4 hovery "
 
 
-const WaniKaniComponent = ({radicalName}) => {
+const WaniKaniComponent = ({slug}) => {
   const handleClick = (event) => {
     event.preventDefault();
-    shell.openExternal(`https://www.wanikani.com/radicals/${radicalName}`);
+    shell.openExternal(`https://www.wanikani.com/radicals/${slug}`);
   };
 
+
+  const [radicalDisplay, setRadicalDisplay] = useState('');
+  const [radicalName, setRadicalName] = useState('');
+  useEffect(() => {
+    ipcRenderer.invoke("getWaniRadical", slug)
+    .then(radical => {
+      console.log(radical)
+      setRadicalDisplay(radical.character);
+      setRadicalName(radical.meaning);
+    });
+  }, [])
+
   return (
-      <div className={"flex flex-col p-1 pb-3 items-center justify-center text-center radical-bubble"} onClick={handleClick}>
+      <div
+          className={"flex flex-col p-1 pb-3 items-center justify-center text-center radical-bubble"}
+          onClick={handleClick}>
         {radicalName}
-        <WanikaniRadicalDisplay filename={`${radicalName}`}/>
+        <WanikaniRadicalDisplay slug={slug} characters={radicalDisplay}/>
       </div>
   );
 };
@@ -219,7 +233,7 @@ const kanjiBoxEntry = (meaningKanji) => {
       "訓読み (Kunyomi)": kunyomi,
       urls,
       "Wanikani": meaningKanji.wanikani ? meaningKanji.wanikani.component_subject_ids.map(radicalName =>
-          <WaniKaniComponent radicalName={radicalName.toLowerCase()}/>) : []
+          <WaniKaniComponent slug={radicalName}/>) : []
     }
   })
   const containerClassName = "flex flex-row gap-2 text-red-600 text-xl"
