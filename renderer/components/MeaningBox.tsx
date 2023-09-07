@@ -182,7 +182,6 @@ const WaniKaniComponent = ({slug}) => {
   useEffect(() => {
     ipcRenderer.invoke("getWaniRadical", slug)
     .then(radical => {
-      console.log(radical)
       setRadicalDisplay(radical.character);
       setRadicalName(radical.meaning);
     });
@@ -198,6 +197,38 @@ const WaniKaniComponent = ({slug}) => {
   );
 };
 
+const MeaningMnemonics = ({content}) => {
+  const parseContent = () => {
+    const regex = /<(\w+)>(.*?)<\/\1>/g;
+    const parts = [];
+
+    let lastIndex = 0;
+
+    let match;
+    while ((match = regex.exec(content))) {
+      const [fullMatch, tag, innerContent] = match;
+      const {index} = match;
+
+      parts.push(content.slice(lastIndex, index));
+
+      // Add tagged content
+      if (tag === 'radical') {
+        parts.push(<span key={index}
+                         style={{fontWeight: 'bold', color: '#3B82F6'}}>{innerContent}</span>);
+      } else if (tag === 'kanji') {
+        parts.push(<span key={index}
+                         style={{fontWeight: 'bold', color: '#000000'}}>{innerContent}</span>);
+      }
+
+      lastIndex = index + fullMatch.length;
+    }
+
+    parts.push(content.slice(lastIndex));
+    return parts;
+  };
+
+  return <div className="m-2">{parseContent()}</div>;
+};
 
 const kanjiBoxEntry = (meaningKanji) => {
   const jlpt = meaningKanji.misc.jlptLevel;
@@ -233,7 +264,10 @@ const kanjiBoxEntry = (meaningKanji) => {
       "訓読み (Kunyomi)": kunyomi,
       urls,
       "Wanikani": meaningKanji.wanikani ? meaningKanji.wanikani.component_subject_ids.map(radicalName =>
-          <WaniKaniComponent slug={radicalName}/>) : []
+          <WaniKaniComponent slug={radicalName}/>) : [],
+
+      "Mnemonics": meaningKanji.wanikani ?
+          [<MeaningMnemonics content={meaningKanji.wanikani.meaning_mnemonic}/>] : [],
     }
   })
   const containerClassName = "flex flex-row gap-2 text-red-600 text-xl"
