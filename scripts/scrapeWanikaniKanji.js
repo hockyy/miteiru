@@ -33,13 +33,17 @@ async function fetchData(apiUrl, headers) {
   return allData;
 }
 
-async function downloadImage(url, slug) {
+async function downloadImage(url, destination) {
   try {
-    // const response = await axios.get(url, {responseType: 'arraybuffer'});
-    // const buffer = Buffer.from(response.data, 'binary');
-    // fs.writeFileSync(
-    //     path.join(__dirname, `./renderer/public/wanikani/radical/${slug}.png`),
-    //     buffer);
+    // Check if the image already exists
+    if (fs.existsSync(destination)) {
+      console.log(`File already exists. Skipping download for: ${path.basename(
+          destination)}`);
+      return;
+    }
+    const response = await axios.get(url, {responseType: 'arraybuffer'});
+    const buffer = Buffer.from(response.data, 'binary');
+    fs.writeFileSync(destination, buffer);
   } catch (error) {
     console.error(`Failed to download image. Error: ${error}`);
   }
@@ -60,11 +64,18 @@ async function fetchRadicals() {
       const characterImages = radical.data.character_images
           ? radical.data.character_images
           : [];
-      characterMap[slug] = radical.data.characters;
+      characterMap[slug] = {
+        character: radical.data.characters,
+        meaning: radical.data.meanings.filter(
+            meaning => meaning.primary)[0].meaning
+      };
 
       let imageFound = false;
 
       for (const image of characterImages) {
+        if (radical.data.characters) {
+          break;
+        }
         const {metadata} = image;
 
         if (
@@ -74,10 +85,8 @@ async function fetchRadicals() {
             image.content_type === "image/png"
         ) {
           imageFound = true;
-          const destPath = path.join(
-              __dirname,
-              `./renderer/public/wanikani/radical/${slug}.png`
-          );
+          const destPath = `./renderer/public/wanikani/radical/${slug}.png`;
+          console.log(`Downloading ${slug}`)
           await downloadImage(image.url, destPath);
           break;
         }

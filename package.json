@@ -21,7 +21,7 @@
     "script:cleansvg": "node scripts/cleanSvg.js",
     "script:initrepo": "node scripts/initrepo.js",
     "script:saverepo": "node scripts/saverepo.js",
-    "script:updkanji": "node scripts/scrapeWanikaniKanji.js",
+    "script:wanikani": "node scripts/scrapeWanikaniKanji.js",
     "dev": "nextron",
     "build": "nextron build",
     "build:nsis": "nextron build --config=buildConfig/nsis.config.json",
