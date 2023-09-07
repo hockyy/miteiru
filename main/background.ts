@@ -34,14 +34,23 @@ if (isProd) {
   let JMDict = {db: null, tags: {}};
   let KanjiDic = {db: null};
   let wanikanji = {};
+  let waniradical = {};
   let mecabCommand = 'mecab'
-  const waniKaniDirectory = path.join(__dirname, 'wanikani/kanji.json');
-  fs.readFile(waniKaniDirectory, 'utf8', (err, data) => {
+  const waniKaniKanjiDirectory = path.join(__dirname, 'wanikani/kanji.json');
+  const waniKaniRadicalDirectory = path.join(__dirname, 'wanikani/radical.json');
+  fs.readFile(waniKaniKanjiDirectory, 'utf8', (err, data) => {
     if (err) {
       console.error('An error occurred:', err);
       return;
     }
     wanikanji = JSON.parse(data);
+  });
+  fs.readFile(waniKaniRadicalDirectory, 'utf8', (err, data) => {
+    if (err) {
+      console.error('An error occurred:', err);
+      return;
+    }
+    waniradical = JSON.parse(data);
   });
   const jmdictDBDirectory = path.join(appDataDirectory, `jmdict-db`);
   const kanjidicDBDirectory = path.join(appDataDirectory, `kanjidic-db`);
@@ -350,6 +359,9 @@ if (isProd) {
   })
   ipcMain.handle('tokenizeUsingKuromoji', async (event, sentence) => {
     return tokenizer.tokenizeForSentence(sentence);
+  });
+  ipcMain.handle('getWaniRadical', async (event, radicalSlug) => {　
+    return waniradical[radicalSlug];
   });
   protocol.registerFileProtocol(scheme, requestHandler); /* eng-disable PROTOCOL_HANDLER_JS_CHECK */
   if (isProd) {
