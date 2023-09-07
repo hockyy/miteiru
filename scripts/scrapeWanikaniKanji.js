@@ -30,7 +30,8 @@ async function main() {
     const apiKey = process.argv[2];
     if (!apiKey) {
         console.error("Please provide an API key as an argument.");
-        console.error("npm run script:updkanji -- xxxxxxxx-xxxx-xxxx-xxxx-113a051c6298");
+        console.log("\nExample:");
+        console.log("npm run script:updkanji -- xxxxxxxx-xxxx-xxxx-xxxx-113a051c6298");
         process.exit(1);
     }
 
@@ -53,7 +54,7 @@ async function main() {
         }
     });
 
-    fs.writeFileSync("./renderer/public/wanikani/kanjiMap.json", JSON.stringify(resultMap, null, 2));
+    fs.writeFileSync("./renderer/public/wanikani/kanji.json", JSON.stringify(resultMap));
     console.log(`Parsing complete! Total kanji parsed: ${allData.length}`);
 }
 
