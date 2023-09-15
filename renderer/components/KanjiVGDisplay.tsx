@@ -52,7 +52,6 @@ const KanjiVGDisplay = ({filename}) => {
         if (paths.length === 0) {
           paths = [group];
         }
-        console.log(paths);
         paths.forEach((path, index) => {
           draw(path, index, color)
         });
