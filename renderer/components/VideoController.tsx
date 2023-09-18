@@ -7,6 +7,7 @@ import SettingsController from "./SettingsController";
 import {ArrowLeft, ArrowRight, StepLeft, StepRight} from "./Icons";
 import {toTime} from "../utils/utils";
 import {videoConstants} from "../utils/constants";
+import {Speed} from "./Speed";
 
 export const VideoController = ({
                                   isPlaying,
@@ -45,7 +46,7 @@ export const VideoController = ({
                     eagerRender={true}
                     expanded={showController}>
       <div className={"flex flex-row items-center justify-between pt-1"}>
-        <div className={"flex w-1/3"}>
+        <div className={"flex w-1/3 hidden md:flex"}>
           <Volume player={player}/>
           <div className={"flex flex-row px-4 justify-end content-end w-32 animation"}>
             <div>{toTime(currentTime)}</div>
@@ -54,8 +55,9 @@ export const VideoController = ({
             &nbsp;
             <div>{toTime(duration / 1000)}</div>
           </div>
+
         </div>
-        <div className={"flex w-1/3 justify-center items-center gap-4"}>
+        <div className={"flex w-full justify-center items-center gap-4 md:w-1/3"}>
           <button onClick={() => step(-1)}
                   className={"flex flex-row items-center gap-1 animation h-5"}>
             {StepLeft}
@@ -80,7 +82,8 @@ export const VideoController = ({
             {StepRight}
           </button>
         </div>
-        <div className={"flex w-1/3 justify-end"}>
+        <div className={"flex w-1/3 justify-end hidden md:flex"}>
+          <Speed player={player}/>
           <SettingsController setShowSidebar={setShowSidebar}/>
         </div>
       </div>
