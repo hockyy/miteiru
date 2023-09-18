@@ -46,7 +46,7 @@ export const VideoController = ({
                     eagerRender={true}
                     expanded={showController}>
       <div className={"flex flex-row items-center justify-between pt-1"}>
-        <div className={"flex w-1/3 hidden md:flex"}>
+        <div className={"flex w-1/3 hidden lg:flex"}>
           <Volume player={player}/>
           <div className={"flex flex-row px-4 justify-end content-end w-32 animation"}>
             <div>{toTime(currentTime)}</div>
@@ -57,7 +57,7 @@ export const VideoController = ({
           </div>
 
         </div>
-        <div className={"flex w-full justify-center items-center gap-4 md:w-1/3"}>
+        <div className={"flex w-full justify-center items-center gap-4 lg:w-1/3"}>
           <button onClick={() => step(-1)}
                   className={"flex flex-row items-center gap-1 animation h-5"}>
             {StepLeft}
@@ -82,7 +82,7 @@ export const VideoController = ({
             {StepRight}
           </button>
         </div>
-        <div className={"flex w-1/3 justify-end hidden md:flex"}>
+        <div className={"flex w-1/3 justify-end hidden lg:flex"}>
           <Speed player={player}/>
           <SettingsController setShowSidebar={setShowSidebar}/>
         </div>
