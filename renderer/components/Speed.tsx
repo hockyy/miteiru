@@ -3,7 +3,7 @@ import {useState} from "react";
 const mappingSpeedFunction = (val) => (val <= 0 ? 1 / (1 - val) : (val + 1));
 export const Speed = ({player}) => {
 
-  const [speed, setSpeed] = useState(1);
+  const [speed, setSpeed] = useState(0);
   return (
       <div className={"animation flex flex-row w-fit gap-4 items-center cursor-pointer px-4"}>
         {player != null &&

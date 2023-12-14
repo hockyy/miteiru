@@ -24,9 +24,9 @@ export async function getSubtitles({videoID, lang = 'ja'}) {
   if (!data.includes('captionTracks'))
     throw new Error(`Could not find captions for video: ${videoID}`);
 
-  const regex = /({"captionTracks":.*isTranslatable":(true|false)}])/;
+  const regex =  /"captionTracks":(\[.*?\])/;
   const [match] = regex.exec(data);
-  const {captionTracks} = JSON.parse(`${match}}`);
+  const { captionTracks } = JSON.parse(`{${match}}`);
 
   const subtitle =
       find(captionTracks, {
@@ -40,7 +40,6 @@ export async function getSubtitles({videoID, lang = 'ja'}) {
   // * ensure we have found the correct subtitle lang
   if (!subtitle || (subtitle && !subtitle.baseUrl))
     throw new Error(`Could not find ${lang} captions for ${videoID}`);
-
   const {data: transcript} = await axios.get(subtitle.baseUrl);
   return transcript
   .replace('<?xml version="1.0" encoding="utf-8" ?><transcript>', '')
