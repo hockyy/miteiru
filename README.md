@@ -1,6 +1,6 @@
 # Miteiru (見ている)
 
-![Stargazers repo roster for @hocky/miteiru](https://reporoster.com/stars/hockyy/miteiru)
+![Stargazers repo roster for @hocky/miteiru](https://bytecrank.com/nastyox/reporoster/php/stargazersSVG.php?user=hockyy&repo=miteiru)
 
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-blue.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 ![GitHub release](https://img.shields.io/github/release/hockyy/miteiru.svg?color=purple)
