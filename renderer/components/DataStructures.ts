@@ -9,12 +9,6 @@ import {videoConstants} from "../utils/constants";
 import {randomUUID} from "crypto";
 import {Entry} from "@plussub/srt-vtt-parser/dist/src/types";
 
-
-const languageMap = {
-  'japanese': 'JP',
-  'english': 'EN',
-}
-
 function removeTags(text) {
   const regex = /\{\\.+?}/g;
   return text.replace(regex, '');
@@ -38,7 +32,7 @@ export class Line {
     }
   }
 
-  async fillContentFurigana(tokenizeMiteiru: (string) => Promise<any[]>) {
+  async fillContentSeparations(tokenizeMiteiru: (string) => Promise<any[]>) {
     this.content = await tokenizeMiteiru(this.content as string);
   }
 
@@ -93,16 +87,16 @@ export class SubtitleContainer {
   path: string = '';
   progress: string = '';
 
-  constructor(content: string = '') {
+  constructor(content: string = '', language: string = videoConstants.japaneseLang) {
     this.id = randomUUID();
     this.lines = []
     if (content === '') return
-    this.language = "JP"
+    this.language = language
     this.lines.push(new Line(0, 1000000, content));
     return
   }
 
-  static async create(filename: string) {
+  static async create(filename: string, lang: string) {
     if (filename === '') return
     const subtitleContainer = new SubtitleContainer();
     subtitleContainer.path = filename;
@@ -118,29 +112,24 @@ export class SubtitleContainer {
       const data = parseSRT(text);
       entries = data.entries;
     }
-    this.createFromArrayEntries(subtitleContainer, entries);
+    this.createFromArrayEntries(subtitleContainer, entries, lang);
     return subtitleContainer;
   }
 
 
-  static createFromArrayEntries(subtitleContainer: SubtitleContainer, entries: Entry[]) {
+  static createFromArrayEntries(subtitleContainer: SubtitleContainer, entries: Entry[], lang : string) {
     if (subtitleContainer === null) {
       subtitleContainer = new SubtitleContainer();
     }
     let ans = 0;
     entries = entries.filter(entry => entry.text != '');
-    for (let i = 0; i < Math.min(5, entries.length); i++) {
+    for (let i = 0; i < Math.min(20, entries.length); i++) {
       if (entries[i].text.match(videoConstants.cjkRegex)) {
         ans++;
       }
     }
-    subtitleContainer.language = "EN";
-    if (ans >= 3) subtitleContainer.language = "JP";
-    // try {
-    //   subtitleContainer.language = languageMap[currentData.language];
-    // } catch (e) {
-    //   subtitleContainer.language = "EN";
-    // }
+    subtitleContainer.language = videoConstants.englishLang;
+    if (ans >= 3) subtitleContainer.language = lang;
     for (const {from, to, text} of entries) {
       // process transcript entry
       subtitleContainer.lines.push(new Line(from, to, removeTags(text)))
@@ -152,8 +141,17 @@ export class SubtitleContainer {
     for (let i = 0; i < this.lines.length; i++) {
       if (globalSubtitleId !== this.id) return;
       const line = this.lines[i];
-      await line.fillContentFurigana(tokenizeMiteiru)
+      await line.fillContentSeparations(tokenizeMiteiru)
       await line.fillContentWithLearningKotoba();
+      this.progress = `${((i + 1) * 100 / this.lines.length).toFixed(2)}%`;
+    }
+  }
+
+  async adjustCantonese(tokenizeMiteiru: (string) => Promise<any[]>) {
+    for (let i = 0; i < this.lines.length; i++) {
+      if (globalSubtitleId !== this.id) return;
+      const line = this.lines[i];
+      await line.fillContentSeparations(tokenizeMiteiru)
       this.progress = `${((i + 1) * 100 / this.lines.length).toFixed(2)}%`;
     }
   }

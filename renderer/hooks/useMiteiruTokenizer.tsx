@@ -2,6 +2,14 @@ import {useCallback, useEffect, useState} from 'react';
 import {ipcRenderer} from "electron";
 import {getFurigana, processKuromojinToSeparations, ShunouWordWithSeparations} from "shunou";
 import Conjugator from 'jp-verbs';
+import {videoConstants} from "../utils/constants";
+import video from "../pages/video";
+
+const langMap = {
+  "mecab": videoConstants.japaneseLang,
+  "kuromoji": videoConstants.japaneseLang,
+  "cantonese": videoConstants.cantoneseLang
+}
 
 const parseVerbs = async (res) => {
   const newRes: ShunouWordWithSeparations[] = [];
@@ -121,7 +129,7 @@ const parseVerbs = async (res) => {
   return newRes;
 }
 
-const useMiteiruTokenizer = (): { tokenizeMiteiru: (sentence: string) => Promise<any[]>, tokenizerMode: string } => {
+const useMiteiruTokenizer = (): { tokenizeMiteiru: (sentence: string) => Promise<any[]>, tokenizerMode: string, lang: string } => {
   const [tokenizerMode, setMode] = useState('');
 
   useEffect(() => {
@@ -134,13 +142,20 @@ const useMiteiruTokenizer = (): { tokenizeMiteiru: (sentence: string) => Promise
     if (tokenizerMode === 'kuromoji') {
       const kuromojiEntries = await ipcRenderer.invoke('tokenizeUsingKuromoji', sentence)
       res = processKuromojinToSeparations(kuromojiEntries);
-    } else if (tokenizerMode !== '') {
+      res = await parseVerbs(res);
+    } else if (tokenizerMode === "cantonese") {
+      res = await ipcRenderer.invoke('tokenizeUsingPyCantonese', sentence);
+    } else if (tokenizerMode.includes('mecab')) {
       res = getFurigana(sentence, tokenizerMode);
+      res = await parseVerbs(res);
     }
-    res = await parseVerbs(res);
     return res;
-  }, [tokenizerMode])
-  return {tokenizeMiteiru, tokenizerMode};
+  }, [tokenizerMode]);
+  return {
+    tokenizeMiteiru,
+    tokenizerMode,
+    lang: langMap[tokenizerMode] ?? videoConstants.japaneseLang
+  };
 };
 
 export default useMiteiruTokenizer;

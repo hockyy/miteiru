@@ -50,6 +50,7 @@
     "kanjidic-wrapper": "^1.0.2",
     "kuromojin": "^3.0.0",
     "patch-package": "^7.0.0",
+    "python-shell": "^5.0.0",
     "react-awesome-button": "^7.0.5",
     "react-colorful": "^5.6.1",
     "react-smooth-collapse": "^2.1.2",
