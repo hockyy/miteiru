@@ -370,7 +370,8 @@ if (isProd) {
   ipcMain.handle('tokenizeUsingKuromoji', async (event, sentence) => {
     return tokenizer.tokenizeForSentence(sentence);
   });
-  let pyshell = new PythonShell(path.join(__dirname, 'cantonese/cantonese.py'));
+  const cursedPath = path.join(app.getAppPath().replace('app.asar', ''),'renderer/public/cantonese/cantonese.py');
+  let pyshell = new PythonShell(cursedPath);
   ipcMain.handle('tokenizeUsingPyCantonese', async (event, sentence) => {
     pyshell.send(sentence);
     return new Promise((resolve, reject) => {

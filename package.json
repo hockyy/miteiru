@@ -6,6 +6,15 @@
   "author": "Hocky Yudhiono <hocky.yudhiono@gmail.com>",
   "main": "app/background.js",
   "build": {
+    "extraResources": [
+      {
+        "from": "./renderer/public/cantonese/cantonese.py",
+        "to": "renderer/public/cantonese/cantonese.py",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
     "appId": "id.hocky.miteiru",
     "artifactName": "miteiru-${version}-${os}-${arch}.${ext}",
     "mac": {
