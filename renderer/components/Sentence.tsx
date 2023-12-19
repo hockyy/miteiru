@@ -157,7 +157,7 @@ export const ChineseSentence = ({
       subtitleStyling={subtitleStyling}
       className={extraClass}
       onClick={(e) => {
-        handleChange(e.shiftKey ? origin : basicForm);
+        handleChange(origin);
       }}>
     <ruby style={{
       rubyPosition: subtitleStyling.positionMeaningTop ? "over" : "under",
