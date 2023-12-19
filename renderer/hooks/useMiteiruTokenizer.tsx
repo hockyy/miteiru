@@ -145,13 +145,17 @@ const useMiteiruTokenizer = (): { tokenizeMiteiru: (sentence: string) => Promise
       res = await parseVerbs(res);
     } else if (tokenizerMode === "cantonese") {
       res = await ipcRenderer.invoke('tokenizeUsingPyCantonese', sentence);
-    } else if (tokenizerMode === 'mecab') {
+    } else if (tokenizerMode.includes('mecab')) {
       res = getFurigana(sentence, tokenizerMode);
       res = await parseVerbs(res);
     }
     return res;
-  }, [tokenizerMode])
-  return {tokenizeMiteiru, tokenizerMode, lang: langMap[tokenizerMode]};
+  }, [tokenizerMode]);
+  return {
+    tokenizeMiteiru,
+    tokenizerMode,
+    lang: langMap[tokenizerMode] ?? videoConstants.japaneseLang
+  };
 };
 
 export default useMiteiruTokenizer;

@@ -9,12 +9,6 @@ import {videoConstants} from "../utils/constants";
 import {randomUUID} from "crypto";
 import {Entry} from "@plussub/srt-vtt-parser/dist/src/types";
 
-
-const languageMap = {
-  'japanese': 'JA',
-  'english': 'EN',
-}
-
 function removeTags(text) {
   const regex = /\{\\.+?}/g;
   return text.replace(regex, '');
@@ -93,7 +87,7 @@ export class SubtitleContainer {
   path: string = '';
   progress: string = '';
 
-  constructor(content: string = '', language: string = 'JA') {
+  constructor(content: string = '', language: string = videoConstants.japaneseLang) {
     this.id = randomUUID();
     this.lines = []
     if (content === '') return
@@ -129,12 +123,12 @@ export class SubtitleContainer {
     }
     let ans = 0;
     entries = entries.filter(entry => entry.text != '');
-    for (let i = 0; i < Math.min(5, entries.length); i++) {
+    for (let i = 0; i < Math.min(20, entries.length); i++) {
       if (entries[i].text.match(videoConstants.cjkRegex)) {
         ans++;
       }
     }
-    subtitleContainer.language = "EN";
+    subtitleContainer.language = videoConstants.englishLang;
     if (ans >= 3) subtitleContainer.language = lang;
     for (const {from, to, text} of entries) {
       // process transcript entry

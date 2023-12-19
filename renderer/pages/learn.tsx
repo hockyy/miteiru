@@ -46,9 +46,6 @@ function Learn() {
     }
   }, [tokenizerMode, directInput])
 
-
-  const [showRomaji, setShowRomaji] = useState(false)
-
   return (
       <React.Fragment>
         <Head>

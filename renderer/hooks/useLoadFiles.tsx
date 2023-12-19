@@ -99,10 +99,10 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
         }
       };
       if (isYoutube(currentPath)) {
-        ipcRenderer.invoke("getYoutubeSubtitle", extractVideoId(currentPath), "en").then(entries => {
+        ipcRenderer.invoke("getYoutubeSubtitle", extractVideoId(currentPath), videoConstants.englishLang).then(entries => {
           entries = convertSubtitlesToEntries(entries)
           const tmpSub = SubtitleContainer.createFromArrayEntries(null, entries, lang)
-          subLoader(tmpSub, "EN");
+          subLoader(tmpSub, videoConstants.englishLang);
         })
         ipcRenderer.invoke("getYoutubeSubtitle", extractVideoId(currentPath), lang).then(entries => {
           entries = convertSubtitlesToEntries(entries)
