@@ -14,29 +14,27 @@ import {LearningSidebar} from "../components/LearningSidebar";
 import {useStoreData} from "../hooks/useStoreData";
 import useLearningKeyBind from "../hooks/useLearningKeyBind";
 import 'react-awesome-button/dist/styles.css';
+import video from "./video";
+import {videoConstants} from "../utils/constants";
 
 function Learn() {
 
   const {meaning, setMeaning} = useMeaning();
   const [currentTime, setCurrentTime] = useState(0);
-  const [tokenizerMode, setTokenizerMode] = useState('')
   const [primarySub, setPrimarySub] = useState(new SubtitleContainer(''))
   const [directInput, setDirectInput] = useState('');
   const [showSidebar, setShowSidebar] = useState(0)
   const [primaryStyling, setPrimaryStyling] = useStoreData('user.styling.learning', defaultLearningStyling);
   useLearningKeyBind(setMeaning, setShowSidebar)
   const router = useRouter();
-  useEffect(() => {
-    ipcRenderer.invoke('getTokenizerMode').then(val => {
-      setTokenizerMode(val)
-    })
-  }, []);
+  const {tokenizerMode, tokenizeMiteiru, lang} = useMiteiruTokenizer();
+
   useEffect(() => {
     if (tokenizerMode !== '') {
-      const tmpSub = (new SubtitleContainer(directInput, 'ZH-HK'))
+      const tmpSub = (new SubtitleContainer(directInput, lang))
       setPrimarySub(tmpSub)
       setGlobalSubtitleId(tmpSub.id);
-      if (tmpSub.language === "JA") {
+      if (tmpSub.language === videoConstants.japaneseLang) {
         tmpSub.adjustJapanese(tokenizeMiteiru).then(() => {
           setCurrentTime(old => (old ^ 1))
         })
@@ -48,7 +46,6 @@ function Learn() {
     }
   }, [tokenizerMode, directInput])
 
-  const {tokenizeMiteiru} = useMiteiruTokenizer();
 
   const [showRomaji, setShowRomaji] = useState(false)
 

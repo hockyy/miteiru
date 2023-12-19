@@ -102,7 +102,7 @@ export class SubtitleContainer {
     return
   }
 
-  static async create(filename: string) {
+  static async create(filename: string, lang: string) {
     if (filename === '') return
     const subtitleContainer = new SubtitleContainer();
     subtitleContainer.path = filename;
@@ -118,12 +118,12 @@ export class SubtitleContainer {
       const data = parseSRT(text);
       entries = data.entries;
     }
-    this.createFromArrayEntries(subtitleContainer, entries);
+    this.createFromArrayEntries(subtitleContainer, entries, lang);
     return subtitleContainer;
   }
 
 
-  static createFromArrayEntries(subtitleContainer: SubtitleContainer, entries: Entry[]) {
+  static createFromArrayEntries(subtitleContainer: SubtitleContainer, entries: Entry[], lang : string) {
     if (subtitleContainer === null) {
       subtitleContainer = new SubtitleContainer();
     }
@@ -135,12 +135,7 @@ export class SubtitleContainer {
       }
     }
     subtitleContainer.language = "EN";
-    if (ans >= 3) subtitleContainer.language = "JA";
-    // try {
-    //   subtitleContainer.language = languageMap[currentData.language];
-    // } catch (e) {
-    //   subtitleContainer.language = "EN";
-    // }
+    if (ans >= 3) subtitleContainer.language = lang;
     for (const {from, to, text} of entries) {
       // process transcript entry
       subtitleContainer.lines.push(new Line(from, to, removeTags(text)))
