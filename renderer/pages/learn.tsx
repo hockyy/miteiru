@@ -19,7 +19,7 @@ function Learn() {
 
   const {meaning, setMeaning} = useMeaning();
   const [currentTime, setCurrentTime] = useState(0);
-  const [mecab, setMecab] = useState('')
+  const [tokenizerMode, setTokenizerMode] = useState('')
   const [primarySub, setPrimarySub] = useState(new SubtitleContainer(''))
   const [directInput, setDirectInput] = useState('');
   const [showSidebar, setShowSidebar] = useState(0)
@@ -28,19 +28,21 @@ function Learn() {
   const router = useRouter();
   useEffect(() => {
     ipcRenderer.invoke('getTokenizerMode').then(val => {
-      setMecab(val)
+      setTokenizerMode(val)
     })
   }, []);
   useEffect(() => {
-    if (mecab !== '') {
+    if (tokenizerMode !== '') {
       const tmpSub = (new SubtitleContainer(directInput))
       setPrimarySub(tmpSub)
       setGlobalSubtitleId(tmpSub.id);
-      tmpSub.adjustJapanese(tokenizeMiteiru).then(() => {
-        setCurrentTime(old => (old ^ 1))
-      })
+      if (tokenizerMode !== 'cantonese') {
+        tmpSub.adjustJapanese(tokenizeMiteiru).then(() => {
+          setCurrentTime(old => (old ^ 1))
+        })
+      }
     }
-  }, [mecab, directInput])
+  }, [tokenizerMode, directInput])
 
   const {tokenizeMiteiru} = useMiteiruTokenizer();
 

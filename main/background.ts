@@ -17,6 +17,8 @@ import fs from "fs";
 import path from "path";
 import {getTokenizer} from "kuromojin";
 import {getSubtitles} from "./helpers/getSubtitles";
+import {PythonShell} from "python-shell";
+import {ShunouWordWithSeparations} from "shunou";
 
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
@@ -244,6 +246,13 @@ if (isProd) {
       jmdict: path.join(__dirname, 'dict/jmdict.json')
     });
   })
+  ipcMain.handle('loadCantonese', async (event) => {
+    mecabCommand = 'cantonese';
+    return {
+      ok: 1,
+      message: `dah lah!`
+    };
+  })
 
 
   ipcMain.handle('getWaniKanji', async (event, kanji) => {
@@ -357,10 +366,19 @@ if (isProd) {
   }).catch(e => {
     console.error(e)
   })
+
+  let pyshell = new PythonShell(path.join(__dirname, 'cantonese/cantonese.py'));
   ipcMain.handle('tokenizeUsingKuromoji', async (event, sentence) => {
     return tokenizer.tokenizeForSentence(sentence);
   });
-  ipcMain.handle('getWaniRadical', async (event, radicalSlug) => {　
+  ipcMain.handle('tokenizeUsingPyCantonese', async (event, sentence) => {
+    pyshell.send('食咗喇！你聽日得唔得閒呀？');
+    pyshell.on('message', function (message) {
+      // received a message sent from the Python script (a simple "print" statement)
+      console.log(message);
+    });
+  });
+  ipcMain.handle('getWaniRadical', async (event, radicalSlug) => {
     return waniradical[radicalSlug];
   });
   protocol.registerFileProtocol(scheme, requestHandler); /* eng-disable PROTOCOL_HANDLER_JS_CHECK */

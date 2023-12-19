@@ -27,12 +27,17 @@ function Home() {
   const [mecab, setMecab] = useState(mecabDefaultDirectory[process.platform] ?? mecabDefaultDirectory['linux']);
   const [jmdict, setJmdict] = useState('');
   const [check, setCheck] = useState(initialCheck);
-  const [isUsingMecab, setUsingMecab] = useState(false);
+  const [tokenizerMode, setTokenizerMode] = useState(0);
   const handleClick = useCallback(async () => {
-    if (!isUsingMecab) {
+    if (tokenizerMode === 0) {
       setCheck(checkingMessage);
       const res = await ipcRenderer.invoke('loadDefaultMode');
       setCheck(res);
+      if (res.ok !== 1) {
+        return;
+      }
+    } else if (tokenizerMode === 2) {
+      const res = await ipcRenderer.invoke('loadCantonese');
       if (res.ok !== 1) {
         return;
       }
@@ -71,7 +76,7 @@ function Home() {
     });
   }, []);
   const {miteiruVersion} = useMiteiruVersion();
-  const ableToProceedToVideo = (!isUsingMecab && check.ok !== 2) || (isUsingMecab && check.ok === 1)
+  const ableToProceedToVideo = (tokenizerMode === 0 && check.ok !== 2) || (tokenizerMode === 1 && check.ok === 1) || (tokenizerMode === 2)
   return (
       <React.Fragment>
         <Head>
@@ -82,13 +87,27 @@ function Home() {
           <div
               className={"flex flex-col h-fit items-center bg-blue-50 gap-4 w-full md:w-4/5 p-5 border rounded-lg border-blue-800 border-2"}>
             <div className={'flex flex-row gap-4 text-4xl text-black font-bold'}>
-              <Toggle defaultCheck={isUsingMecab} onChange={(val) => {
-                setUsingMecab(val);
-              }}/>
-              {isUsingMecab && <div>鬼畜 👹</div>}
-              {!isUsingMecab && <div>ヌル 🐣</div>}
+              <div onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                setTokenizerMode(parseInt(e.target.value, 10))
+              }} className={'flex flex-col'}>
+                <div className="custom-radio">
+                  <input type="radio" id="mode0" value="0" name="tokenizerMode"
+                         checked={tokenizerMode === 0}/>
+                  <label htmlFor="mode0">Kuromoji - Japanese 🐣</label>
+                </div>
+                <div className="custom-radio">
+                  <input type="radio" id="mode1" value="1" name="tokenizerMode"
+                         checked={tokenizerMode === 1}/>
+                  <label htmlFor="mode1">Mecab - Japanese 👹</label>
+                </div>
+                <div className="custom-radio">
+                  <input type="radio" id="mode2" value="2" name="tokenizerMode"
+                         checked={tokenizerMode === 2}/>
+                  <label htmlFor="mode2">PyCantonese - Cantonese 🥘</label>
+                </div>
+              </div>
             </div>
-            <SmoothCollapse expanded={isUsingMecab}><ContainerHome>
+            <SmoothCollapse expanded={tokenizerMode === 1}><ContainerHome>
               <div className={"flex justify-between  gap-3 p-3 w-full"}>
                 <AwesomeButton
                     onPress={handleSelectMecabPath}>
@@ -141,9 +160,10 @@ function Home() {
             <AwesomeButton type={'primary'} onPress={handleClick}
                            className={ableToProceedToVideo ? '' : 'buttonDisabled'}
                            disabled={!ableToProceedToVideo}>
-              {!isUsingMecab && <div className={'text-xl'}>うん、ちょっと<span
+              {tokenizerMode === 0 && <div className={'text-xl'}>うん、ちょっと<span
                   className={'font-bold text-yellow-200'}>見てる</span>だけ 😏</div>}
-              {isUsingMecab && <div className={'text-xl'}>準備OK、船長！🫡</div>}
+              {tokenizerMode === 1 && <div className={'text-xl'}>準備OK、船長！🫡</div>}
+              {tokenizerMode === 2 && <div className={'text-xl'}>Let's go!🫡</div>}
             </AwesomeButton>
           </div>
           <KeyboardHelp/>
