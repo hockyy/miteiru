@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useState} from "react";
 import {getLineByTime, SubtitleContainer} from "./DataStructures";
-import {PlainSentence, Sentence} from "./Sentence";
+import {ChineseSentence, PlainSentence, Sentence} from "./Sentence";
 import {
   CJKStyling,
   defaultPrimarySubtitleStyling,
@@ -41,7 +41,15 @@ export const PrimarySubtitle = ({
     }
     let current = content.map((val, index) => {
       const validBasicForm = val.basicForm != '' && val.basicForm != '*';
-      return <><Sentence
+      return <> {(val.jyutping || val.pinyin) ? <ChineseSentence
+          key={index}
+          origin={val.origin}
+          separation={val.separation}
+          setMeaning={()=>{}}
+          extraClass={"subtitle"}
+          subtitleStyling={subtitleStyling}
+          basicForm={validBasicForm ? val.basicForm : ''}
+          wordMeaning={wordMeaning[index]}/> : <Sentence
           key={index}
           origin={val.origin}
           separation={val.separation}
@@ -49,7 +57,7 @@ export const PrimarySubtitle = ({
           extraClass={"subtitle"}
           subtitleStyling={subtitleStyling}
           basicForm={validBasicForm ? val.basicForm : ''}
-          wordMeaning={wordMeaning[index]}/>{
+          wordMeaning={wordMeaning[index]}/>}{
         index + 1 < content.length
         && subtitleStyling.showSpace ? " " : " "
       }</>

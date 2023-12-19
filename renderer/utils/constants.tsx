@@ -7,5 +7,8 @@ export const videoConstants = {
   ],
   shiftAmount: 100,
   playingClass: ["", "playing"],
-  cjkRegex: /\p{Script=Han}|\p{Script=Hiragana}|\p{Script=Katakana}|\p{Script=Hangul}/gu
+  cjkRegex: /\p{Script=Han}|\p{Script=Hiragana}|\p{Script=Katakana}|\p{Script=Hangul}/gu,
+  cantoneseLang: 'yue',
+  englishLang: 'en',
+  japaneseLang: 'ja',
 }

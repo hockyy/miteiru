@@ -10,11 +10,13 @@ import {extractVideoId, isLocalPath, isSubtitle, isVideo, isYoutube} from "../ut
 import {findPositionDeltaInFolder} from "../utils/folderUtils";
 import {useAsyncAwaitQueue} from "./useAsyncAwaitQueue";
 import {ipcRenderer} from 'electron';
+import {videoConstants} from "../utils/constants";
+import video from "../pages/video";
 
 const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
                       secondarySub, setSecondarySub,
                       primaryStyling,
-                      tokenizeMiteiru, setEnableSeeker, changeTimeTo, player) => {
+                      tokenizeMiteiru, setEnableSeeker, changeTimeTo, player, lang) => {
   const [videoSrc, setVideoSrc] = useState({src: '', type: '', path: ''});
   const queue = useAsyncAwaitQueue();
   const resetSub = useCallback((subSetter) => {
@@ -67,7 +69,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       const subLoader = (tmpSub, mustMatch = null) => {
         if(mustMatch !== null && tmpSub.language !== mustMatch) return;
         clearInterval(toastSetter);
-        if (tmpSub.language === "JP") {
+        if (tmpSub.language === videoConstants.japaneseLang || tmpSub.language === videoConstants.cantoneseLang) {
           setPrimarySub(tmpSub);
           setGlobalSubtitleId(tmpSub.id);
         } else {
@@ -77,31 +79,38 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
           message: 'Subtitle loaded',
           update: randomUUID()
         });
-        if (tmpSub.language === "JP") {
+        if (tmpSub.language === videoConstants.japaneseLang || tmpSub.language === videoConstants.cantoneseLang) {
           const toastSetter = setInterval(() => {
             setToastInfo({
-              message: `JP cache: ${tmpSub.progress}`,
+              message: `${tmpSub.language} cache: ${tmpSub.progress}`,
               update: randomUUID()
             });
           }, TOAST_TIMEOUT / 10);
-          tmpSub.adjustJapanese(tokenizeMiteiru).then(() => {
-            clearInterval(toastSetter);
-          })
+          if(tmpSub.language === videoConstants.japaneseLang) {
+            tmpSub.adjustJapanese(tokenizeMiteiru).then(() => {
+              clearInterval(toastSetter);
+            })
+          }
+          if(tmpSub.language === videoConstants.cantoneseLang) {
+            tmpSub.adjustCantonese(tokenizeMiteiru).then(() => {
+              clearInterval(toastSetter);
+            })
+          }
         }
       };
       if (isYoutube(currentPath)) {
-        ipcRenderer.invoke("getYoutubeSubtitle", extractVideoId(currentPath), "en").then(entries => {
+        ipcRenderer.invoke("getYoutubeSubtitle", extractVideoId(currentPath), videoConstants.englishLang).then(entries => {
           entries = convertSubtitlesToEntries(entries)
-          const tmpSub = SubtitleContainer.createFromArrayEntries(null, entries)
-          subLoader(tmpSub, "EN");
+          const tmpSub = SubtitleContainer.createFromArrayEntries(null, entries, lang)
+          subLoader(tmpSub, videoConstants.englishLang);
         })
-        ipcRenderer.invoke("getYoutubeSubtitle", extractVideoId(currentPath), "ja").then(entries => {
+        ipcRenderer.invoke("getYoutubeSubtitle", extractVideoId(currentPath), lang).then(entries => {
           entries = convertSubtitlesToEntries(entries)
-          const tmpSub = SubtitleContainer.createFromArrayEntries(null, entries)
-          subLoader(tmpSub, "JP");
+          const tmpSub = SubtitleContainer.createFromArrayEntries(null, entries, lang)
+          subLoader(tmpSub, lang);
         })
       } else {
-        SubtitleContainer.create(draggedSubtitle.src).then(subLoader);
+        SubtitleContainer.create(draggedSubtitle.src, lang).then(subLoader);
       }
     }
     await queue.end(currentHash);

@@ -14,37 +14,37 @@ import {LearningSidebar} from "../components/LearningSidebar";
 import {useStoreData} from "../hooks/useStoreData";
 import useLearningKeyBind from "../hooks/useLearningKeyBind";
 import 'react-awesome-button/dist/styles.css';
+import video from "./video";
+import {videoConstants} from "../utils/constants";
 
 function Learn() {
 
   const {meaning, setMeaning} = useMeaning();
   const [currentTime, setCurrentTime] = useState(0);
-  const [mecab, setMecab] = useState('')
   const [primarySub, setPrimarySub] = useState(new SubtitleContainer(''))
   const [directInput, setDirectInput] = useState('');
   const [showSidebar, setShowSidebar] = useState(0)
   const [primaryStyling, setPrimaryStyling] = useStoreData('user.styling.learning', defaultLearningStyling);
   useLearningKeyBind(setMeaning, setShowSidebar)
   const router = useRouter();
+  const {tokenizerMode, tokenizeMiteiru, lang} = useMiteiruTokenizer();
+
   useEffect(() => {
-    ipcRenderer.invoke('getTokenizerMode').then(val => {
-      setMecab(val)
-    })
-  }, []);
-  useEffect(() => {
-    if (mecab !== '') {
-      const tmpSub = (new SubtitleContainer(directInput))
+    if (tokenizerMode !== '') {
+      const tmpSub = (new SubtitleContainer(directInput, lang))
       setPrimarySub(tmpSub)
       setGlobalSubtitleId(tmpSub.id);
-      tmpSub.adjustJapanese(tokenizeMiteiru).then(() => {
-        setCurrentTime(old => (old ^ 1))
-      })
+      if (tmpSub.language === videoConstants.japaneseLang) {
+        tmpSub.adjustJapanese(tokenizeMiteiru).then(() => {
+          setCurrentTime(old => (old ^ 1))
+        })
+      } else {
+        tmpSub.adjustCantonese(tokenizeMiteiru).then(() => {
+          setCurrentTime(old => (old ^ 1))
+        })
+      }
     }
-  }, [mecab, directInput])
-
-  const {tokenizeMiteiru} = useMiteiruTokenizer();
-
-  const [showRomaji, setShowRomaji] = useState(false)
+  }, [tokenizerMode, directInput])
 
   return (
       <React.Fragment>

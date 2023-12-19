@@ -189,3 +189,65 @@ button {
   text-decoration: underline;
   transition: background-color 0.2s ease-out, color 0.2s ease-out, box-shadow 0.2s ease-out;
 }
+
+.custom-radio {
+  position: relative;
+  padding-left: 35px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.custom-radio input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.custom-radio label {
+  cursor: pointer;
+}
+
+/* Create a custom radio button */
+.custom-radio label:before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 25px;
+  width: 25px;
+  background-color: #eee;
+  border-radius: 50%;
+  content: '';
+}
+
+/* On mouse-over, add a grey background color */
+.custom-radio:hover input ~ label:before {
+  background-color: #ccc;
+}
+
+/* When the radio button is checked, change the color and content */
+.custom-radio input:checked ~ label:before {
+  background-color: #2196F3;
+}
+
+/* Create the indicator (the dot/circle - hidden when not checked) */
+.custom-radio label:after {
+  content: '';
+  position: absolute;
+  display: none;
+}
+
+/* Show the indicator (dot/circle) when checked */
+.custom-radio input:checked ~ label:after {
+  display: block;
+}
+
+/* Style the indicator (dot/circle) */
+.custom-radio label:after {
+  top: 9px;
+  left: 9px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: white;
+}

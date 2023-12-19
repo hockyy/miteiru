@@ -25,7 +25,7 @@ import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
 import 'react-awesome-button/dist/styles.css';
 
 function Video() {
-  const {tokenizerMode, tokenizeMiteiru} = useMiteiruTokenizer();
+  const {tokenizerMode, tokenizeMiteiru, lang} = useMiteiruTokenizer();
   const {toastInfo, setToastInfo} = useMiteiruToast();
   const {
     readyCallback,
@@ -61,7 +61,7 @@ function Video() {
           primarySub, setPrimarySub,
           secondarySub, setSecondarySub,
           primaryStyling,
-          tokenizeMiteiru, setEnableSeeker, changeTimeTo, player);
+          tokenizeMiteiru, setEnableSeeker, changeTimeTo, player, lang);
   const {showController, setShowController, showSidebar, setShowSidebar} = useMenuDisplay();
   useKeyBind(setMeaning, setShowController, setShowSidebar, setPrimarySub, setSecondarySub, primarySub);
   const {togglePlay, isPlaying} = useVideoPlayingToggle(player, metadata);
