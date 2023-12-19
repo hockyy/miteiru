@@ -2,6 +2,14 @@ import {useCallback, useEffect, useState} from 'react';
 import {ipcRenderer} from "electron";
 import {getFurigana, processKuromojinToSeparations, ShunouWordWithSeparations} from "shunou";
 import Conjugator from 'jp-verbs';
+import {videoConstants} from "../utils/constants";
+import video from "../pages/video";
+
+const langMap = {
+  "mecab": videoConstants.japaneseLang,
+  "kuromoji": videoConstants.japaneseLang,
+  "cantonese": videoConstants.cantoneseLang
+}
 
 const parseVerbs = async (res) => {
   const newRes: ShunouWordWithSeparations[] = [];
@@ -121,7 +129,7 @@ const parseVerbs = async (res) => {
   return newRes;
 }
 
-const useMiteiruTokenizer = (): { tokenizeMiteiru: (sentence: string) => Promise<any[]>, tokenizerMode: string } => {
+const useMiteiruTokenizer = (): { tokenizeMiteiru: (sentence: string) => Promise<any[]>, tokenizerMode: string, lang: string } => {
   const [tokenizerMode, setMode] = useState('');
 
   useEffect(() => {
@@ -131,8 +139,6 @@ const useMiteiruTokenizer = (): { tokenizeMiteiru: (sentence: string) => Promise
   }, []);
   const tokenizeMiteiru = useCallback(async (sentence) => {
     let res = []
-    console.log(sentence)
-    console.log(tokenizerMode)
     if (tokenizerMode === 'kuromoji') {
       const kuromojiEntries = await ipcRenderer.invoke('tokenizeUsingKuromoji', sentence)
       res = processKuromojinToSeparations(kuromojiEntries);
@@ -145,7 +151,7 @@ const useMiteiruTokenizer = (): { tokenizeMiteiru: (sentence: string) => Promise
     }
     return res;
   }, [tokenizerMode])
-  return {tokenizeMiteiru, tokenizerMode};
+  return {tokenizeMiteiru, tokenizerMode, lang: langMap[tokenizerMode]};
 };
 
 export default useMiteiruTokenizer;

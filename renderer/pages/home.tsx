@@ -7,7 +7,6 @@ import useMiteiruVersion from "../hooks/useMiteiruVersion";
 import 'react-awesome-button/dist/styles.css';
 import {AwesomeButton} from "react-awesome-button";
 import {useRouter} from "next/router";
-import Toggle from "../components/Toggle";
 import SmoothCollapse from "react-smooth-collapse";
 
 const checkSymbol = ['❓', '✅', '🙃']
@@ -29,8 +28,6 @@ function Home() {
   const [check, setCheck] = useState(initialCheck);
   const [tokenizerMode, setTokenizerMode] = useState(0);
   const handleClick = useCallback(async () => {
-    console.log("Look")
-    console.log(tokenizerMode)
     if (tokenizerMode === 0) {
       setCheck(checkingMessage);
       const res = await ipcRenderer.invoke('loadDefaultMode');
@@ -39,7 +36,6 @@ function Home() {
         return;
       }
     } else if (tokenizerMode === 2) {
-      console.log("here")
       const res = await ipcRenderer.invoke('loadCantonese');
       if (res.ok !== 1) {
         return;
