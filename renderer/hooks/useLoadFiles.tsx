@@ -67,7 +67,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       const subLoader = (tmpSub, mustMatch = null) => {
         if(mustMatch !== null && tmpSub.language !== mustMatch) return;
         clearInterval(toastSetter);
-        if (tmpSub.language === "JP") {
+        if (tmpSub.language === "JA") {
           setPrimarySub(tmpSub);
           setGlobalSubtitleId(tmpSub.id);
         } else {
@@ -77,10 +77,10 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
           message: 'Subtitle loaded',
           update: randomUUID()
         });
-        if (tmpSub.language === "JP") {
+        if (tmpSub.language === "JA") {
           const toastSetter = setInterval(() => {
             setToastInfo({
-              message: `JP cache: ${tmpSub.progress}`,
+              message: `JA cache: ${tmpSub.progress}`,
               update: randomUUID()
             });
           }, TOAST_TIMEOUT / 10);
@@ -98,7 +98,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
         ipcRenderer.invoke("getYoutubeSubtitle", extractVideoId(currentPath), "ja").then(entries => {
           entries = convertSubtitlesToEntries(entries)
           const tmpSub = SubtitleContainer.createFromArrayEntries(null, entries)
-          subLoader(tmpSub, "JP");
+          subLoader(tmpSub, "JA");
         })
       } else {
         SubtitleContainer.create(draggedSubtitle.src).then(subLoader);

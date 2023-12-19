@@ -131,16 +131,18 @@ const useMiteiruTokenizer = (): { tokenizeMiteiru: (sentence: string) => Promise
   }, []);
   const tokenizeMiteiru = useCallback(async (sentence) => {
     let res = []
+    console.log(sentence)
+    console.log(tokenizerMode)
     if (tokenizerMode === 'kuromoji') {
       const kuromojiEntries = await ipcRenderer.invoke('tokenizeUsingKuromoji', sentence)
       res = processKuromojinToSeparations(kuromojiEntries);
-      console.log(res)
+      res = await parseVerbs(res);
     } else if (tokenizerMode === "cantonese") {
-      await ipcRenderer.invoke('tokenizeUsingPyCantonese', sentence)
-    } else if (tokenizerMode !== '') {
+      res = await ipcRenderer.invoke('tokenizeUsingPyCantonese', sentence);
+    } else if (tokenizerMode === 'mecab') {
       res = getFurigana(sentence, tokenizerMode);
+      res = await parseVerbs(res);
     }
-    res = await parseVerbs(res);
     return res;
   }, [tokenizerMode])
   return {tokenizeMiteiru, tokenizerMode};

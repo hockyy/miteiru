@@ -11,7 +11,7 @@ import {Entry} from "@plussub/srt-vtt-parser/dist/src/types";
 
 
 const languageMap = {
-  'japanese': 'JP',
+  'japanese': 'JA',
   'english': 'EN',
 }
 
@@ -38,7 +38,7 @@ export class Line {
     }
   }
 
-  async fillContentFurigana(tokenizeMiteiru: (string) => Promise<any[]>) {
+  async fillContentSeparations(tokenizeMiteiru: (string) => Promise<any[]>) {
     this.content = await tokenizeMiteiru(this.content as string);
   }
 
@@ -93,11 +93,11 @@ export class SubtitleContainer {
   path: string = '';
   progress: string = '';
 
-  constructor(content: string = '') {
+  constructor(content: string = '', language: string = 'JA') {
     this.id = randomUUID();
     this.lines = []
     if (content === '') return
-    this.language = "JP"
+    this.language = language
     this.lines.push(new Line(0, 1000000, content));
     return
   }
@@ -135,7 +135,7 @@ export class SubtitleContainer {
       }
     }
     subtitleContainer.language = "EN";
-    if (ans >= 3) subtitleContainer.language = "JP";
+    if (ans >= 3) subtitleContainer.language = "JA";
     // try {
     //   subtitleContainer.language = languageMap[currentData.language];
     // } catch (e) {
@@ -152,8 +152,17 @@ export class SubtitleContainer {
     for (let i = 0; i < this.lines.length; i++) {
       if (globalSubtitleId !== this.id) return;
       const line = this.lines[i];
-      await line.fillContentFurigana(tokenizeMiteiru)
+      await line.fillContentSeparations(tokenizeMiteiru)
       await line.fillContentWithLearningKotoba();
+      this.progress = `${((i + 1) * 100 / this.lines.length).toFixed(2)}%`;
+    }
+  }
+
+  async adjustCantonese(tokenizeMiteiru: (string) => Promise<any[]>) {
+    for (let i = 0; i < this.lines.length; i++) {
+      if (globalSubtitleId !== this.id) return;
+      const line = this.lines[i];
+      await line.fillContentSeparations(tokenizeMiteiru)
       this.progress = `${((i + 1) * 100 / this.lines.length).toFixed(2)}%`;
     }
   }

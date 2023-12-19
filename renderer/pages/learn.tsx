@@ -33,11 +33,15 @@ function Learn() {
   }, []);
   useEffect(() => {
     if (tokenizerMode !== '') {
-      const tmpSub = (new SubtitleContainer(directInput))
+      const tmpSub = (new SubtitleContainer(directInput, 'ZH-HK'))
       setPrimarySub(tmpSub)
       setGlobalSubtitleId(tmpSub.id);
-      if (tokenizerMode !== 'cantonese') {
+      if (tmpSub.language === "JA") {
         tmpSub.adjustJapanese(tokenizeMiteiru).then(() => {
+          setCurrentTime(old => (old ^ 1))
+        })
+      } else {
+        tmpSub.adjustCantonese(tokenizeMiteiru).then(() => {
           setCurrentTime(old => (old ^ 1))
         })
       }

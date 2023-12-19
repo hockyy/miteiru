@@ -123,3 +123,48 @@ export const KanjiSentence = ({
     })}
   </>
 }
+
+
+export const ChineseSentence = ({
+                           origin, setMeaning, separation, extraClass,
+                           subtitleStyling, basicForm = '', wordMeaning = '',
+                         }: SentenceParam) => {
+  const handleChange = useCallback((pressedString) => {
+    navigator.clipboard.writeText(pressedString);
+    setMeaning(pressedString)
+  }, [setMeaning]);
+  return <StyledSentence
+      subtitleStyling={subtitleStyling}
+      className={extraClass}
+      onClick={(e) => {
+        handleChange(e.shiftKey ? origin : basicForm);
+      }}>
+    <ruby style={{
+      rubyPosition: subtitleStyling.positionMeaningTop ? "over" : "under",
+      WebkitTextFillColor: wordMeaning ? subtitleStyling.textMeaning.color : '',
+      WebkitTextStrokeColor: subtitleStyling.stroke.color,
+      WebkitTextStrokeWidth: subtitleStyling.stroke.width,
+    }}>
+      {separation.map((val, index) => {
+        const pinyinJyutping = (<>
+              <rp>(</rp>
+              <rt>{val.jyutping ?? ''}</rt>
+              <rp>)</rp>
+            </>
+        )
+        return <ruby style={{
+          rubyPosition: "over",
+          WebkitTextFillColor: subtitleStyling.text.color,
+        }} key={index}>
+          {val.main}
+          <rt className={"unselectable"}>{subtitleStyling.showFurigana && val.jyutping}</rt>
+        </ruby>
+      })}
+      <rt style={{fontWeight: subtitleStyling.textMeaning.weight}} className={"unselectable"}>{
+          subtitleStyling.showMeaning
+          && wordMeaning.length <= subtitleStyling.maximalMeaningLengthPerCharacter * origin.length
+          && wordMeaning}</rt>
+
+    </ruby>
+  </StyledSentence>
+}

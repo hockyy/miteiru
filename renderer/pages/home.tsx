@@ -29,6 +29,8 @@ function Home() {
   const [check, setCheck] = useState(initialCheck);
   const [tokenizerMode, setTokenizerMode] = useState(0);
   const handleClick = useCallback(async () => {
+    console.log("Look")
+    console.log(tokenizerMode)
     if (tokenizerMode === 0) {
       setCheck(checkingMessage);
       const res = await ipcRenderer.invoke('loadDefaultMode');
@@ -37,13 +39,14 @@ function Home() {
         return;
       }
     } else if (tokenizerMode === 2) {
+      console.log("here")
       const res = await ipcRenderer.invoke('loadCantonese');
       if (res.ok !== 1) {
         return;
       }
     }
     await router.push('/video');
-  }, [check, router]);
+  }, [check, router, tokenizerMode]);
 
   const handleSelectMecabPath = useCallback(() => {
     ipcRenderer.invoke('pickFile', ['*']).then((val) => {
@@ -92,17 +95,17 @@ function Home() {
               }} className={'flex flex-col'}>
                 <div className="custom-radio">
                   <input type="radio" id="mode0" value="0" name="tokenizerMode"
-                         checked={tokenizerMode === 0}/>
+                         checked={tokenizerMode === 0} readOnly/>
                   <label htmlFor="mode0">Kuromoji - Japanese 🐣</label>
                 </div>
                 <div className="custom-radio">
                   <input type="radio" id="mode1" value="1" name="tokenizerMode"
-                         checked={tokenizerMode === 1}/>
+                         checked={tokenizerMode === 1} readOnly/>
                   <label htmlFor="mode1">Mecab - Japanese 👹</label>
                 </div>
                 <div className="custom-radio">
                   <input type="radio" id="mode2" value="2" name="tokenizerMode"
-                         checked={tokenizerMode === 2}/>
+                         checked={tokenizerMode === 2} readOnly/>
                   <label htmlFor="mode2">PyCantonese - Cantonese 🥘</label>
                 </div>
               </div>
