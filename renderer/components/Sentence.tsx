@@ -6,15 +6,36 @@ import {randomUUID} from "crypto";
 import {isMixed, toRomaji} from "wanakana"
 
 const StyledSentence = styled.button<{ subtitleStyling: CJKStyling }>`
+  ruby {
+    -webkit-text-fill-color: ${props => props.subtitleStyling.text.color};
+  }
+
   &:hover, &:hover ruby {
     -webkit-text-fill-color: ${props => props.subtitleStyling.text.hoverColor};
     -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
   }
 
-  &:hover rt {
+  &:hover rt.meaningHAHA {
     -webkit-text-fill-color: ${props => props.subtitleStyling.textMeaning?.hoverColor ?? props.subtitleStyling.text.hoverColor};
     -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
   }
+`
+
+const StyledChineseSentence = styled.button<{ subtitleStyling: CJKStyling }>`
+  ruby {
+    -webkit-text-fill-color: ${props => props.subtitleStyling.text.color};
+  }
+  
+  &:hover ruby, &:hover rt{
+    -webkit-text-fill-color: ${props => props.subtitleStyling.text.hoverColor};
+    -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
+  }
+
+  &:hover rt.meaningHAHA{
+    -webkit-text-fill-color: ${props => props.subtitleStyling.textMeaning?.hoverColor ?? props.subtitleStyling.text.hoverColor};
+    -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
+  }
+  
 `
 
 interface SentenceParam {
@@ -65,7 +86,6 @@ export const Sentence = ({
         const showFurigana = ((val.isKana && subtitleStyling.showFuriganaOnKana) || showHelp);
         return <ruby style={{
           rubyPosition: "under",
-          WebkitTextFillColor: subtitleStyling.text.color,
         }} key={index}>
           <ruby style={{rubyPosition: "over"}}>
             {val.main}
@@ -74,7 +94,7 @@ export const Sentence = ({
           <rt className={"unselectable"}>{subtitleStyling.showRomaji && showRomaji && romaji}</rt>
         </ruby>
       })}
-      <rt style={{fontWeight: subtitleStyling.textMeaning.weight}} className={"unselectable"}>{
+      <rt style={{fontWeight: subtitleStyling.textMeaning.weight}} className={"meaningHAHA unselectable"}>{
           subtitleStyling.showMeaning
           && wordMeaning.length <= subtitleStyling.maximalMeaningLengthPerCharacter * origin.length
           && wordMeaning}</rt>
@@ -127,13 +147,13 @@ export const KanjiSentence = ({
 
 export const ChineseSentence = ({
                            origin, setMeaning, separation, extraClass,
-                           subtitleStyling, basicForm = '', wordMeaning = '',
+                           subtitleStyling, basicForm = '', wordMeaning = 'memek',
                          }: SentenceParam) => {
   const handleChange = useCallback((pressedString) => {
     navigator.clipboard.writeText(pressedString);
     setMeaning(pressedString)
   }, [setMeaning]);
-  return <StyledSentence
+  return <StyledChineseSentence
       subtitleStyling={subtitleStyling}
       className={extraClass}
       onClick={(e) => {
@@ -146,25 +166,18 @@ export const ChineseSentence = ({
       WebkitTextStrokeWidth: subtitleStyling.stroke.width,
     }}>
       {separation.map((val, index) => {
-        const pinyinJyutping = (<>
-              <rp>(</rp>
-              <rt>{val.jyutping ?? ''}</rt>
-              <rp>)</rp>
-            </>
-        )
         return <ruby style={{
           rubyPosition: "over",
-          WebkitTextFillColor: subtitleStyling.text.color,
         }} key={index}>
           {val.main}
           <rt className={"unselectable"}>{subtitleStyling.showFurigana && val.jyutping}</rt>
         </ruby>
       })}
-      <rt style={{fontWeight: subtitleStyling.textMeaning.weight}} className={"unselectable"}>{
+      <rt style={{fontWeight: subtitleStyling.textMeaning.weight}} className={"meaningHAHA unselectable"}>{
           subtitleStyling.showMeaning
           && wordMeaning.length <= subtitleStyling.maximalMeaningLengthPerCharacter * origin.length
           && wordMeaning}</rt>
 
     </ruby>
-  </StyledSentence>
+  </StyledChineseSentence>
 }
