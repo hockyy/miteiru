@@ -27,7 +27,6 @@ export async function getSubtitles({videoID, lang = 'ja'}) {
   const regex =  /"captionTracks":(\[.*?\])/;
   const [match] = regex.exec(data);
   const { captionTracks } = JSON.parse(`{${match}}`);
-  console.log(captionTracks)
   const subtitle =
       find(captionTracks, {
         vssId: `.${lang}`,
