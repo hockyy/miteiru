@@ -8,4 +8,5 @@ dist
 renderer/public/kanji/**
 renderer/public/dict/**
 renderer/public/wanikani/**
+renderer/public/cantonese/**
 archived/**

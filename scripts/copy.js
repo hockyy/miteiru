@@ -10,6 +10,7 @@ const importantPaths = [
   'kanji',
   'wanikani',
   'images',
+  'cantonese'
 ];
 
 const compareShallow = async (source, dest) => {
@@ -22,11 +23,31 @@ const compareShallow = async (source, dest) => {
 // Function to compare directories
 const compareDirectories = async (source, dest) => {
   const sourceFiles = await fs.readdir(source);
+  // console.log(sourceFiles)
   let isSame = true;
   for (const file of sourceFiles) {
     if (importantPaths.includes(file)) {
+      // console.log(file)
       const sourceStat = await fs.stat(path.join(source, file));
-      const destStat = await fs.stat(path.join(dest, file));
+
+      const destFilePath = path.join(dest, file);
+
+      // Check if the destination file or directory exists
+      const destExists = await fs.pathExists(destFilePath);
+      if (!destExists) {
+        // If it's a directory, create it
+        if (sourceStat.isDirectory()) {
+          await fs.mkdir(destFilePath, {recursive: true});
+          console.log(`Created missing directory: ${destFilePath}`);
+        } else {
+          // Handle the case for files differently if needed
+          console.log(`Missing file at destination: ${destFilePath}`);
+          isSame = false;
+          continue;
+        }
+      }
+      const destStat = await fs.stat(destFilePath);
+
 
       if (sourceStat.isDirectory() && destStat.isDirectory()) {
         if (!(await compareShallow(path.join(source, file),

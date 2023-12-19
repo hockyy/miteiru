@@ -134,6 +134,9 @@ const useMiteiruTokenizer = (): { tokenizeMiteiru: (sentence: string) => Promise
     if (tokenizerMode === 'kuromoji') {
       const kuromojiEntries = await ipcRenderer.invoke('tokenizeUsingKuromoji', sentence)
       res = processKuromojinToSeparations(kuromojiEntries);
+      console.log(res)
+    } else if (tokenizerMode === "cantonese") {
+      await ipcRenderer.invoke('tokenizeUsingPyCantonese', sentence)
     } else if (tokenizerMode !== '') {
       res = getFurigana(sentence, tokenizerMode);
     }
