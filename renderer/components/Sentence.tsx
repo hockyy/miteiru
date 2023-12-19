@@ -147,7 +147,7 @@ export const KanjiSentence = ({
 
 export const ChineseSentence = ({
                            origin, setMeaning, separation, extraClass,
-                           subtitleStyling, basicForm = '', wordMeaning = 'memek',
+                           subtitleStyling, basicForm = '', wordMeaning = '',
                          }: SentenceParam) => {
   const handleChange = useCallback((pressedString) => {
     navigator.clipboard.writeText(pressedString);
