@@ -74,7 +74,7 @@ function Video() {
         </Head>
         <div>
           <Toast info={toastInfo}/>
-          <MeaningBox meaning={meaning} setMeaning={setMeaning} tokenizeMiteiru={tokenizeMiteiru}/>
+          <MeaningBox meaning={meaning} setMeaning={setMeaning} tokenizeMiteiru={tokenizeMiteiru} lang={lang}/>
           <VideoJS options={{
             techOrder: ["html5", "youtube"],
             sources: [videoSrc],
