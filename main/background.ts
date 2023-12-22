@@ -13,12 +13,17 @@ import {
   search as searchKanji,
   setup as setupKanjidic
 } from 'kanjidic-wrapper';
+
+import {
+  setup as setupCanto
+} from 'cc-canto-wrapper';
 import fs from "fs";
 import path from "path";
 import {getTokenizer} from "kuromojin";
 import {getSubtitles} from "./helpers/getSubtitles";
 import {PythonShell} from "python-shell";
 import {ShunouWordWithSeparations} from "shunou";
+import {charAnywhere, charBeginning } from 'cc-canto-wrapper';
 
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
@@ -35,6 +40,7 @@ if (isProd) {
 
   let JMDict = {db: null, tags: {}};
   let KanjiDic = {db: null};
+  let CantoDict = {db: null};
   let wanikanji = {};
   let waniradical = {};
   let mecabCommand = 'mecab'
@@ -56,6 +62,7 @@ if (isProd) {
   });
   const jmdictDBDirectory = path.join(appDataDirectory, `jmdict-db`);
   const kanjidicDBDirectory = path.join(appDataDirectory, `kanjidic-db`);
+  const cantoDBDirectory = path.join(appDataDirectory, `cantodic-db`);
   const setUpJMDict = async (filename) => {
     try {
       if (JMDict.db) {
@@ -74,6 +81,21 @@ if (isProd) {
     }
   }
 
+  const setUpCantoDict = async (filename) => {
+    try {
+      if (CantoDict.db) {
+        CantoDict.db.close()
+      }
+      const cantoSetup = await setupCanto(cantoDBDirectory, filename);
+      CantoDict = {
+        db: cantoSetup.db,
+      }
+      return true;
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
+  }
 
   const setUpKanjiDic = async (filename) => {
     try {
@@ -119,6 +141,20 @@ if (isProd) {
     }
   }
 
+  const removeCantoCache = () => {
+    if (CantoDict.db) {
+      CantoDict.db.close()
+    }
+    try {
+      fs.rmSync(cantoDBDirectory, {
+        recursive: true,
+        force: true
+      })
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
 
   const mainWindow = createWindow('main', {
     width: 1000,
@@ -128,7 +164,6 @@ if (isProd) {
   ipcMain.handle('query', async (event, query, limit) => {
     let matches = []
     try {
-
       matches = matches.concat(await readingBeginning(JMDict.db, query, limit));
       matches = matches.concat(await kanjiBeginning(JMDict.db, query));
       // matches = matches.concat(await readingAnywhere(JMDict.db, query, limit));
@@ -160,6 +195,35 @@ if (isProd) {
           break;
         }
       }
+      return matches
+    } catch (e) {
+      console.error(e)
+      return []
+    }
+  })
+
+
+  ipcMain.handle('queryCantonese', async (event, query, limit) => {
+    console.log(query)
+    let matches = []
+    try {
+      matches = matches.concat(await charBeginning(CantoDict.db, query, limit));
+      matches = matches.concat(await charAnywhere(CantoDict.db, query, limit));
+      const ids = matches.map(o => o.id)
+      matches = matches.filter(({id}, index) => !ids.includes(id, index + 1))
+
+      // Swap the exact match to front
+      matches = matches.sort((a, b) => {
+            const commonA = (a.traditional.length);
+            const commonB = (b.traditional.length);
+            if (commonA !== commonB) return commonA - commonB;
+
+            const meaningA = (a.meaning.length);
+            const meaningB = (b.meaning.length);
+            if (meaningA !== meaningB) return meaningB - meaningA;
+            return a.traditional < b.traditional ? -1 : 1;
+          }
+      )
       return matches
     } catch (e) {
       console.error(e)
@@ -248,10 +312,9 @@ if (isProd) {
   })
   ipcMain.handle('loadCantonese', async (event) => {
     mecabCommand = 'cantonese';
-    return {
-      ok: 1,
-      message: `dah lah!`
-    };
+    return await checkCanto({
+      canto: path.join(__dirname, 'cantonese/cccanto-webdist.json')
+    })
   })
 
 
@@ -304,6 +367,20 @@ if (isProd) {
       };
     }
   }
+
+  const loadCantoDict = async (config) => {
+    // Load DB Here
+    const ret = await setUpCantoDict(config.canto);
+    if (ret) {
+      return okSetup;
+    } else {
+      return {
+        ok: 0,
+        message: `Failed to load Canto DB!`
+      };
+    }
+  }
+
   const checkJMDict = async (config) => {
     if (!fs.existsSync(config.jmdict) || !fs.lstatSync(config.jmdict).isFile()) return {
       ok: 0,
@@ -315,6 +392,19 @@ if (isProd) {
     };
 
     return await loadJMDict(config);
+  }
+
+  const checkCanto = async (config) => {
+    if (!fs.existsSync(config.canto) || !fs.lstatSync(config.canto).isFile()) return {
+      ok: 0,
+      message: `canto '${config.canto}' doesn't exist`
+    };
+    if (!(config.canto.endsWith('.json'))) return {
+      ok: 0,
+      message: `'${config.canto}' is not a JSON file`
+    };
+
+    return await loadCantoDict(config);
   }
 
   const checkMecab = (config) => {
@@ -370,7 +460,7 @@ if (isProd) {
   ipcMain.handle('tokenizeUsingKuromoji', async (event, sentence) => {
     return tokenizer.tokenizeForSentence(sentence);
   });
-  const cursedPath = path.join(app.getAppPath().replace('app.asar', ''),'renderer/public/cantonese/cantonese.py');
+  const cursedPath = path.join(app.getAppPath().replace('app.asar', ''), 'renderer/public/cantonese/cantonese.py');
   let pyshell = new PythonShell(cursedPath);
   ipcMain.handle('tokenizeUsingPyCantonese', async (event, sentence) => {
     pyshell.send(sentence);

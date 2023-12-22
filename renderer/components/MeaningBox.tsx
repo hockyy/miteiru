@@ -7,16 +7,18 @@ import {AwesomeButton} from "react-awesome-button";
 import {isKanji, toHiragana} from 'wanakana'
 import KanjiVGDisplay from "./KanjiVGDisplay";
 import WanikaniRadicalDisplay from "./WanikaniRadicalDisplay";
+import {videoConstants} from "../utils/constants";
 
-const initialContentState = {sense: [], kanji: []};
+const initialContentState = {id: "", sense: [], single: []};
 const initialKanjiContentState = {literal: null};
 
 const MeaningBox = ({
                       meaning,
                       setMeaning,
                       tokenizeMiteiru,
-                      subtitleStyling = defaultMeaningBoxStyling
-                    }: { meaning: string, setMeaning: any, tokenizeMiteiru: (value: string) => Promise<any[]>, subtitleStyling?: CJKStyling }) => {
+                      subtitleStyling = defaultMeaningBoxStyling,
+                      lang
+                    }: { meaning: string, setMeaning: any, tokenizeMiteiru: (value: string) => Promise<any[]>, subtitleStyling?: CJKStyling, lang: string }) => {
   const [meaningContent, setMeaningContent] = useState(initialContentState)
   const [meaningKanji, setMeaningKanji] = useState(initialKanjiContentState)
   const [otherMeanings, setOtherMeanings] = useState([]);
@@ -28,7 +30,7 @@ const MeaningBox = ({
       setMeaningKanji(initialKanjiContentState);
       return;
     }
-    if (meaning.length === 1 && isKanji(meaning)) {
+    if (meaning.length === 1 && lang === videoConstants.japaneseLang && isKanji(meaning)) {
       ipcRenderer.invoke("queryKanji", meaning).then(result => {
         ipcRenderer.invoke("getWaniKanji", meaning).then(waniResult => {
           setMeaningKanji({...result, wanikani: waniResult});
@@ -37,52 +39,80 @@ const MeaningBox = ({
     } else {
       setMeaningKanji(initialKanjiContentState);
     }
-    ipcRenderer.invoke('query', meaning, 5).then(entries => {
-      for (const entry of entries) {
-        if (entry.kanji.length === 0) {
-          entry.kanji.push({
-            text: meaning
+
+    if (lang == videoConstants.japaneseLang) {
+      ipcRenderer.invoke('query', meaning, 5).then(entries => {
+        for (const entry of entries) {
+          entry.single = entry.kanji;
+          if (entry.single.length === 0) {
+            entry.single.push({
+              text: meaning
+            })
+          }
+        }
+        if (entries.length === 0) {
+          entries.push({
+            id: "0",
+            single: [{
+              text: meaning
+            }],
+            sense: []
           })
         }
-      }
-      if (entries.length === 0) {
-        entries.push({
-          id: "0",
-          kanji: [{
-            text: meaning
-          }],
-          sense: []
-        })
-      }
-      setOtherMeanings(entries)
-      setMeaningContent(entries[0])
-      setMeaningIndex(0)
-    })
-    ipcRenderer.invoke('tags').then(val => {
-      setTags(val)
-    })
+        setOtherMeanings(entries)
+        setMeaningContent(entries[0])
+        setMeaningIndex(0)
+      })
+      ipcRenderer.invoke('tags').then(val => {
+        setTags(val)
+      })
+    } else if (lang == videoConstants.cantoneseLang) {
+      console.log(meaning)
+      ipcRenderer.invoke('queryCantonese', meaning, 5).then(entries => {
+        for (const entry of entries) {
+          entry.single = []
+          for (const traditional of entry.traditional.split('，')) {
+            entry.single.push({
+              text: traditional
+            })
+          }
+        }
+        if (entries.length === 0) {
+          entries.push({
+            id: "0",
+            single: [{
+              text: meaning
+            }],
+            sense: []
+          })
+        }
+        setOtherMeanings(entries)
+        setMeaningContent(entries[0])
+        setMeaningIndex(0)
+      })
+    }
   }, [meaning]);
 
 
-  const [furiganizedData, setFuriganizedData] = useState([]);
+  const [romajiedData, setRomajiedData] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await Promise.all(meaningContent.kanji.map(async (val) => {
-        const furiganized = await tokenizeMiteiru(val.text);
+      const data = await Promise.all(meaningContent.single.map(async (val) => {
+        const romajied = await tokenizeMiteiru(val.text);
         return {
           key: val.key,
-          furiganized
+          romajied
         };
       }));
 
-      setFuriganizedData(data);
+      setRomajiedData(data);
     };
-    if (meaningContent.kanji.length) fetchData();
-  }, [meaningContent.kanji]); // Add your dependencies here
+    if (meaningContent.single.length) fetchData();
+  }, [meaningContent.single]); // Add your dependencies here
 
 
-  if (meaningContent.kanji.length > 0) {
+  if (meaningContent.single.length > 0) {
     return (<div onClick={() => {
       setMeaning('');
     }} className={"z-[18] fixed bg-blue-200/20 w-[100vw] h-[100vh]"}>
@@ -112,15 +142,15 @@ const MeaningBox = ({
             fontFamily: "Arial",
             fontSize: "40px",
           }}>
-            {furiganizedData.map(({key, furiganized}) => {
-              const queryText = furiganized.reduce((accumulator, nextValue) => {
+            {romajiedData.map(({key, romajied}) => {
+              const queryText = romajied.reduce((accumulator, nextValue) => {
                 return accumulator + nextValue.origin
               }, "")
               return (
                   <div key={key}
                        className={"flex flex-col justify-between items-center gap-2"}>
                     <div
-                        className={"bg-white gap-0 rounded-xl p-2 border-2 border-blue-700 w-fit unselectable hovery"}>{[...furiganized.map((val, idx) => (
+                        className={"bg-white gap-0 rounded-xl p-2 border-2 border-blue-700 w-fit unselectable hovery"}>{[...romajied.map((val, idx) => (
                         <KanjiSentence key={idx}
                                        origin={val.origin}
                                        setMeaning={setMeaning}
@@ -155,9 +185,12 @@ const MeaningBox = ({
         <div className={"rounded-b-lg text-blue-800 text-lg p-2"}>
           {meaningKanji.literal && [kanjiBoxEntry(meaningKanji)]}
           {
-            meaningContent.sense.map((sense, idxSense) => {
-              return meaningBoxEntry(sense, idxSense, tags)
-            })
+              meaningContent.sense && meaningContent.sense.map((sense, idxSense) => {
+                return meaningBoxEntry(sense, idxSense, tags)
+              })
+          }
+          {
+              !meaningContent.sense && lang == videoConstants.cantoneseLang && meaningBoxEntryChinese(meaningContent)
           }
         </div>
       </div>
@@ -337,6 +370,37 @@ const meaningBoxEntry = (sense, idxSense, tags) => {
           joinString(sense.gloss.map((gloss) => {
             return gloss.text
           }))
+        }
+      </div>
+    </div>
+  </div>
+}
+
+const meaningBoxEntryChinese = (meaningContent) => {
+  console.log(meaningContent)
+  const info = {
+    'Simplified': meaningContent.simplified,
+    'Pinyin': meaningContent.pinyin,
+    'Jyutping': meaningContent.jyutping,
+    '$comments': meaningContent.comments,
+  };
+  return <div
+      className={entryClasses + "border-blue-700"}>
+    <div
+        className={"flex flex-wrap container rounded-t-lg bg-blue-200 px-3"}>
+      {Object.entries(info).map((val) => {
+            return !val[1] ? <></> : (<div
+                className={"bg-blue-500 w-fit p-1 rounded-lg px-2 m-3 text-white"}>
+              {!val[0].startsWith('$') && <strong>{val[0]}:</strong>} {val[1]}
+            </div>);
+          }
+      )}
+    </div>
+    <div className={"flex flex-row px-3"}>
+      <div className={'mx-2 mb-3'}>
+        <span className={"font-bold text-blue-8 mr-1"}>{1}.</span>
+        {
+          joinString(meaningContent.meaning)
         }
       </div>
     </div>

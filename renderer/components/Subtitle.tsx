@@ -45,7 +45,7 @@ export const PrimarySubtitle = ({
           key={index}
           origin={val.origin}
           separation={val.separation}
-          setMeaning={()=>{}}
+          setMeaning={setMeaning}
           extraClass={"subtitle"}
           subtitleStyling={subtitleStyling}
           basicForm={validBasicForm ? val.basicForm : ''}
