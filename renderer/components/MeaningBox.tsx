@@ -67,7 +67,6 @@ const MeaningBox = ({
         setTags(val)
       })
     } else if (lang == videoConstants.cantoneseLang) {
-      console.log(meaning)
       ipcRenderer.invoke('queryCantonese', meaning, 5).then(entries => {
         for (const entry of entries) {
           entry.single = []
@@ -158,9 +157,12 @@ const MeaningBox = ({
                                        extraClass={"unselectable meaning-kanji text-md"}
                                        subtitleStyling={subtitleStyling}/>
                     ))]}</div>
-                    <ExternalLink style={{"color": "black"}} urlBase="https://jisho.org/search/"
+                    {lang === videoConstants.japaneseLang && <ExternalLink style={{"color": "black"}} urlBase="https://jisho.org/search/"
                                   displayText="Jisho"
-                                  query={queryText}/>
+                                  query={queryText}/>}
+                    {lang === videoConstants.cantoneseLang && <ExternalLink style={{"color": "black"}} urlBase="https://cantonese.org/search.php?q="
+                                  displayText="Cantonese.org"
+                                  query={queryText}/>}
 
                   </div>
               );
@@ -377,10 +379,9 @@ const meaningBoxEntry = (sense, idxSense, tags) => {
 }
 
 const meaningBoxEntryChinese = (meaningContent) => {
-  console.log(meaningContent)
   const info = {
     'Simplified': meaningContent.simplified,
-    'Pinyin': meaningContent.pinyin,
+    // 'Pinyin': meaningContent.pinyin,
     'Jyutping': meaningContent.jyutping,
     '$comments': meaningContent.comments,
   };
