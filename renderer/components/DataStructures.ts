@@ -25,7 +25,7 @@ export class Line {
   constructor(start, end, strContent: string) {
     this.timeStart = start
     this.timeEnd = end
-    if(Line.removeHearingImpairedFlag) {
+    if (Line.removeHearingImpairedFlag) {
       this.content = cleanHearingImpaired(strContent)
     } else {
       this.content = strContent;
@@ -67,6 +67,33 @@ export class Line {
             }
           } catch (ignored) {
             console.error(ignored)
+          }
+        }
+      })
+    }
+  }
+
+  async fillContentWithLearningCantonese() {
+    this.meaning = Array(this.content.length).fill('');
+    for (let i = 0; i < this.content.length; i++) {
+      const word = this.content[i];
+      const target = word.origin;
+      await ipcRenderer.invoke('queryCantonese', target, 2).then(val => {
+        let got = 0;
+        for (const entry of val) {
+          if (got) break;
+          for (const splittedTraditional of entry.traditional.split('，')) {
+            try {
+              if (splittedTraditional === target) {
+                got = 1;
+                let cleanedMeaning = entry.meaning[0].split(/,|;/)[0];
+                cleanedMeaning = cleanedMeaning.replace(/\([^\)\(]*\)/, "");
+                this.meaning[i] = cleanedMeaning;
+                break;
+              }
+            } catch (ignored) {
+              console.error(ignored)
+            }
           }
         }
       })
@@ -117,7 +144,7 @@ export class SubtitleContainer {
   }
 
 
-  static createFromArrayEntries(subtitleContainer: SubtitleContainer, entries: Entry[], lang : string) {
+  static createFromArrayEntries(subtitleContainer: SubtitleContainer, entries: Entry[], lang: string) {
     if (subtitleContainer === null) {
       subtitleContainer = new SubtitleContainer();
     }
@@ -151,7 +178,8 @@ export class SubtitleContainer {
     for (let i = 0; i < this.lines.length; i++) {
       if (globalSubtitleId !== this.id) return;
       const line = this.lines[i];
-      await line.fillContentSeparations(tokenizeMiteiru)
+      await line.fillContentSeparations(tokenizeMiteiru);
+      await line.fillContentWithLearningCantonese();
       this.progress = `${((i + 1) * 100 / this.lines.length).toFixed(2)}%`;
     }
   }

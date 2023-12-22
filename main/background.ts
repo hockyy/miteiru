@@ -204,7 +204,6 @@ if (isProd) {
 
 
   ipcMain.handle('queryCantonese', async (event, query, limit) => {
-    console.log(query)
     let matches = []
     try {
       matches = matches.concat(await charBeginning(CantoDict.db, query, limit));
