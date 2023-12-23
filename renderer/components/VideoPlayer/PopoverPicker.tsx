@@ -1,6 +1,6 @@
 import React, {useCallback, useRef, useState} from "react";
 import {HexAlphaColorPicker} from "react-colorful";
-import {useClickOutside} from "../hooks/useClickOutside";
+import {useClickOutside} from "../../hooks/useClickOutside";
 
 
 export const PopoverPicker = ({color, onChange}) => {

@@ -5,7 +5,7 @@ import languageEncoding from "detect-file-encoding-and-language";
 import iconv from "iconv-lite"
 import {ipcRenderer} from "electron";
 import {isHiragana, isKatakana, toHiragana} from 'wanakana'
-import {videoConstants} from "../utils/constants";
+import {videoConstants} from "../../utils/constants";
 import {randomUUID} from "crypto";
 import {Entry} from "@plussub/srt-vtt-parser/dist/src/types";
 

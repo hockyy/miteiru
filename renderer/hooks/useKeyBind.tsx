@@ -2,7 +2,7 @@ import {useEffect} from 'react';
 import {
   setGlobalSubtitleId,
   SubtitleContainer
-} from "../components/DataStructures";
+} from "../components/Subtitle/DataStructures";
 import {useRouter} from "next/router";
 
 export default function useKeyBind(

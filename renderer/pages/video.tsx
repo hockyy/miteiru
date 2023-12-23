@@ -1,11 +1,11 @@
 import React from "react";
-import VideoJS from "../components/VideoJS";
-import MiteiruDropzone from "../components/MiteiruDropzone";
-import {PrimarySubtitle, SecondarySubtitle} from "../components/Subtitle";
-import MeaningBox from "../components/MeaningBox";
-import {VideoController} from "../components/VideoController";
-import Toast from "../components/Toast";
-import {Sidebar} from "../components/Sidebar";
+import VideoJS from "../components/VideoPlayer/VideoJS";
+import MiteiruDropzone from "../components/VideoPlayer/MiteiruDropzone";
+import {PrimarySubtitle, SecondarySubtitle} from "../components/Subtitle/Subtitle";
+import MeaningBox from "../components/Meaning/MeaningBox";
+import {VideoController} from "../components/VideoPlayer/VideoController";
+import Toast from "../components/VideoPlayer/Toast";
+import {Sidebar} from "../components/VideoPlayer/Sidebar";
 import useKeyBind from "../hooks/useKeyBind";
 import useSubtitle from "../hooks/useSubtitle";
 import useLoadFiles from "../hooks/useLoadFiles";

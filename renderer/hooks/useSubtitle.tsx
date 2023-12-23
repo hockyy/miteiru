@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import {SubtitleContainer} from "../components/DataStructures";
+import {SubtitleContainer} from "../components/Subtitle/DataStructures";
 import {defaultPrimarySubtitleStyling} from "../utils/CJKStyling";
 import {useStoreData} from "./useStoreData";
 
