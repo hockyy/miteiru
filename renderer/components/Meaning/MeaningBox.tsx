@@ -8,6 +8,7 @@ import {isKanji, toHiragana} from 'wanakana'
 import KanjiVGDisplay from "./KanjiVGDisplay";
 import WanikaniRadicalDisplay from "./WanikaniRadicalDisplay";
 import {videoConstants} from "../../utils/constants";
+import MakeMeAHanziDisplay from "./MakeMeAHanziDisplay";
 
 const initialContentState = {id: "", sense: [], single: []};
 const initialKanjiContentState = {literal: null};
@@ -157,12 +158,15 @@ const MeaningBox = ({
                                        extraClass={"unselectable meaning-kanji text-md"}
                                        subtitleStyling={subtitleStyling}/>
                     ))]}</div>
-                    {lang === videoConstants.japaneseLang && <ExternalLink style={{"color": "black"}} urlBase="https://jisho.org/search/"
-                                  displayText="Jisho"
-                                  query={queryText}/>}
-                    {lang === videoConstants.cantoneseLang && <ExternalLink style={{"color": "black"}} urlBase="https://cantonese.org/search.php?q="
-                                  displayText="Cantonese.org"
-                                  query={queryText}/>}
+                    {lang === videoConstants.japaneseLang &&
+                        <ExternalLink style={{"color": "black"}} urlBase="https://jisho.org/search/"
+                                      displayText="Jisho"
+                                      query={queryText}/>}
+                    {lang === videoConstants.cantoneseLang &&
+                        <ExternalLink style={{"color": "black"}}
+                                      urlBase="https://cantonese.org/search.php?q="
+                                      displayText="Cantonese.org"
+                                      query={queryText}/>}
 
                   </div>
               );
@@ -186,6 +190,7 @@ const MeaningBox = ({
         </div>
         <div className={"rounded-b-lg text-blue-800 text-lg p-2"}>
           {meaningKanji.literal && [kanjiBoxEntry(meaningKanji)]}
+          {videoConstants.cantoneseLang && [hanziBoxEntry()]}
           {
               meaningContent.sense && meaningContent.sense.map((sense, idxSense) => {
                 return meaningBoxEntry(sense, idxSense, tags)
@@ -335,6 +340,36 @@ const kanjiBoxEntry = (meaningKanji) => {
           <hr/>
         </div>
       })}
+    </div>
+  </div>
+}
+
+const hanziBoxEntry = () => {
+  const bubbleBox = [];
+  // const bubbleBox = [
+  //   `${meaningKanji.literal}`,
+  //   jlpt ? `JLPT N${jlpt}` : null,
+  //   grade ? `Grade ${grade}` : null,
+  //   frequency ? `Top ${meaningKanji.misc.frequency} kanji` : null,
+  //   `${meaningKanji.misc.strokeCounts[0]} writing strokes`].filter(val => !!val)
+
+  const containerClassName = "flex flex-row gap-2 text-red-600 text-xl"
+  const headerClassName = "flex flex-row gap-2 font-bold capitalize"
+  return <div
+      className={entryClasses + " border-red-700"}
+      key={"kanji-entry"}>
+
+    <div className={"flex flex-wrap container rounded-t-lg bg-red-100 px-1"}>
+      {bubbleBox.map((val, index) => {
+        return <div
+            key={index}
+            className={"unselectable bg-red-600 w-fit p-1 rounded-lg px-2 ml-3 my-3 text-white"}>
+          {val}
+        </div>
+      })}
+    </div>
+    <div className={'flex flex-row'}>
+      <MakeMeAHanziDisplay/>
     </div>
   </div>
 }

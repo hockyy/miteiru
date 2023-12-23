@@ -326,6 +326,11 @@ if (isProd) {
     return fs.readFileSync(kanjiFilePath).toString()
   })
 
+  ipcMain.handle('readHanziSVG', async (event, filename) => {
+    const hanziFilePath = path.join(__dirname, `hanzi/${filename}`);
+    return fs.readFileSync(hanziFilePath).toString()
+  })
+
   ipcMain.handle('removeDictCache', (event) => {
     removeKanjiDicCache();
     removeJMDictCache()
