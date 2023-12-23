@@ -5,7 +5,7 @@ import {
   CJKStyling,
   defaultPrimarySubtitleStyling,
   defaultSecondarySubtitleStyling
-} from "../utils/CJKStyling";
+} from "../../utils/CJKStyling";
 
 
 export const PrimarySubtitle = ({

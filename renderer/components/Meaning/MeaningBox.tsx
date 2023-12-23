@@ -1,13 +1,13 @@
 import React, {useEffect, useState} from "react";
 import {ipcRenderer, shell} from "electron";
-import {KanjiSentence} from "./Sentence";
-import {CJKStyling, defaultMeaningBoxStyling} from "../utils/CJKStyling";
-import {joinString} from "../utils/utils";
+import {KanjiSentence} from "../Subtitle/Sentence";
+import {CJKStyling, defaultMeaningBoxStyling} from "../../utils/CJKStyling";
+import {joinString} from "../../utils/utils";
 import {AwesomeButton} from "react-awesome-button";
 import {isKanji, toHiragana} from 'wanakana'
 import KanjiVGDisplay from "./KanjiVGDisplay";
 import WanikaniRadicalDisplay from "./WanikaniRadicalDisplay";
-import {videoConstants} from "../utils/constants";
+import {videoConstants} from "../../utils/constants";
 
 const initialContentState = {id: "", sense: [], single: []};
 const initialKanjiContentState = {literal: null};

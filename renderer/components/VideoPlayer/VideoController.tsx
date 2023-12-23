@@ -5,8 +5,8 @@ import SmoothCollapse from "react-smooth-collapse";
 import {Volume} from "./Volume";
 import SettingsController from "./SettingsController";
 import {ArrowLeft, ArrowRight, StepLeft, StepRight} from "./Icons";
-import {toTime} from "../utils/utils";
-import {videoConstants} from "../utils/constants";
+import {toTime} from "../../utils/utils";
+import {videoConstants} from "../../utils/constants";
 import {Speed} from "./Speed";
 
 export const VideoController = ({

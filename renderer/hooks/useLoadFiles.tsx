@@ -3,9 +3,9 @@ import {
   convertSubtitlesToEntries, Line,
   setGlobalSubtitleId,
   SubtitleContainer
-} from "../components/DataStructures";
+} from "../components/Subtitle/DataStructures";
 import {randomUUID} from "crypto";
-import {TOAST_TIMEOUT} from "../components/Toast";
+import {TOAST_TIMEOUT} from "../components/VideoPlayer/Toast";
 import {extractVideoId, isLocalPath, isSubtitle, isVideo, isYoutube} from "../utils/utils";
 import {findPositionDeltaInFolder} from "../utils/folderUtils";
 import {useAsyncAwaitQueue} from "./useAsyncAwaitQueue";

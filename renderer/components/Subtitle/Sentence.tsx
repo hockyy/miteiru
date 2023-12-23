@@ -1,6 +1,6 @@
 import parse from "html-react-parser";
 import styled from "styled-components";
-import {CJKStyling} from "../utils/CJKStyling";
+import {CJKStyling} from "../../utils/CJKStyling";
 import React, {useCallback} from "react";
 import {randomUUID} from "crypto";
 import {isMixed, toRomaji} from "wanakana"

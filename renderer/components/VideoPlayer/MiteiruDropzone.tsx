@@ -1,5 +1,5 @@
 import React, {useEffect, useRef} from "react";
-import {extractVideoId, isYoutube} from "../utils/utils";
+import {extractVideoId, isYoutube} from "../../utils/utils";
 
 export const MiteiruDropzone = ({onDrop}) => {
   const dropRef = useRef<HTMLDivElement>(null);  // Explicitly declaring the type of the ref

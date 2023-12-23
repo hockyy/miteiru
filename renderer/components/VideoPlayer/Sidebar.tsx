@@ -5,7 +5,7 @@ import {
   CJKStyling,
   defaultPrimarySubtitleStyling,
   defaultSecondarySubtitleStyling
-} from "../utils/CJKStyling";
+} from "../../utils/CJKStyling";
 import {ipcRenderer} from "electron";
 import Toggle from "./Toggle";
 import {AwesomeButton} from "react-awesome-button";
