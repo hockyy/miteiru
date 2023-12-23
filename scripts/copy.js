@@ -10,7 +10,8 @@ const importantPaths = [
   'kanji',
   'wanikani',
   'images',
-  'cantonese'
+  'cantonese',
+  'hanzi'
 ];
 
 const compareShallow = async (source, dest) => {
@@ -47,7 +48,6 @@ const compareDirectories = async (source, dest) => {
         }
       }
       const destStat = await fs.stat(destFilePath);
-
 
       if (sourceStat.isDirectory() && destStat.isDirectory()) {
         if (!(await compareShallow(path.join(source, file),
