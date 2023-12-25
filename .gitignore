@@ -9,4 +9,5 @@ renderer/public/kanji/**
 renderer/public/dict/**
 renderer/public/wanikani/**
 renderer/public/cantonese/**
+renderer/public/hanzi/**
 archived/**
