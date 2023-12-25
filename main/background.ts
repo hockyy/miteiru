@@ -2,28 +2,16 @@ import {app, dialog, ipcMain, protocol} from 'electron';
 import serve from 'electron-serve';
 import {createWindow} from './helpers';
 import {requestHandler, scheme} from "./protocol";
-import {
-  getTags,
-  kanjiBeginning,
-  readingBeginning,
-  setup as setupJmdict
-} from 'jmdict-wrapper';
+import {getTags, kanjiBeginning, readingBeginning, setup as setupJmdict} from 'jmdict-wrapper';
 
-import {
-  search as searchKanji,
-  setup as setupKanjidic
-} from 'kanjidic-wrapper';
+import {search as searchKanji, setup as setupKanjidic} from 'kanjidic-wrapper';
 
-import {
-  setup as setupCanto
-} from 'cc-canto-wrapper';
+import {charAnywhere, charBeginning, setup as setupCanto} from 'cc-canto-wrapper';
 import fs from "fs";
 import path from "path";
 import {getTokenizer} from "kuromojin";
 import {getSubtitles} from "./helpers/getSubtitles";
 import {PythonShell} from "python-shell";
-import {ShunouWordWithSeparations} from "shunou";
-import {charAnywhere, charBeginning } from 'cc-canto-wrapper';
 
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
@@ -234,6 +222,10 @@ if (isProd) {
   ipcMain.handle('queryKanji', async (event, query) => {
     return searchKanji(KanjiDic.db, query);
   })
+  ipcMain.handle('queryHanzi', async (event, query) => {
+    return {};
+    // return searchKanji(KanjiDic.db, query);
+  })
 
   ipcMain.handle('exactQuery', async (event, query, limit) => {
     let matches = await kanjiBeginning(JMDict.db, query, limit);
@@ -323,12 +315,21 @@ if (isProd) {
 
   ipcMain.handle('readKanjiSVG', async (event, filename) => {
     const kanjiFilePath = path.join(__dirname, `kanji/${filename}`);
-    return fs.readFileSync(kanjiFilePath).toString()
+    try {
+      return fs.readFileSync(kanjiFilePath).toString();
+    } catch (e) {
+      return ''
+    }
   })
 
   ipcMain.handle('readHanziSVG', async (event, filename) => {
     const hanziFilePath = path.join(__dirname, `hanzi/${filename}`);
-    return fs.readFileSync(hanziFilePath).toString()
+    try {
+      return fs.readFileSync(hanziFilePath).toString();
+    } catch (e) {
+      console.error(e);
+      return ''
+    }
   })
 
   ipcMain.handle('removeDictCache', (event) => {
