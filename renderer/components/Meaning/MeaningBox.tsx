@@ -11,7 +11,7 @@ import {videoConstants} from "../../utils/constants";
 import MakeMeAHanziDisplay from "./MakeMeAHanziDisplay";
 
 const initialContentState = {id: "", sense: [], single: []};
-const initialKanjiContentState = {literal: null};
+const initialCharacterContentState = {literal: null};
 
 const MeaningBox = ({
                       meaning,
@@ -21,27 +21,31 @@ const MeaningBox = ({
                       lang
                     }: { meaning: string, setMeaning: any, tokenizeMiteiru: (value: string) => Promise<any[]>, subtitleStyling?: CJKStyling, lang: string }) => {
   const [meaningContent, setMeaningContent] = useState(initialContentState)
-  const [meaningKanji, setMeaningKanji] = useState(initialKanjiContentState)
+  const [meaningCharacter, setMeaningCharacter] = useState(initialCharacterContentState)
   const [otherMeanings, setOtherMeanings] = useState([]);
   const [meaningIndex, setMeaningIndex] = useState(0);
   const [tags, setTags] = useState({})
   useEffect(() => {
     if (meaning === '') {
       setMeaningContent(initialContentState);
-      setMeaningKanji(initialKanjiContentState);
+      setMeaningCharacter(initialCharacterContentState);
       return;
     }
     if (meaning.length === 1 && lang === videoConstants.japaneseLang && isKanji(meaning)) {
       ipcRenderer.invoke("queryKanji", meaning).then(result => {
         ipcRenderer.invoke("getWaniKanji", meaning).then(waniResult => {
-          setMeaningKanji({...result, wanikani: waniResult});
+          setMeaningCharacter({...result, wanikani: waniResult});
         })
       })
+    } else if (meaning.length === 1 && lang === videoConstants.cantoneseLang) {
+      ipcRenderer.invoke("queryHanzi", meaning).then(result => {
+        setMeaningCharacter({literal: meaning[0]});
+      })
     } else {
-      setMeaningKanji(initialKanjiContentState);
+      setMeaningCharacter(initialCharacterContentState);
     }
 
-    if (lang == videoConstants.japaneseLang) {
+    if (lang === videoConstants.japaneseLang) {
       ipcRenderer.invoke('query', meaning, 5).then(entries => {
         for (const entry of entries) {
           entry.single = entry.kanji;
@@ -67,7 +71,7 @@ const MeaningBox = ({
       ipcRenderer.invoke('tags').then(val => {
         setTags(val)
       })
-    } else if (lang == videoConstants.cantoneseLang) {
+    } else if (lang === videoConstants.cantoneseLang) {
       ipcRenderer.invoke('queryCantonese', meaning, 5).then(entries => {
         for (const entry of entries) {
           entry.single = []
@@ -189,8 +193,8 @@ const MeaningBox = ({
           </AwesomeButton>
         </div>
         <div className={"rounded-b-lg text-blue-800 text-lg p-2"}>
-          {meaningKanji.literal && [kanjiBoxEntry(meaningKanji)]}
-          {videoConstants.cantoneseLang && [hanziBoxEntry()]}
+          {lang === videoConstants.japaneseLang && meaningCharacter.literal && [kanjiBoxEntry(meaningCharacter)]}
+          {lang === videoConstants.cantoneseLang && meaningCharacter.literal && [hanziBoxEntry(meaningCharacter)]}
           {
               meaningContent.sense && meaningContent.sense.map((sense, idxSense) => {
                 return meaningBoxEntry(sense, idxSense, tags)
@@ -344,7 +348,7 @@ const kanjiBoxEntry = (meaningKanji) => {
   </div>
 }
 
-const hanziBoxEntry = () => {
+const hanziBoxEntry = (character) => {
   const bubbleBox = [];
   // const bubbleBox = [
   //   `${meaningKanji.literal}`,
@@ -369,7 +373,7 @@ const hanziBoxEntry = () => {
       })}
     </div>
     <div className={'flex flex-row'}>
-      <MakeMeAHanziDisplay/>
+      <MakeMeAHanziDisplay character={character.literal}/>
     </div>
   </div>
 }
