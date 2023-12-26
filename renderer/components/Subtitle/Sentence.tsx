@@ -25,23 +25,23 @@ const StyledChineseSentence = styled.button<{ subtitleStyling: CJKStyling }>`
   ruby {
     -webkit-text-fill-color: ${props => props.subtitleStyling.text.color};
   }
-  
-  &:hover ruby, &:hover rt{
+
+  &:hover ruby, &:hover rt {
     -webkit-text-fill-color: ${props => props.subtitleStyling.text.hoverColor};
     -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
   }
 
-  &:hover rt.meaningHAHA{
+  &:hover rt.meaningHAHA {
     -webkit-text-fill-color: ${props => props.subtitleStyling.textMeaning?.hoverColor ?? props.subtitleStyling.text.hoverColor};
     -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
   }
-  
+
 `
 
 interface SentenceParam {
   origin: string,
   setMeaning: any,
-  separation: any,
+  separation?: any,
   extraClass: string,
   subtitleStyling: CJKStyling,
   wordMeaning?: string,
@@ -94,7 +94,8 @@ export const Sentence = ({
           <rt className={"unselectable"}>{subtitleStyling.showRomaji && showRomaji && romaji}</rt>
         </ruby>
       })}
-      <rt style={{fontWeight: subtitleStyling.textMeaning.weight}} className={"meaningHAHA unselectable"}>{
+      <rt style={{fontWeight: subtitleStyling.textMeaning.weight}}
+          className={"meaningHAHA unselectable"}>{
           subtitleStyling.showMeaning
           && wordMeaning.length <= subtitleStyling.maximalMeaningLengthPerCharacter * origin.length
           && wordMeaning}</rt>
@@ -145,10 +146,29 @@ export const KanjiSentence = ({
 }
 
 
+export const HanziSentence = ({
+                                origin, setMeaning,
+                                extraClass, subtitleStyling,
+                              }: SentenceParam) => {
+  const handleChange = useCallback((newWord) => {
+    navigator.clipboard.writeText(newWord);
+    setMeaning(newWord)
+  }, [setMeaning]);
+  return <><StyledSentence
+      subtitleStyling={subtitleStyling}
+      className={extraClass}
+      onClick={() => {
+        handleChange(origin)
+      }}><>{origin}</>
+  </StyledSentence>
+  </>
+}
+
+
 export const ChineseSentence = ({
-                           origin, setMeaning, separation, extraClass,
-                           subtitleStyling, basicForm = '', wordMeaning = '',
-                         }: SentenceParam) => {
+                                  origin, setMeaning, separation, extraClass,
+                                  subtitleStyling, basicForm = '', wordMeaning = '',
+                                }: SentenceParam) => {
   const handleChange = useCallback((pressedString) => {
     navigator.clipboard.writeText(pressedString);
     setMeaning(pressedString)
@@ -173,7 +193,8 @@ export const ChineseSentence = ({
           <rt className={"unselectable"}>{subtitleStyling.showFurigana && val.jyutping}</rt>
         </ruby>
       })}
-      <rt style={{fontWeight: subtitleStyling.textMeaning.weight}} className={"meaningHAHA unselectable"}>{
+      <rt style={{fontWeight: subtitleStyling.textMeaning.weight}}
+          className={"meaningHAHA unselectable"}>{
           subtitleStyling.showMeaning
           && wordMeaning.length <= subtitleStyling.maximalMeaningLengthPerCharacter * origin.length
           && wordMeaning}</rt>
