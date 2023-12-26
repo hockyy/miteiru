@@ -78,7 +78,7 @@ export class Line {
     for (let i = 0; i < this.content.length; i++) {
       const word = this.content[i];
       const target = word.origin;
-      await ipcRenderer.invoke('queryCantonese', target, 2).then(val => {
+      await ipcRenderer.invoke('queryCantonese', target, 3).then(val => {
         let got = 0;
         for (const entry of val) {
           if (got) break;
@@ -87,7 +87,15 @@ export class Line {
               if (splittedContent === target) {
                 got = 1;
                 let cleanedMeaning = entry.meaning[0].split(/,|;/)[0];
-                cleanedMeaning = cleanedMeaning.replace(/\([^\)\(]*\)/, "");
+                cleanedMeaning = cleanedMeaning.replace(/\(.*/, "")
+                cleanedMeaning = cleanedMeaning.replace(/\|.*/, "");
+                for (let iter = 0; iter < 3; iter++) {
+                  cleanedMeaning = cleanedMeaning.replace(/\([^)(]*\)/, "");
+                }
+
+                for (let iter = 0; iter < 3; iter++) {
+                  cleanedMeaning = cleanedMeaning.replace(/\[[^\]\[]*\]/, "");
+                }
                 this.meaning[i] = cleanedMeaning;
                 break;
               }
