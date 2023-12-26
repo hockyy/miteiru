@@ -86,7 +86,7 @@ export class Line {
             try {
               if (splittedContent === target) {
                 got = 1;
-                let cleanedMeaning = entry.meaning[0].split(/,|;/)[0];
+                let cleanedMeaning = entry.meaning[0].split(/[,;]/)[0];
                 cleanedMeaning = cleanedMeaning.replace(/\(.*/, "")
                 cleanedMeaning = cleanedMeaning.replace(/\|.*/, "");
                 for (let iter = 0; iter < 3; iter++) {
@@ -94,7 +94,7 @@ export class Line {
                 }
 
                 for (let iter = 0; iter < 3; iter++) {
-                  cleanedMeaning = cleanedMeaning.replace(/\[[^\]\[]*\]/, "");
+                  cleanedMeaning = cleanedMeaning.replace(/\[[^\]\[]*]/, "");
                 }
                 this.meaning[i] = cleanedMeaning;
                 break;

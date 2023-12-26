@@ -6,7 +6,7 @@ import {getTags, kanjiBeginning, readingBeginning, setup as setupJmdict} from 'j
 
 import {search as searchKanji, setup as setupKanjidic} from 'kanjidic-wrapper';
 
-import {charAnywhere, charBeginning, setup as setupCanto} from 'cc-canto-wrapper';
+import {charAnywhere, charBeginning, hanzi, setup as setupCanto} from 'cc-canto-wrapper';
 import fs from "fs";
 import path from "path";
 import {getTokenizer} from "kuromojin";
@@ -223,7 +223,11 @@ if (isProd) {
     return searchKanji(KanjiDic.db, query);
   })
   ipcMain.handle('queryHanzi', async (event, query) => {
-    return {};
+    try {
+      return (await hanzi(CantoDict.db, query, 1))[0];
+    } catch (e) {
+      return {}
+    }
     // return searchKanji(KanjiDic.db, query);
   })
 
