@@ -25,7 +25,8 @@ if (isProd) {
 (async () => {
   await app.whenReady();
   const appDataDirectory = app.getPath('userData');
-
+  const cantoneseScriptFilePath = path.join(__dirname, `cantonese/cantonese.py`);
+  const cantoneseScriptAppDataPath = path.join(appDataDirectory, 'cantonese.py')
   let JMDict = {db: null, tags: {}};
   let KanjiDic = {db: null};
   let CantoDict = {db: null};
@@ -470,8 +471,9 @@ if (isProd) {
   ipcMain.handle('tokenizeUsingKuromoji', async (event, sentence) => {
     return tokenizer.tokenizeForSentence(sentence);
   });
-  const cursedPath = path.join(app.getAppPath().replace('app.asar', ''), 'renderer/public/cantonese/cantonese.py');
-  let pyshell = new PythonShell(cursedPath);
+  const scriptContent = fs.readFileSync(cantoneseScriptFilePath, 'utf-8').toString();
+  fs.writeFileSync(cantoneseScriptAppDataPath, scriptContent);
+  let pyshell = new PythonShell(cantoneseScriptAppDataPath);
   ipcMain.handle('tokenizeUsingPyCantonese', async (event, sentence) => {
     pyshell.send(sentence);
     return new Promise((resolve, reject) => {
