@@ -9,6 +9,7 @@ export const videoConstants = {
   playingClass: ["", "playing"],
   cjkRegex: /\p{Script=Han}|\p{Script=Hiragana}|\p{Script=Katakana}|\p{Script=Hangul}/gu,
   cantoneseLang: 'yue',
+  cantoneseLang2: 'zh-HK',
   englishLang: 'en',
   japaneseLang: 'ja',
 }

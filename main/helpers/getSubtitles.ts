@@ -3,6 +3,7 @@
 import axios from 'axios';
 import {find} from 'lodash';
 import {decode} from 'html-entities';
+import {videoConstants} from "../../renderer/utils/constants";
 
 function stripTags(input, allowedTags = [], replacement = '') {
   // Create a string of allowed tags, joined by '|'
@@ -15,7 +16,7 @@ function stripTags(input, allowedTags = [], replacement = '') {
   return input.replace(regex, replacement);
 }
 
-export async function getSubtitles({videoID, lang = 'ja'}) {
+export async function getSubtitles({videoID, lang = videoConstants.japaneseLang}) {
   const {data} = await axios.get(
       `https://youtube.com/watch?v=${videoID}`
   );

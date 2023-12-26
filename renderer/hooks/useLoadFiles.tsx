@@ -67,7 +67,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
         src: `${currentPath}`
       };
       const subLoader = (tmpSub, mustMatch = null) => {
-        if(mustMatch !== null && tmpSub.language !== mustMatch) return;
+        if (mustMatch !== null && tmpSub.language !== mustMatch) return;
         clearInterval(toastSetter);
         if (tmpSub.language === videoConstants.japaneseLang || tmpSub.language === videoConstants.cantoneseLang) {
           setPrimarySub(tmpSub);
@@ -86,12 +86,12 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
               update: randomUUID()
             });
           }, TOAST_TIMEOUT / 10);
-          if(tmpSub.language === videoConstants.japaneseLang) {
+          if (tmpSub.language === videoConstants.japaneseLang) {
             tmpSub.adjustJapanese(tokenizeMiteiru).then(() => {
               clearInterval(toastSetter);
             })
           }
-          if(tmpSub.language === videoConstants.cantoneseLang) {
+          if (tmpSub.language === videoConstants.cantoneseLang) {
             tmpSub.adjustCantonese(tokenizeMiteiru).then(() => {
               clearInterval(toastSetter);
             })
@@ -109,6 +109,13 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
           const tmpSub = SubtitleContainer.createFromArrayEntries(null, entries, lang)
           subLoader(tmpSub, lang);
         })
+        if (lang === videoConstants.cantoneseLang) {
+          ipcRenderer.invoke("getYoutubeSubtitle", extractVideoId(currentPath), videoConstants.cantoneseLang2).then(entries => {
+            entries = convertSubtitlesToEntries(entries)
+            const tmpSub = SubtitleContainer.createFromArrayEntries(null, entries, lang)
+            subLoader(tmpSub, lang);
+          })
+        }
       } else {
         SubtitleContainer.create(draggedSubtitle.src, lang).then(subLoader);
       }
