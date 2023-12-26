@@ -1,6 +1,6 @@
 import React, {useEffect, useMemo, useState} from "react";
 import {ipcRenderer, shell} from "electron";
-import {KanjiSentence} from "../Subtitle/Sentence";
+import {ChineseSentence, HanziSentence, KanjiSentence} from "../Subtitle/Sentence";
 import {CJKStyling, defaultMeaningBoxStyling} from "../../utils/CJKStyling";
 import {joinString} from "../../utils/utils";
 import {AwesomeButton} from "react-awesome-button";
@@ -195,7 +195,8 @@ const MeaningBox = ({
         <div className={"rounded-b-lg text-blue-800 text-lg p-2"}>
           {lang === videoConstants.japaneseLang && meaningCharacter.literal && [kanjiBoxEntry(meaningCharacter)]}
           {lang === videoConstants.cantoneseLang && meaningCharacter.literal &&
-              <HanziBoxEntry meaningHanzi={meaningCharacter}/>}
+              <HanziBoxEntry meaningHanzi={meaningCharacter} setMeaning={setMeaning}
+                             subtitleStyling={subtitleStyling}/>}
           {
               meaningContent.sense && meaningContent.sense.map((sense, idxSense) => {
                 return meaningBoxEntry(sense, idxSense, tags)
@@ -350,13 +351,12 @@ const kanjiBoxEntry = (meaningKanji) => {
 }
 
 
-const HanziBoxEntry = ({meaningHanzi}) => {
+const HanziBoxEntry = ({meaningHanzi, setMeaning, subtitleStyling}) => {
   const bubbleBox = [
-    `${meaningHanzi.literal}`,
     `CantoDict ${meaningHanzi.cantodict_id}`,
-    `${meaningHanzi.dialect}`,
-    `${meaningHanzi.stroke_count} strokes`,
-    `${meaningHanzi.freq} appearances`,
+    meaningHanzi.dialect ? `${meaningHanzi.dialect} dialect` : '',
+    meaningHanzi.stroke_count ? `${meaningHanzi.stroke_count} strokes` : '',
+    meaningHanzi.freq ? `${meaningHanzi.freq} appearances` : '',
   ].filter(val => !!val);
 
   const bubbleExplanation = useMemo(() => {
@@ -365,10 +365,10 @@ const HanziBoxEntry = ({meaningHanzi}) => {
                     query={meaningHanzi.literal}/>,
     ];
     const pinyin = meaningHanzi.pinyin
-    const decomposition = Array.from(meaningHanzi.decomposition);
-    const radical = Array.from(meaningHanzi.radical);
+    const decomposition = meaningHanzi.decomposition ? Array.from(meaningHanzi.decomposition) : [];
+    const radical = meaningHanzi.radical ? Array.from(meaningHanzi.radical) : [];
     const jyutping = meaningHanzi.jyutping;
-    const etymology = [`${meaningHanzi.etymology.type} | ${meaningHanzi.etymology.hint}`]
+    const etymology = meaningHanzi.etymology && meaningHanzi.etymology.type ? [`${meaningHanzi.etymology.type} | ${meaningHanzi.etymology.hint}`] : [];
     const notes = meaningHanzi.notes;
     const variants = meaningHanzi.variants;
     const similar = meaningHanzi.similar;
@@ -402,8 +402,21 @@ const HanziBoxEntry = ({meaningHanzi}) => {
     <div className={'flex flex-row'}>
       <MakeMeAHanziDisplay character={meaningHanzi.literal}/>
       <div className={'flex flex-col gap-2 m-3'}>
+        <div className={'text-5xl flex flex-row gap-5'}>
+
+          {meaningHanzi.decomposition && Array.from(meaningHanzi.decomposition).map((value: string, index) => {
+            return <div
+                className={"bg-white gap-0 rounded-xl p-2 border-2 border-blue-700 w-fit unselectable hovery"}>
+              <HanziSentence key={index}
+                             origin={value}
+                             setMeaning={setMeaning}
+                             extraClass={"unselectable meaning-kanji text-md"}
+                             subtitleStyling={subtitleStyling}/>
+            </div>
+          })}
+        </div>
         <div className={"flex flex-col"}>
-          {meaningHanzi.meaning.map((val, idx) => {
+          {(meaningHanzi.meaning ? meaningHanzi.meaning : []).map((val, idx) => {
             return <div key={idx} className={'text-red-600 mb-1'}>
               < span className={"font-bold mr-1"}>{idx + 1}.</span>
               {
@@ -413,7 +426,7 @@ const HanziBoxEntry = ({meaningHanzi}) => {
           })}
         </div>
         {Object.entries(bubbleExplanation).map(([key, value], index) => {
-          if (value.filter(val => (!!val)).length === 0) return;
+          if (!value || value.filter(val => (!!val)).length === 0) return;
           return <div key={index} className={containerClassName}>
             <div className={headerClassName}>{key}:</div>
             {bubbleEntryReading(value)}
@@ -428,7 +441,8 @@ const HanziBoxEntry = ({meaningHanzi}) => {
 
 const bubbleEntryReading = (readings) => {
   return <div className={"flex flex-wrap gap-3"}>
-    {readings.map((val, index) => {
+    {readings && readings.map((val, index) => {
+      if (!val) return;
       return <div key={`bubble-${index}`} className={`rounded-md px-2 bg-red-100`}>{val}</div>
     })}
   </div>
