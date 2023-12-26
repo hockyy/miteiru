@@ -304,7 +304,7 @@ if (isProd) {
   ipcMain.handle('loadCantonese', async (event) => {
     mecabCommand = 'cantonese';
     return await checkCanto({
-      canto: path.join(__dirname, 'cantonese/cccanto-webdist.json')
+      canto: path.join(__dirname, 'cantonese/cantodict.json')
     })
   })
 
@@ -335,6 +335,7 @@ if (isProd) {
   ipcMain.handle('removeDictCache', (event) => {
     removeKanjiDicCache();
     removeJMDictCache()
+    removeCantoCache()
     return true;
   })
 

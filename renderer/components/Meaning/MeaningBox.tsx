@@ -75,9 +75,9 @@ const MeaningBox = ({
       ipcRenderer.invoke('queryCantonese', meaning, 5).then(entries => {
         for (const entry of entries) {
           entry.single = []
-          for (const traditional of entry.traditional.split('，')) {
+          for (const content of entry.content.split('，')) {
             entry.single.push({
-              text: traditional
+              text: content
             })
           }
         }
