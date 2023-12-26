@@ -82,9 +82,9 @@ export class Line {
         let got = 0;
         for (const entry of val) {
           if (got) break;
-          for (const splittedTraditional of entry.traditional.split('，')) {
+          for (const splittedContent of entry.content.split('，')) {
             try {
-              if (splittedTraditional === target) {
+              if (splittedContent === target) {
                 got = 1;
                 let cleanedMeaning = entry.meaning[0].split(/,|;/)[0];
                 cleanedMeaning = cleanedMeaning.replace(/\([^\)\(]*\)/, "");

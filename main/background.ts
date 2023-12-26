@@ -201,14 +201,14 @@ if (isProd) {
 
       // Swap the exact match to front
       matches = matches.sort((a, b) => {
-            const commonA = (a.traditional.length);
-            const commonB = (b.traditional.length);
+            const commonA = (a.content.length);
+            const commonB = (b.content.length);
             if (commonA !== commonB) return commonA - commonB;
 
             const meaningA = (a.meaning.length);
             const meaningB = (b.meaning.length);
             if (meaningA !== meaningB) return meaningB - meaningA;
-            return a.traditional < b.traditional ? -1 : 1;
+            return a.content < b.content ? -1 : 1;
           }
       )
       return matches
