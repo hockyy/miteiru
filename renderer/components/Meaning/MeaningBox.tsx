@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import {ipcRenderer, shell} from "electron";
 import {KanjiSentence} from "../Subtitle/Sentence";
 import {CJKStyling, defaultMeaningBoxStyling} from "../../utils/CJKStyling";
@@ -39,7 +39,7 @@ const MeaningBox = ({
       })
     } else if (meaning.length === 1 && lang === videoConstants.cantoneseLang) {
       ipcRenderer.invoke("queryHanzi", meaning).then(result => {
-        setMeaningCharacter({literal: meaning[0]});
+        setMeaningCharacter({...result, literal: meaning[0]});
       })
     } else {
       setMeaningCharacter(initialCharacterContentState);
@@ -194,7 +194,8 @@ const MeaningBox = ({
         </div>
         <div className={"rounded-b-lg text-blue-800 text-lg p-2"}>
           {lang === videoConstants.japaneseLang && meaningCharacter.literal && [kanjiBoxEntry(meaningCharacter)]}
-          {lang === videoConstants.cantoneseLang && meaningCharacter.literal && [hanziBoxEntry(meaningCharacter)]}
+          {lang === videoConstants.cantoneseLang && meaningCharacter.literal &&
+              <HanziBoxEntry meaningHanzi={meaningCharacter}/>}
           {
               meaningContent.sense && meaningContent.sense.map((sense, idxSense) => {
                 return meaningBoxEntry(sense, idxSense, tags)
@@ -348,15 +349,41 @@ const kanjiBoxEntry = (meaningKanji) => {
   </div>
 }
 
-const hanziBoxEntry = (character) => {
-  const bubbleBox = [];
-  // const bubbleBox = [
-  //   `${meaningKanji.literal}`,
-  //   jlpt ? `JLPT N${jlpt}` : null,
-  //   grade ? `Grade ${grade}` : null,
-  //   frequency ? `Top ${meaningKanji.misc.frequency} kanji` : null,
-  //   `${meaningKanji.misc.strokeCounts[0]} writing strokes`].filter(val => !!val)
 
+const HanziBoxEntry = ({meaningHanzi}) => {
+  const bubbleBox = [
+    `${meaningHanzi.literal}`,
+    `CantoDict ${meaningHanzi.cantodict_id}`,
+    `${meaningHanzi.dialect}`,
+    `${meaningHanzi.stroke_count} strokes`,
+    `${meaningHanzi.freq} appearances`,
+  ].filter(val => !!val);
+
+  const bubbleExplanation = useMemo(() => {
+    const urls = [
+      <ExternalLink urlBase="https://cantonese.org/search.php?q=" displayText="Cantonese.org"
+                    query={meaningHanzi.literal}/>,
+    ];
+    const pinyin = meaningHanzi.pinyin
+    const decomposition = Array.from(meaningHanzi.decomposition);
+    const radical = Array.from(meaningHanzi.radical);
+    const jyutping = meaningHanzi.jyutping;
+    const etymology = [`${meaningHanzi.etymology.type} | ${meaningHanzi.etymology.hint}`]
+    const notes = meaningHanzi.notes;
+    const variants = meaningHanzi.variants;
+    const similar = meaningHanzi.similar;
+    return {
+      urls,
+      pinyin,
+      decomposition,
+      radical,
+      jyutping,
+      etymology,
+      notes,
+      variants,
+      similar
+    }
+  }, [meaningHanzi.literal]);
   const containerClassName = "flex flex-row gap-2 text-red-600 text-xl"
   const headerClassName = "flex flex-row gap-2 font-bold capitalize"
   return <div
@@ -373,10 +400,31 @@ const hanziBoxEntry = (character) => {
       })}
     </div>
     <div className={'flex flex-row'}>
-      <MakeMeAHanziDisplay character={character.literal}/>
+      <MakeMeAHanziDisplay character={meaningHanzi.literal}/>
+      <div className={'flex flex-col gap-2 m-3'}>
+        <div className={"flex flex-col"}>
+          {meaningHanzi.meaning.map((val, idx) => {
+            return <div key={idx} className={'text-red-600 mb-1'}>
+              < span className={"font-bold mr-1"}>{idx + 1}.</span>
+              {
+                val
+              }
+            </div>
+          })}
+        </div>
+        {Object.entries(bubbleExplanation).map(([key, value], index) => {
+          if (value.filter(val => (!!val)).length === 0) return;
+          return <div key={index} className={containerClassName}>
+            <div className={headerClassName}>{key}:</div>
+            {bubbleEntryReading(value)}
+          </div>
+        })}
+        <hr/>
+      </div>
     </div>
   </div>
 }
+
 
 const bubbleEntryReading = (readings) => {
   return <div className={"flex flex-wrap gap-3"}>
