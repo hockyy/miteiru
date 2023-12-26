@@ -36,7 +36,9 @@ function Home() {
         return;
       }
     } else if (tokenizerMode === 2) {
+      setCheck(checkingMessage);
       const res = await ipcRenderer.invoke('loadCantonese');
+      setCheck(res);
       if (res.ok !== 1) {
         return;
       }

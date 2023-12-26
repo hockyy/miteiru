@@ -46,7 +46,7 @@
     "ass-compiler": "^0.1.8",
     "async-await-queue": "^2.1.4",
     "axios": "^1.4.0",
-    "cc-canto-wrapper": "^1.0.0",
+    "cc-canto-wrapper": "^1.1.0",
     "detect-file-encoding-and-language": "^2.4.0",
     "electron-serve": "^1.1.0",
     "electron-store": "^8.1.0",
