@@ -473,7 +473,10 @@ if (isProd) {
   });
   const scriptContent = fs.readFileSync(cantoneseScriptFilePath, 'utf-8').toString();
   fs.writeFileSync(cantoneseScriptAppDataPath, scriptContent);
-  let pyshell = new PythonShell(cantoneseScriptAppDataPath);
+  let pyshellOptions = {
+    pythonOptions: ['-X', 'utf8']
+  }
+  let pyshell = new PythonShell(cantoneseScriptAppDataPath, pyshellOptions);
   ipcMain.handle('tokenizeUsingPyCantonese', async (event, sentence) => {
     pyshell.send(sentence);
     return new Promise((resolve, reject) => {
