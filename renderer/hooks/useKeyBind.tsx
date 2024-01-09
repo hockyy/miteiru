@@ -11,7 +11,8 @@ export default function useKeyBind(
     setShowSidebar,
     setPrimarySub,
     setSecondarySub,
-    primarySub
+    primarySub,
+    undo
 ) {
   const router = useRouter();
   useEffect(() => {
@@ -35,6 +36,8 @@ export default function useKeyBind(
         setGlobalSubtitleId(primarySub.id);
       } else if (event.code === "KeyP") {
         setSecondarySub(new SubtitleContainer(''));
+      } else if (event.code === "KeyD") {
+        undo();
       } else if (event.code === "Space") {
         event.preventDefault();
         event.stopPropagation();
