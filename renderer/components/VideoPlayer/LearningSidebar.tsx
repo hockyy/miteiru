@@ -1,22 +1,14 @@
 import {ArrowLeft} from "./Icons";
 import React from "react";
-import {PopoverPicker} from "./PopoverPicker";
-import {
-  CJKStyling, defaultLearningStyling,
-  defaultPrimarySubtitleStyling,
-  defaultSecondarySubtitleStyling
-} from "../../utils/CJKStyling";
-import {ipcRenderer} from "electron";
-import Toggle from "./Toggle";
-import {AwesomeButton} from "react-awesome-button";
+import {defaultLearningStyling} from "../../utils/CJKStyling";
 import {StylingBox} from "./Sidebar";
 
 export const LearningSidebar = ({
-                          showSidebar,
-                          setShowSidebar,
-                          primaryStyling,
-                          setPrimaryStyling,
-                        }) => {
+                                  showSidebar,
+                                  setShowSidebar,
+                                  primaryStyling,
+                                  setPrimaryStyling,
+                                }) => {
   return <div style={{
     transition: "all 0.3s ease-out",
     transform: `translate(${!showSidebar ? "30vw" : "0"}, 0`
