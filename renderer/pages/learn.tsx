@@ -19,7 +19,7 @@ import {videoConstants} from "../utils/constants";
 
 function Learn() {
 
-  const {meaning, setMeaning} = useMeaning();
+  const {meaning, setMeaning, undo} = useMeaning();
   const [currentTime, setCurrentTime] = useState(0);
   const [primarySub, setPrimarySub] = useState(new SubtitleContainer(''))
   const [directInput, setDirectInput] = useState('');

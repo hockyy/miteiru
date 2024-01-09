@@ -48,7 +48,7 @@ function Video() {
     secondaryStyling,
     setSecondaryStyling
   } = useSubtitle();
-  const {meaning, setMeaning} = useMeaning();
+  const {meaning, setMeaning, undo} = useMeaning();
   const {
     duration,
     deltaTime,
@@ -63,7 +63,7 @@ function Video() {
           primaryStyling,
           tokenizeMiteiru, setEnableSeeker, changeTimeTo, player, lang);
   const {showController, setShowController, showSidebar, setShowSidebar} = useMenuDisplay();
-  useKeyBind(setMeaning, setShowController, setShowSidebar, setPrimarySub, setSecondarySub, primarySub);
+  useKeyBind(setMeaning, setShowController, setShowSidebar, setPrimarySub, setSecondarySub, primarySub, undo);
   const {togglePlay, isPlaying} = useVideoPlayingToggle(player, metadata);
   useVideoKeyboardControls(togglePlay, deltaTime, setPrimaryShift, setSecondaryShift, setToastInfo);
   usePlayNextAfterEnd(player, currentTime, onVideoChangeHandler, duration, setEnableSeeker)
