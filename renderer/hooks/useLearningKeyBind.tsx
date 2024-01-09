@@ -8,6 +8,7 @@ import {useRouter} from "next/router";
 export default function useLearningKeyBind(
     setMeaning,
     setShowSidebar,
+    undo
 ) {
   const router = useRouter();
   useEffect(() => {
@@ -18,6 +19,8 @@ export default function useLearningKeyBind(
         await router.push('/home');
       } else if (event.code === "KeyL") {
         await router.push('/video');
+      } else if (event.code === "KeyD") {
+        undo();
       } else if (event.code === "KeyX") {
         setShowSidebar((old) => {
           return !old;

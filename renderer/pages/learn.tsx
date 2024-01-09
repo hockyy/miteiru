@@ -25,7 +25,7 @@ function Learn() {
   const [directInput, setDirectInput] = useState('');
   const [showSidebar, setShowSidebar] = useState(0)
   const [primaryStyling, setPrimaryStyling] = useStoreData('user.styling.learning', defaultLearningStyling);
-  useLearningKeyBind(setMeaning, setShowSidebar)
+  useLearningKeyBind(setMeaning, setShowSidebar, undo)
   const router = useRouter();
   const {tokenizerMode, tokenizeMiteiru, lang} = useMiteiruTokenizer();
 
