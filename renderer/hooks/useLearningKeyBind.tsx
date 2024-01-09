@@ -15,13 +15,13 @@ export default function useLearningKeyBind(
     const handleKeyPress = async (event) => {
       if (event.code === "Escape") {
         setMeaning("");
-      } else if (event.code === "KeyQ") {
+      } else if (event.code === "KeyQ" && event.ctrlKey) {
         await router.push('/home');
-      } else if (event.code === "KeyL") {
+      } else if (event.code === "KeyL" && event.ctrlKey) {
         await router.push('/video');
-      } else if (event.code === "KeyD") {
+      } else if (event.code === "KeyD" && event.ctrlKey) {
         undo();
-      } else if (event.code === "KeyX") {
+      } else if (event.code === "KeyX" && event.ctrlKey) {
         setShowSidebar((old) => {
           return !old;
         });
