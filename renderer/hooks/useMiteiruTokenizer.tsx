@@ -3,12 +3,12 @@ import {ipcRenderer} from "electron";
 import {getFurigana, processKuromojinToSeparations, ShunouWordWithSeparations} from "shunou";
 import Conjugator from 'jp-verbs';
 import {videoConstants} from "../utils/constants";
-import video from "../pages/video";
 
 const langMap = {
   "mecab": videoConstants.japaneseLang,
   "kuromoji": videoConstants.japaneseLang,
-  "cantonese": videoConstants.cantoneseLang
+  "cantonese": videoConstants.cantoneseLang,
+  "jieba": videoConstants.chineseLang
 }
 
 const parseVerbs = async (res) => {
@@ -148,6 +148,8 @@ const useMiteiruTokenizer = (): { tokenizeMiteiru: (sentence: string) => Promise
     } else if (tokenizerMode.includes('mecab')) {
       res = getFurigana(sentence, tokenizerMode);
       res = await parseVerbs(res);
+    } else if (tokenizerMode === "jieba") {
+      res = await ipcRenderer.invoke('tokenizeUsingJieba', sentence);
     }
     return res;
   }, [tokenizerMode]);

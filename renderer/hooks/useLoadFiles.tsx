@@ -69,7 +69,9 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       const subLoader = (tmpSub, mustMatch = null) => {
         if (mustMatch !== null && tmpSub.language !== mustMatch) return;
         clearInterval(toastSetter);
-        if (tmpSub.language === videoConstants.japaneseLang || tmpSub.language === videoConstants.cantoneseLang) {
+        if (tmpSub.language === videoConstants.japaneseLang
+            || tmpSub.language === videoConstants.cantoneseLang
+            || tmpSub.language === videoConstants.chineseLang) {
           setPrimarySub(tmpSub);
           setGlobalSubtitleId(tmpSub.id);
         } else {
@@ -79,7 +81,9 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
           message: 'Subtitle loaded',
           update: randomUUID()
         });
-        if (tmpSub.language === videoConstants.japaneseLang || tmpSub.language === videoConstants.cantoneseLang) {
+        if (tmpSub.language === videoConstants.japaneseLang
+            || tmpSub.language === videoConstants.cantoneseLang
+            || tmpSub.language === videoConstants.chineseLang) {
           const toastSetter = setInterval(() => {
             setToastInfo({
               message: `${tmpSub.language} cache: ${tmpSub.progress}`,
@@ -93,6 +97,11 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
           }
           if (tmpSub.language === videoConstants.cantoneseLang) {
             tmpSub.adjustCantonese(tokenizeMiteiru).then(() => {
+              clearInterval(toastSetter);
+            })
+          }
+          if (tmpSub.language === videoConstants.chineseLang) {
+            tmpSub.adjustChinese(tokenizeMiteiru).then(() => {
               clearInterval(toastSetter);
             })
           }

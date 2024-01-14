@@ -37,7 +37,8 @@ const MeaningBox = ({
           setMeaningCharacter({...result, wanikani: waniResult});
         })
       })
-    } else if (meaning.length === 1 && lang === videoConstants.cantoneseLang) {
+    } else if (meaning.length === 1 &&
+        (lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang)) {
       ipcRenderer.invoke("queryHanzi", meaning).then(result => {
         setMeaningCharacter({...result, literal: meaning[0]});
       })
@@ -71,7 +72,7 @@ const MeaningBox = ({
       ipcRenderer.invoke('tags').then(val => {
         setTags(val)
       })
-    } else if (lang === videoConstants.cantoneseLang) {
+    } else if (lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang) {
       ipcRenderer.invoke('queryCantonese', meaning, 5).then(entries => {
         for (const entry of entries) {
           entry.single = []
@@ -194,9 +195,10 @@ const MeaningBox = ({
         </div>
         <div className={"rounded-b-lg text-blue-800 text-lg p-2"}>
           {lang === videoConstants.japaneseLang && meaningCharacter.literal && [kanjiBoxEntry(meaningCharacter)]}
-          {lang === videoConstants.cantoneseLang && meaningCharacter.literal &&
+          {(lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang) && meaningCharacter.literal &&
               <HanziBoxEntry meaningHanzi={meaningCharacter} setMeaning={setMeaning}
-                             subtitleStyling={subtitleStyling}/>}
+                             subtitleStyling={subtitleStyling}/>
+          }
           {
               meaningContent.sense && meaningContent.sense.map((sense, idxSense) => {
                 return meaningBoxEntry(sense, idxSense, tags)
@@ -204,6 +206,9 @@ const MeaningBox = ({
           }
           {
               !meaningContent.sense && lang == videoConstants.cantoneseLang && meaningBoxEntryChinese(meaningContent)
+          }
+          {
+              !meaningContent.sense && lang == videoConstants.chineseLang && meaningBoxEntryChinese(meaningContent)
           }
         </div>
       </div>

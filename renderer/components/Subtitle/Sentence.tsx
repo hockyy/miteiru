@@ -190,7 +190,7 @@ export const ChineseSentence = ({
           rubyPosition: "over",
         }} key={index}>
           {val.main}
-          <rt className={"unselectable"}>{subtitleStyling.showFurigana && val.jyutping}</rt>
+          <rt className={"unselectable"}>{subtitleStyling.showFurigana && (val.jyutping ?? val.pinyin)}</rt>
         </ruby>
       })}
       <rt style={{fontWeight: subtitleStyling.textMeaning.weight}}

@@ -191,6 +191,15 @@ export class SubtitleContainer {
       this.progress = `${((i + 1) * 100 / this.lines.length).toFixed(2)}%`;
     }
   }
+
+  async adjustChinese(tokenizeMiteiru: (string) => Promise<any[]>) {
+    for (let i = 0; i < this.lines.length; i++) {
+      if (globalSubtitleId !== this.id) return;
+      const line = this.lines[i];
+      await line.fillContentSeparations(tokenizeMiteiru);
+      this.progress = `${((i + 1) * 100 / this.lines.length).toFixed(2)}%`;
+    }
+  }
 }
 
 export function getLineByTime(subtitle: SubtitleContainer, shift: number, t: number) {
