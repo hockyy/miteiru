@@ -27,12 +27,14 @@ if (isProd) {
   const appDataDirectory = app.getPath('userData');
   const cantoneseScriptFilePath = path.join(__dirname, `cantonese/cantonese.py`);
   const cantoneseScriptAppDataPath = path.join(appDataDirectory, 'cantonese.py')
+  const chineseScriptFilePath = path.join(__dirname, `chinese/chinese.py`);
+  const chineseScriptAppDataPath = path.join(appDataDirectory, 'chinese.py')
   let JMDict = {db: null, tags: {}};
   let KanjiDic = {db: null};
   let CantoDict = {db: null};
   let wanikanji = {};
   let waniradical = {};
-  let mecabCommand = 'mecab'
+  let tokenizerCommand = 'mecab'
   const waniKaniKanjiDirectory = path.join(__dirname, 'wanikani/kanji.json');
   const waniKaniRadicalDirectory = path.join(__dirname, 'wanikani/radical.json');
   fs.readFile(waniKaniKanjiDirectory, 'utf8', (err, data) => {
@@ -300,15 +302,23 @@ if (isProd) {
   })
 
   ipcMain.handle('loadDefaultMode', async (event) => {
-    mecabCommand = 'kuromoji';
+    tokenizerCommand = 'kuromoji';
     await setUpKanjiDic(path.join(__dirname, 'dict/kanjidic.json'))
     return await checkJMDict({
       jmdict: path.join(__dirname, 'dict/jmdict.json')
     });
   })
+
   ipcMain.handle('loadCantonese', async (event) => {
-    mecabCommand = 'cantonese';
+    tokenizerCommand = 'cantonese';
     return await checkCanto({
+      canto: path.join(__dirname, 'cantonese/cantodict.json')
+    })
+  })
+
+  ipcMain.handle('loadChinese', async (event) => {
+    tokenizerCommand = 'jieba';
+    return await checkJieba({
       canto: path.join(__dirname, 'cantonese/cantodict.json')
     })
   })
@@ -405,6 +415,7 @@ if (isProd) {
     return await loadJMDict(config);
   }
 
+  let pyshell = null;
   const checkCanto = async (config) => {
     if (!fs.existsSync(config.canto) || !fs.lstatSync(config.canto).isFile()) return {
       ok: 0,
@@ -414,7 +425,30 @@ if (isProd) {
       ok: 0,
       message: `'${config.canto}' is not a JSON file`
     };
+    const scriptContent = fs.readFileSync(cantoneseScriptFilePath, 'utf-8').toString();
+    fs.writeFileSync(cantoneseScriptAppDataPath, scriptContent);
+    let pyshellOptions = {
+      pythonOptions: ['-X', 'utf8']
+    }
+    pyshell = new PythonShell(cantoneseScriptAppDataPath, pyshellOptions);
+    return await loadCantoDict(config);
+  }
 
+  const checkJieba = async (config) => {
+    if (!fs.existsSync(config.canto) || !fs.lstatSync(config.canto).isFile()) return {
+      ok: 0,
+      message: `canto '${config.canto}' doesn't exist`
+    };
+    if (!(config.canto.endsWith('.json'))) return {
+      ok: 0,
+      message: `'${config.canto}' is not a JSON file`
+    };
+    const scriptContent = fs.readFileSync(chineseScriptFilePath, 'utf-8').toString();
+    fs.writeFileSync(chineseScriptAppDataPath, scriptContent);
+    let pyshellOptions = {
+      pythonOptions: ['-X', 'utf8']
+    }
+    pyshell = new PythonShell(chineseScriptAppDataPath, pyshellOptions);
     return await loadCantoDict(config);
   }
 
@@ -431,13 +465,13 @@ if (isProd) {
       };
     }
 
-    mecabCommand = config.mecab;
+    tokenizerCommand = config.mecab;
 
     return okSetup;
   }
 
   ipcMain.handle('getTokenizerMode', async () => {
-    return mecabCommand;
+    return tokenizerCommand;
   })
   ipcMain.handle('validateConfig', async (event, config) => {
     let jmdictRes;
@@ -471,13 +505,16 @@ if (isProd) {
   ipcMain.handle('tokenizeUsingKuromoji', async (event, sentence) => {
     return tokenizer.tokenizeForSentence(sentence);
   });
-  const scriptContent = fs.readFileSync(cantoneseScriptFilePath, 'utf-8').toString();
-  fs.writeFileSync(cantoneseScriptAppDataPath, scriptContent);
-  let pyshellOptions = {
-    pythonOptions: ['-X', 'utf8']
-  }
-  let pyshell = new PythonShell(cantoneseScriptAppDataPath, pyshellOptions);
+
   ipcMain.handle('tokenizeUsingPyCantonese', async (event, sentence) => {
+    pyshell.send(sentence);
+    return new Promise((resolve, reject) => {
+      pyshell.once('message', function (message) {
+        resolve(JSON.parse(message));
+      });
+    });
+  });
+  ipcMain.handle('tokenizeUsingJieba', async (event, sentence) => {
     pyshell.send(sentence);
     return new Promise((resolve, reject) => {
       pyshell.once('message', function (message) {

@@ -13,6 +13,13 @@
         "filter": [
           "**/*"
         ]
+      },
+      {
+        "from": "./renderer/public/chinese/chinese.py",
+        "to": "renderer/public/chinese/chinese.py",
+        "filter": [
+          "**/*"
+        ]
       }
     ],
     "appId": "id.hocky.miteiru",

@@ -1,8 +1,4 @@
 import {useEffect} from 'react';
-import {
-  setGlobalSubtitleId,
-  SubtitleContainer
-} from "../components/Subtitle/DataStructures";
 import {useRouter} from "next/router";
 
 export default function useLearningKeyBind(
