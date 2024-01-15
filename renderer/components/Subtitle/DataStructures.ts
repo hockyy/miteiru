@@ -73,12 +73,12 @@ export class Line {
     }
   }
 
-  async fillContentWithLearningCantonese() {
+  async fillContentWithLearningChinese() {
     this.meaning = Array(this.content.length).fill('');
     for (let i = 0; i < this.content.length; i++) {
       const word = this.content[i];
       const target = word.origin;
-      await ipcRenderer.invoke('queryCantonese', target, 3).then(val => {
+      await ipcRenderer.invoke('queryChinese', target, 3).then(val => {
         let got = 0;
         for (const entry of val) {
           if (got) break;
@@ -182,21 +182,12 @@ export class SubtitleContainer {
     }
   }
 
-  async adjustCantonese(tokenizeMiteiru: (string) => Promise<any[]>) {
-    for (let i = 0; i < this.lines.length; i++) {
-      if (globalSubtitleId !== this.id) return;
-      const line = this.lines[i];
-      await line.fillContentSeparations(tokenizeMiteiru);
-      await line.fillContentWithLearningCantonese();
-      this.progress = `${((i + 1) * 100 / this.lines.length).toFixed(2)}%`;
-    }
-  }
-
   async adjustChinese(tokenizeMiteiru: (string) => Promise<any[]>) {
     for (let i = 0; i < this.lines.length; i++) {
       if (globalSubtitleId !== this.id) return;
       const line = this.lines[i];
       await line.fillContentSeparations(tokenizeMiteiru);
+      await line.fillContentWithLearningChinese();
       this.progress = `${((i + 1) * 100 / this.lines.length).toFixed(2)}%`;
     }
   }
