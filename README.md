@@ -27,7 +27,7 @@
 <table style="border: none;">
   <tr>
     <td><img src="renderer/public/images/logo.png" alt="Miteiru Logo" /></td>
-    <td> Miteiru is an open source Electron video player to learn Japanese. It has modular main language dictionary and tokenizer (morphological analyzer), heavily based on External software <a href="https://taku910.github.io/mecab/">MeCab</a>, and optinally needs <a href="https://github.com/scriptin/jmdict-simplified">JMDict</a> to give language info box. This software is heavily inspired by <a href="https://ookii-tsuki.github.io/Anisubber/">Anisubber</a>. </td>
+    <td> Miteiru is an open source Electron video player to learn Chinese, Japanese, and Cantonese. It has modular main language dictionary and tokenizer (morphological analyzer), heavily based on External software <a href="https://taku910.github.io/mecab/">MeCab</a>, and optinally needs <a href="https://github.com/scriptin/jmdict-simplified">JMDict</a> to give language info box. This software is heavily inspired by <a href="https://ookii-tsuki.github.io/Anisubber/">Anisubber</a>. </td>
   </tr>
 </table>
 
@@ -232,7 +232,7 @@ dicdir =  $(rcpath)\..\dic\unidic
 - Will support Android.
 - Miteiru will have built-in Tokenizer and Dictionary, and supports French, German, Bahasa
   Indonesia, and many more.
-- Miteiru will support Chinese and Korean too!
+- Miteiru will support Korean too!
 
 https://user-images.githubusercontent.com/19528709/236619520-076c863a-6c14-4f6e-8f9b-5d1e660fd646.mp4
 
