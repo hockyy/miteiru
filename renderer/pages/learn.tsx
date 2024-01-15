@@ -39,7 +39,7 @@ function Learn() {
           setCurrentTime(old => (old ^ 1))
         })
       } else {
-        tmpSub.adjustCantonese(tokenizeMiteiru).then(() => {
+        tmpSub.adjustChinese(tokenizeMiteiru).then(() => {
           setCurrentTime(old => (old ^ 1))
         })
       }

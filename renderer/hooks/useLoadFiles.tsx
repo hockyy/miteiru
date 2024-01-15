@@ -95,12 +95,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
               clearInterval(toastSetter);
             })
           }
-          if (tmpSub.language === videoConstants.cantoneseLang) {
-            tmpSub.adjustCantonese(tokenizeMiteiru).then(() => {
-              clearInterval(toastSetter);
-            })
-          }
-          if (tmpSub.language === videoConstants.chineseLang) {
+          if (tmpSub.language === videoConstants.cantoneseLang || tmpSub.language === videoConstants.chineseLang) {
             tmpSub.adjustChinese(tokenizeMiteiru).then(() => {
               clearInterval(toastSetter);
             })

@@ -6,7 +6,7 @@ import {getTags, kanjiBeginning, readingBeginning, setup as setupJmdict} from 'j
 
 import {search as searchKanji, setup as setupKanjidic} from 'kanjidic-wrapper';
 
-import {charAnywhere, charBeginning, hanzi, setup as setupCanto} from 'cc-canto-wrapper';
+import {charAnywhere, charBeginning, hanzi, setup as setupChinese} from 'cc-chinese-wrapper';
 import fs from "fs";
 import path from "path";
 import {getTokenizer} from "kuromojin";
@@ -31,7 +31,7 @@ if (isProd) {
   const chineseScriptAppDataPath = path.join(appDataDirectory, 'chinese.py')
   let JMDict = {db: null, tags: {}};
   let KanjiDic = {db: null};
-  let CantoDict = {db: null};
+  let ChineseDict = {db: null};
   let wanikanji = {};
   let waniradical = {};
   let tokenizerCommand = 'mecab'
@@ -54,6 +54,7 @@ if (isProd) {
   const jmdictDBDirectory = path.join(appDataDirectory, `jmdict-db`);
   const kanjidicDBDirectory = path.join(appDataDirectory, `kanjidic-db`);
   const cantoDBDirectory = path.join(appDataDirectory, `cantodic-db`);
+  const chineseDBDirectory = path.join(appDataDirectory, `cccedict-db`);
   const setUpJMDict = async (filename) => {
     try {
       if (JMDict.db) {
@@ -72,14 +73,14 @@ if (isProd) {
     }
   }
 
-  const setUpCantoDict = async (filename) => {
+  const setUpChineseDict = async (dbDir, filename) => {
     try {
-      if (CantoDict.db) {
-        CantoDict.db.close()
+      if (ChineseDict.db) {
+        ChineseDict.db.close()
       }
-      const cantoSetup = await setupCanto(cantoDBDirectory, filename);
-      CantoDict = {
-        db: cantoSetup.db,
+      const chineseSetup = await setupChinese(dbDir, filename);
+      ChineseDict = {
+        db: chineseSetup.db,
       }
       return true;
     } catch (e) {
@@ -132,12 +133,16 @@ if (isProd) {
     }
   }
 
-  const removeCantoCache = () => {
-    if (CantoDict.db) {
-      CantoDict.db.close()
+  const removeChineseCache = () => {
+    if (ChineseDict.db) {
+      ChineseDict.db.close()
     }
     try {
       fs.rmSync(cantoDBDirectory, {
+        recursive: true,
+        force: true
+      })
+      fs.rmSync(chineseDBDirectory, {
         recursive: true,
         force: true
       })
@@ -145,7 +150,6 @@ if (isProd) {
       console.error(e)
     }
   }
-
 
   const mainWindow = createWindow('main', {
     width: 1000,
@@ -194,11 +198,11 @@ if (isProd) {
   })
 
 
-  ipcMain.handle('queryCantonese', async (event, query, limit) => {
+  ipcMain.handle('queryChinese', async (event, query, limit) => {
     let matches = []
     try {
-      matches = matches.concat(await charBeginning(CantoDict.db, query, limit));
-      matches = matches.concat(await charAnywhere(CantoDict.db, query, limit));
+      matches = matches.concat(await charBeginning(ChineseDict.db, query, limit));
+      matches = matches.concat(await charAnywhere(ChineseDict.db, query, limit));
       const ids = matches.map(o => o.id)
       matches = matches.filter(({id}, index) => !ids.includes(id, index + 1))
 
@@ -227,7 +231,7 @@ if (isProd) {
   })
   ipcMain.handle('queryHanzi', async (event, query) => {
     try {
-      return (await hanzi(CantoDict.db, query, 1))[0];
+      return (await hanzi(ChineseDict.db, query, 1))[0];
     } catch (e) {
       return {}
     }
@@ -311,15 +315,21 @@ if (isProd) {
 
   ipcMain.handle('loadCantonese', async (event) => {
     tokenizerCommand = 'cantonese';
-    return await checkCanto({
-      canto: path.join(__dirname, 'cantonese/cantodict.json')
+    return await checkChinese({
+      dict: path.join(__dirname, 'cantonese/cantodict.json'),
+      appDataPath: cantoneseScriptAppDataPath,
+      scriptFilePath: cantoneseScriptFilePath,
+      dbDir: cantoDBDirectory
     })
   })
 
   ipcMain.handle('loadChinese', async (event) => {
     tokenizerCommand = 'jieba';
-    return await checkJieba({
-      canto: path.join(__dirname, 'cantonese/cantodict.json')
+    return await checkChinese({
+      dict: path.join(__dirname, 'chinese/chinese.json'),
+      appDataPath: chineseScriptAppDataPath,
+      scriptFilePath: chineseScriptFilePath,
+      dbDir: chineseDBDirectory
     })
   })
 
@@ -350,7 +360,7 @@ if (isProd) {
   ipcMain.handle('removeDictCache', (event) => {
     removeKanjiDicCache();
     removeJMDictCache()
-    removeCantoCache()
+    removeChineseCache()
     return true;
   })
 
@@ -389,9 +399,9 @@ if (isProd) {
     }
   }
 
-  const loadCantoDict = async (config) => {
+  const loadChineseDict = async (config) => {
     // Load DB Here
-    const ret = await setUpCantoDict(config.canto);
+    const ret = await setUpChineseDict(config.dbDir, config.dict);
     if (ret) {
       return okSetup;
     } else {
@@ -416,40 +426,22 @@ if (isProd) {
   }
 
   let pyshell = null;
-  const checkCanto = async (config) => {
-    if (!fs.existsSync(config.canto) || !fs.lstatSync(config.canto).isFile()) return {
+  const checkChinese = async (config) => {
+    if (!fs.existsSync(config.dict) || !fs.lstatSync(config.dict).isFile()) return {
       ok: 0,
-      message: `canto '${config.canto}' doesn't exist`
+      message: `Chinese '${config.dict}' doesn't exist`
     };
-    if (!(config.canto.endsWith('.json'))) return {
+    if (!(config.dict.endsWith('.json'))) return {
       ok: 0,
-      message: `'${config.canto}' is not a JSON file`
+      message: `'${config.dict}' is not a JSON file`
     };
-    const scriptContent = fs.readFileSync(cantoneseScriptFilePath, 'utf-8').toString();
-    fs.writeFileSync(cantoneseScriptAppDataPath, scriptContent);
+    const scriptContent = fs.readFileSync(config.scriptFilePath, 'utf-8').toString();
+    fs.writeFileSync(config.appDataPath, scriptContent);
     let pyshellOptions = {
       pythonOptions: ['-X', 'utf8']
     }
-    pyshell = new PythonShell(cantoneseScriptAppDataPath, pyshellOptions);
-    return await loadCantoDict(config);
-  }
-
-  const checkJieba = async (config) => {
-    if (!fs.existsSync(config.canto) || !fs.lstatSync(config.canto).isFile()) return {
-      ok: 0,
-      message: `canto '${config.canto}' doesn't exist`
-    };
-    if (!(config.canto.endsWith('.json'))) return {
-      ok: 0,
-      message: `'${config.canto}' is not a JSON file`
-    };
-    const scriptContent = fs.readFileSync(chineseScriptFilePath, 'utf-8').toString();
-    fs.writeFileSync(chineseScriptAppDataPath, scriptContent);
-    let pyshellOptions = {
-      pythonOptions: ['-X', 'utf8']
-    }
-    pyshell = new PythonShell(chineseScriptAppDataPath, pyshellOptions);
-    return await loadCantoDict(config);
+    pyshell = new PythonShell(config.appDataPath, pyshellOptions);
+    return await loadChineseDict(config);
   }
 
   const checkMecab = (config) => {

@@ -73,7 +73,7 @@ const MeaningBox = ({
         setTags(val)
       })
     } else if (lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang) {
-      ipcRenderer.invoke('queryCantonese', meaning, 5).then(entries => {
+      ipcRenderer.invoke('queryChinese', meaning, 5).then(entries => {
         for (const entry of entries) {
           entry.single = []
           for (const content of entry.content.split('，')) {
