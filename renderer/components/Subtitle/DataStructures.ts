@@ -82,21 +82,30 @@ export class Line {
         let got = 0;
         for (const entry of val) {
           if (got) break;
-          for (const splittedContent of entry.content.split('，')) {
+          for (const splittedContent of [...entry.content.split('，'), ...entry.simplified.split(', ')]) {
             try {
               if (splittedContent === target) {
                 got = 1;
-                let cleanedMeaning = entry.meaning[0].split(/[,;]/)[0];
-                cleanedMeaning = cleanedMeaning.replace(/\(.*/, "")
-                cleanedMeaning = cleanedMeaning.replace(/\|.*/, "");
+                let cleanedFirst = entry.meaning.join('\n')
                 for (let iter = 0; iter < 3; iter++) {
-                  cleanedMeaning = cleanedMeaning.replace(/\([^)(]*\)/, "");
+                  cleanedFirst = cleanedFirst.replace(/\([^)(]*\)/, "");
                 }
-
                 for (let iter = 0; iter < 3; iter++) {
-                  cleanedMeaning = cleanedMeaning.replace(/\[[^\]\[]*]/, "");
+                  cleanedFirst = cleanedFirst.replace(/\[[^\]\[]*]/, "");
                 }
-                this.meaning[i] = cleanedMeaning;
+                const tmpMeaning = cleanedFirst.split(/[,;\n]/);
+                if(tmpMeaning.length > 0 && tmpMeaning[0].length > 10) {
+                  tmpMeaning.sort((a, b) => a.length - b.length);
+                }
+                for (const meaningEl of tmpMeaning) {
+                  let cleanedMeaning = meaningEl.trim();
+                  cleanedMeaning = cleanedMeaning.replace(/\(.*/, "")
+                  cleanedMeaning = cleanedMeaning.replace(/\|.*/, "");
+                  if (cleanedMeaning !== "" && cleanedMeaning.length <= 10) {
+                    this.meaning[i] = cleanedMeaning;
+                    break;
+                  }
+                }
                 break;
               }
             } catch (ignored) {
