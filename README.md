@@ -92,6 +92,7 @@
 - I made the .deb and .AppImage, currently no other build is provided because I'm too lazy
 
 ## How to integrate with Whisper
+> As per February 3rd, 2024 [MacWhisper](https://goodsnooze.gumroad.com/l/macwhisper) is a really good UI for Whisper in mac, anyway if you want to run whisper on other OS or for free:
 
 - clone this
   repo [git@github.com:ggerganov/whisper.cpp.git](https://github.com/ggerganov/whisper.cpp)
@@ -137,7 +138,11 @@ well)
 npm install
 npm run script:initrepo
 npm run dev # This to run dev
-npm run build # This to build
+npm run build:nsis # This to build for Windows
+npm run build:portable # This to build for Windows Portable
+npm run build:linux20 # This to build for Linux 20.04
+npm run build:linux22 # This to build for Linux 22.04
+npm run build # this is for mac
 ```
 
 ## Mecab and Custom Dictionary Setup (Optional)
