@@ -16,9 +16,15 @@ const shortcutInformation = [
     description: "Exit From CJK Information Box"
   }, {
     key: "O",
-    description: "Remove CJK Subtitle"
+    description: "Toggle Show CJK Subtitle"
   }, {
     key: "P",
+    description: "Toggle Show Other/Secondary Subtitle"
+  }, {
+    key: "Ctrl + O",
+    description: "Remove CJK Subtitle"
+  }, {
+    key: "Ctrl + P",
     description: "Remove Other/Secondary Subtitle"
   }, {
     key: "L",
@@ -30,10 +36,10 @@ const shortcutInformation = [
     key: "]",
     description: "Shift CJK Subtitle Faster"
   }, {
-    key: "⌃[",
+    key: "Ctrl + [",
     description: "Shift Main Subtitle Slower"
   }, {
-    key: "⌃]",
+    key: "Ctrl + ]",
     description: "Shift Main Subtitle Faster"
   }]
 

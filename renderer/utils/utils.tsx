@@ -59,8 +59,10 @@ const getFormattedNameFromPath = (path) => {
   return path ? (' - ' + pathList[pathList.length - 1]) : ''
 
 }
-export const getMiteiruVideoTitle = (videoPath = '', primarySub = '', secondarySub = '') => {
-  return `Miteiru${getFormattedNameFromPath(videoPath)}${getFormattedNameFromPath(primarySub)}${getFormattedNameFromPath(secondarySub)}`
+export const getMiteiruVideoTitle = (videoPath = '', primarySub = '', secondarySub = '', showPrimarySub: boolean, showSecondarySub: boolean) => {
+  let tmpTitle = `Miteiru${getFormattedNameFromPath(videoPath)}${getFormattedNameFromPath(primarySub)}${getFormattedNameFromPath(secondarySub)}`
+  tmpTitle += `-CJK${showPrimarySub ? '✅' : '❌'}-Other${showSecondarySub ? '✅' : '❌'}`
+  return tmpTitle
 }
 
 

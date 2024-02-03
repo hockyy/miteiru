@@ -7,10 +7,12 @@ const useSubtitle = () => {
   const [primarySub, setPrimarySub] = useState(new SubtitleContainer(''));
   const [primaryShift, setPrimaryShift] = useState(0);
   const [primaryStyling, setPrimaryStyling] = useStoreData('user.styling.primary', defaultPrimarySubtitleStyling);
+  const [showPrimarySub, setShowPrimarySub] = useState(true);
 
   const [secondarySub, setSecondarySub] = useState(new SubtitleContainer(''));
   const [secondaryShift, setSecondaryShift] = useState(0);
   const [secondaryStyling, setSecondaryStyling] = useStoreData('user.styling.secondary', defaultPrimarySubtitleStyling);
+  const [showSecondarySub, setShowSecondarySub] = useState(true);
 
   return {
     primarySub,
@@ -24,7 +26,11 @@ const useSubtitle = () => {
     primaryStyling,
     setPrimaryStyling,
     secondaryStyling,
-    setSecondaryStyling
+    setSecondaryStyling,
+    showPrimarySub,
+    setShowPrimarySub,
+    showSecondarySub,
+    setShowSecondarySub
   };
 };
 

@@ -12,7 +12,9 @@ export default function useKeyBind(
     setPrimarySub,
     setSecondarySub,
     primarySub,
-    undo
+    undo,
+    setShowPrimarySub,
+    setShowSecondarySub
 ) {
   const router = useRouter();
   useEffect(() => {
@@ -32,10 +34,18 @@ export default function useKeyBind(
           return !old;
         });
       } else if (event.code === "KeyO") {
-        setPrimarySub(new SubtitleContainer(''));
-        setGlobalSubtitleId(primarySub.id);
+        if (event.ctrlKey) {
+          setPrimarySub(new SubtitleContainer(''));
+          setGlobalSubtitleId(primarySub.id);
+        } else {
+          setShowPrimarySub(old => !old);
+        }
       } else if (event.code === "KeyP") {
-        setSecondarySub(new SubtitleContainer(''));
+        if (event.ctrlKey) {
+          setSecondarySub(new SubtitleContainer(''));
+        } else {
+          setShowSecondarySub(old => !old);
+        }
       } else if (event.code === "KeyD") {
         undo();
       } else if (event.code === "Space") {
