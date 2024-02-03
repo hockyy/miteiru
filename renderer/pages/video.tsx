@@ -46,7 +46,11 @@ function Video() {
     primaryStyling,
     setPrimaryStyling,
     secondaryStyling,
-    setSecondaryStyling
+    setSecondaryStyling,
+    showPrimarySub,
+    setShowPrimarySub,
+    showSecondarySub,
+    setShowSecondarySub
   } = useSubtitle();
   const {meaning, setMeaning, undo} = useMeaning();
   const {
@@ -63,18 +67,21 @@ function Video() {
           primaryStyling,
           tokenizeMiteiru, setEnableSeeker, changeTimeTo, player, lang);
   const {showController, setShowController, showSidebar, setShowSidebar} = useMenuDisplay();
-  useKeyBind(setMeaning, setShowController, setShowSidebar, setPrimarySub, setSecondarySub, primarySub, undo);
+  useKeyBind(setMeaning, setShowController, setShowSidebar,
+      setPrimarySub, setSecondarySub, primarySub, undo,
+      setShowPrimarySub, setShowSecondarySub);
   const {togglePlay, isPlaying} = useVideoPlayingToggle(player, metadata);
   useVideoKeyboardControls(togglePlay, deltaTime, setPrimaryShift, setSecondaryShift, setToastInfo);
   usePlayNextAfterEnd(player, currentTime, onVideoChangeHandler, duration, setEnableSeeker)
   return (
       <React.Fragment>
         <Head>
-          <title>{getMiteiruVideoTitle(videoSrc.path, primarySub.path, secondarySub.path)}</title>
+          <title>{getMiteiruVideoTitle(videoSrc.path, primarySub.path, secondarySub.path, showPrimarySub, showSecondarySub)}</title>
         </Head>
         <div>
           <Toast info={toastInfo}/>
-          <MeaningBox meaning={meaning} setMeaning={setMeaning} tokenizeMiteiru={tokenizeMiteiru} lang={lang}/>
+          <MeaningBox meaning={meaning} setMeaning={setMeaning} tokenizeMiteiru={tokenizeMiteiru}
+                      lang={lang}/>
           <VideoJS options={{
             techOrder: ["html5", "youtube"],
             sources: [videoSrc],
@@ -101,16 +108,16 @@ function Video() {
             }
           }} onReady={readyCallback} setCurrentTime={setCurrentTime}/>
           <div>
-            <PrimarySubtitle setMeaning={setMeaning}
-                             currentTime={currentTime}
-                             subtitle={primarySub}
-                             shift={primaryShift}
-                             subtitleStyling={primaryStyling}/>
-            <SecondarySubtitle
+            {showPrimarySub && <PrimarySubtitle setMeaning={setMeaning}
+                                                currentTime={currentTime}
+                                                subtitle={primarySub}
+                                                shift={primaryShift}
+                                                subtitleStyling={primaryStyling}/>}
+            {showSecondarySub && <SecondarySubtitle
                 currentTime={currentTime}
                 subtitle={secondarySub}
                 shift={secondaryShift}
-                subtitleStyling={secondaryStyling}/>
+                subtitleStyling={secondaryStyling}/>}
           </div>
           <div className={"flex flex-col justify-end bottom-0 z-[15] fixed"}>
             {player && <VideoController
