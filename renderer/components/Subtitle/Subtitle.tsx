@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useState} from "react";
 import {getLineByTime, SubtitleContainer} from "./DataStructures";
-import {ChineseSentence, PlainSentence, Sentence} from "./Sentence";
+import {ChineseSentence, PlainSentence, JapaneseSentence} from "./Sentence";
 import {
   CJKStyling,
   defaultPrimarySubtitleStyling,
@@ -13,13 +13,17 @@ export const PrimarySubtitle = ({
                                   subtitle,
                                   shift,
                                   setMeaning,
-                                  subtitleStyling = defaultPrimarySubtitleStyling
+                                  subtitleStyling = defaultPrimarySubtitleStyling,
+                                  changeLearningState,
+                                  checkLearningState
                                 }: {
                                   currentTime: number,
                                   subtitle: SubtitleContainer,
                                   shift: number,
                                   setMeaning: any,
-                                  subtitleStyling?: CJKStyling
+                                  subtitleStyling?: CJKStyling,
+                                  changeLearningState?: any
+                                  checkLearningState?: any,
                                 }
 ) => {
   const [caption, setCaption] = useState([])
@@ -29,7 +33,7 @@ export const PrimarySubtitle = ({
       return;
     }
     if (typeof content === 'string') {
-      setCaption([<Sentence
+      setCaption([<JapaneseSentence
           origin={""}
           separation={[{main: content}]}
           setMeaning={() => {
@@ -49,7 +53,9 @@ export const PrimarySubtitle = ({
           extraClass={"subtitle"}
           subtitleStyling={subtitleStyling}
           basicForm={validBasicForm ? val.basicForm : ''}
-          wordMeaning={wordMeaning[index]}/> : <Sentence
+          wordMeaning={wordMeaning[index]}
+          checkLearningState={checkLearningState}
+          changeLearningState={changeLearningState}/> : <JapaneseSentence
           key={index}
           origin={val.origin}
           separation={val.separation}
@@ -57,7 +63,9 @@ export const PrimarySubtitle = ({
           extraClass={"subtitle"}
           subtitleStyling={subtitleStyling}
           basicForm={validBasicForm ? val.basicForm : ''}
-          wordMeaning={wordMeaning[index]}/>}{
+          wordMeaning={wordMeaning[index]}
+          checkLearningState={checkLearningState}
+          changeLearningState={changeLearningState}/>}{
         index + 1 < content.length
         && subtitleStyling.showSpace ? " " : " "
       }</>

@@ -23,6 +23,7 @@ import {
 import {usePlayNextAfterEnd} from "../hooks/usePlayNextAfterEnd";
 import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
 import 'react-awesome-button/dist/styles.css';
+import useLearningState from "../hooks/useLearningState";
 
 function Video() {
   const {tokenizerMode, tokenizeMiteiru, lang} = useMiteiruTokenizer();
@@ -34,6 +35,7 @@ function Video() {
     currentTime,
     setCurrentTime
   } = useReadyPlayerCallback();
+  const {checkLearningState, changeLearningState} = useLearningState();
   const {
     primarySub,
     setPrimarySub,
@@ -50,7 +52,7 @@ function Video() {
     showPrimarySub,
     setShowPrimarySub,
     showSecondarySub,
-    setShowSecondarySub
+    setShowSecondarySub,
   } = useSubtitle();
   const {meaning, setMeaning, undo} = useMeaning();
   const {
@@ -112,7 +114,9 @@ function Video() {
                                                 currentTime={currentTime}
                                                 subtitle={primarySub}
                                                 shift={primaryShift}
-                                                subtitleStyling={primaryStyling}/>}
+                                                subtitleStyling={primaryStyling}
+                                                checkLearningState={checkLearningState}
+                                                changeLearningState={changeLearningState}/>}
             {showSecondarySub && <SecondarySubtitle
                 currentTime={currentTime}
                 subtitle={secondarySub}
