@@ -1,20 +1,21 @@
 import {useCallback, useEffect, useState} from 'react';
+import {defaultLearningColorStyling} from "../utils/CJKStyling";
 
 const useLearningState = () => {
   const [learningState, setLearningState] = useState({});
   const [cachedLearningState, setCachedLearningState] = useState({});
-  const changeLearningState = useCallback((content, value) => {
+  const checkLearningState = useCallback((content) => {
+    if (cachedLearningState[content]) return cachedLearningState[content];
+    if (learningState[content]) return learningState[content];
+    return 0;
+  }, [learningState, cachedLearningState]);
+  const changeLearningState = useCallback((content) => {
     // Invoke internal and change new state
     setCachedLearningState(cachedLearningState => ({
       ...cachedLearningState,
-      content: value
+      content: (checkLearningState(content) + 1) % defaultLearningColorStyling.learningColor.length
     }));
-  }, [setCachedLearningState]);
-  const checkLearningState = useCallback((content) => {
-    if(cachedLearningState[content]) return cachedLearningState[content];
-    if(learningState[content]) return learningState[content];
-    return 0;
-  },[learningState, cachedLearningState]);
+  }, [setCachedLearningState, checkLearningState]);
   useEffect(() => {
     // Invoke and load this from json file
     return;
