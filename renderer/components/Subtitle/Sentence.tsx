@@ -1,6 +1,6 @@
 import parse from "html-react-parser";
 import styled from "styled-components";
-import {CJKStyling} from "../../utils/CJKStyling";
+import {CJKStyling, defaultLearningColorStyling} from "../../utils/CJKStyling";
 import React, {useCallback} from "react";
 import {randomUUID} from "crypto";
 import {isMixed, toRomaji} from "wanakana"
@@ -8,6 +8,21 @@ import {isMixed, toRomaji} from "wanakana"
 const StyledSentence = styled.button<{ subtitleStyling: CJKStyling }>`
   ruby {
     -webkit-text-fill-color: ${props => props.subtitleStyling.text.color};
+  }
+
+  ruby.state0 {
+    -webkit-text-fill-color: ${props => props.subtitleStyling.learning ?
+            defaultLearningColorStyling.learningColor[0].color : props.subtitleStyling.text.color};
+  }
+
+  ruby.state1 {
+    -webkit-text-fill-color: ${props => props.subtitleStyling.learning ?
+            defaultLearningColorStyling.learningColor[1].color : props.subtitleStyling.text.color};
+  }
+
+  ruby.state2 {
+    -webkit-text-fill-color: ${props => props.subtitleStyling.learning ?
+            defaultLearningColorStyling.learningColor[2].color : props.subtitleStyling.text.color};
   }
 
   &:hover, &:hover ruby {
@@ -26,8 +41,38 @@ const StyledChineseSentence = styled.button<{ subtitleStyling: CJKStyling }>`
     -webkit-text-fill-color: ${props => props.subtitleStyling.text.color};
   }
 
+  ruby.state0 {
+    -webkit-text-fill-color: ${props => props.subtitleStyling.learning ?
+            defaultLearningColorStyling.learningColor[0].color : props.subtitleStyling.text.color};
+  }
+
+  ruby.state1 {
+    -webkit-text-fill-color: ${props => props.subtitleStyling.learning ?
+            defaultLearningColorStyling.learningColor[1].color : props.subtitleStyling.text.color};
+  }
+
+  ruby.state2 {
+    -webkit-text-fill-color: ${props => props.subtitleStyling.learning ?
+            defaultLearningColorStyling.learningColor[2].color : props.subtitleStyling.text.color};
+  }
+
   &:hover ruby, &:hover rt {
     -webkit-text-fill-color: ${props => props.subtitleStyling.text.hoverColor};
+    -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
+  }
+
+  &:hover ruby.state0 {
+    -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[0].hoverColor};
+    -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
+  }
+
+  &:hover ruby.state1 {
+    -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[1].hoverColor};
+    -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
+  }
+
+  &:hover ruby.state2 {
+    -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[2].hoverColor};
     -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
   }
 
@@ -62,7 +107,7 @@ export const JapaneseSentence = ({
   }, [setMeaning]);
   return <StyledSentence
       subtitleStyling={subtitleStyling}
-      className={extraClass}
+      className={extraClass + ` state${checkLearningState(basicForm)}`}
       onClick={(e) => {
         handleChange(e.shiftKey ? origin : basicForm);
       }}>
@@ -186,7 +231,7 @@ export const ChineseSentence = ({
   }, [setMeaning]);
   return <StyledChineseSentence
       subtitleStyling={subtitleStyling}
-      className={extraClass}
+      className={extraClass + ` state${checkLearningState(basicForm)}`}
       onClick={(e) => {
         handleChange(origin);
       }}>

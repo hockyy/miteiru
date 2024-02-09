@@ -26,6 +26,7 @@ export interface CJKStyling {
   textMeaning?: TextStyling
   background: string
   position: string,
+  learning?: boolean,
   positionFromTop: boolean,
   positionMeaningTop?: boolean
   maximalMeaningLengthPerCharacter?: number
@@ -80,6 +81,7 @@ export const defaultPrimarySubtitleStyling: CJKStyling = {
     weight: 800,
   },
   background: "#000000A5",
+  learning: true,
   position: "2vh",
   positionFromTop: true,
   positionMeaningTop: true,
