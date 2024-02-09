@@ -3,14 +3,14 @@ import {useCallback, useEffect, useState} from 'react';
 const useLearningState = () => {
   const [learningState, setLearningState] = useState({});
   const [cachedLearningState, setCachedLearningState] = useState({});
-  const changeState = useCallback((content, value) => {
+  const changeLearningState = useCallback((content, value) => {
     // Invoke internal and change new state
     setCachedLearningState(cachedLearningState => ({
       ...cachedLearningState,
       content: value
     }));
   }, [setCachedLearningState]);
-  const checkValue = useCallback((content) => {
+  const checkLearningState = useCallback((content) => {
     if(cachedLearningState[content]) return cachedLearningState[content];
     if(learningState[content]) return learningState[content];
     return 0;
@@ -19,7 +19,7 @@ const useLearningState = () => {
     // Invoke and load this from json file
     return;
   }, []);
-  return {checkValue, changeState};
+  return {checkLearningState, changeLearningState};
 };
 
 export default useLearningState;

@@ -11,6 +11,15 @@ interface TextStyling {
   weight: number
 }
 
+interface LearningStateStyling {
+  color: string,
+  hoverColor: string
+}
+
+export interface AllLearningStateStyling {
+  learningColor: LearningStateStyling[]
+}
+
 export interface CJKStyling {
   stroke: StrokeStyling
   text: TextStyling
@@ -25,7 +34,7 @@ export interface CJKStyling {
   showFurigana: boolean;
   showMeaning: boolean;
   showSpace?: boolean;
-  removeHearingImpaired:boolean;
+  removeHearingImpaired: boolean;
 }
 
 
@@ -84,7 +93,6 @@ export const defaultPrimarySubtitleStyling: CJKStyling = {
 }
 
 
-
 export const defaultLearningStyling: CJKStyling = {
   stroke: {
     width: "5px",
@@ -136,4 +144,18 @@ export const defaultSecondarySubtitleStyling: CJKStyling = {
   showRomaji: false,
   showMeaning: false,
   removeHearingImpaired: true
+}
+
+export const defaultLearningColorStyling: AllLearningStateStyling = {
+  learningColor: [{
+    color: "#a683ff",
+    hoverColor: "#8759f8",
+  },{
+    color: "#ffc783",
+    hoverColor: "#ffa73e",
+  },{
+    color: "#2fff82",
+    hoverColor: "#00be4d",
+  }]
+
 }
