@@ -11,11 +11,11 @@ import Toggle from "./Toggle";
 import {AwesomeButton} from "react-awesome-button";
 
 export const StylingBox = ({
-                      subtitleStyling,
-                      setSubtitleStyling,
-                      subtitleName,
-                      defaultStyling
-                    }) => {
+                             subtitleStyling,
+                             setSubtitleStyling,
+                             subtitleName,
+                             defaultStyling
+                           }) => {
   return <div className={"w-full mx-5 px-3 flex flex-col content-start gap-3 unselectable"}>
     {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
       <Toggle defaultCheck={subtitleStyling.showFurigana} onChange={(val) => {
@@ -53,6 +53,15 @@ export const StylingBox = ({
       }
       }/>
       {subtitleName} Show Meaning
+    </div>}
+    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
+      <Toggle defaultCheck={!!(subtitleStyling.learning)} onChange={(val) => {
+        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+        newCopy.learning = val;
+        setSubtitleStyling(newCopy)
+      }
+      }/>
+      {subtitleName} Use learning styling
     </div>}
     {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
       <Toggle defaultCheck={subtitleStyling.showSpace} onChange={(val) => {
