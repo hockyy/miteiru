@@ -231,8 +231,9 @@ export const ChineseSentence = ({
   }, [setMeaning]);
   return <StyledChineseSentence
       subtitleStyling={subtitleStyling}
-      className={extraClass + ` state${checkLearningState(basicForm)}`}
+      className={extraClass + ` state${checkLearningState(origin)}`}
       onClick={(e) => {
+        changeLearningState(origin);
         handleChange(origin);
       }}>
     <ruby style={{
