@@ -53,6 +53,10 @@ function Video() {
     setShowPrimarySub,
     showSecondarySub,
     setShowSecondarySub,
+    primaryTimeCache,
+    setPrimaryTimeCache,
+    secondaryTimeCache,
+    setSecondaryTimeCache
   } = useSubtitle();
   const {meaning, setMeaning, undo} = useMeaning();
   const {
@@ -117,12 +121,16 @@ function Video() {
                                                 shift={primaryShift}
                                                 subtitleStyling={primaryStyling}
                                                 checkLearningState={checkLearningState}
-                                                changeLearningState={changeLearningState}/>}
+                                                changeLearningState={changeLearningState}
+                                                timeCache={primaryTimeCache}
+                                                setTimeCache={setPrimaryTimeCache}/>}
             {showSecondarySub && <SecondarySubtitle
                 currentTime={currentTime}
                 subtitle={secondarySub}
                 shift={secondaryShift}
-                subtitleStyling={secondaryStyling}/>}
+                subtitleStyling={secondaryStyling}
+                timeCache={secondaryTimeCache}
+                setTimeCache={setSecondaryTimeCache}/>}
           </div>
           <div className={"flex flex-col justify-end bottom-0 z-[15] fixed"}>
             {player && <VideoController
