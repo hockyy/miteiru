@@ -87,3 +87,7 @@ export const joinString = (arr, separator = '; ') => {
   })
   return total;
 }
+
+export const adjustTimeWithShift = (currentTime: number, shift: number) => {
+  return Math.trunc(currentTime * 1000) - shift
+}

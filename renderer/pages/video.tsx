@@ -1,4 +1,4 @@
-import React, {useEffect} from "react";
+import React from "react";
 import VideoJS from "../components/VideoPlayer/VideoJS";
 import MiteiruDropzone from "../components/VideoPlayer/MiteiruDropzone";
 import {PrimarySubtitle, SecondarySubtitle} from "../components/Subtitle/Subtitle";
@@ -24,6 +24,7 @@ import {usePlayNextAfterEnd} from "../hooks/usePlayNextAfterEnd";
 import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
 import 'react-awesome-button/dist/styles.css';
 import useLearningState from "../hooks/useLearningState";
+import usePauseAndRepeat from "../hooks/usePauseAndRepeat";
 
 function Video() {
   const {tokenizerMode, tokenizeMiteiru, lang} = useMiteiruTokenizer();
@@ -76,10 +77,13 @@ function Video() {
   useKeyBind(setMeaning, setShowController, setShowSidebar,
       setPrimarySub, setSecondarySub, primarySub, undo,
       setShowPrimarySub, setShowSecondarySub);
-  const {togglePlay, isPlaying} = useVideoPlayingToggle(player, metadata);
+  const {togglePlay, isPlaying, setIsPlaying} = useVideoPlayingToggle(player, metadata);
+  const {
+    autoPause,
+    setAutoPause
+  } = usePauseAndRepeat(primaryTimeCache, player, currentTime, primaryShift, setIsPlaying);
   useVideoKeyboardControls(togglePlay, deltaTime, setPrimaryShift, setSecondaryShift, setToastInfo);
   usePlayNextAfterEnd(player, currentTime, onVideoChangeHandler, duration, setEnableSeeker);
-
   return (
       <React.Fragment>
         <Head>
@@ -153,7 +157,9 @@ function Video() {
                  primaryStyling={primaryStyling}
                  setPrimaryStyling={setPrimaryStyling}
                  secondaryStyling={secondaryStyling}
-                 setSecondaryStyling={setSecondaryStyling}/>
+                 setSecondaryStyling={setSecondaryStyling}
+                 autoPause={autoPause}
+                 setAutoPause={setAutoPause}/>
       </React.Fragment>
   );
 }

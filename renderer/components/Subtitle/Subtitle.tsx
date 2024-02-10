@@ -6,6 +6,7 @@ import {
   defaultPrimarySubtitleStyling,
   defaultSecondarySubtitleStyling
 } from "../../utils/CJKStyling";
+import {adjustTimeWithShift} from "../../utils/utils";
 
 
 export const PrimarySubtitle = ({
@@ -78,7 +79,7 @@ export const PrimarySubtitle = ({
   }, [subtitleStyling, subtitle, checkLearningState, changeLearningState, setMeaning])
   useEffect(() => {
     try {
-      const currentAdjustedTime = Math.trunc(currentTime * 1000) - shift;
+      const currentAdjustedTime = adjustTimeWithShift(currentTime, shift);
       if (timeCache && timeCache.length == 2
           && timeCache[0] <= currentAdjustedTime
           && currentAdjustedTime <= timeCache[1]) {
@@ -123,7 +124,7 @@ export const SecondarySubtitle = ({
   }, []);
 
   useEffect(() => {
-    const currentAdjustedTime = Math.trunc(currentTime * 1000) - shift;
+    const currentAdjustedTime = adjustTimeWithShift(currentTime, shift);
     if (timeCache && timeCache.length == 2
         && timeCache[0] <= currentAdjustedTime
         && currentAdjustedTime <= timeCache[1]) {
