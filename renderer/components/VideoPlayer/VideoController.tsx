@@ -4,7 +4,7 @@ import React, {useCallback} from "react";
 import SmoothCollapse from "react-smooth-collapse";
 import {Volume} from "./Volume";
 import SettingsController from "./SettingsController";
-import {ArrowLeft, ArrowRight, StepLeft, StepRight} from "./Icons";
+import {ArrowLeft, ArrowRight, RepeatSubtitle, StepLeft, StepRight} from "./Icons";
 import {toTime} from "../../utils/utils";
 import {videoConstants} from "../../utils/constants";
 import {Speed} from "./Speed";
@@ -22,6 +22,7 @@ export const VideoController = ({
                                   enableSeeker,
                                   setEnableSeeker,
                                   onVideoChangeHandler,
+                                  backToHead
                                 }) => {
   const step = useCallback((delta) => {
     if (enableSeeker) {
@@ -83,6 +84,10 @@ export const VideoController = ({
           </button>
         </div>
         <div className={"flex w-1/3 justify-end hidden lg:flex"}>
+          <button onClick={backToHead}
+                  className={"flex flex-row items-center gap-1 animation h-5"}>
+            {RepeatSubtitle}
+          </button>
           <Speed player={player}/>
           <SettingsController setShowSidebar={setShowSidebar}/>
         </div>

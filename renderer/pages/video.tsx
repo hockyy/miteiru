@@ -80,9 +80,11 @@ function Video() {
   const {togglePlay, isPlaying, setIsPlaying} = useVideoPlayingToggle(player, metadata);
   const {
     autoPause,
-    setAutoPause
-  } = usePauseAndRepeat(primaryTimeCache, player, currentTime, primaryShift, setIsPlaying);
-  useVideoKeyboardControls(togglePlay, deltaTime, setPrimaryShift, setSecondaryShift, setToastInfo);
+    setAutoPause,
+    backToHead
+  } = usePauseAndRepeat(primaryTimeCache, player, currentTime, primaryShift, setIsPlaying, changeTimeTo);
+  useVideoKeyboardControls(togglePlay, deltaTime, setPrimaryShift, setSecondaryShift,
+      setToastInfo, backToHead, setIsPlaying);
   usePlayNextAfterEnd(player, currentTime, onVideoChangeHandler, duration, setEnableSeeker);
   return (
       <React.Fragment>
@@ -149,7 +151,8 @@ function Video() {
                 setShowSidebar={setShowSidebar}
                 enableSeeker={enableSeeker}
                 setEnableSeeker={setEnableSeeker}
-                onVideoChangeHandler={onVideoChangeHandler}/>}
+                onVideoChangeHandler={onVideoChangeHandler}
+                backToHead={backToHead}/>}
           </div>
           {tokenizerMode !== '' && <MiteiruDropzone onDrop={onLoadFiles}/>}
         </div>
