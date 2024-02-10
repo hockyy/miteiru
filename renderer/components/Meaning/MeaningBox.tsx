@@ -117,9 +117,7 @@ const MeaningBox = ({
   }, [meaningContent.single]); // Add your dependencies here
 
   const handleBGClick = useCallback(() => {
-    console.log("here")
     setMeaning('');
-    console.log(meaning)
   }, [setMeaning, meaning])
 
   if (meaningContent.single.length > 0) {

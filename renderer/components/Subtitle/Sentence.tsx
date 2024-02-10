@@ -137,14 +137,18 @@ export const JapaneseSentence = ({
   }, [setMeaning]);
 
   const handleClick = useCallback((e) => {
-    changeLearningState(basicForm);
     handleChange(e.shiftKey ? origin : basicForm);
-  }, [handleChange, changeLearningState, checkLearningState]);
+  }, [handleChange]);
+
+  const handleRightClick = useCallback((e) => {
+    changeLearningState(basicForm);
+  }, [changeLearningState]);
 
   return <StyledSentence
       subtitleStyling={subtitleStyling}
       className={extraClass}
-      onClick={handleClick}>
+      onClick={handleClick}
+      onContextMenu={handleRightClick}>
     <ruby style={{
       rubyPosition: subtitleStyling.positionMeaningTop ? "over" : "under",
       WebkitTextFillColor: wordMeaning ? subtitleStyling.textMeaning.color : '',
@@ -264,13 +268,18 @@ export const ChineseSentence = ({
     setMeaning(pressedString)
   }, [setMeaning]);
   const handleClick = useCallback(() => {
-    changeLearningState(origin);
     handleChange(origin);
-  }, [handleChange, changeLearningState]);
+  }, [handleChange]);
+
+  const handleRightClick = useCallback(() => {
+    changeLearningState(origin);
+  }, [changeLearningState]);
+
   return <StyledChineseSentence
       subtitleStyling={subtitleStyling}
       className={extraClass}
-      onClick={handleClick}>
+      onClick={handleClick}
+      onContextMenu={handleRightClick}>
     <ruby style={{
       rubyPosition: subtitleStyling.positionMeaningTop ? "over" : "under",
       WebkitTextFillColor: wordMeaning ? subtitleStyling.textMeaning.color : '',

@@ -1,11 +1,11 @@
-import { useState } from "react";
+import {useCallback, useState} from "react";
 
 const useMeaning = () => {
   const [meaning, _setMeaning] = useState('');
   // Using a linked list for history
   const [history, setHistory] = useState(null);
 
-  const setMeaning = (newMeaning) => {
+  const setMeaning = useCallback((newMeaning) => {
     if (newMeaning === '') {
       // Clear the history
       setHistory(null);
@@ -15,16 +15,16 @@ const useMeaning = () => {
       setHistory({ value: meaning, next: history });
       _setMeaning(newMeaning);
     }
-  };
+  }, [meaning])
 
-  const undo = () => {
+  const undo = useCallback(() => {
     if (history !== null) {
       _setMeaning(history.value);
       setHistory(history.next);
     } else {
       _setMeaning('');
     }
-  };
+  }, [_setMeaning, setHistory]);
 
   return { meaning, setMeaning, undo };
 };
