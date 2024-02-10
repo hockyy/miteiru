@@ -21,7 +21,7 @@ export const useVideoPlayingToggle = (player, metadata) => {
   return {isPlaying, setIsPlaying, togglePlay};
 }
 
-export const useVideoKeyboardControls = (togglePlay, deltaTime, setPrimaryShift, setSecondaryShift, setInfo) => {
+export const useVideoKeyboardControls = (togglePlay, deltaTime, setPrimaryShift, setSecondaryShift, setInfo, backToHead, setIsPlaying) => {
   useEffect(() => {
     const handleVideoController = (event) => {
       if (event.code === "Space") {
@@ -30,6 +30,9 @@ export const useVideoKeyboardControls = (togglePlay, deltaTime, setPrimaryShift,
         deltaTime(-2)
       } else if (event.code === "ArrowRight") {
         deltaTime(+2)
+      } else if (event.code === "KeyR") {
+        backToHead();
+        setIsPlaying(1);
       } else if (event.code.startsWith("Bracket")) {
         const currentShiftAmount = event.code === "BracketLeft" ?
             -videoConstants.shiftAmount : videoConstants.shiftAmount;
@@ -48,7 +51,7 @@ export const useVideoKeyboardControls = (togglePlay, deltaTime, setPrimaryShift,
     return () => {
       window.removeEventListener('keydown', handleVideoController);
     };
-  }, [togglePlay, deltaTime, setPrimaryShift, setSecondaryShift, setInfo]);
+  }, [togglePlay, deltaTime, setPrimaryShift, setSecondaryShift, setInfo, backToHead, setIsPlaying]);
 }
 
 
