@@ -71,7 +71,7 @@ export const PrimarySubtitle = ({
       }</>
     })
     setCaption(current)
-  }, [subtitleStyling, subtitle])
+  }, [subtitleStyling, subtitle, checkLearningState, changeLearningState, setMeaning])
   useEffect(() => {
     try {
       const line = getLineByTime(subtitle, shift, Math.trunc(currentTime * 1000));
@@ -80,7 +80,8 @@ export const PrimarySubtitle = ({
     } catch (e) {
       console.error(e)
     }
-  }, [currentTime, subtitleStyling, subtitle])
+  }, [currentTime, subtitleStyling, subtitle, setFromContent])
+
   return <Subtitle caption={caption} subtitleStyling={subtitleStyling}/>
 };
 

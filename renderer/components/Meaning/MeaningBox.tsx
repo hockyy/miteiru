@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 import {ipcRenderer, shell} from "electron";
 import {ChineseSentence, HanziSentence, KanjiSentence} from "../Subtitle/Sentence";
 import {CJKStyling, defaultMeaningBoxStyling} from "../../utils/CJKStyling";
@@ -96,7 +96,7 @@ const MeaningBox = ({
         setMeaningIndex(0)
       })
     }
-  }, [meaning]);
+  }, [meaning, setMeaning]);
 
 
   const [romajiedData, setRomajiedData] = useState([]);
@@ -116,103 +116,108 @@ const MeaningBox = ({
     if (meaningContent.single.length) fetchData();
   }, [meaningContent.single]); // Add your dependencies here
 
+  const handleBGClick = useCallback(() => {
+    console.log("here")
+    setMeaning('');
+    console.log(meaning)
+  }, [setMeaning, meaning])
 
   if (meaningContent.single.length > 0) {
-    return (<div onClick={() => {
-      setMeaning('');
-    }} className={"z-[18] fixed bg-blue-200/20 w-[100vw] h-[100vh]"}>
-      <div
-          onClick={(e) => {
-            e.stopPropagation()
-          }
-          }
-          className={"overflow-auto border-2 border-blue-700 inset-x-0 mx-auto mt-10 bg-blue-100 z-[101] fixed rounded-lg w-[80vw] h-[80vh]"}>
-        <div
-            className={"z-[100] sticky top-0 h-auto flex flex-row justify-between gap-3 items-center bg-white p-5 rounded-t-lg"}>
+    return (
+        <div onClick={handleBGClick} className={"z-[18] fixed bg-blue-200/20 w-[100vw] h-[100vh]"}>
+          <div
+              onClick={(e) => {
+                e.stopPropagation()
+              }
+              }
+              className={"overflow-auto border-2 border-blue-700 inset-x-0 mx-auto mt-10 bg-blue-100 z-[101] fixed rounded-lg w-[80vw] h-[80vh]"}>
+            <div
+                className={"z-[100] sticky top-0 h-auto flex flex-row justify-between gap-3 items-center bg-white p-5 rounded-t-lg"}>
 
 
-          < AwesomeButton
-              type={"primary"}
-              disabled={meaningIndex - 1 < 0} onPress={(e) => {
-            e.stopPropagation()
-            if (meaningIndex - 1 < 0) return;
-            setMeaningIndex((old) => {
-              setMeaningContent(otherMeanings[old - 1])
-              return old - 1
-            })
-          }
-          }>Previous
-          </AwesomeButton>
-          <div className={"flex flex-wrap gap-2"} style={{
-            fontFamily: "Arial",
-            fontSize: "40px",
-          }}>
-            {romajiedData.map(({key, romajied}) => {
-              const queryText = romajied.reduce((accumulator, nextValue) => {
-                return accumulator + nextValue.origin
-              }, "")
-              return (
-                  <div key={key}
-                       className={"flex flex-col justify-between items-center gap-2"}>
-                    <div
-                        className={"bg-white gap-0 rounded-xl p-2 border-2 border-blue-700 w-fit unselectable hovery"}>{[...romajied.map((val, idx) => (
-                        <KanjiSentence key={idx}
-                                       origin={val.origin}
-                                       setMeaning={setMeaning}
-                                       separation={val.separation}
-                                       extraClass={"unselectable meaning-kanji text-md"}
-                                       subtitleStyling={subtitleStyling}/>
-                    ))]}</div>
-                    {lang === videoConstants.japaneseLang &&
-                        <ExternalLink style={{"color": "black"}} urlBase="https://jisho.org/search/"
-                                      displayText="Jisho"
-                                      query={queryText}/>}
-                    {lang === videoConstants.cantoneseLang &&
-                        <ExternalLink style={{"color": "black"}}
-                                      urlBase="https://cantonese.org/search.php?q="
-                                      displayText="Cantonese.org"
-                                      query={queryText}/>}
+              < AwesomeButton
+                  type={"primary"}
+                  disabled={meaningIndex - 1 < 0} onPress={(e) => {
+                e.stopPropagation()
+                if (meaningIndex - 1 < 0) return;
+                setMeaningIndex((old) => {
+                  setMeaningContent(otherMeanings[old - 1])
+                  return old - 1
+                })
+              }
+              }>Previous
+              </AwesomeButton>
+              <div className={"flex flex-wrap gap-2"} style={{
+                fontFamily: "Arial",
+                fontSize: "40px",
+              }}>
+                {romajiedData.map(({key, romajied}) => {
+                  const queryText = romajied.reduce((accumulator, nextValue) => {
+                    return accumulator + nextValue.origin
+                  }, "")
+                  return (
+                      <div key={key}
+                           className={"flex flex-col justify-between items-center gap-2"}>
+                        <div
+                            className={"bg-white gap-0 rounded-xl p-2 border-2 border-blue-700 w-fit unselectable hovery"}>{[...romajied.map((val, idx) => (
+                            <KanjiSentence key={idx}
+                                           origin={val.origin}
+                                           setMeaning={setMeaning}
+                                           separation={val.separation}
+                                           extraClass={"unselectable meaning-kanji text-md"}
+                                           subtitleStyling={subtitleStyling}/>
+                        ))]}</div>
+                        {lang === videoConstants.japaneseLang &&
+                            <ExternalLink style={{"color": "black"}}
+                                          urlBase="https://jisho.org/search/"
+                                          displayText="Jisho"
+                                          query={queryText}/>}
+                        {lang === videoConstants.cantoneseLang &&
+                            <ExternalLink style={{"color": "black"}}
+                                          urlBase="https://cantonese.org/search.php?q="
+                                          displayText="Cantonese.org"
+                                          query={queryText}/>}
 
-                  </div>
-              );
-            })}
+                      </div>
+                  );
+                })}
+              </div>
+
+              <AwesomeButton
+                  type={"primary"}
+                  disabled={meaningIndex + 1 >= otherMeanings.length} onPress={(e) => {
+                e.stopPropagation()
+                if (meaningIndex + 1 >= otherMeanings.length) {
+                  return;
+                }
+                setMeaningIndex((old) => {
+                  setMeaningContent(otherMeanings[old + 1])
+                  return old + 1
+                })
+              }
+              }>Next
+              </AwesomeButton>
+            </div>
+            <div className={"rounded-b-lg text-blue-800 text-lg p-2"}>
+              {lang === videoConstants.japaneseLang && meaningCharacter.literal && [kanjiBoxEntry(meaningCharacter)]}
+              {(lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang) && meaningCharacter.literal &&
+                  <HanziBoxEntry meaningHanzi={meaningCharacter} setMeaning={setMeaning}
+                                 subtitleStyling={subtitleStyling}/>
+              }
+              {
+                  meaningContent.sense && meaningContent.sense.map((sense, idxSense) => {
+                    return meaningBoxEntry(sense, idxSense, tags)
+                  })
+              }
+              {
+                  !meaningContent.sense && lang == videoConstants.cantoneseLang && meaningBoxEntryChinese(meaningContent)
+              }
+              {
+                  !meaningContent.sense && lang == videoConstants.chineseLang && meaningBoxEntryChinese(meaningContent)
+              }
+            </div>
           </div>
-
-          <AwesomeButton
-              type={"primary"}
-              disabled={meaningIndex + 1 >= otherMeanings.length} onPress={(e) => {
-            e.stopPropagation()
-            if (meaningIndex + 1 >= otherMeanings.length) {
-              return;
-            }
-            setMeaningIndex((old) => {
-              setMeaningContent(otherMeanings[old + 1])
-              return old + 1
-            })
-          }
-          }>Next
-          </AwesomeButton>
-        </div>
-        <div className={"rounded-b-lg text-blue-800 text-lg p-2"}>
-          {lang === videoConstants.japaneseLang && meaningCharacter.literal && [kanjiBoxEntry(meaningCharacter)]}
-          {(lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang) && meaningCharacter.literal &&
-              <HanziBoxEntry meaningHanzi={meaningCharacter} setMeaning={setMeaning}
-                             subtitleStyling={subtitleStyling}/>
-          }
-          {
-              meaningContent.sense && meaningContent.sense.map((sense, idxSense) => {
-                return meaningBoxEntry(sense, idxSense, tags)
-              })
-          }
-          {
-              !meaningContent.sense && lang == videoConstants.cantoneseLang && meaningBoxEntryChinese(meaningContent)
-          }
-          {
-              !meaningContent.sense && lang == videoConstants.chineseLang && meaningBoxEntryChinese(meaningContent)
-          }
-        </div>
-      </div>
-    </div>)
+        </div>)
   } else {
     return (<></>);
   }

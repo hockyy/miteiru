@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import VideoJS from "../components/VideoPlayer/VideoJS";
 import MiteiruDropzone from "../components/VideoPlayer/MiteiruDropzone";
 import {PrimarySubtitle, SecondarySubtitle} from "../components/Subtitle/Subtitle";
@@ -74,7 +74,8 @@ function Video() {
       setShowPrimarySub, setShowSecondarySub);
   const {togglePlay, isPlaying} = useVideoPlayingToggle(player, metadata);
   useVideoKeyboardControls(togglePlay, deltaTime, setPrimaryShift, setSecondaryShift, setToastInfo);
-  usePlayNextAfterEnd(player, currentTime, onVideoChangeHandler, duration, setEnableSeeker)
+  usePlayNextAfterEnd(player, currentTime, onVideoChangeHandler, duration, setEnableSeeker);
+
   return (
       <React.Fragment>
         <Head>
