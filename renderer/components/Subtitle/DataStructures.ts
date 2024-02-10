@@ -94,7 +94,7 @@ export class Line {
                   cleanedFirst = cleanedFirst.replace(/\[[^\]\[]*]/, "");
                 }
                 const tmpMeaning = cleanedFirst.split(/[,;\n]/);
-                if(tmpMeaning.length > 0 && tmpMeaning[0].length > 10) {
+                if (tmpMeaning.length > 0 && tmpMeaning[0].length > 10) {
                   tmpMeaning.sort((a, b) => a.length - b.length);
                 }
                 for (const meaningEl of tmpMeaning) {
@@ -202,8 +202,7 @@ export class SubtitleContainer {
   }
 }
 
-export function getLineByTime(subtitle: SubtitleContainer, shift: number, t: number) {
-  t -= shift
+export function getLineByTime(subtitle: SubtitleContainer, t: number) {
   if (!subtitle.lines || subtitle.lines.length === 0) {
     return {
       content: '',
@@ -220,7 +219,8 @@ export function getLineByTime(subtitle: SubtitleContainer, shift: number, t: num
   if (subtitle.lines[low].timeStart <= t && t <= subtitle.lines[low].timeEnd) {
     return {
       content: subtitle.lines[low].content,
-      meaning: subtitle.lines[low].meaning
+      meaning: subtitle.lines[low].meaning,
+      timePair: [subtitle.lines[low].timeStart, subtitle.lines[low].timeEnd]
     };
   } else {
     return {

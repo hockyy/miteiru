@@ -26,7 +26,8 @@ export const PrimarySubtitle = ({
                                   checkLearningState?: any,
                                 }
 ) => {
-  const [caption, setCaption] = useState([])
+  const [caption, setCaption] = useState([]);
+  const [timeCache, setTimeCache] = useState([]);
   const setFromContent = useCallback((content, wordMeaning = []) => {
     if (content === '' || content.length === 0) {
       setCaption([])
@@ -74,13 +75,20 @@ export const PrimarySubtitle = ({
   }, [subtitleStyling, subtitle, checkLearningState, changeLearningState, setMeaning])
   useEffect(() => {
     try {
-      const line = getLineByTime(subtitle, shift, Math.trunc(currentTime * 1000));
+      const currentAdjustedTime = Math.trunc(currentTime * 1000) - shift;
+      if (timeCache && timeCache.length == 2
+          && timeCache[0] <= currentAdjustedTime
+          && currentAdjustedTime <= timeCache[1]) {
+        return;
+      }
+      const line = getLineByTime(subtitle, currentAdjustedTime);
       const primaryContent = line.content;
+      setTimeCache(line.timePair);
       setFromContent(primaryContent, line.meaning);
     } catch (e) {
       console.error(e)
     }
-  }, [currentTime, subtitleStyling, subtitle, setFromContent])
+  }, [currentTime, subtitle, shift, timeCache])
 
   return <Subtitle caption={caption} subtitleStyling={subtitleStyling}/>
 };
@@ -97,23 +105,35 @@ export const SecondarySubtitle = ({
                                     subtitleStyling?: CJKStyling
                                   }
 ) => {
-  const [caption, setCaption] = useState([])
-  const setFromContent = (content) => {
+  const [caption, setCaption] = useState([]);
+  const [timeCache, setTimeCache] = useState([]);
+  const setFromContent = useCallback((content) => {
     if (content === '' || content.length === 0) {
       setCaption([])
       return;
     }
     const current = <PlainSentence origin={content}/>
     setCaption([current])
-  }
+  }, []);
+
   useEffect(() => {
+    const currentAdjustedTime = Math.trunc(currentTime * 1000) - shift;
+    if (timeCache && timeCache.length == 2
+        && timeCache[0] <= currentAdjustedTime
+        && currentAdjustedTime <= timeCache[1]) {
+      return;
+    }
     try {
-      const secondaryContent = getLineByTime(subtitle, shift, Math.trunc(currentTime * 1000));
+      const secondaryContent = getLineByTime(subtitle, currentAdjustedTime);
+      setTimeCache(secondaryContent.timePair);
       setFromContent(secondaryContent.content);
     } catch (e) {
       console.error(e)
     }
-  }, [currentTime, subtitleStyling])
+  }, [currentTime, subtitle, shift, timeCache]);
+  useEffect(() => {
+    setTimeCache([]);
+  }, [subtitle])
   return <Subtitle caption={caption} subtitleStyling={subtitleStyling} extraContainerStyle={{
     WebkitTextFillColor: subtitleStyling.text.color,
     WebkitTextStrokeColor: subtitleStyling.stroke.color,
