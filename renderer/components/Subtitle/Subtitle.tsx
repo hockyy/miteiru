@@ -15,19 +15,22 @@ export const PrimarySubtitle = ({
                                   setMeaning,
                                   subtitleStyling = defaultPrimarySubtitleStyling,
                                   changeLearningState,
-                                  checkLearningState
+                                  checkLearningState,
+                                  timeCache,
+                                  setTimeCache
                                 }: {
                                   currentTime: number,
                                   subtitle: SubtitleContainer,
                                   shift: number,
                                   setMeaning: any,
                                   subtitleStyling?: CJKStyling,
-                                  changeLearningState?: any
+                                  changeLearningState?: any,
                                   checkLearningState?: any,
+                                  timeCache?: any
+                                  setTimeCache?: any,
                                 }
 ) => {
   const [caption, setCaption] = useState([]);
-  const [timeCache, setTimeCache] = useState([]);
   const setFromContent = useCallback((content, wordMeaning = []) => {
     if (content === '' || content.length === 0) {
       setCaption([])
@@ -97,16 +100,19 @@ export const SecondarySubtitle = ({
                                     currentTime,
                                     subtitle,
                                     shift,
-                                    subtitleStyling = defaultSecondarySubtitleStyling
+                                    subtitleStyling = defaultSecondarySubtitleStyling,
+                                    timeCache,
+                                    setTimeCache
                                   }: {
                                     currentTime: number,
                                     subtitle: SubtitleContainer,
                                     shift: number,
-                                    subtitleStyling?: CJKStyling
+                                    subtitleStyling?: CJKStyling,
+                                    timeCache?: any,
+                                    setTimeCache?: any,
                                   }
 ) => {
   const [caption, setCaption] = useState([]);
-  const [timeCache, setTimeCache] = useState([]);
   const setFromContent = useCallback((content) => {
     if (content === '' || content.length === 0) {
       setCaption([])
