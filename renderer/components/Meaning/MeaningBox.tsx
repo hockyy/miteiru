@@ -47,7 +47,7 @@ const MeaningBox = ({
     }
 
     if (lang === videoConstants.japaneseLang) {
-      ipcRenderer.invoke('query', meaning, 5).then(entries => {
+      ipcRenderer.invoke('queryJapanese', meaning, 5).then(entries => {
         for (const entry of entries) {
           entry.single = entry.kanji;
           if (entry.single.length === 0) {
@@ -69,7 +69,7 @@ const MeaningBox = ({
         setMeaningContent(entries[0])
         setMeaningIndex(0)
       })
-      ipcRenderer.invoke('tags').then(val => {
+      ipcRenderer.invoke('japaneseTags').then(val => {
         setTags(val)
       })
     } else if (lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang) {
