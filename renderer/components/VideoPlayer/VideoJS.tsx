@@ -1,7 +1,8 @@
 import {useEffect, useRef} from 'react';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
-import 'videojs-youtube';  // Import the YouTube plugin
+import 'videojs-youtube';
+import {videoConstants} from "../../utils/constants";  // Import the YouTube plugin
 
 
 export const VideoJS = ({options, onReady, setCurrentTime}) => {
@@ -32,7 +33,7 @@ export const VideoJS = ({options, onReady, setCurrentTime}) => {
   useEffect(() => {
     const interval = setInterval(() => {
       handle()
-    }, 200);
+    }, videoConstants.subtitleFramerate);
     return () => clearInterval(interval);
   }, []);
 

@@ -302,6 +302,8 @@ export const Sidebar = ({
                           setPrimaryStyling,
                           secondaryStyling,
                           setSecondaryStyling,
+                          autoPause,
+                          setAutoPause
                         }) => {
   return <div style={{
     transition: "all 0.3s ease-out",
@@ -320,6 +322,16 @@ export const Sidebar = ({
     <div className={"font-bold unselectable text-3xl m-4"}>
       Settings
     </div>
+    <div className={"w-full mx-5 px-3 flex flex-col content-start gap-3 unselectable"}>
+      <div className={"flex flex-row items-center gap-3"}>
+        <Toggle defaultCheck={autoPause} onChange={(val) => {
+          setAutoPause(val);
+        }
+        }/>
+        Enable Auto Pause
+      </div>
+    </div>
+    <hr className={"w-full h-1 m-5"}/>
     <StylingBox subtitleStyling={primaryStyling} setSubtitleStyling={setPrimaryStyling}
                 subtitleName={"CJK"} defaultStyling={defaultPrimarySubtitleStyling}/>
     <hr className={"w-full h-1 m-5"}/>
