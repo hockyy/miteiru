@@ -30,7 +30,7 @@ function Home() {
   const handleClick = useCallback(async () => {
     if (tokenizerMode === 0) {
       setCheck(checkingMessage);
-      const res = await ipcRenderer.invoke('loadDefaultMode');
+      const res = await ipcRenderer.invoke('loadKuromoji');
       setCheck(res);
       if (res.ok !== 1) {
         return;
@@ -131,18 +131,6 @@ function Home() {
                     type={"text"} value={mecab}
                     onChange={(val) => {
                       setMecab(val.target.value)
-                    }}></input>
-              </div>
-              <div className={"flex justify-between gap-3 p-3 w-full"}>
-                <AwesomeButton
-                    onPress={handleSelectJMDictJson}>
-                  Select JMDict Json
-                </AwesomeButton>
-                <input
-                    className={"text-blue-800 outline-none rounded-sm text-lg md:min-w-[50vw] border border-gray-300 focus:border-blue-500 ring-1 ring-blue-400 focus:ring-blue-500 rounded-lg"}
-                    type={"text"} value={jmdict}
-                    onChange={(val) => {
-                      setJmdict(val.target.value)
                     }}></input>
               </div>
               <div className={'flex flex-col items-center gap-4'}>

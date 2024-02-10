@@ -42,7 +42,7 @@ export class Line {
       const word = this.content[i];
       const target = word.basicForm;
       if ((isHiragana(target) || isKatakana(target)) && target.length <= 3) continue;
-      await ipcRenderer.invoke('query', target, 2).then(val => {
+      await ipcRenderer.invoke('queryJapanese', target, 2).then(val => {
         let got = 0;
         for (const entry of val) {
           if (got) break;
