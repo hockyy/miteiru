@@ -8,6 +8,7 @@ import {registerCommonHandlers} from "./handler/common";
 import {registerStartupHandlers} from "./handler/startup";
 import Japanese from "./handler/japanese";
 import Chinese from "./handler/chinese";
+import Learning from "./handler/learning";
 
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
@@ -22,8 +23,9 @@ if (isProd) {
   await app.whenReady();
   const appDataDirectory = app.getPath('userData');
   let tokenizerCommand = 'mecab'
-  let packageJsonPath = path.join(app.getAppPath(), 'package.json');
-  let packageJson = JSON.parse(fs.readFileSync(packageJsonPath).toString());
+  const packageJsonPath = path.join(app.getAppPath(), 'package.json');
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath).toString());
+
   const setTokenizer = (value) => {
     tokenizerCommand = value;
   }
@@ -42,6 +44,9 @@ if (isProd) {
   Japanese.registerKuromoji();
   Chinese.registerJieba();
   Chinese.registerPyCantonese();
+
+  Learning.setup();
+  Learning.registerHandler();
 
   protocol.registerFileProtocol(scheme, requestHandler); /* eng-disable PROTOCOL_HANDLER_JS_CHECK */
   if (isProd) {

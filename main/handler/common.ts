@@ -76,4 +76,5 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
   ipcMain.handle('getAppVersion', async () => {
     return packageJson.version;
   });
+
 }

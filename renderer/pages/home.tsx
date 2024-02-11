@@ -24,7 +24,6 @@ const checkingMessage = {
 function Home() {
   const router = useRouter();
   const [mecab, setMecab] = useState(mecabDefaultDirectory[process.platform] ?? mecabDefaultDirectory['linux']);
-  const [jmdict, setJmdict] = useState('');
   const [check, setCheck] = useState(initialCheck);
   const [tokenizerMode, setTokenizerMode] = useState(0);
   const handleClick = useCallback(async () => {
@@ -43,13 +42,6 @@ function Home() {
       if (!val.canceled) setMecab(val.filePaths[0]);
     });
   }, []);
-
-  const handleSelectJMDictJson = useCallback(() => {
-    ipcRenderer.invoke('pickFile', ['json']).then((val) => {
-      if (!val.canceled) setJmdict(val.filePaths[0]);
-    });
-  }, []);
-
   const handleRemoveCache = useCallback(() => {
     setCheck({
       ok: 2,
@@ -143,7 +135,7 @@ function Home() {
               {tokenizerMode === 0 && <div className={'text-xl'}>うん、ちょっと<span
                   className={'font-bold text-yellow-200'}>見てる</span>だけ 😏</div>}
               {tokenizerMode === 1 && <div className={'text-xl'}>準備OK、船長！🫡</div>}
-              {tokenizerMode === 2 && <div className={'text-xl'}>Let's go!🫡</div>}
+              {tokenizerMode === 2 && <div className={'text-xl'}>Let&apos;s go!🫡</div>}
               {tokenizerMode === 3 && <div className={'text-xl'}>加油! 💥</div>}
             </AwesomeButton>
           </div>

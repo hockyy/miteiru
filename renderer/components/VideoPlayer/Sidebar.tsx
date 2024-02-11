@@ -1,5 +1,5 @@
 import {ArrowLeft} from "./Icons";
-import React, {useEffect} from "react";
+import React from "react";
 import {PopoverPicker} from "./PopoverPicker";
 import {
   CJKStyling,
