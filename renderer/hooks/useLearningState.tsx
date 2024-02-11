@@ -2,7 +2,7 @@ import {useCallback, useEffect, useState} from 'react';
 import {defaultLearningColorStyling} from "../utils/CJKStyling";
 import {ipcRenderer} from "electron";
 
-const useLearningState = () => {
+const useLearningState = (lang: string) => {
   const [learningState, setLearningState] = useState({});
   const [cachedLearningState, setCachedLearningState] = useState({});
 
@@ -22,20 +22,21 @@ const useLearningState = () => {
 
   const changeLearningState = useCallback((content) => {
     setCachedLearningState(oldCached => {
+      if(!content) return oldCached;
       const newCopy = {...oldCached};
       const currentState = getLearningState(content);
       const nextVal = (currentState + 1) % defaultLearningColorStyling.learningColor.length
       newCopy[content] = nextVal;
-      ipcRenderer.invoke('updateContent', content, nextVal);
+      ipcRenderer.invoke('updateContent', content, nextVal, lang);
       return newCopy;
     });
-  }, [getLearningState]);
+  }, [getLearningState, lang]);
 
   useEffect(() => {
-    ipcRenderer.invoke('loadLearningState').then((val) => {
+    ipcRenderer.invoke('loadLearningState', lang).then((val) => {
       setLearningState(val);
     })
-  }, []);
+  }, [lang]);
   return {getLearningStateClass, getLearningState, changeLearningState};
 }
 

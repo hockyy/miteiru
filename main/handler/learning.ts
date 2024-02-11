@@ -1,6 +1,7 @@
 import {app, ipcMain} from "electron";
 import {Level} from 'level';
 import path from 'path';
+import {Content} from "next/dist/compiled/@next/font/dist/google";
 
 
 class Learning {
@@ -8,22 +9,29 @@ class Learning {
   static db;
 
   static setup() {
-// Define the path to the database
+    // Define the path to the database
     this.dbPath = path.join(app.getPath('userData'), 'learningStateDB');
     this.db = new Level(this.dbPath);
-
   }
 
   static registerHandler() {
-
-    // Handler to load the learning state
-    ipcMain.handle('loadLearningState', async () => {
+    ipcMain.handle('loadLearningState', async (event, lang) => {
       try {
+        const prefix = `${lang}/`; // Define the prefix for keys
         const learningState = {};
-        // Stream through all values in the database
-        for await (const [key, value] of this.db.iterator()) {
-          learningState[key] = parseInt(value, 10);
+
+        // Define the range for the query
+        const queryOptions = {
+          gte: prefix, // Start of the range: include the prefix
+          lte: `${prefix}\uFFFF`, // End of the range: highest value that still matches the prefix
+        };
+
+        // Efficiently iterate over keys within the specified range
+        for await (const [key, value] of this.db.iterator(queryOptions)) {
+          // Remove the prefix from the key for the response
+          learningState[key.substring(prefix.length)] = parseInt(value, 10);
         }
+
         return learningState;
       } catch (error) {
         console.error('Error loading learning state:', error);
@@ -31,12 +39,12 @@ class Learning {
       }
     });
 
+
     // Handler to update a specific content's learning state
-    ipcMain.handle('updateContent', async (event, content, level) => {
+    ipcMain.handle('updateContent', async (event, content, level, lang) => {
+      if(!content) return true;
       try {
-        // Ensure level is within the expected range [0, 1, 2]
-        const validLevel = Math.max(0, Math.min(parseInt(level, 10), 2));
-        await this.db.put(content, validLevel.toString());
+        await this.db.put(`${lang}/${content}`, `${level}`);
         return true; // Indicate success
       } catch (error) {
         console.error('Error updating content:', error);

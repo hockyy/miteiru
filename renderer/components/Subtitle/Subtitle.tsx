@@ -19,10 +19,10 @@ export const PrimarySubtitle = ({
                                   currentTime: number,
                                   subtitle: SubtitleContainer,
                                   shift: number,
-                                  setMeaning: never,
+                                  setMeaning: (newMeaning: string) => void,
                                   subtitleStyling?: CJKStyling,
-                                  changeLearningState?: never,
-                                  getLearningStateClass?: never,
+                                  changeLearningState?: (newMeaning: string) => void,
+                                  getLearningStateClass?: (newMeaning: string) => string,
                                   timeCache?: number[],
                                   setTimeCache?: (cache: number[]) => void;
                                 }
