@@ -82,7 +82,7 @@ export class Line {
         let got = 0;
         for (const entry of val) {
           if (got) break;
-          for (const splittedContent of [...entry.content.split('，'), ...entry.simplified.split(', ')]) {
+          for (const splittedContent of [...(entry.content??'').split('，'), ...(entry.simplified??'').split(', ')]) {
             try {
               if (splittedContent === target) {
                 got = 1;
@@ -212,7 +212,7 @@ export function getLineByTime(subtitle: SubtitleContainer, t: number) {
   let low = 0;
   let high = subtitle.lines.length - 1;
   while (low < high) {
-    let mid = (low + high + 1) >> 1;
+    const mid = (low + high + 1) >> 1;
     if (subtitle.lines[mid].timeStart <= t) low = mid;
     else high = mid - 1;
   }
@@ -250,7 +250,7 @@ interface YoutubeSubtitleEntry {
 }
 
 export const convertSubtitlesToEntries = (subtitles: YoutubeSubtitleEntry[]): Entry[] => {
-  const entries: Entry[] = subtitles.map((subtitle, index) => {
+  return subtitles.map((subtitle, index) => {
     const start = Math.round(parseFloat(subtitle.start) * 1000);
     const dur = Math.round(parseFloat(subtitle.dur) * 1000);
     return {
@@ -260,7 +260,6 @@ export const convertSubtitlesToEntries = (subtitles: YoutubeSubtitleEntry[]): En
       text: subtitle.text,
     };
   });
-  return entries;
 };
 
 export const cleanHearingImpaired = (text) => {
@@ -272,7 +271,7 @@ export const cleanHearingImpaired = (text) => {
 
     // Discard anything in brackets
     const brackets = [/\[.*?]/g, /\(.*?\)/g, /（.*?）/g, /「.*?」/g, /『.*?』/g, /【.*?】/g];
-    for (let bracket of brackets) {
+    for (const bracket of brackets) {
       cleanedLine = cleanedLine.replace(bracket, '');
     }
 

@@ -1,8 +1,8 @@
-import {useCallback, useEffect, useState} from 'react';
+import {useCallback, useState} from 'react';
 import {defaultLearningColorStyling} from "../utils/CJKStyling";
 
 const useLearningState = () => {
-  const [learningState, setLearningState] = useState({});
+  const [learningState] = useState({});
   const [cachedLearningState, setCachedLearningState] = useState({});
 
   const getLearningState = useCallback((content) => {
@@ -27,7 +27,7 @@ const useLearningState = () => {
 
       return newCopy;
     });
-  }, [getLearningState, cachedLearningState]); // Simplified dependency array
+  }, [getLearningState]); // Simplified dependency array
   return {getLearningStateClass, getLearningState, changeLearningState};
 }
 
