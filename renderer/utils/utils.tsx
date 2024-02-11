@@ -91,3 +91,19 @@ export const joinString = (arr, separator = '; ') => {
 export const adjustTimeWithShift = (currentTime: number, shift: number) => {
   return Math.trunc(currentTime * 1000) - shift
 }
+
+
+export const sortAndFilterTopXPercentToJson = (frequency, x: number) => {
+  const sortedArray = Array.from(frequency.entries())
+  .sort((a, b) => b[1] - a[1]);
+
+  const limitIndex = Math.ceil((x / 100) * sortedArray.length);
+  const topXPercentArray = sortedArray.slice(0, limitIndex);
+
+  const filteredArray = topXPercentArray.filter(entry => entry[1] > 1);
+
+  return filteredArray.reduce((obj, [key, value]) => {
+    obj[key] = value;
+    return obj;
+  }, {});
+}

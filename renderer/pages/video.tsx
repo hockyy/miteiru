@@ -36,7 +36,6 @@ function Video() {
     currentTime,
     setCurrentTime
   } = useReadyPlayerCallback();
-  const {getLearningStateClass, changeLearningState} = useLearningState(lang);
   const {
     primarySub,
     setPrimarySub,
@@ -59,6 +58,7 @@ function Video() {
     secondaryTimeCache,
     setSecondaryTimeCache
   } = useSubtitle();
+  const {getLearningStateClass, changeLearningState, setFrequencyPrimary} = useLearningState(lang);
   const {meaning, setMeaning, undo} = useMeaning();
   const {
     duration,
@@ -72,7 +72,7 @@ function Video() {
           primarySub, setPrimarySub,
           secondarySub, setSecondarySub,
           primaryStyling,
-          tokenizeMiteiru, setEnableSeeker, changeTimeTo, player, lang);
+          tokenizeMiteiru, setEnableSeeker, changeTimeTo, player, lang, setFrequencyPrimary);
   const {showController, setShowController, showSidebar, setShowSidebar} = useMenuDisplay();
   useKeyBind(setMeaning, setShowController, setShowSidebar,
       setPrimarySub, setSecondarySub, primarySub, undo,

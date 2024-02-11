@@ -36,11 +36,12 @@ export class Line {
     this.content = await tokenizeMiteiru(this.content as string);
   }
 
-  async fillContentWithLearningKotoba() {
+  async fillContentWithLearningKotoba(frequency) {
     this.meaning = Array(this.content.length).fill('');
     for (let i = 0; i < this.content.length; i++) {
       const word = this.content[i];
       const target = word.basicForm;
+      frequency.set(target, (frequency.get(target) ?? 0) + 1);
       if ((isHiragana(target) || isKatakana(target)) && target.length <= 3) continue;
       await ipcRenderer.invoke('queryJapanese', target, 2).then(val => {
         let got = 0;
@@ -73,16 +74,17 @@ export class Line {
     }
   }
 
-  async fillContentWithLearningChinese() {
+  async fillContentWithLearningChinese(frequency) {
     this.meaning = Array(this.content.length).fill('');
     for (let i = 0; i < this.content.length; i++) {
       const word = this.content[i];
       const target = word.origin;
+      frequency.set(target, (frequency.get(target) ?? 0) + 1);
       await ipcRenderer.invoke('queryChinese', target, 3).then(val => {
         let got = 0;
         for (const entry of val) {
           if (got) break;
-          for (const splittedContent of [...(entry.content??'').split('，'), ...(entry.simplified??'').split(', ')]) {
+          for (const splittedContent of [...(entry.content ?? '').split('，'), ...(entry.simplified ?? '').split(', ')]) {
             try {
               if (splittedContent === target) {
                 got = 1;
@@ -131,7 +133,10 @@ export class SubtitleContainer {
   path: string = '';
   progress: string = '';
 
+  frequency: Map<string, number>;
+
   constructor(content: string = '', language: string = videoConstants.japaneseLang) {
+    this.frequency = new Map();
     this.id = randomUUID();
     this.lines = []
     if (content === '') return
@@ -186,9 +191,10 @@ export class SubtitleContainer {
       if (globalSubtitleId !== this.id) return;
       const line = this.lines[i];
       await line.fillContentSeparations(tokenizeMiteiru)
-      await line.fillContentWithLearningKotoba();
+      await line.fillContentWithLearningKotoba(this.frequency);
       this.progress = `${((i + 1) * 100 / this.lines.length).toFixed(2)}%`;
     }
+    this.progress = 'done';
   }
 
   async adjustChinese(tokenizeMiteiru: (string) => Promise<any[]>) {
@@ -196,9 +202,10 @@ export class SubtitleContainer {
       if (globalSubtitleId !== this.id) return;
       const line = this.lines[i];
       await line.fillContentSeparations(tokenizeMiteiru);
-      await line.fillContentWithLearningChinese();
+      await line.fillContentWithLearningChinese(this.frequency);
       this.progress = `${((i + 1) * 100 / this.lines.length).toFixed(2)}%`;
     }
+    this.progress = 'done';
   }
 }
 
