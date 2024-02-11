@@ -66,6 +66,7 @@
     "jp-verbs": "^1.0.1",
     "kanjidic-wrapper": "^1.0.2",
     "kuromojin": "^3.0.0",
+    "level": "^8.0.1",
     "patch-package": "^7.0.2",
     "python-shell": "^5.0.0",
     "react-awesome-button": "^7.0.5",
