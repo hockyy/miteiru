@@ -1,4 +1,4 @@
-import React, {useEffect} from "react";
+import React from "react";
 import VideoJS from "../components/VideoPlayer/VideoJS";
 import MiteiruDropzone from "../components/VideoPlayer/MiteiruDropzone";
 import {PrimarySubtitle, SecondarySubtitle} from "../components/Subtitle/Subtitle";
@@ -36,7 +36,7 @@ function Video() {
     currentTime,
     setCurrentTime
   } = useReadyPlayerCallback();
-  const {getLearningStateClass, changeLearningState} = useLearningState();
+  const {getLearningStateClass, changeLearningState} = useLearningState(lang);
   const {
     primarySub,
     setPrimarySub,
