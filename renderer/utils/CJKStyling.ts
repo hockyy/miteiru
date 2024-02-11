@@ -150,14 +150,17 @@ export const defaultSecondarySubtitleStyling: CJKStyling = {
 
 export const defaultLearningColorStyling: AllLearningStateStyling = {
   learningColor: [{
-    color: "#a683ff",
-    hoverColor: "#8759f8",
+    color: "#f3f3f3",
+    hoverColor: "#a1a1a1",
   },{
-    color: "#ffc783",
-    hoverColor: "#ffa73e",
+    color: "#fff189",
+    hoverColor: "#f1dc4f",
   },{
-    color: "#2fff82",
+    color: "#8effb9",
     hoverColor: "#00be4d",
+  },{
+    color: "#69e3ff",
+    hoverColor: "#13c7f1",
   }]
 
 }

@@ -15,6 +15,7 @@ module.exports = {
   rules: {
     '@typescript-eslint/no-explicit-any': 'off',
     'react/prop-types': 'off',
+    'react/react-in-jsx-scope': 'off',
 
     // Place to specify ESLint rules. Can be used to overwrite rules specified from the extended configs
     'react-hooks/exhaustive-deps': 'warn', // Warns about missing dependencies in useEffect

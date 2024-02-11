@@ -58,7 +58,13 @@ function Video() {
     secondaryTimeCache,
     setSecondaryTimeCache
   } = useSubtitle();
-  const {getLearningStateClass, changeLearningState, setFrequencyPrimary} = useLearningState(lang);
+  const {
+    getLearningStateClass,
+    changeLearningState,
+    setFrequencyPrimary,
+    learningPercentage,
+    setLearningPercentage
+  } = useLearningState(lang);
   const {meaning, setMeaning, undo} = useMeaning();
   const {
     duration,
@@ -162,7 +168,9 @@ function Video() {
                  secondaryStyling={secondaryStyling}
                  setSecondaryStyling={setSecondaryStyling}
                  autoPause={autoPause}
-                 setAutoPause={setAutoPause}/>
+                 setAutoPause={setAutoPause}
+                 learningPercentage={learningPercentage}
+                 setLearningPercentage={setLearningPercentage}/>
       </React.Fragment>
   );
 }

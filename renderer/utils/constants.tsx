@@ -13,5 +13,6 @@ export const videoConstants = {
   cantoneseLang2: 'zh-HK',
   englishLang: 'en',
   japaneseLang: 'ja',
-  chineseLang: 'zh-CN'
+  chineseLang: 'zh-CN',
+  learningStateLength: 3
 }

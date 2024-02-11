@@ -1,13 +1,14 @@
 import {useCallback, useEffect, useState} from 'react';
-import {defaultLearningColorStyling} from "../utils/CJKStyling";
 import {ipcRenderer} from "electron";
 import {sortAndFilterTopXPercentToJson} from "../utils/utils";
+import {videoConstants} from "../utils/constants";
 
 const useLearningState = (lang: string) => {
   const [learningState, setLearningState] = useState({});
   const [cachedLearningState, setCachedLearningState] = useState({});
   const [analysis, setAnalysis] = useState({});
   const [frequencyPrimary, setFrequencyPrimary] = useState(new Map<string, number>);
+  const [learningPercentage, setLearningPercentage] = useState(30);
 
   const getLearningState = useCallback((content) => {
     if (content in cachedLearningState) {
@@ -17,7 +18,7 @@ const useLearningState = (lang: string) => {
       return learningState[content];
     }
     if (content in analysis) {
-      return 1;
+      return 3;
     }
     return 0;
   }, [cachedLearningState, learningState, analysis]);
@@ -31,7 +32,7 @@ const useLearningState = (lang: string) => {
       if (!content) return oldCached;
       const newCopy = {...oldCached};
       const currentState = getLearningState(content);
-      const nextVal = (currentState + 1) % defaultLearningColorStyling.learningColor.length
+      const nextVal = (currentState + 1) % videoConstants.learningStateLength
       newCopy[content] = nextVal;
       ipcRenderer.invoke('updateContent', content, nextVal, lang);
       return newCopy;
@@ -45,15 +46,17 @@ const useLearningState = (lang: string) => {
   }, [lang]);
 
   useEffect(() => {
-    console.log({...frequencyPrimary.entries()});
-    setAnalysis(sortAndFilterTopXPercentToJson(frequencyPrimary, 50));
-  }, [frequencyPrimary]);
+    setAnalysis(sortAndFilterTopXPercentToJson(frequencyPrimary, learningPercentage));
+  }, [frequencyPrimary, learningPercentage]);
+
   return {
     getLearningStateClass,
     getLearningState,
     changeLearningState,
     frequencyPrimary,
-    setFrequencyPrimary
+    setFrequencyPrimary,
+    learningPercentage,
+    setLearningPercentage
   };
 }
 

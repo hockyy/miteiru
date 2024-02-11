@@ -303,7 +303,9 @@ export const Sidebar = ({
                           secondaryStyling,
                           setSecondaryStyling,
                           autoPause,
-                          setAutoPause
+                          setAutoPause,
+                          learningPercentage,
+                          setLearningPercentage
                         }) => {
   return <div style={{
     transition: "all 0.3s ease-out",
@@ -322,6 +324,7 @@ export const Sidebar = ({
     <div className={"font-bold unselectable text-3xl m-4"}>
       Settings
     </div>
+
     <div className={"w-full mx-5 px-3 flex flex-col content-start gap-3 unselectable"}>
       <div className={"flex flex-row items-center gap-3"}>
         <Toggle defaultCheck={autoPause} onChange={(val) => {
@@ -330,7 +333,23 @@ export const Sidebar = ({
         }/>
         Enable Auto Pause
       </div>
+      <div className={"flex w-full justify-around items-center gap-3"}>
+        <span>Learning </span>
+        <span className={'inline-block w-14'}>{learningPercentage}%</span>
+        <span className={'inline-block w-1/2'}><input
+            className={"slider"}
+            type="range"
+            min={0}
+            max={100}
+            step={0.4}
+            value={learningPercentage}
+            onChange={event => {
+              setLearningPercentage(parseFloat(event.target.value));
+            }}
+        /></span>
+      </div>
     </div>
+
     <hr className={"w-full h-1 m-5"}/>
     <StylingBox subtitleStyling={primaryStyling} setSubtitleStyling={setPrimaryStyling}
                 subtitleName={"CJK"} defaultStyling={defaultPrimarySubtitleStyling}/>
