@@ -21,20 +21,25 @@ const StyledSentence = styled.button<{ subtitleStyling: CJKStyling }>`
   .state2 {
     -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[2].color};
   }
+  
+  .state3 {
+    -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[3].color};
+  }
 
   &:hover .state0 {
     -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[0].hoverColor};
-    -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
   }
 
   &:hover .state1 {
     -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[1].hoverColor};
-    -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
   }
 
   &:hover .state2 {
     -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[2].hoverColor};
-    -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
+  }
+  
+  &:hover .state3 {
+    -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[3].hoverColor};
   }
 
   &:hover, &:hover ruby {
@@ -65,20 +70,25 @@ const StyledChineseSentence = styled.button<{ subtitleStyling: CJKStyling }>`
   .state2 {
     -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[2].color};
   }
+  
+  .state3 {
+    -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[3].color};
+  }
 
   &:hover .state0 {
     -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[0].hoverColor};
-    -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
   }
 
   &:hover .state1 {
     -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[1].hoverColor};
-    -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
   }
 
   &:hover .state2 {
     -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[2].hoverColor};
-    -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
+  }
+  
+  &:hover .state3 {
+    -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[3].hoverColor};
   }
 
   &:hover ruby, &:hover rt {
