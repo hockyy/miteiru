@@ -3,7 +3,6 @@ import Head from "next/head";
 import {ContainerHome} from "../components/VideoPlayer/ContainerHome";
 import {PrimarySubtitle} from "../components/Subtitle/Subtitle";
 import {setGlobalSubtitleId, SubtitleContainer} from "../components/Subtitle/DataStructures";
-import {ipcRenderer} from "electron";
 import {defaultLearningStyling} from "../utils/CJKStyling";
 import MeaningBox from "../components/Meaning/MeaningBox";
 import useMeaning from "../hooks/useMeaning";
@@ -14,7 +13,6 @@ import {LearningSidebar} from "../components/VideoPlayer/LearningSidebar";
 import {useStoreData} from "../hooks/useStoreData";
 import useLearningKeyBind from "../hooks/useLearningKeyBind";
 import 'react-awesome-button/dist/styles.css';
-import video from "./video";
 import {videoConstants} from "../utils/constants";
 
 function Learn() {
@@ -30,7 +28,7 @@ function Learn() {
   const {tokenizerMode, tokenizeMiteiru, lang} = useMiteiruTokenizer();
 
   useEffect(() => {
-    if (tokenizerMode !== '') {
+    if (tokenizerMode !== '' && tokenizeMiteiru) {
       const tmpSub = (new SubtitleContainer(directInput, lang))
       setPrimarySub(tmpSub)
       setGlobalSubtitleId(tmpSub.id);
@@ -44,7 +42,7 @@ function Learn() {
         })
       }
     }
-  }, [tokenizerMode, directInput])
+  }, [tokenizerMode, directInput, lang, tokenizeMiteiru])
 
   return (
       <React.Fragment>

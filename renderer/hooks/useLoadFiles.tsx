@@ -1,6 +1,7 @@
 import {useCallback, useEffect, useState} from 'react';
 import {
-  convertSubtitlesToEntries, Line,
+  convertSubtitlesToEntries,
+  Line,
   setGlobalSubtitleId,
   SubtitleContainer
 } from "../components/Subtitle/DataStructures";
@@ -11,17 +12,16 @@ import {findPositionDeltaInFolder} from "../utils/folderUtils";
 import {useAsyncAwaitQueue} from "./useAsyncAwaitQueue";
 import {ipcRenderer} from 'electron';
 import {videoConstants} from "../utils/constants";
-import video from "../pages/video";
 
 const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
                       secondarySub, setSecondarySub,
                       primaryStyling,
-                      tokenizeMiteiru, setEnableSeeker, changeTimeTo, player, lang) => {
+                      tokenizeMiteiru, setEnableSeeker, changeTimeTo, player, lang, setFrequencyPrimary) => {
   const [videoSrc, setVideoSrc] = useState({src: '', type: '', path: ''});
   const queue = useAsyncAwaitQueue();
   const resetSub = useCallback((subSetter) => {
     subSetter(new SubtitleContainer(''));
-  }, [tokenizeMiteiru]);
+  }, []);
   useEffect(() => {
     Line.removeHearingImpairedFlag = primaryStyling.removeHearingImpaired
   }, [primaryStyling])
@@ -93,11 +93,13 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
           if (tmpSub.language === videoConstants.japaneseLang) {
             tmpSub.adjustJapanese(tokenizeMiteiru).then(() => {
               clearInterval(toastSetter);
+              setFrequencyPrimary(tmpSub.frequency)
             })
           }
           if (tmpSub.language === videoConstants.cantoneseLang || tmpSub.language === videoConstants.chineseLang) {
             tmpSub.adjustChinese(tokenizeMiteiru).then(() => {
               clearInterval(toastSetter);
+              setFrequencyPrimary(tmpSub.frequency)
             })
           }
         }
@@ -125,7 +127,8 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       }
     }
     await queue.end(currentHash);
-  }, [tokenizeMiteiru]);
+  }, [lang, queue, resetSub, setFrequencyPrimary, setPrimarySub, setSecondarySub, setToastInfo, tokenizeMiteiru]);
+
   const onVideoChangeHandler = useCallback(async (delta: number = 1) => {
     if (!isLocalPath(videoSrc.path)) return;
     if (videoSrc.path) {
@@ -148,7 +151,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
         await onLoadFiles([{path: nextSecondary}]);
       }
     }
-  }, [videoSrc.path, primarySub.path, secondarySub.path]);
+  }, [videoSrc.path, primarySub.path, secondarySub.path, onLoadFiles, setEnableSeeker]);
 
   useEffect(() => {
     if (player) {
@@ -162,7 +165,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
         player.off('loadedmetadata', enableSeeker)
       }
     }
-  }, [player, videoSrc.path])
+  }, [changeTimeTo, player, setEnableSeeker, videoSrc.path])
 
   return {
     onLoadFiles,
