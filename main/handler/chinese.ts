@@ -32,7 +32,7 @@ class Chinese {
       scriptPath: path.join(__dirname, `cantonese/cantonese.py`),
       scriptOutPath: path.join(appDataDirectory, 'cantonese.py'),
       dictPath: path.join(appDataDirectory, `cantodict-db`),
-      importDict: path.join(__dirname, 'cantonese/cantonese.json'),
+      importDict: path.join(__dirname, 'cantonese/cantodict.json'),
       importBaseSVG: path.join(__dirname, 'hanzi'),
       ...replacements
     }
@@ -58,7 +58,7 @@ class Chinese {
       let pyshellOptions = {
         pythonOptions: ['-X', 'utf8']
       }
-      this.pyshell = new PythonShell(config.appDataPath, pyshellOptions);
+      this.pyshell = new PythonShell(this.scriptOutPath, pyshellOptions);
       return;
     } catch (e) {
       console.error(e);
@@ -133,22 +133,6 @@ class Chinese {
         return ''
       }
     })
-  }
-
-  static removeCache = () => {
-
-    if (this.Dict.db) {
-      this.Dict.db.close()
-    }
-    try {
-      fs.rmSync(this.dictPath, {
-        recursive: true,
-        force: true
-      })
-    } catch (e) {
-      console.error(e)
-    }
-
   }
 
 }

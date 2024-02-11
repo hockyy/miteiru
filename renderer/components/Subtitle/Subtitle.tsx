@@ -1,11 +1,7 @@
 import React, {useCallback, useEffect, useState} from "react";
 import {getLineByTime, SubtitleContainer} from "./DataStructures";
-import {ChineseSentence, PlainSentence, JapaneseSentence} from "./Sentence";
-import {
-  CJKStyling,
-  defaultPrimarySubtitleStyling,
-  defaultSecondarySubtitleStyling
-} from "../../utils/CJKStyling";
+import {ChineseSentence, JapaneseSentence, PlainSentence} from "./Sentence";
+import {CJKStyling, defaultSecondarySubtitleStyling} from "../../utils/CJKStyling";
 import {adjustTimeWithShift} from "../../utils/utils";
 
 
@@ -14,24 +10,26 @@ export const PrimarySubtitle = ({
                                   subtitle,
                                   shift,
                                   setMeaning,
-                                  subtitleStyling = defaultPrimarySubtitleStyling,
+                                  subtitleStyling,
                                   changeLearningState,
-                                  checkLearningState,
+                                  getLearningStateClass,
                                   timeCache,
                                   setTimeCache
                                 }: {
                                   currentTime: number,
                                   subtitle: SubtitleContainer,
                                   shift: number,
-                                  setMeaning: any,
+                                  setMeaning: never,
                                   subtitleStyling?: CJKStyling,
-                                  changeLearningState?: any,
-                                  checkLearningState?: any,
-                                  timeCache?: any
-                                  setTimeCache?: any,
+                                  changeLearningState?: never,
+                                  getLearningStateClass?: never,
+                                  timeCache?: number[],
+                                  setTimeCache?: (cache: number[]) => void;
                                 }
 ) => {
   const [caption, setCaption] = useState([]);
+
+
   const setFromContent = useCallback((content, wordMeaning = []) => {
     if (content === '' || content.length === 0) {
       setCaption([])
@@ -39,6 +37,7 @@ export const PrimarySubtitle = ({
     }
     if (typeof content === 'string') {
       setCaption([<JapaneseSentence
+          key={'only'}
           origin={""}
           separation={[{main: content}]}
           setMeaning={() => {
@@ -48,7 +47,7 @@ export const PrimarySubtitle = ({
           wordMeaning={''}/>]);
       return;
     }
-    let current = content.map((val, index) => {
+    const current = content.map((val, index) => {
       const validBasicForm = val.basicForm != '' && val.basicForm != '*';
       return <> {(val.jyutping || val.pinyin) ? <ChineseSentence
           key={index}
@@ -59,7 +58,7 @@ export const PrimarySubtitle = ({
           subtitleStyling={subtitleStyling}
           basicForm={validBasicForm ? val.basicForm : ''}
           wordMeaning={wordMeaning[index]}
-          checkLearningState={checkLearningState}
+          getLearningStateClass={getLearningStateClass}
           changeLearningState={changeLearningState}/> : <JapaneseSentence
           key={index}
           origin={val.origin}
@@ -69,30 +68,40 @@ export const PrimarySubtitle = ({
           subtitleStyling={subtitleStyling}
           basicForm={validBasicForm ? val.basicForm : ''}
           wordMeaning={wordMeaning[index]}
-          checkLearningState={checkLearningState}
+          getLearningStateClass={getLearningStateClass}
           changeLearningState={changeLearningState}/>}{
         index + 1 < content.length
         && subtitleStyling.showSpace ? " " : " "
       }</>
     })
     setCaption(current)
-  }, [subtitleStyling, subtitle, checkLearningState, changeLearningState, setMeaning])
-  useEffect(() => {
+  }, [subtitleStyling, getLearningStateClass, changeLearningState, setMeaning]);
+
+  const setSubtitle = useCallback((currentAdjustedTime) => {
     try {
-      const currentAdjustedTime = adjustTimeWithShift(currentTime, shift);
-      if (timeCache && timeCache.length == 2
-          && timeCache[0] <= currentAdjustedTime
-          && currentAdjustedTime <= timeCache[1]) {
-        return;
-      }
       const line = getLineByTime(subtitle, currentAdjustedTime);
       const primaryContent = line.content;
       setTimeCache(line.timePair);
       setFromContent(primaryContent, line.meaning);
     } catch (e) {
-      console.error(e)
+      console.error(e);
     }
-  }, [currentTime, subtitle, shift, timeCache])
+  }, [subtitle, setFromContent, setTimeCache]);
+
+  useEffect(() => {
+    const currentAdjustedTime = adjustTimeWithShift(currentTime, shift);
+    if (timeCache && timeCache.length == 2
+        && timeCache[0] <= currentAdjustedTime
+        && currentAdjustedTime <= timeCache[1]) {
+      return;
+    }
+    setSubtitle(currentAdjustedTime);
+  }, [setSubtitle, timeCache, currentTime, shift]);
+
+  useEffect(() => {
+    const currentAdjustedTime = adjustTimeWithShift(currentTime, shift);
+    setSubtitle(currentAdjustedTime);
+  }, [setSubtitle, currentTime, shift]);
 
   return <Subtitle caption={caption} subtitleStyling={subtitleStyling}/>
 };
@@ -109,8 +118,8 @@ export const SecondarySubtitle = ({
                                     subtitle: SubtitleContainer,
                                     shift: number,
                                     subtitleStyling?: CJKStyling,
-                                    timeCache?: any,
-                                    setTimeCache?: any,
+                                    timeCache?: number[],
+                                    setTimeCache?: (cache: number[]) => void;
                                   }
 ) => {
   const [caption, setCaption] = useState([]);
@@ -137,10 +146,10 @@ export const SecondarySubtitle = ({
     } catch (e) {
       console.error(e)
     }
-  }, [currentTime, subtitle, shift, timeCache]);
+  }, [currentTime, subtitle, shift, timeCache, setTimeCache, setFromContent]);
   useEffect(() => {
     setTimeCache([]);
-  }, [subtitle])
+  }, [setTimeCache, subtitle])
   return <Subtitle caption={caption} subtitleStyling={subtitleStyling} extraContainerStyle={{
     WebkitTextFillColor: subtitleStyling.text.color,
     WebkitTextStrokeColor: subtitleStyling.stroke.color,
@@ -159,7 +168,7 @@ export const Subtitle = (
       subtitleStyling: CJKStyling,
       extraContainerStyle?: React.CSSProperties
     }) => {
-  let currentContainerStyle: React.CSSProperties = {
+  const currentContainerStyle: React.CSSProperties = {
     ...extraContainerStyle,
     fontFamily: "Arial",
     fontWeight: subtitleStyling.text.weight

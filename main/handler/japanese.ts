@@ -69,7 +69,6 @@ class Japanese {
       return e.message;
     }
   }
-
   /**
    * TODO: Refactor this koakowakowakowko males bgt anjing
    */
@@ -156,24 +155,6 @@ class Japanese {
         return ''
       }
     })
-
-
-  }
-
-  static removeCache = () => {
-
-    if (this.Dict.db) {
-      this.Dict.db.close()
-    }
-    try {
-      fs.rmSync(this.dictPath, {
-        recursive: true,
-        force: true
-      })
-    } catch (e) {
-      console.error(e)
-    }
-
   }
 
 }

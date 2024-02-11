@@ -1,12 +1,13 @@
-import {app, ipcMain, protocol} from 'electron';
+import {app, protocol} from 'electron';
 import serve from 'electron-serve';
 import {createWindow} from './helpers';
 import {requestHandler, scheme} from "./protocol";
 import fs from "fs";
 import path from "path";
-import {getTokenizer} from "kuromojin";
 import {registerCommonHandlers} from "./handler/common";
 import {registerStartupHandlers} from "./handler/startup";
+import Japanese from "./handler/japanese";
+import Chinese from "./handler/chinese";
 
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
@@ -34,8 +35,13 @@ if (isProd) {
     icon: path.join(__dirname, 'images/logo.png')
   });
 
-  registerCommonHandlers(getTokenizer, packageJson);
+  registerCommonHandlers(getTokenizer, packageJson, appDataDirectory);
   registerStartupHandlers(setTokenizer, appDataDirectory);
+  Japanese.registerHandlers();
+  Chinese.registerHandlers();
+  Japanese.registerKuromoji();
+  Chinese.registerJieba();
+  Chinese.registerPyCantonese();
 
   protocol.registerFileProtocol(scheme, requestHandler); /* eng-disable PROTOCOL_HANDLER_JS_CHECK */
   if (isProd) {
