@@ -1,7 +1,7 @@
 import parse from "html-react-parser";
 import styled from "styled-components";
 import {CJKStyling, defaultLearningColorStyling} from "../../utils/CJKStyling";
-import React, {useCallback, useEffect} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {randomUUID} from "crypto";
 import {isMixed, toRomaji} from "wanakana"
 
@@ -11,18 +11,15 @@ const StyledSentence = styled.button<{ subtitleStyling: CJKStyling }>`
   }
 
   .state0 {
-    -webkit-text-fill-color: ${props => props.subtitleStyling.learning ?
-            defaultLearningColorStyling.learningColor[0].color : props.subtitleStyling.text.color};
+    -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[0].color};
   }
 
   .state1 {
-    -webkit-text-fill-color: ${props => props.subtitleStyling.learning ?
-            defaultLearningColorStyling.learningColor[1].color : props.subtitleStyling.text.color};
+    -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[1].color};
   }
 
   .state2 {
-    -webkit-text-fill-color: ${props => props.subtitleStyling.learning ?
-            defaultLearningColorStyling.learningColor[2].color : props.subtitleStyling.text.color};
+    -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[2].color};
   }
 
   &:hover .state0 {
@@ -56,19 +53,17 @@ const StyledChineseSentence = styled.button<{ subtitleStyling: CJKStyling }>`
     -webkit-text-fill-color: ${props => props.subtitleStyling.text.color};
   }
 
+
   .state0 {
-    -webkit-text-fill-color: ${props => props.subtitleStyling.learning ?
-            defaultLearningColorStyling.learningColor[0].color : props.subtitleStyling.text.color};
+    -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[0].color};
   }
 
   .state1 {
-    -webkit-text-fill-color: ${props => props.subtitleStyling.learning ?
-            defaultLearningColorStyling.learningColor[1].color : props.subtitleStyling.text.color};
+    -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[1].color};
   }
 
-  .state2 {
-    -webkit-text-fill-color: ${props => props.subtitleStyling.learning ?
-            defaultLearningColorStyling.learningColor[2].color : props.subtitleStyling.text.color};
+  .state1 {
+    -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[2].color};
   }
 
   &:hover .state0 {
@@ -121,16 +116,27 @@ interface SentenceParam {
   subtitleStyling: CJKStyling,
   wordMeaning?: string,
   basicForm?: string,
-  checkLearningState?: any,
+  getLearningStateClass?: any,
   changeLearningState?: any,
 }
 
 export const JapaneseSentence = ({
                                    origin, setMeaning, separation, extraClass,
                                    subtitleStyling, basicForm = '', wordMeaning = '',
-                                   changeLearningState,
-                                   checkLearningState
+                                   changeLearningState = () => '',
+                                   getLearningStateClass = () => ''
                                  }: SentenceParam) => {
+  const [separationContent, setSeparationContent] = useState([]);
+
+  const [learningClassName, setLearningClassName] = useState('');
+  useEffect(() => {
+    if (!getLearningStateClass) return;
+    setLearningClassName(() => {
+      if (subtitleStyling.learning) return getLearningStateClass(basicForm);
+      return '';
+    })
+  }, [basicForm, getLearningStateClass, subtitleStyling]);
+
   const handleChange = useCallback((pressedString) => {
     navigator.clipboard.writeText(pressedString);
     setMeaning(pressedString)
@@ -138,24 +144,15 @@ export const JapaneseSentence = ({
 
   const handleClick = useCallback((e) => {
     handleChange(e.shiftKey ? origin : basicForm);
-  }, [handleChange]);
+  }, [handleChange, origin, basicForm]);
 
-  const handleRightClick = useCallback((e) => {
+  const handleRightClick = useCallback(() => {
     changeLearningState(basicForm);
-  }, [changeLearningState]);
+  }, [changeLearningState, basicForm]);
 
-  return <StyledSentence
-      subtitleStyling={subtitleStyling}
-      className={extraClass}
-      onClick={handleClick}
-      onContextMenu={handleRightClick}>
-    <ruby style={{
-      rubyPosition: subtitleStyling.positionMeaningTop ? "over" : "under",
-      WebkitTextFillColor: wordMeaning ? subtitleStyling.textMeaning.color : '',
-      WebkitTextStrokeColor: subtitleStyling.stroke.color,
-      WebkitTextStrokeWidth: subtitleStyling.stroke.width,
-    }}>
-      {separation.map((val, index) => {
+  useEffect(() => {
+    setSeparationContent(() => {
+      return separation.map((val, index) => {
         const hiragana = (<>
               <rp>(</rp>
               <rt>{val.hiragana ?? ''}</rt>
@@ -174,13 +171,29 @@ export const JapaneseSentence = ({
         return <ruby style={{
           rubyPosition: "under",
         }} key={index}>
-          <ruby className={`state${checkLearningState(origin)}`} style={{rubyPosition: "over"}}>
+          <ruby className={learningClassName}
+                style={{rubyPosition: "over"}}>
             {val.main}
             <rt className={"unselectable"}>{subtitleStyling.showFurigana && showFurigana && hiragana}</rt>
           </ruby>
           <rt className={"unselectable"}>{subtitleStyling.showRomaji && showRomaji && romaji}</rt>
         </ruby>
-      })}
+      })
+    })
+  }, [separation, subtitleStyling, learningClassName, origin]);
+
+  return <StyledSentence
+      subtitleStyling={subtitleStyling}
+      className={extraClass}
+      onClick={handleClick}
+      onContextMenu={handleRightClick}>
+    <ruby style={{
+      rubyPosition: subtitleStyling.positionMeaningTop ? "over" : "under",
+      WebkitTextFillColor: wordMeaning ? subtitleStyling.textMeaning.color : '',
+      WebkitTextStrokeColor: subtitleStyling.stroke.color,
+      WebkitTextStrokeWidth: subtitleStyling.stroke.width,
+    }}>
+      {separationContent}
       <rt style={{fontWeight: subtitleStyling.textMeaning.weight}}
           className={"internalMeaning unselectable"}>{
           subtitleStyling.showMeaning
@@ -195,8 +208,7 @@ export const PlainSentence = ({origin}) => {
   return <div key={randomUUID()}>{parse(origin)}</div>
 }
 
-export const KanjiSentence = ({
-                                origin, setMeaning, separation,
+export const KanjiSentence = ({ setMeaning, separation,
                                 extraClass, subtitleStyling,
                               }: SentenceParam) => {
   const handleChange = useCallback((newWord) => {
@@ -216,8 +228,9 @@ export const KanjiSentence = ({
         WebkitTextFillColor: subtitleStyling.text.color,
       }} key={index}>
         <ruby style={{rubyPosition: "over"}}>
-          {Array.from(val.main).map(char => {
+          {Array.from(val.main).map((char, idx) => {
             return <StyledSentence
+                key={idx}
                 subtitleStyling={subtitleStyling}
                 className={extraClass}
                 onClick={() => {
@@ -258,22 +271,43 @@ export const ChineseSentence = ({
                                   separation,
                                   extraClass,
                                   subtitleStyling,
-                                  basicForm = '',
                                   wordMeaning = '',
-                                  changeLearningState,
-                                  checkLearningState
+                                  changeLearningState = () => '',
+                                  getLearningStateClass = () => ''
                                 }: SentenceParam) => {
   const handleChange = useCallback((pressedString) => {
     navigator.clipboard.writeText(pressedString);
     setMeaning(pressedString)
   }, [setMeaning]);
+  const [learningClassName, setLearningClassName] = useState('');
+  const [separationContent, setSeparationContent] = useState([]);
+  useEffect(() => {
+    if (!getLearningStateClass) return;
+    setLearningClassName(() => {
+      if (subtitleStyling.learning) return getLearningStateClass(origin);
+      return '';
+    })
+  }, [subtitleStyling, origin, getLearningStateClass]);
+
   const handleClick = useCallback(() => {
     handleChange(origin);
-  }, [handleChange]);
+  }, [handleChange, origin]);
 
   const handleRightClick = useCallback(() => {
     changeLearningState(origin);
-  }, [changeLearningState]);
+  }, [changeLearningState, origin]);
+
+  useEffect(() => {
+    setSeparationContent(() => separation.map((val, index) => {
+      return <ruby className={learningClassName}
+                   style={{
+                     rubyPosition: "over",
+                   }} key={index}>
+        {val.main}
+        <rt className={"unselectable"}>{subtitleStyling.showFurigana && (val.jyutping ?? val.pinyin)}</rt>
+      </ruby>
+    }));
+  }, [separation, subtitleStyling, learningClassName])
 
   return <StyledChineseSentence
       subtitleStyling={subtitleStyling}
@@ -286,14 +320,7 @@ export const ChineseSentence = ({
       WebkitTextStrokeColor: subtitleStyling.stroke.color,
       WebkitTextStrokeWidth: subtitleStyling.stroke.width,
     }}>
-      {separation.map((val, index) => {
-        return <ruby className={`state${checkLearningState(origin)}`} style={{
-          rubyPosition: "over",
-        }} key={index}>
-          {val.main}
-          <rt className={"unselectable"}>{subtitleStyling.showFurigana && (val.jyutping ?? val.pinyin)}</rt>
-        </ruby>
-      })}
+      {separationContent}
       <rt style={{fontWeight: subtitleStyling.textMeaning.weight}}
           className={"internalMeaning unselectable"}>{
           subtitleStyling.showMeaning

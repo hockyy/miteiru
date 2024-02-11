@@ -28,27 +28,12 @@ function Home() {
   const [check, setCheck] = useState(initialCheck);
   const [tokenizerMode, setTokenizerMode] = useState(0);
   const handleClick = useCallback(async () => {
-    if (tokenizerMode === 0) {
-      setCheck(checkingMessage);
-      const res = await ipcRenderer.invoke('loadKuromoji');
-      setCheck(res);
-      if (res.ok !== 1) {
-        return;
-      }
-    } else if (tokenizerMode === 2) {
-      setCheck(checkingMessage);
-      const res = await ipcRenderer.invoke('loadCantonese');
-      setCheck(res);
-      if (res.ok !== 1) {
-        return;
-      }
-    } else if (tokenizerMode === 3) {
-      setCheck(checkingMessage);
-      const res = await ipcRenderer.invoke('loadChinese');
-      setCheck(res);
-      if (res.ok !== 1) {
-        return;
-      }
+    const channels = ['loadKuromoji', 'loadMecab', 'loadCantonese', 'loadChinese']
+    setCheck(checkingMessage);
+    const res = await ipcRenderer.invoke(channels[tokenizerMode]);
+    setCheck(res);
+    if (res.ok !== 1) {
+      return;
     }
     await router.push('/video');
   }, [check, router, tokenizerMode]);
@@ -65,26 +50,20 @@ function Home() {
     });
   }, []);
 
-  const handleCheck = useCallback((cached = false) => {
-    setCheck(checkingMessage);
-    ipcRenderer.invoke('validateConfig', {
-      mecab, jmdict, cached
-    }).then(val => {
-      setCheck(val);
-    });
-  }, [mecab, jmdict]);
-
-  const handleRemoveJMDictCache = useCallback(() => {
+  const handleRemoveCache = useCallback(() => {
     setCheck({
       ok: 2,
-      message: 'Removing JMDict Cache'
+      message: 'Removing Caches '
     });
-    ipcRenderer.invoke('removeDictCache').then(() => {
-      setCheck(initialCheck);
+    ipcRenderer.invoke('removeDictCache').then((result) => {
+      setCheck({
+        ok: 0,
+        message: result
+      });
     });
   }, []);
   const {miteiruVersion} = useMiteiruVersion();
-  const ableToProceedToVideo = ((tokenizerMode === 0 || tokenizerMode === 2 || tokenizerMode === 3) && check.ok !== 2) || (tokenizerMode === 1 && check.ok === 1)
+  const ableToProceedToVideo = (check.ok !== 2);
   return (
       <React.Fragment>
         <Head>
@@ -94,7 +73,13 @@ function Home() {
             className={"flex flex-col justify-center items-center bg-white min-h-screen w-[100vw]"}>
           <div
               className={"flex flex-col h-fit items-center bg-blue-50 gap-4 w-full md:w-4/5 p-5 border rounded-lg border-blue-800 border-2"}>
+            <AwesomeButton
+                type={"danger"}
+                onPress={handleRemoveCache}>
+              Remove Dict Caches
+            </AwesomeButton>
             <div className={'flex flex-row gap-4 text-4xl text-black font-bold'}>
+
               <div onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 setTokenizerMode(parseInt(e.target.value, 10))
               }} className={'flex flex-col'}>
@@ -132,27 +117,6 @@ function Home() {
                     onChange={(val) => {
                       setMecab(val.target.value)
                     }}></input>
-              </div>
-              <div className={'flex flex-col items-center gap-4'}>
-                <div className={'flex flex-row gap-3'}>
-                  <AwesomeButton
-                      type={'secondary'}
-                      disabled={check.ok === 2}
-                      onPress={() => handleCheck(false)}>
-                    Check
-                  </AwesomeButton>
-                  <AwesomeButton
-                      type={'secondary'}
-                      disabled={check.ok === 2}
-                      onPress={() => handleCheck(true)}>
-                    Check With Cache
-                  </AwesomeButton>
-                </div>
-                <AwesomeButton
-                    type={"danger"}
-                    onPress={handleRemoveJMDictCache}>
-                  Remove JMDict Cache
-                </AwesomeButton>
               </div>
             </ContainerHome></SmoothCollapse>
             <SmoothCollapse expanded={tokenizerMode === 2}>

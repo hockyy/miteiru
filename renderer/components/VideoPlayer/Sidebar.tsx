@@ -1,5 +1,5 @@
 import {ArrowLeft} from "./Icons";
-import React from "react";
+import React, {useEffect} from "react";
 import {PopoverPicker} from "./PopoverPicker";
 import {
   CJKStyling,
@@ -55,7 +55,8 @@ export const StylingBox = ({
       {subtitleName} Show Meaning
     </div>}
     {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
-      <Toggle defaultCheck={!!(subtitleStyling.learning)} onChange={(val) => {
+      <Toggle defaultCheck={subtitleStyling.learning} onChange={(val) => {
+        console.log(val)
         const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
         newCopy.learning = val;
         setSubtitleStyling(newCopy)

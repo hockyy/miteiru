@@ -2,8 +2,9 @@ import {dialog, ipcMain} from "electron";
 import {getSubtitles} from "../helpers/getSubtitles";
 import fs from "fs";
 import Japanese from "./japanese";
+import Chinese from "./chinese";
 
-export const registerCommonHandlers = (getTokenizer, packageJson) => {
+export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirectory) => {
   ipcMain.handle('getYoutubeSubtitle', async (event, videoID, lang) => {
     // Fetching Subtitles
     try {
@@ -59,13 +60,14 @@ export const registerCommonHandlers = (getTokenizer, packageJson) => {
         console.info('The file has been saved!');
       });
     }
-
-
   })
 
 
   ipcMain.handle('removeDictCache', (event) => {
-    return true;
+    const japSet = Japanese.getJapaneseSettings(appDataDirectory);
+    const chinSet = Chinese.getMandarinSettings(appDataDirectory);
+    const canSet = Chinese.getCantoneseSettings(appDataDirectory);
+    return `rm -rf "${japSet.dictPath}"; rm -rf "${japSet.charDictPath}"; rm -rf "${canSet.dictPath}", rm -rf "${chinSet.dictPath}"`
   })
 
   ipcMain.handle('getTokenizerMode', async () => {
