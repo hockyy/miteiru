@@ -62,7 +62,7 @@ const StyledChineseSentence = styled.button<{ subtitleStyling: CJKStyling }>`
     -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[1].color};
   }
 
-  .state1 {
+  .state2 {
     -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[2].color};
   }
 
