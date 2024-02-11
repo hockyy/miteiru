@@ -15,6 +15,9 @@ const shortcutInformation = [
     key: "Esc",
     description: "Exit From CJK Information Box"
   }, {
+    key: "R",
+    description: "Repeat Current Line"
+  }, {
     key: "O",
     description: "Toggle Show CJK Subtitle"
   }, {
