@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from "react";
+import React, {useCallback, useEffect, useRef} from "react";
 import {extractVideoId, isYoutube} from "../../utils/utils";
 
 export const MiteiruDropzone = ({onDrop}) => {
@@ -9,7 +9,7 @@ export const MiteiruDropzone = ({onDrop}) => {
     e.stopPropagation();
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
     const dt = e.dataTransfer;
@@ -22,7 +22,7 @@ export const MiteiruDropzone = ({onDrop}) => {
       const filesWithPath = files.map(file => ({path: file.path}));
       onDrop(filesWithPath);
     }
-  };
+  }, [onDrop]);
 
   useEffect(() => {
     const pasteEvent = () => {
