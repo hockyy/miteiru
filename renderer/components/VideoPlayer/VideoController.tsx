@@ -29,7 +29,7 @@ export const VideoController = ({
       setEnableSeeker(false)
       onVideoChangeHandler(delta);
     }
-  }, [enableSeeker, onVideoChangeHandler])
+  }, [enableSeeker, onVideoChangeHandler, setEnableSeeker])
   const timeSeekerHandler = useCallback((seekedTime) => {
     if (enableSeeker) {
       changeTimeTo(seekedTime / 1000)

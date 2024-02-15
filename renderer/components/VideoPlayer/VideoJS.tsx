@@ -1,4 +1,4 @@
-import {useEffect, useRef} from 'react';
+import {useCallback, useEffect, useRef} from 'react';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 import 'videojs-youtube';
@@ -8,9 +8,9 @@ import {videoConstants} from "../../utils/constants";  // Import the YouTube plu
 export const VideoJS = ({options, onReady, setCurrentTime}) => {
   const videoRef = useRef(null);
   const playerRef = useRef(null);
-  const handle = () => {
+  const handle = useCallback(() => {
     setCurrentTime(playerRef.current.currentTime())
-  }
+  }, [setCurrentTime])
 
   useEffect(() => {
     // Make sure Video.js player is only initialized once
@@ -28,14 +28,14 @@ export const VideoJS = ({options, onReady, setCurrentTime}) => {
         playerRef.current.src(options.sources);
       }
     }
-  }, [options, videoRef]);
+  }, [onReady, options, videoRef]);
 
   useEffect(() => {
     const interval = setInterval(() => {
       handle()
     }, videoConstants.subtitleFramerate);
     return () => clearInterval(interval);
-  }, []);
+  }, [handle]);
 
   return (
       <div className={'z-0'} style={{pointerEvents: 'none'}}>

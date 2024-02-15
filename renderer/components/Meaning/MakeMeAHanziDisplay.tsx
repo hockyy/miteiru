@@ -10,7 +10,7 @@ const MakeMeAHanziDisplay = ({character}) => {
     if (character) {
       const filename = character.charCodeAt(0) + '.svg';
       ipcRenderer.invoke("readHanziSVG", filename).then(val => {
-        let addSize = val.replace('<svg ', '<svg width=109 height=109 ');
+        const addSize = val.replace('<svg ', '<svg width=109 height=109 ');
         setSvgData(addSize);
       });
     }
