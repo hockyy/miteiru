@@ -35,7 +35,7 @@ function Home() {
       return;
     }
     await router.push('/video');
-  }, [check, router, tokenizerMode]);
+  }, [router, tokenizerMode]);
 
   const handleSelectMecabPath = useCallback(() => {
     ipcRenderer.invoke('pickFile', ['*']).then((val) => {

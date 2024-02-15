@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useMemo, useState} from "react";
 import {ipcRenderer, shell} from "electron";
-import {ChineseSentence, HanziSentence, KanjiSentence} from "../Subtitle/Sentence";
+import {HanziSentence, KanjiSentence} from "../Subtitle/Sentence";
 import {CJKStyling, defaultMeaningBoxStyling} from "../../utils/CJKStyling";
 import {joinString} from "../../utils/utils";
 import {AwesomeButton} from "react-awesome-button";
@@ -96,7 +96,7 @@ const MeaningBox = ({
         setMeaningIndex(0)
       })
     }
-  }, [meaning, setMeaning]);
+  }, [lang, meaning, setMeaning]);
 
 
   const [romajiedData, setRomajiedData] = useState([]);
@@ -114,11 +114,11 @@ const MeaningBox = ({
       setRomajiedData(data);
     };
     if (meaningContent.single.length) fetchData();
-  }, [meaningContent.single]); // Add your dependencies here
+  }, [meaningContent.single, tokenizeMiteiru]); // Add your dependencies here
 
   const handleBGClick = useCallback(() => {
     setMeaning('');
-  }, [setMeaning, meaning])
+  }, [setMeaning])
 
   if (meaningContent.single.length > 0) {
     return (
@@ -239,7 +239,7 @@ const WaniKaniComponent = ({slug}) => {
       setRadicalDisplay(radical.character);
       setRadicalName(radical.meaning);
     });
-  }, [])
+  }, [slug])
 
   return (
       <div
@@ -303,13 +303,15 @@ const kanjiBoxEntry = (meaningKanji) => {
     const kunyomi = member.readings.filter(val => val.type === 'ja_kun').map(val => val.value)
     const meanings = member.meanings.filter(val => val.lang === 'en').map(val => val.value)
     const urls = [
-      <ExternalLink urlBase="https://jisho.org/search/" displayText="Jisho"
+      <ExternalLink key={'jisho'} urlBase="https://jisho.org/search/" displayText="Jisho"
                     query={meaningKanji.literal}/>,
-      <ExternalLink urlBase="https://www.wanikani.com/kanji/" displayText="Wanikani"
+      <ExternalLink key={'wanikani'} urlBase="https://www.wanikani.com/kanji/"
+                    displayText="Wanikani"
                     query={meaningKanji.literal}/>,
-      <ExternalLink urlBase="https://tangorin.com/kanji/" displayText="Tangorin"
+      <ExternalLink key={'tangorin'} urlBase="https://tangorin.com/kanji/" displayText="Tangorin"
                     query={meaningKanji.literal}/>,
-      <ExternalLink urlBase="https://kanji.koohii.com/study/kanji/" displayText="Koohii"
+      <ExternalLink key={'koohii'} urlBase="https://kanji.koohii.com/study/kanji/"
+                    displayText="Koohii"
                     query={meaningKanji.literal}/>
     ];
     return {
@@ -318,10 +320,11 @@ const kanjiBoxEntry = (meaningKanji) => {
       "訓読み (Kunyomi)": kunyomi,
       urls,
       "Wanikani": meaningKanji.wanikani ? meaningKanji.wanikani.component_subject_ids.map(radicalName =>
-          <WaniKaniComponent slug={radicalName}/>) : [],
+          <WaniKaniComponent key={radicalName} slug={radicalName}/>) : [],
 
       "Mnemonics": meaningKanji.wanikani ?
-          [<MeaningMnemonics content={meaningKanji.wanikani.meaning_mnemonic}/>] : [],
+          [<MeaningMnemonics key={'mnemonic'}
+                             content={meaningKanji.wanikani.meaning_mnemonic}/>] : [],
     }
   })
   const containerClassName = "flex flex-row gap-2 text-red-600 text-xl"
@@ -346,7 +349,7 @@ const kanjiBoxEntry = (meaningKanji) => {
       {groups.map((val, index) => {
         return <div key={index} className={'flex flex-col gap-2 m-3'}>
           {Object.entries(val).map(([key, value], index) => {
-            return <div className={containerClassName}>
+            return <div key={index} className={containerClassName}>
               <div className={headerClassName}>{key}:</div>
               {bubbleEntryReading(value)}
             </div>
@@ -369,7 +372,7 @@ const HanziBoxEntry = ({meaningHanzi, setMeaning, subtitleStyling}) => {
 
   const bubbleExplanation = useMemo(() => {
     const urls = [
-      <ExternalLink urlBase="https://cantonese.org/search.php?q=" displayText="Cantonese.org"
+      <ExternalLink key={'cantonese'} urlBase="https://cantonese.org/search.php?q=" displayText="Cantonese.org"
                     query={meaningHanzi.literal}/>,
     ];
     const pinyin = meaningHanzi.pinyin
@@ -391,7 +394,7 @@ const HanziBoxEntry = ({meaningHanzi, setMeaning, subtitleStyling}) => {
       variants,
       similar
     }
-  }, [meaningHanzi.literal]);
+  }, [meaningHanzi.decomposition, meaningHanzi.etymology, meaningHanzi.jyutping, meaningHanzi.literal, meaningHanzi.notes, meaningHanzi.pinyin, meaningHanzi.radical, meaningHanzi.similar, meaningHanzi.variants]);
   const containerClassName = "flex flex-row gap-2 text-red-600 text-xl"
   const headerClassName = "flex flex-row gap-2 font-bold capitalize"
   return <div
@@ -414,6 +417,7 @@ const HanziBoxEntry = ({meaningHanzi, setMeaning, subtitleStyling}) => {
 
           {meaningHanzi.decomposition && Array.from(meaningHanzi.decomposition).map((value: string, index) => {
             return <div
+                key={index + 'div'}
                 className={"bg-white gap-0 rounded-xl p-2 border-2 border-blue-700 w-fit unselectable hovery"}>
               <HanziSentence key={index}
                              origin={value}

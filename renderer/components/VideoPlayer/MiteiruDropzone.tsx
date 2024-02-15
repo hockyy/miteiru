@@ -55,7 +55,7 @@ export const MiteiruDropzone = ({onDrop}) => {
         div.removeEventListener('drop', handleDrop);
       }
     }
-  }, []); // Pass an empty array to ensure that the effect runs only once
+  }, [handleDrop]); // Pass an empty array to ensure that the effect runs only once
 
   return (
       <div ref={dropRef} className={"unselectable"} style={{
