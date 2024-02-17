@@ -82,7 +82,7 @@ function Video() {
   const {showController, setShowController, showSidebar, setShowSidebar} = useMenuDisplay();
   useKeyBind(setMeaning, setShowController, setShowSidebar,
       setPrimarySub, setSecondarySub, primarySub, undo,
-      setShowPrimarySub, setShowSecondarySub);
+      setShowPrimarySub, setShowSecondarySub, primaryStyling, setPrimaryStyling);
   const {togglePlay, isPlaying, setIsPlaying} = useVideoPlayingToggle(player, metadata);
   const {
     autoPause,
