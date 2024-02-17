@@ -18,6 +18,9 @@ const shortcutInformation = [
     key: "R",
     description: "Repeat Current Line"
   }, {
+    key: "Y",
+    description: "Toggle Show Transliterations"
+  }, {
     key: "O",
     description: "Toggle Show CJK Subtitle"
   }, {
