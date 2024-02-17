@@ -29,6 +29,6 @@ export default function useLearningKeyBind(
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [router, setMeaning, setShowSidebar]);
+  }, [router, setMeaning, setShowSidebar, undo]);
 
 }

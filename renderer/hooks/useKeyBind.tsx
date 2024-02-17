@@ -14,7 +14,9 @@ export default function useKeyBind(
     primarySub,
     undo,
     setShowPrimarySub,
-    setShowSecondarySub
+    setShowSecondarySub,
+    primaryStyling,
+    setPrimaryStyling,
 ) {
   const router = useRouter();
   useEffect(() => {
@@ -33,6 +35,10 @@ export default function useKeyBind(
         setShowSidebar((old) => {
           return !old;
         });
+      } else if (event.code === "KeyY") {
+        const newCopy = JSON.parse(JSON.stringify(primaryStyling))
+        newCopy.showFurigana = !primaryStyling.showFurigana;
+        setPrimaryStyling(newCopy);
       } else if (event.code === "KeyO") {
         if (event.ctrlKey) {
           setPrimarySub(new SubtitleContainer(''));
@@ -59,6 +65,6 @@ export default function useKeyBind(
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [router, setMeaning, setShowController, setShowSidebar, setPrimarySub, setSecondarySub]);
+  }, [router, setMeaning, setShowController, setShowSidebar, setPrimarySub, setSecondarySub, setPrimaryStyling, primarySub.id, setShowPrimarySub, setShowSecondarySub, undo]);
 
 }
