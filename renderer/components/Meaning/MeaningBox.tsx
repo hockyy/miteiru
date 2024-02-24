@@ -105,6 +105,7 @@ const MeaningBox = ({
     const fetchData = async () => {
       const data = await Promise.all(meaningContent.single.map(async (val) => {
         const romajied = await tokenizeMiteiru(val.text);
+        console.log(romajied)
         return {
           key: val.key,
           romajied
@@ -157,14 +158,27 @@ const MeaningBox = ({
                       <div key={key}
                            className={"flex flex-col justify-between items-center gap-2"}>
                         <div
-                            className={"bg-white gap-0 rounded-xl p-2 border-2 border-blue-700 w-fit unselectable hovery"}>{[...romajied.map((val, idx) => (
-                            <KanjiSentence key={idx}
-                                           origin={val.origin}
-                                           setMeaning={setMeaning}
-                                           separation={val.separation}
-                                           extraClass={"unselectable meaning-kanji text-md"}
-                                           subtitleStyling={subtitleStyling}/>
-                        ))]}</div>
+                            className={"bg-white gap-0 rounded-xl p-2 border-2 border-blue-700 w-fit unselectable hovery"}>
+                          {lang === videoConstants.japaneseLang &&
+                              [...romajied.map((val, idx) => (
+                                  <KanjiSentence key={idx}
+                                                 origin={val.origin}
+                                                 setMeaning={setMeaning}
+                                                 separation={val.separation}
+                                                 extraClass={"unselectable meaning-kanji text-md"}
+                                                 subtitleStyling={subtitleStyling}/>
+                              ))]}
+                          {(lang === videoConstants.chineseLang || videoConstants.cantoneseLang) && [...romajied.map((val, idx) => {
+                            console.log(val, idx);
+                            return (
+                                <HanziSentence key={idx}
+                                               origin={val.origin}
+                                               pinyin={val.pinyin.split(' ')}
+                                               setMeaning={setMeaning}
+                                               extraClass={"unselectable meaning-kanji text-md"}
+                                               subtitleStyling={subtitleStyling}/>
+                            );
+                          })]}</div>
                         {lang === videoConstants.japaneseLang &&
                             <ExternalLink style={{"color": "black"}}
                                           urlBase="https://jisho.org/search/"
@@ -372,7 +386,8 @@ const HanziBoxEntry = ({meaningHanzi, setMeaning, subtitleStyling}) => {
 
   const bubbleExplanation = useMemo(() => {
     const urls = [
-      <ExternalLink key={'cantonese'} urlBase="https://cantonese.org/search.php?q=" displayText="Cantonese.org"
+      <ExternalLink key={'cantonese'} urlBase="https://cantonese.org/search.php?q="
+                    displayText="Cantonese.org"
                     query={meaningHanzi.literal}/>,
     ];
     const pinyin = meaningHanzi.pinyin

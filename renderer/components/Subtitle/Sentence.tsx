@@ -21,7 +21,7 @@ const StyledSentence = styled.button<{ subtitleStyling: CJKStyling }>`
   .state2 {
     -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[2].color};
   }
-  
+
   .state3 {
     -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[3].color};
   }
@@ -37,7 +37,7 @@ const StyledSentence = styled.button<{ subtitleStyling: CJKStyling }>`
   &:hover .state2 {
     -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[2].hoverColor};
   }
-  
+
   &:hover .state3 {
     -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[3].hoverColor};
   }
@@ -70,7 +70,7 @@ const StyledChineseSentence = styled.button<{ subtitleStyling: CJKStyling }>`
   .state2 {
     -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[2].color};
   }
-  
+
   .state3 {
     -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[3].color};
   }
@@ -86,7 +86,7 @@ const StyledChineseSentence = styled.button<{ subtitleStyling: CJKStyling }>`
   &:hover .state2 {
     -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[2].hoverColor};
   }
-  
+
   &:hover .state3 {
     -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[3].hoverColor};
   }
@@ -128,6 +128,7 @@ interface SentenceParam {
   basicForm?: string,
   getLearningStateClass?: any,
   changeLearningState?: any,
+  pinyin?: string[]
 }
 
 export const JapaneseSentence = ({
@@ -218,7 +219,8 @@ export const PlainSentence = ({origin}) => {
   return <div key={randomUUID()}>{parse(origin)}</div>
 }
 
-export const KanjiSentence = ({ setMeaning, separation,
+export const KanjiSentence = ({
+                                setMeaning, separation,
                                 extraClass, subtitleStyling,
                               }: SentenceParam) => {
   const handleChange = useCallback((newWord) => {
@@ -259,18 +261,30 @@ export const KanjiSentence = ({ setMeaning, separation,
 export const HanziSentence = ({
                                 origin, setMeaning,
                                 extraClass, subtitleStyling,
+                                pinyin
                               }: SentenceParam) => {
   const handleChange = useCallback((newWord) => {
     navigator.clipboard.writeText(newWord);
     setMeaning(newWord)
   }, [setMeaning]);
-  return <><StyledSentence
-      subtitleStyling={subtitleStyling}
-      className={extraClass}
-      onClick={() => {
-        handleChange(origin)
-      }}><>{origin}</>
-  </StyledSentence>
+  return <>
+    {Array.from(origin).map((val, index) => {
+      return <ruby style={{
+        rubyPosition: "under",
+        WebkitTextFillColor: subtitleStyling.text.color,
+      }} key={index}>
+        <ruby style={{rubyPosition: "over"}}>
+          <StyledChineseSentence
+              subtitleStyling={subtitleStyling}
+              className={extraClass}
+              onClick={() => {
+                handleChange(val)
+              }}><>{val}</>
+          </StyledChineseSentence>
+          <rt className={"unselectable"}>{index < (pinyin??'').length ? pinyin[index] : ''}</rt>
+        </ruby>
+      </ruby>
+    })}
   </>
 }
 
