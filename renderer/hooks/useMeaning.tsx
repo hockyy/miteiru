@@ -15,7 +15,7 @@ const useMeaning = () => {
       setHistory({ value: meaning, next: history });
       _setMeaning(newMeaning);
     }
-  }, [meaning])
+  }, [history, meaning])
 
   const undo = useCallback(() => {
     if (history !== null) {
@@ -24,7 +24,7 @@ const useMeaning = () => {
     } else {
       _setMeaning('');
     }
-  }, [_setMeaning, setHistory]);
+  }, [history]);
 
   return { meaning, setMeaning, undo };
 };

@@ -1,5 +1,5 @@
 import {ArrowLeft} from "./Icons";
-import React from "react";
+import React, {useCallback} from "react";
 import {PopoverPicker} from "./PopoverPicker";
 import {
   CJKStyling,
@@ -307,6 +307,12 @@ export const Sidebar = ({
                           learningPercentage,
                           setLearningPercentage
                         }) => {
+  const learningPercentageHandler = useCallback(event => {
+    setLearningPercentage(parseFloat(event.target.value));
+  }, [setLearningPercentage])
+  const autoPauseHandler = useCallback((val) => {
+    setAutoPause(val);
+  }, [setAutoPause])
   return <div style={{
     transition: "all 0.3s ease-out",
     transform: `translate(${!showSidebar ? "30vw" : "0"}, 0`
@@ -327,10 +333,7 @@ export const Sidebar = ({
 
     <div className={"w-full mx-5 px-3 flex flex-col content-start gap-3 unselectable"}>
       <div className={"flex flex-row items-center gap-3"}>
-        <Toggle defaultCheck={autoPause} onChange={(val) => {
-          setAutoPause(val);
-        }
-        }/>
+        <Toggle defaultCheck={autoPause} onChange={autoPauseHandler}/>
         Enable Auto Pause
       </div>
       <div className={"flex w-full justify-around items-center gap-3"}>
@@ -343,9 +346,7 @@ export const Sidebar = ({
             max={100}
             step={0.4}
             value={learningPercentage}
-            onChange={event => {
-              setLearningPercentage(parseFloat(event.target.value));
-            }}
+            onChange={learningPercentageHandler}
         /></span>
       </div>
     </div>

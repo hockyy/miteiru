@@ -122,7 +122,7 @@ function Home() {
             <SmoothCollapse expanded={tokenizerMode === 3}>
               <ContainerHome>
                 <div className={'text-blue-800'}>
-                  You can run: <pre className={'font-bold'}>/usr/bin/python3 -m pip install jieba pypinyin</pre>
+                  You can run: <pre className={'font-bold'}>pip install jieba pypinyin</pre>
                 </div>
               </ContainerHome>
             </SmoothCollapse>
