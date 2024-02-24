@@ -16,118 +16,199 @@ export const StylingBox = ({
                              subtitleName,
                              defaultStyling
                            }) => {
-  return <div className={"w-full mx-5 px-3 flex flex-col content-start gap-3 unselectable"}>
-    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
-      <Toggle defaultCheck={subtitleStyling.showFurigana} onChange={(val) => {
-        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-        newCopy.showFurigana = val;
-        setSubtitleStyling(newCopy)
+  const saveHandler = useCallback(() => {
+    ipcRenderer.invoke("saveFile", ["json"], JSON.stringify(subtitleStyling))
+  }, [subtitleStyling]);
+  const loadHandler = useCallback(() => {
+    ipcRenderer.invoke("readFile", ["json"]).then((val) => {
+      try {
+        const parsed = JSON.parse(val) as CJKStyling;
+        setSubtitleStyling(parsed)
+      } catch (e) {
+        console.error(e)
       }
-      }/>
-      {subtitleName} Show Furigana
-    </div>}
-    {subtitleName == "CJK" && subtitleStyling.showFurigana &&
-        <div className={"flex flex-row items-center gap-3"}>
-          <Toggle defaultCheck={subtitleStyling.showFuriganaOnKana} onChange={(val) => {
-            const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-            newCopy.showFuriganaOnKana = val;
-            setSubtitleStyling(newCopy)
-          }
-          }/>
-          {subtitleName} Show Furigana on Kana
-        </div>}
-    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
-      <Toggle defaultCheck={subtitleStyling.showRomaji} onChange={(val) => {
-        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-        newCopy.showRomaji = val;
-        setSubtitleStyling(newCopy)
-      }
-      }/>
-      {subtitleName} Show Romaji
-    </div>}
-    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
-      <Toggle defaultCheck={subtitleStyling.showMeaning} onChange={(val) => {
-        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-        newCopy.showMeaning = val;
-        setSubtitleStyling(newCopy)
-      }
-      }/>
-      {subtitleName} Show Meaning
-    </div>}
-    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
-      <Toggle defaultCheck={subtitleStyling.learning} onChange={(val) => {
+    })
+  }, [setSubtitleStyling]);
+  const cjkShowFuriganaHandler = useCallback((val) => {
+    const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+    newCopy.showFurigana = val;
+    setSubtitleStyling(newCopy)
+  }, [setSubtitleStyling, subtitleStyling]);
+  const cjkShowFuriganaOnKanaHandler = useCallback((val) => {
+    const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+    newCopy.showFuriganaOnKana = val;
+    setSubtitleStyling(newCopy)
+  }, [setSubtitleStyling, subtitleStyling]);
+  const cjkShowRomajiHandler = useCallback((val) => {
+    const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+    newCopy.showRomaji = val;
+    setSubtitleStyling(newCopy)
+  }, [setSubtitleStyling, subtitleStyling]);
+  const cjkShowMeaningHandler = useCallback((val) => {
+    const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+    newCopy.showMeaning = val;
+    setSubtitleStyling(newCopy)
+  }, [setSubtitleStyling, subtitleStyling]);
+  const cjkUseLearningHandler = useCallback((val) => {
         const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
         newCopy.learning = val;
         setSubtitleStyling(newCopy)
       }
-      }/>
-      {subtitleName} Use learning styling
-    </div>}
-    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
-      <Toggle defaultCheck={subtitleStyling.showSpace} onChange={(val) => {
+      , [setSubtitleStyling, subtitleStyling]);
+  const cjkTextMeaningColorHandler = useCallback((val) => {
+        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+        newCopy.textMeaning.color = val;
+        setSubtitleStyling(newCopy)
+      }
+      , [setSubtitleStyling, subtitleStyling]);
+  const cjkShowMoreSpaceHandler = useCallback((val) => {
         const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
         newCopy.showSpace = val;
         setSubtitleStyling(newCopy)
       }
-      }/>
-      {subtitleName} Show More Space Between Each Token
-    </div>}
-    <div className={"flex flex-row items-center gap-3"}>
-      <PopoverPicker color={subtitleStyling.text.color} onChange={(val) => {
+      , [setSubtitleStyling, subtitleStyling]);
+  const cjkMeaningHoverTextHandler = useCallback((val) => {
+        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+        newCopy.textMeaning.hoverColor = val;
+        setSubtitleStyling(newCopy)
+      }
+      , [setSubtitleStyling, subtitleStyling]);
+  const cjkMeaningWeightHandler = useCallback(event => {
+    const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+    newCopy.textMeaning.weight = parseInt(event.target.value);
+    setSubtitleStyling(newCopy)
+  }, [setSubtitleStyling, subtitleStyling]);
+  const cjkRemoveHearingImpairedHandler = useCallback((val) => {
+        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+        newCopy.removeHearingImpaired = val;
+        setSubtitleStyling(newCopy)
+      }
+      , [setSubtitleStyling, subtitleStyling]);
+  const cjkSubtitleMeaningTopHandler = useCallback((val) => {
+        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+        newCopy.positionMeaningTop = val;
+        setSubtitleStyling(newCopy)
+      }
+      , [setSubtitleStyling, subtitleStyling]);
+  const cjkMaximalMeaningLPCHandler = useCallback(event => {
+    const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+    newCopy.maximalMeaningLengthPerCharacter = parseInt(event.target.value);
+    setSubtitleStyling(newCopy)
+  }, [setSubtitleStyling, subtitleStyling]);
+  const subtitleTextColorHandler = useCallback((val) => {
         const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
         newCopy.text.color = val;
         setSubtitleStyling(newCopy)
       }
-      }/>
-      {subtitleName} Subtitle Text Color
-    </div>
-    <div className={"flex flex-row items-center gap-3"}>
-      <PopoverPicker color={subtitleStyling.text.hoverColor} onChange={(val) => {
+      , [setSubtitleStyling, subtitleStyling]);
+  const subtitleHoverColorHandler = useCallback((val) => {
         const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
         newCopy.text.hoverColor = val;
         setSubtitleStyling(newCopy)
       }
-      }/>
-      {subtitleName} Subtitle Hover Color
-    </div>
-
-    <div className={"flex flex-row items-center gap-3"}>
-      <PopoverPicker color={subtitleStyling.stroke.color} onChange={(val) => {
+      , [setSubtitleStyling, subtitleStyling]);
+  const subtitleStrokeColorHandler = useCallback((val) => {
         const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
         newCopy.stroke.color = val;
         setSubtitleStyling(newCopy)
       }
-      }/>
-      {subtitleName} Subtitle Stroke Color
-    </div>
-    <div className={"flex flex-row items-center gap-3"}>
-      <PopoverPicker color={subtitleStyling.stroke.hoverColor} onChange={(val) => {
+      , [setSubtitleStyling, subtitleStyling]);
+  const subtitleHoverStrokeColorHandler = useCallback((val) => {
         const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
         newCopy.stroke.hoverColor = val;
         setSubtitleStyling(newCopy)
       }
+      , [setSubtitleStyling, subtitleStyling]);
+  const subtitlePositionFromTopHandler = useCallback((val) => {
+        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+        newCopy.positionFromTop = val;
+        setSubtitleStyling(newCopy)
+      }
+      , [setSubtitleStyling, subtitleStyling]);
+  const backgroundColorHandler = useCallback((val) => {
+        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+        newCopy.background = val;
+        setSubtitleStyling(newCopy)
+      }
+      , [setSubtitleStyling, subtitleStyling]);
+  const fontWeightHandler = useCallback(event => {
+    const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+    newCopy.text.weight = parseInt(event.target.value);
+    setSubtitleStyling(newCopy)
+  }, [setSubtitleStyling, subtitleStyling]);
+  const fontSizeHandler = useCallback(event => {
+    const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+    newCopy.text.fontSize = event.target.value + "px";
+    setSubtitleStyling(newCopy)
+  }, [setSubtitleStyling, subtitleStyling]);
+  const positionFromTopSlideHandler = useCallback(event => {
+    const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+    newCopy.position = event.target.value + "vh";
+    setSubtitleStyling(newCopy)
+  }, [setSubtitleStyling, subtitleStyling]);
+  const strokeWidthHandler = useCallback(event => {
+    const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+    newCopy.stroke.width = event.target.value + "px";
+    setSubtitleStyling(newCopy)
+  }, [setSubtitleStyling, subtitleStyling]);
+  return <div className={"w-full mx-5 px-3 flex flex-col content-start gap-3 unselectable"}>
+    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
+      <Toggle defaultCheck={subtitleStyling.showFurigana} onChange={cjkShowFuriganaHandler}/>
+      {subtitleName} Show Furigana
+    </div>}
+    {subtitleName == "CJK" && subtitleStyling.showFurigana &&
+        <div className={"flex flex-row items-center gap-3"}>
+          <Toggle defaultCheck={subtitleStyling.showFuriganaOnKana}
+                  onChange={cjkShowFuriganaOnKanaHandler}/>
+          {subtitleName} Show Furigana on Kana
+        </div>}
+    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
+      <Toggle defaultCheck={subtitleStyling.showRomaji} onChange={cjkShowRomajiHandler
       }/>
+      {subtitleName} Show Romaji
+    </div>}
+    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
+      <Toggle defaultCheck={subtitleStyling.showMeaning} onChange={cjkShowMeaningHandler
+      }/>
+      {subtitleName} Show Meaning
+    </div>}
+    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
+      <Toggle defaultCheck={subtitleStyling.learning} onChange={cjkUseLearningHandler}/>
+      {subtitleName} Use learning styling
+    </div>}
+    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
+      <Toggle defaultCheck={subtitleStyling.showSpace} onChange={cjkShowMoreSpaceHandler}/>
+      {subtitleName} Show More Space Between Each Token
+    </div>}
+    <div className={"flex flex-row items-center gap-3"}>
+      <PopoverPicker color={subtitleStyling.text.color} onChange={subtitleTextColorHandler}/>
+      {subtitleName} Subtitle Text Color
+    </div>
+    <div className={"flex flex-row items-center gap-3"}>
+      <PopoverPicker color={subtitleStyling.text.hoverColor} onChange={subtitleHoverColorHandler}/>
+      {subtitleName} Subtitle Hover Color
+    </div>
+
+    <div className={"flex flex-row items-center gap-3"}>
+      <PopoverPicker color={subtitleStyling.stroke.color} onChange={subtitleStrokeColorHandler}/>
+      {subtitleName} Subtitle Stroke Color
+    </div>
+    <div className={"flex flex-row items-center gap-3"}>
+      <PopoverPicker color={subtitleStyling.stroke.hoverColor}
+                     onChange={subtitleHoverStrokeColorHandler}/>
       {subtitleName} Subtitle Hover Stroke Color
     </div>
 
     {subtitleName == "CJK" &&
         <div className={"flex flex-row items-center gap-3"}>
-          <PopoverPicker color={subtitleStyling.textMeaning.color} onChange={(val) => {
-            const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-            newCopy.textMeaning.color = val;
-            setSubtitleStyling(newCopy)
-          }
-          }/>
+          <PopoverPicker color={subtitleStyling.textMeaning.color}
+                         onChange={cjkTextMeaningColorHandler}/>
           {subtitleName} Meaning Text Color
         </div>}
     {subtitleName == "CJK" &&
         <div className={"flex flex-row items-center gap-3"}>
-          <PopoverPicker color={subtitleStyling.textMeaning.hoverColor} onChange={(val) => {
-            const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-            newCopy.textMeaning.hoverColor = val;
-            setSubtitleStyling(newCopy)
-          }
-          }/>
+          <PopoverPicker color={subtitleStyling.textMeaning.hoverColor}
+                         onChange={cjkMeaningHoverTextHandler}/>
           {subtitleName} Meaning Hover Text Color
         </div>}
     {subtitleName == "CJK" &&
@@ -140,20 +221,11 @@ export const StylingBox = ({
               max={800}
               step={100}
               value={parseInt(subtitleStyling.textMeaning.weight)}
-              onChange={event => {
-                const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-                newCopy.textMeaning.weight = parseInt(event.target.value);
-                setSubtitleStyling(newCopy)
-              }}
+              onChange={cjkMeaningWeightHandler}
           />
         </div>}
     <div className={"w-full flex flex-row items-center gap-3"}>
-      <PopoverPicker color={subtitleStyling.background} onChange={(val) => {
-        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-        newCopy.background = val;
-        setSubtitleStyling(newCopy)
-      }
-      }/>
+      <PopoverPicker color={subtitleStyling.background} onChange={backgroundColorHandler}/>
       {subtitleName} Background Color
     </div>
     <div className={"flex w-full justify-center items-center"}>
@@ -165,11 +237,7 @@ export const StylingBox = ({
           max={1.5}
           step={0.02}
           value={parseFloat(subtitleStyling.stroke.width.trim('px'))}
-          onChange={event => {
-            const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-            newCopy.stroke.width = event.target.value + "px";
-            setSubtitleStyling(newCopy)
-          }}
+          onChange={strokeWidthHandler}
       />
     </div>
     <div className={"flex w-full justify-center items-center"}>
@@ -181,11 +249,7 @@ export const StylingBox = ({
           max={100}
           step={1}
           value={parseInt(subtitleStyling.text.fontSize.trim('px'))}
-          onChange={event => {
-            const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-            newCopy.text.fontSize = event.target.value + "px";
-            setSubtitleStyling(newCopy)
-          }}
+          onChange={fontSizeHandler}
       />
     </div>
 
@@ -198,38 +262,22 @@ export const StylingBox = ({
           max={800}
           step={100}
           value={parseInt(subtitleStyling.text.weight)}
-          onChange={event => {
-            const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-            newCopy.text.weight = parseInt(event.target.value);
-            setSubtitleStyling(newCopy)
-          }}
+          onChange={fontWeightHandler}
       />
     </div>
     {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
-      <Toggle defaultCheck={subtitleStyling.removeHearingImpaired} onChange={(val) => {
-        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-        newCopy.removeHearingImpaired = val;
-        setSubtitleStyling(newCopy)
-      }
-      }/>
+      <Toggle defaultCheck={subtitleStyling.removeHearingImpaired}
+              onChange={cjkRemoveHearingImpairedHandler}/>
       Remove Hearing Impaired
     </div>}
     <div className={"flex flex-row items-center gap-3"}>
-      <Toggle defaultCheck={subtitleStyling.positionFromTop} onChange={(val) => {
-        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-        newCopy.positionFromTop = val;
-        setSubtitleStyling(newCopy)
-      }
-      }/>
+      <Toggle defaultCheck={subtitleStyling.positionFromTop}
+              onChange={subtitlePositionFromTopHandler}/>
       {subtitleName} Subtitle Position from Top
     </div>
     {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
-      <Toggle defaultCheck={subtitleStyling.positionMeaningTop} onChange={(val) => {
-        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-        newCopy.positionMeaningTop = val;
-        setSubtitleStyling(newCopy)
-      }
-      }/>
+      <Toggle defaultCheck={subtitleStyling.positionMeaningTop}
+              onChange={cjkSubtitleMeaningTopHandler}/>
       {subtitleName} Subtitle Meaning at Top
     </div>}
     {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
@@ -241,11 +289,7 @@ export const StylingBox = ({
           max={20}
           step={1}
           value={parseInt(subtitleStyling.maximalMeaningLengthPerCharacter)}
-          onChange={event => {
-            const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-            newCopy.maximalMeaningLengthPerCharacter = parseInt(event.target.value);
-            setSubtitleStyling(newCopy)
-          }}
+          onChange={cjkMaximalMeaningLPCHandler}
       />
     </div>}
     <div className={"flex w-full justify-center items-center"}>
@@ -257,11 +301,7 @@ export const StylingBox = ({
           max={100}
           step={1}
           value={parseInt(subtitleStyling.position.trim('vh'))}
-          onChange={event => {
-            const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-            newCopy.position = event.target.value + "vh";
-            setSubtitleStyling(newCopy)
-          }}
+          onChange={positionFromTopSlideHandler}
       />
     </div>
     <AwesomeButton
@@ -274,22 +314,11 @@ export const StylingBox = ({
       <AwesomeButton
           type={"primary"}
           className={"w-full"}
-          onPress={() => {
-            ipcRenderer.invoke("readFile", ["json"]).then((val) => {
-              try {
-                const parsed = JSON.parse(val) as CJKStyling;
-                setSubtitleStyling(parsed)
-              } catch (e) {
-                console.error(e)
-              }
-            })
-          }}>Import</AwesomeButton>
+          onPress={loadHandler}>Import</AwesomeButton>
       <AwesomeButton
           type={"secondary"}
           className={"w-full"}
-          onPress={() => {
-            ipcRenderer.invoke("saveFile", ["json"], JSON.stringify(subtitleStyling))
-          }}>Export
+          onPress={saveHandler}>Export
       </AwesomeButton>
     </div>
   </div>
