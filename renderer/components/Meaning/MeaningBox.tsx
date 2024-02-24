@@ -81,6 +81,11 @@ const MeaningBox = ({
               text: content
             })
           }
+          for (const content of (entry.simplified??'').split('，')) {
+            entry.single.push({
+              text: content
+            })
+          }
         }
         if (entries.length === 0) {
           entries.push({
@@ -105,7 +110,6 @@ const MeaningBox = ({
     const fetchData = async () => {
       const data = await Promise.all(meaningContent.single.map(async (val) => {
         const romajied = await tokenizeMiteiru(val.text);
-        console.log(romajied)
         return {
           key: val.key,
           romajied
@@ -169,7 +173,6 @@ const MeaningBox = ({
                                                  subtitleStyling={subtitleStyling}/>
                               ))]}
                           {(lang === videoConstants.chineseLang || videoConstants.cantoneseLang) && [...romajied.map((val, idx) => {
-                            console.log(val, idx);
                             return (
                                 <HanziSentence key={idx}
                                                origin={val.origin}
@@ -431,6 +434,7 @@ const HanziBoxEntry = ({meaningHanzi, setMeaning, subtitleStyling}) => {
         <div className={'text-5xl flex flex-row gap-5'}>
 
           {meaningHanzi.decomposition && Array.from(meaningHanzi.decomposition).map((value: string, index) => {
+            if (!value.match(videoConstants.cjkRegex)) return;
             return <div
                 key={index + 'div'}
                 className={"bg-white gap-0 rounded-xl p-2 border-2 border-blue-700 w-fit unselectable hovery"}>
