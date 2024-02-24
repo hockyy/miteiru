@@ -81,11 +81,6 @@ const MeaningBox = ({
               text: content
             })
           }
-          for (const content of (entry.simplified??'').split('，')) {
-            entry.single.push({
-              text: content
-            })
-          }
         }
         if (entries.length === 0) {
           entries.push({

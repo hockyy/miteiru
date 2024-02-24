@@ -2,7 +2,6 @@ import {charAnywhere, charBeginning, hanzi, setup as wrapperChinese} from "cc-ch
 import {ipcMain} from "electron";
 import path from "path";
 import fs from "fs";
-import config from "tailwindcss/defaultConfig";
 import {PythonShell} from "python-shell";
 
 class Chinese {
