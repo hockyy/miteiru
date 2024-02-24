@@ -153,31 +153,31 @@ export const StylingBox = ({
   }, [setSubtitleStyling, subtitleStyling]);
   return <div className={"w-full mx-5 px-3 flex flex-col content-start gap-3 unselectable"}>
     {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
-      <Toggle defaultCheck={subtitleStyling.showFurigana} onChange={cjkShowFuriganaHandler}/>
+      <Toggle isChecked={subtitleStyling.showFurigana} onChange={cjkShowFuriganaHandler}/>
       {subtitleName} Show Furigana
     </div>}
     {subtitleName == "CJK" && subtitleStyling.showFurigana &&
         <div className={"flex flex-row items-center gap-3"}>
-          <Toggle defaultCheck={subtitleStyling.showFuriganaOnKana}
+          <Toggle isChecked={subtitleStyling.showFuriganaOnKana}
                   onChange={cjkShowFuriganaOnKanaHandler}/>
           {subtitleName} Show Furigana on Kana
         </div>}
     {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
-      <Toggle defaultCheck={subtitleStyling.showRomaji} onChange={cjkShowRomajiHandler
+      <Toggle isChecked={subtitleStyling.showRomaji} onChange={cjkShowRomajiHandler
       }/>
       {subtitleName} Show Romaji
     </div>}
     {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
-      <Toggle defaultCheck={subtitleStyling.showMeaning} onChange={cjkShowMeaningHandler
+      <Toggle isChecked={subtitleStyling.showMeaning} onChange={cjkShowMeaningHandler
       }/>
       {subtitleName} Show Meaning
     </div>}
     {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
-      <Toggle defaultCheck={subtitleStyling.learning} onChange={cjkUseLearningHandler}/>
+      <Toggle isChecked={subtitleStyling.learning} onChange={cjkUseLearningHandler}/>
       {subtitleName} Use learning styling
     </div>}
     {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
-      <Toggle defaultCheck={subtitleStyling.showSpace} onChange={cjkShowMoreSpaceHandler}/>
+      <Toggle isChecked={subtitleStyling.showSpace} onChange={cjkShowMoreSpaceHandler}/>
       {subtitleName} Show More Space Between Each Token
     </div>}
     <div className={"flex flex-row items-center gap-3"}>
@@ -266,17 +266,17 @@ export const StylingBox = ({
       />
     </div>
     {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
-      <Toggle defaultCheck={subtitleStyling.removeHearingImpaired}
+      <Toggle isChecked={subtitleStyling.removeHearingImpaired}
               onChange={cjkRemoveHearingImpairedHandler}/>
       Remove Hearing Impaired
     </div>}
     <div className={"flex flex-row items-center gap-3"}>
-      <Toggle defaultCheck={subtitleStyling.positionFromTop}
+      <Toggle isChecked={subtitleStyling.positionFromTop}
               onChange={subtitlePositionFromTopHandler}/>
       {subtitleName} Subtitle Position from Top
     </div>
     {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
-      <Toggle defaultCheck={subtitleStyling.positionMeaningTop}
+      <Toggle isChecked={subtitleStyling.positionMeaningTop}
               onChange={cjkSubtitleMeaningTopHandler}/>
       {subtitleName} Subtitle Meaning at Top
     </div>}
@@ -362,7 +362,7 @@ export const Sidebar = ({
 
     <div className={"w-full mx-5 px-3 flex flex-col content-start gap-3 unselectable"}>
       <div className={"flex flex-row items-center gap-3"}>
-        <Toggle defaultCheck={autoPause} onChange={autoPauseHandler}/>
+        <Toggle isChecked={autoPause} onChange={autoPauseHandler}/>
         Enable Auto Pause
       </div>
       <div className={"flex w-full justify-around items-center gap-3"}>
