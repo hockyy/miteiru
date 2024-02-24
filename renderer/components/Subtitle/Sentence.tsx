@@ -328,7 +328,7 @@ export const ChineseSentence = ({
                      rubyPosition: "over",
                    }} key={index}>
         {val.main}
-        <rt className={"unselectable"}>{subtitleStyling.showFurigana && (val.jyutping ?? val.pinyin)}</rt>
+        <rt className={"unselectable"}>{subtitleStyling.showFurigana && learningClassName !== 'state2' && (val.jyutping ?? val.pinyin)}</rt>
       </ruby>
     }));
   }, [separation, subtitleStyling, learningClassName])
