@@ -33,7 +33,7 @@ export class Line {
   }
 
   async fillContentSeparations(tokenizeMiteiru: (string) => Promise<any[]>) {
-    this.content = await tokenizeMiteiru(this.content as string);
+    this.content = await tokenizeMiteiru((this.content as string).replace(/\n/g, " "));
   }
 
   async fillContentWithLearningKotoba(frequency) {
