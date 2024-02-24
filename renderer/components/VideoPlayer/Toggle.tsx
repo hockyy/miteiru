@@ -1,13 +1,11 @@
-import {useState} from "react";
+import {useCallback} from "react";
 
-export default function Toggle({onChange, defaultCheck}) {
-  const [enabled, setEnabled] = useState(defaultCheck);
+export default function Toggle({onChange, isChecked}) {
 
-  const handleChange = (e) => {
+  const handleChange = useCallback((e) => {
     const isChecked = e.target.checked;
-    setEnabled(isChecked);
     onChange(isChecked);
-  };
+  }, [onChange]);
 
   return (
       <div
@@ -17,7 +15,7 @@ export default function Toggle({onChange, defaultCheck}) {
             <input
                 type="checkbox"
                 className="sr-only peer"
-                checked={enabled}
+                checked={isChecked}
                 onChange={handleChange}
             />
             <div
