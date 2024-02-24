@@ -347,7 +347,7 @@ export const ChineseSentence = ({
       {separationContent}
       <rt style={{fontWeight: subtitleStyling.textMeaning.weight}}
           className={"internalMeaning unselectable"}>{
-          subtitleStyling.showMeaning
+          (subtitleStyling.showMeaning || learningClassName === 'state0' || learningClassName === 'state3')
           && wordMeaning.length <= subtitleStyling.maximalMeaningLengthPerCharacter * origin.length
           && wordMeaning}</rt>
 
