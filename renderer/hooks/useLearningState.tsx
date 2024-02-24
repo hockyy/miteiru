@@ -2,13 +2,14 @@ import {useCallback, useEffect, useState} from 'react';
 import {ipcRenderer} from "electron";
 import {sortAndFilterTopXPercentToJson} from "../utils/utils";
 import {videoConstants} from "../utils/constants";
+import {useStoreData} from "./useStoreData";
 
 const useLearningState = (lang: string) => {
   const [learningState, setLearningState] = useState({});
   const [cachedLearningState, setCachedLearningState] = useState({});
   const [analysis, setAnalysis] = useState({});
   const [frequencyPrimary, setFrequencyPrimary] = useState(new Map<string, number>);
-  const [learningPercentage, setLearningPercentage] = useState(30);
+  const [learningPercentage, setLearningPercentage] = useStoreData('learningPercentage', 30);
 
   const getLearningState = useCallback((content) => {
     if (content in cachedLearningState) {

@@ -15,6 +15,9 @@ const shortcutInformation = [
     key: "Esc",
     description: "Exit From CJK Information Box"
   }, {
+    key: "D",
+    description: "Go Back to Previous Meaning Box"
+  }, {
     key: "R",
     description: "Repeat Current Line"
   }, {
