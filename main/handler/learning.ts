@@ -42,9 +42,29 @@ class Learning {
 
     // Handler to update a specific content's learning state
     ipcMain.handle('updateContent', async (event, content, level, lang) => {
-      if(!content) return true;
+      if (!content) return true;
       try {
         await this.db.put(`${lang}/${content}`, `${level}`);
+        return true; // Indicate success
+      } catch (error) {
+        console.error('Error updating content:', error);
+        return false; // Indicate failure
+      }
+    });
+
+    ipcMain.handle('updateContentBatch', async (event, contents, lang) => {
+      if (!contents) return true;
+      try {
+        for (const [key, value] of Object.entries(contents)) {
+          const goUpdate = async () => {
+            await this.db.put(`${lang}/${key}`, `${value}`);
+          }
+          this.db.get(`${lang}/${key}`).then(async val => {
+            if (val < value) await goUpdate();
+          }).catch(async () => {
+            await goUpdate();
+          })
+        }
         return true; // Indicate success
       } catch (error) {
         console.error('Error updating content:', error);
