@@ -14,7 +14,7 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
       return []
     }
   })
-  ipcMain.handle('pickDirectory', async (event) => {
+  ipcMain.handle('pickDirectory', async () => {
     return await dialog.showOpenDialog({
       properties:
           [
@@ -63,7 +63,7 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
   })
 
 
-  ipcMain.handle('removeDictCache', (event) => {
+  ipcMain.handle('removeDictCache', () => {
     const japSet = Japanese.getJapaneseSettings(appDataDirectory);
     const chinSet = Chinese.getMandarinSettings(appDataDirectory);
     const canSet = Chinese.getCantoneseSettings(appDataDirectory);

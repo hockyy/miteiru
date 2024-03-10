@@ -170,7 +170,7 @@ function Video() {
                  autoPause={autoPause}
                  setAutoPause={setAutoPause}
                  learningPercentage={learningPercentage}
-                 setLearningPercentage={setLearningPercentage}/>
+                 setLearningPercentage={setLearningPercentage} lang={lang}/>
       </React.Fragment>
   );
 }

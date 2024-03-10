@@ -4,7 +4,7 @@ import Chinese from "./chinese";
 
 export const registerStartupHandlers = (setTokenizer, appDataDirectory) => {
 
-  ipcMain.handle('loadKuromoji', async (event) => {
+  ipcMain.handle('loadKuromoji', async () => {
     setTokenizer('kuromoji');
     const error = await Japanese.setup(Japanese.getJapaneseSettings(appDataDirectory))
     return {
@@ -13,7 +13,7 @@ export const registerStartupHandlers = (setTokenizer, appDataDirectory) => {
     }
   })
 
-  ipcMain.handle('loadCantonese', async (event) => {
+  ipcMain.handle('loadCantonese', async () => {
     setTokenizer('cantonese');
     const error = await Chinese.setup(Chinese.getCantoneseSettings(appDataDirectory))
     return {
@@ -21,7 +21,7 @@ export const registerStartupHandlers = (setTokenizer, appDataDirectory) => {
       message: error ?? 'Setup is ready'
     }
   })
-  ipcMain.handle('loadChinese', async (event) => {
+  ipcMain.handle('loadChinese', async () => {
     setTokenizer('jieba');
     const error = await Chinese.setup(Chinese.getMandarinSettings(appDataDirectory));
     return {
@@ -30,7 +30,7 @@ export const registerStartupHandlers = (setTokenizer, appDataDirectory) => {
     }
   })
 
-  ipcMain.handle('loadMecab', async (event) => {
+  ipcMain.handle('loadMecab', async () => {
     setTokenizer('mecab');
     const error = await Japanese.setup(Japanese.getJapaneseSettings(appDataDirectory))
     return {

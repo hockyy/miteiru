@@ -14,7 +14,8 @@ export const StylingBox = ({
                              subtitleStyling,
                              setSubtitleStyling,
                              subtitleName,
-                             defaultStyling
+                             defaultStyling,
+                             lang
                            }) => {
   const saveHandler = useCallback(() => {
     ipcRenderer.invoke("saveFile", ["json"], JSON.stringify(subtitleStyling))
@@ -151,6 +152,22 @@ export const StylingBox = ({
     newCopy.stroke.width = event.target.value + "px";
     setSubtitleStyling(newCopy)
   }, [setSubtitleStyling, subtitleStyling]);
+  const saveLearningHandler = useCallback(() => {
+    ipcRenderer.invoke('loadLearningState', lang).then((val) => {
+      ipcRenderer.invoke("saveFile", ["json"], JSON.stringify(val))
+    })
+  }, [lang]);
+
+  const loadLearningHandler = useCallback(() => {
+    ipcRenderer.invoke("readFile", ["json"]).then((val) => {
+      try {
+        const parsed = JSON.parse(val);
+        ipcRenderer.invoke("updateContentBatch", parsed, lang)
+      } catch (e) {
+        console.error(e)
+      }
+    })
+  }, [lang]);
   return <div className={"w-full mx-5 px-3 flex flex-col content-start gap-3 unselectable"}>
     {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
       <Toggle isChecked={subtitleStyling.showFurigana} onChange={cjkShowFuriganaHandler}/>
@@ -175,6 +192,16 @@ export const StylingBox = ({
     {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
       <Toggle isChecked={subtitleStyling.learning} onChange={cjkUseLearningHandler}/>
       {subtitleName} Use learning styling
+    </div>}
+    {subtitleName == "CJK" && <div className={"flex flex-row gap-2 w-full"}>
+      <AwesomeButton
+          type={"primary"}
+          className={"w-full"}
+          onPress={saveLearningHandler}>Save Learning</AwesomeButton>
+      <AwesomeButton
+          type={"secondary"}
+          className={"w-full"}
+          onPress={loadLearningHandler}>Load Learning</AwesomeButton>
     </div>}
     {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
       <Toggle isChecked={subtitleStyling.showSpace} onChange={cjkShowMoreSpaceHandler}/>
@@ -334,7 +361,8 @@ export const Sidebar = ({
                           autoPause,
                           setAutoPause,
                           learningPercentage,
-                          setLearningPercentage
+                          setLearningPercentage,
+                          lang
                         }) => {
   const learningPercentageHandler = useCallback(event => {
     setLearningPercentage(parseFloat(event.target.value));
@@ -382,9 +410,10 @@ export const Sidebar = ({
 
     <hr className={"w-full h-1 m-5"}/>
     <StylingBox subtitleStyling={primaryStyling} setSubtitleStyling={setPrimaryStyling}
-                subtitleName={"CJK"} defaultStyling={defaultPrimarySubtitleStyling}/>
+                subtitleName={"CJK"} defaultStyling={defaultPrimarySubtitleStyling} lang={lang}/>
     <hr className={"w-full h-1 m-5"}/>
     <StylingBox subtitleStyling={secondaryStyling} setSubtitleStyling={setSecondaryStyling}
-                subtitleName={"Other"} defaultStyling={defaultSecondarySubtitleStyling}/>
+                subtitleName={"Other"} defaultStyling={defaultSecondarySubtitleStyling}
+                lang={lang}/>
   </div>
 }
