@@ -52,7 +52,8 @@ function Learn() {
         <div
             className={"flex flex-col justify-center items-center bg-white min-h-screen w-[100vw]"}>
 
-          <MeaningBox lang={lang} meaning={meaning} setMeaning={setMeaning} tokenizeMiteiru={tokenizeMiteiru}/>
+          <MeaningBox lang={lang} meaning={meaning} setMeaning={setMeaning}
+                      tokenizeMiteiru={tokenizeMiteiru}/>
           <div
               className={"flex flex-col h-[100vh] w-full items-center justify-end bg-blue-50 gap-4 p-5 border rounded-lg border-blue-800"}>
             <ContainerHome>
@@ -81,7 +82,7 @@ function Learn() {
           </div>
           <LearningSidebar showSidebar={showSidebar} setShowSidebar={setShowSidebar}
                            primaryStyling={primaryStyling}
-                           setPrimaryStyling={setPrimaryStyling}/>
+                           setPrimaryStyling={setPrimaryStyling} lang={lang}/>
         </div>
       </React.Fragment>
   )

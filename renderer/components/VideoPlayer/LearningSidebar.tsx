@@ -8,6 +8,7 @@ export const LearningSidebar = ({
                                   setShowSidebar,
                                   primaryStyling,
                                   setPrimaryStyling,
+                                  lang
                                 }) => {
   return <div style={{
     transition: "all 0.3s ease-out",
@@ -27,7 +28,7 @@ export const LearningSidebar = ({
       Settings
     </div>
     <StylingBox subtitleStyling={primaryStyling} setSubtitleStyling={setPrimaryStyling}
-                subtitleName={"CJK"} defaultStyling={defaultLearningStyling}/>
+                subtitleName={"CJK"} defaultStyling={defaultLearningStyling} lang={lang}/>
     <hr className={"w-full h-1 m-5"}/>
   </div>
 }
