@@ -81,8 +81,8 @@ export const PrimarySubtitle = ({
     try {
       const line = getLineByTime(subtitle, currentAdjustedTime);
       const primaryContent = line.content;
-      setTimeCache(line.timePair);
       setFromContent(primaryContent, line.meaning);
+      setTimeCache(line.timePair);
     } catch (e) {
       console.error(e);
     }
