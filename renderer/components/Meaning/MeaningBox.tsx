@@ -171,7 +171,7 @@ const MeaningBox = ({
                             return (
                                 <HanziSentence key={idx}
                                                origin={val.origin}
-                                               pinyin={val.pinyin.split(' ')}
+                                               pinyin={(lang === videoConstants.chineseLang ? val.pinyin : val.jyutping).split(' ')}
                                                setMeaning={setMeaning}
                                                extraClass={"unselectable meaning-kanji text-md"}
                                                subtitleStyling={subtitleStyling}/>
