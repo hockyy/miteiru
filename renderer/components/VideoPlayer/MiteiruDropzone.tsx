@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useRef} from "react";
-import {extractVideoId, isYoutube} from "../../utils/utils";
+import {extractVideoId, isYoutube, isVideo} from "../../utils/utils";
 
 export const MiteiruDropzone = ({onDrop}) => {
   const dropRef = useRef<HTMLDivElement>(null);  // Explicitly declaring the type of the ref
@@ -20,7 +20,42 @@ export const MiteiruDropzone = ({onDrop}) => {
       onDrop([{path: url}]);
     } else if (files.length) {
       const filesWithPath = files.map(file => ({path: file.path}));
-      onDrop(filesWithPath);
+      
+      // Check if the dropped file is a video
+      const videoFile = files.find(file => isVideo(file.name));
+      
+      if (videoFile) {
+        const videoFilePath = videoFile.path;
+        const videoFileName = basename(videoFilePath, extname(videoFilePath));
+        const videoDirectory = dirname(videoFilePath);
+        
+        // Check for an accompanying subtitle file (*.srt or *.ass) in the same directory
+        const subtitleExtensions = ['.srt', '.ass'];
+        let subtitleFile = null;
+        
+        for (const ext of subtitleExtensions) {
+          const subtitleFilePath = join(videoDirectory, videoFileName + ext);
+          try {
+            await access(subtitleFilePath);
+            subtitleFile = {path: subtitleFilePath};
+            break;
+          } catch (error) {
+            // Subtitle file does not exist, continue to the next extension
+          }
+        }
+        
+        if (subtitleFile) {
+          // If a subtitle file is found, include it in the onDrop call
+          onDrop([{path: videoFilePath}]);
+          onDrop([subtitleFile]);
+        } else {
+          // If no subtitle file is found, just include the video file
+          onDrop([{path: videoFilePath}]);
+        }
+      } else {
+        // If the dropped file is not a video, handle it as before
+        onDrop(filesWithPath);
+      }
     }
   }, [onDrop]);
 
