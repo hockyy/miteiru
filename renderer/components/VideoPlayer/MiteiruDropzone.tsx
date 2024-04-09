@@ -1,5 +1,7 @@
 import React, {useCallback, useEffect, useRef} from "react";
 import {extractVideoId, isYoutube, isVideo} from "../../utils/utils";
+import { access } from 'fs/promises';
+import { basename, dirname, extname, join } from 'path';
 
 export const MiteiruDropzone = ({onDrop}) => {
   const dropRef = useRef<HTMLDivElement>(null);  // Explicitly declaring the type of the ref
@@ -9,7 +11,7 @@ export const MiteiruDropzone = ({onDrop}) => {
     e.stopPropagation();
   };
 
-  const handleDrop = useCallback((e) => {
+  const handleDrop = useCallback(async (e) => {
     e.preventDefault();
     e.stopPropagation();
     const dt = e.dataTransfer;
