@@ -29,7 +29,7 @@ const mimeTypes = {
   ".map": "text/plain",
   ".mp4": "video/mp4",
   ".webm": "video/webm",
-  ".ts": "video/webm",
+  ".ts": "video/mp2t",
   ".mkv": "video/webm",
   ".srt": "text/plain",
   ".vtt": "text/plain"

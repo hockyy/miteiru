@@ -1,6 +1,6 @@
 export const videoConstants = {
   supportedVideoFormats: [
-    'mkv', 'mp4', 'webm', 'ogg', 'mov', 'avi', 'flv', '3gp', 'wmv', 'wav', 'hls', 'mp3', 'mp2t'
+    'mkv', 'mp4', 'webm', 'ogg', 'mov', 'avi', 'flv', '3gp', 'wmv', 'wav', 'hls', 'mp3', 'mp2t', 'ts'
   ],
   supportedSubtitleFormats: [
     'ass', 'srt', 'vrt'
