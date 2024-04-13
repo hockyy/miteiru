@@ -12,10 +12,7 @@ Implementing a custom protocol achieves two goals:
   2) Avoids running the app in a file:// origin
 */
 
-import fs from "fs";
 import path from "path";
-
-const DIST_PATH = path.join(__dirname, "../../app/dist");
 export const scheme = "miteiru";
 
 const mimeTypes = {
@@ -31,6 +28,8 @@ const mimeTypes = {
   ".jpg": "image/jpeg",
   ".map": "text/plain",
   ".mp4": "video/mp4",
+  ".webm": "video/webm",
+  ".ts": "video/webm",
   ".mkv": "video/webm",
   ".srt": "text/plain",
   ".vtt": "text/plain"
