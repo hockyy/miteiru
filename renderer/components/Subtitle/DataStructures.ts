@@ -179,9 +179,14 @@ export class SubtitleContainer {
     }
     subtitleContainer.language = videoConstants.englishLang;
     if (ans >= 3) subtitleContainer.language = lang;
+    let last = 0;
     for (const {from, to, text} of entries) {
       // process transcript entry
-      subtitleContainer.lines.push(new Line(from, to, removeTags(text)))
+      const realFrom = Math.max(from - videoConstants.subtitleFramerate * videoConstants.subtitleStartPlusMultiplier, last);
+      const realTo = to + videoConstants.subtitleFramerate * videoConstants.subtitleEndPlusMultiplier;
+      if(realFrom > realTo) continue;
+      subtitleContainer.lines.push(new Line(Math.max(from, last), realTo, removeTags(text)));
+      last = Math.max(last, realTo + videoConstants.subtitleFramerate + 1);
     }
     return subtitleContainer;
   }
