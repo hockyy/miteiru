@@ -6,7 +6,7 @@ export const videoConstants = {
     'ass', 'srt', 'vrt'
   ],
   shiftAmount: 100,
-  subtitleFramerate: 200,
+  subtitleFramerate: 30,
   playingClass: ["", "playing"],
   cjkRegex: /\p{Script=Han}|\p{Script=Hiragana}|\p{Script=Katakana}|\p{Script=Hangul}/gu,
   cantoneseLang: 'yue',
