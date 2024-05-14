@@ -26,7 +26,7 @@ const usePauseAndRepeat = (timeCache: any,
       setPauseId(timeCache[0]);
       return;
     }
-    let pausePeriod = timeCache[1] - videoConstants.subtitleFramerate * 1.02;
+    let pausePeriod = timeCache[1] - videoConstants.subtitleFramerate * videoConstants.autoPauseMultiplier;
     pausePeriod = Math.max(pausePeriod, timeCache[0]);
     const currentAdjustedTime = adjustTimeWithShift(currentTime, shift);
     if (pausePeriod <= currentAdjustedTime && currentAdjustedTime <= timeCache[1]) {
