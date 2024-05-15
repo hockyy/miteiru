@@ -13,9 +13,13 @@ export const videoConstants = {
   playingClass: ["", "playing"],
   cjkRegex: /\p{Script=Han}|\p{Script=Hiragana}|\p{Script=Katakana}|\p{Script=Hangul}/gu,
   cantoneseLang: 'yue',
-  cantoneseLang2: 'zh-HK',
   englishLang: 'en',
   japaneseLang: 'ja',
   chineseLang: 'zh-CN',
+  varLang: {
+    "yue": ["zh-HK", "yue"],
+    "ja": ["ja"],
+    "zh-CN": ['zh-TW', 'zh-CN']
+  },
   learningStateLength: 3
 }

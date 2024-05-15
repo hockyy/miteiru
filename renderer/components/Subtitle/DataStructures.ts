@@ -177,6 +177,7 @@ export class SubtitleContainer {
         ans++;
       }
     }
+    entries.sort((a, b) => a.from - b.from);
     subtitleContainer.language = videoConstants.englishLang;
     if (ans >= 3) subtitleContainer.language = lang;
     let last = 0;
