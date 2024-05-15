@@ -64,34 +64,34 @@ export const defaultMeaningBoxStyling: CJKStyling = {
 
 export const defaultPrimarySubtitleStyling: CJKStyling = {
   stroke: {
-    width: "1px",
+    width: "0.22px",
     color: "#000000",
     hoverColor: "#000000"
   },
   text: {
     color: "#ffdd00",
     hoverColor: "#00ffda",
-    fontSize: "35px",
-    weight: 800,
+    fontSize: "55px",
+    weight: 600
   },
   textMeaning: {
-    color: "#ffffff",
+    color: "#fadddd",
     hoverColor: "#00ffda",
     fontSize: "35px",
-    weight: 800,
+    weight: 400
   },
-  background: "#000000A5",
-  learning: true,
-  position: "2vh",
+  background: "#000000ab",
+  position: "1vh",
   positionFromTop: true,
-  positionMeaningTop: true,
+  positionMeaningTop: false,
   showFuriganaOnKana: false,
   showFurigana: true,
   showRomaji: true,
   showMeaning: true,
-  showSpace: true,
-  maximalMeaningLengthPerCharacter: 7,
-  removeHearingImpaired: true
+  showSpace: false,
+  maximalMeaningLengthPerCharacter: 20,
+  removeHearingImpaired: true,
+  learning: true
 }
 
 
@@ -128,18 +128,18 @@ export const defaultLearningStyling: CJKStyling = {
 
 export const defaultSecondarySubtitleStyling: CJKStyling = {
   stroke: {
-    width: "1px",
+    width: "0.76px",
     color: "#000000",
     hoverColor: "#000000"
   },
   text: {
-    color: "#FFFFFF",
-    hoverColor: "#ffcc00",
-    fontSize: "35px",
-    weight: 800,
+    color: "#ffffff",
+    hoverColor: "#00ffda",
+    fontSize: "52px",
+    weight: 800
   },
-  background: "#000000A5",
-  position: "2vh",
+  background: "#0000009c",
+  position: "10vh",
   positionFromTop: false,
   showFuriganaOnKana: false,
   showFurigana: false,
