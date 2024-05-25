@@ -33,6 +33,9 @@ class Learning {
 
           try {
             parsedValue = JSON.parse(value);
+            if (typeof parsedValue.level !== 'number' || typeof parsedValue.updTime !== 'number') {
+              throw new Error('Invalid format');
+            }
           } catch (e) {
             // If parsing fails, assume it's an old format (number)
             parsedValue = {
@@ -54,13 +57,9 @@ class Learning {
 
 
     // Handler to update a specific content's learning state
-    ipcMain.handle('updateContent', async (event, content, level, lang, updTime) => {
+    ipcMain.handle('updateContent', async (event, content, lang, data) => {
       if (!content) return true;
       try {
-        const data = {
-          level: level,
-          updTime: updTime
-        };
         await this.db.put(`${lang}/${content}`, JSON.stringify(data));
         return true; // Indicate success
       } catch (error) {
