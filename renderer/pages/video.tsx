@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React from "react";
 import VideoJS from "../components/VideoPlayer/VideoJS";
 import MiteiruDropzone from "../components/VideoPlayer/MiteiruDropzone";
 import {PrimarySubtitle, SecondarySubtitle} from "../components/Subtitle/Subtitle";
