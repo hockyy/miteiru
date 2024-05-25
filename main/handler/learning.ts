@@ -1,7 +1,7 @@
 import {app, ipcMain} from "electron";
 import {Level} from 'level';
 import path from 'path';
-import {Content} from "next/dist/compiled/@next/font/dist/google";
+import {LearningStateType} from "../../renderer/components/types";
 
 
 class Learning {
@@ -28,8 +28,21 @@ class Learning {
 
         // Efficiently iterate over keys within the specified range
         for await (const [key, value] of this.db.iterator(queryOptions)) {
-          // Remove the prefix from the key for the response
-          learningState[key.substring(prefix.length)] = parseInt(value, 10);
+          const strippedKey = key.substring(prefix.length);
+          let parsedValue;
+
+          try {
+            parsedValue = JSON.parse(value);
+          } catch (e) {
+            // If parsing fails, assume it's an old format (number)
+            parsedValue = {
+              level: parseInt(value, 10),
+              updTime: Date.now()
+            };
+            await this.db.put(key, JSON.stringify(parsedValue));
+          }
+
+          learningState[strippedKey] = parsedValue;
         }
 
         return learningState;
@@ -41,10 +54,14 @@ class Learning {
 
 
     // Handler to update a specific content's learning state
-    ipcMain.handle('updateContent', async (event, content, level, lang) => {
+    ipcMain.handle('updateContent', async (event, content, level, lang, updTime) => {
       if (!content) return true;
       try {
-        await this.db.put(`${lang}/${content}`, `${level}`);
+        const data = {
+          level: level,
+          updTime: updTime
+        };
+        await this.db.put(`${lang}/${content}`, JSON.stringify(data));
         return true; // Indicate success
       } catch (error) {
         console.error('Error updating content:', error);
@@ -52,15 +69,17 @@ class Learning {
       }
     });
 
-    ipcMain.handle('updateContentBatch', async (event, contents, lang) => {
+    // Handler to update a batch of contents' learning states
+    ipcMain.handle('updateContentBatch', async (event, contents: LearningStateType, lang) => {
       if (!contents) return true;
       try {
         for (const [key, value] of Object.entries(contents)) {
           const goUpdate = async () => {
-            await this.db.put(`${lang}/${key}`, `${value}`);
+            await this.db.put(`${lang}/${key}`, JSON.stringify(value));
           }
           this.db.get(`${lang}/${key}`).then(async val => {
-            if (val < value) await goUpdate();
+            const parsedVal = JSON.parse(val);
+            if (parsedVal.level < value.level) await goUpdate();
           }).catch(async () => {
             await goUpdate();
           })
