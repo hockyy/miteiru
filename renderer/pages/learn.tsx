@@ -15,10 +15,15 @@ import useLearningKeyBind from "../hooks/useLearningKeyBind";
 import 'react-awesome-button/dist/styles.css';
 import {videoConstants} from "../utils/constants";
 import useLearningState from "../hooks/useLearningState";
+import useTranslationLinks from "../hooks/useTranslationLinks";
 
 function Learn() {
 
-  const {meaning, setMeaning, undo} = useMeaning();
+  const {
+    meaning,
+    setMeaning,
+    undo
+  } = useMeaning();
   const [currentTime, setCurrentTime] = useState(0);
   const [primarySub, setPrimarySub] = useState(new SubtitleContainer(''))
   const [directInput, setDirectInput] = useState('');
@@ -26,11 +31,21 @@ function Learn() {
   const [primaryStyling, setPrimaryStyling] = useStoreData('user.styling.learning', defaultLearningStyling);
   useLearningKeyBind(setMeaning, setShowSidebar, undo)
   const router = useRouter();
-  const {tokenizerMode, tokenizeMiteiru, lang} = useMiteiruTokenizer();
+  const {
+    tokenizerMode,
+    tokenizeMiteiru,
+    lang
+  } = useMiteiruTokenizer();
   const {
     getLearningStateClass,
     changeLearningState,
   } = useLearningState(lang);
+
+  const {
+    openDeepL,
+    openGoogleTranslate
+  } = useTranslationLinks(directInput); // Use the custom hook
+
   useEffect(() => {
     if (tokenizerMode !== '' && tokenizeMiteiru) {
       const tmpSub = (new SubtitleContainer(directInput, lang))
@@ -66,6 +81,14 @@ function Learn() {
                           onChange={val => {
                             setDirectInput(val.target.value)
                           }}></textarea>
+                <div className="flex gap-4">
+                  <AwesomeButton type={'primary'} onPress={openDeepL}>
+                    Translate with DeepL
+                  </AwesomeButton>
+                  <AwesomeButton type={'primary'} onPress={openGoogleTranslate}>
+                    Translate with Google
+                  </AwesomeButton>
+                </div>
                 <AwesomeButton
                     type={'secondary'}
                     onPress={async () => {
@@ -81,6 +104,7 @@ function Learn() {
                                  subtitleStyling={primaryStyling}
                                  getLearningStateClass={getLearningStateClass}
                                  changeLearningState={changeLearningState}/>
+
               </div>
             </ContainerHome>
 
