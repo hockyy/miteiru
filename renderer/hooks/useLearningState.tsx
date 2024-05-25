@@ -40,7 +40,7 @@ const useLearningState = (lang: string) => {
         level: nextVal,
         updTime: updTime
       };
-      ipcRenderer.invoke('updateContent', content, nextVal, lang, updTime);
+      ipcRenderer.invoke('updateContent', content, lang, newCopy[content]);
       return newCopy;
     });
   }, [getLearningState, lang]);
