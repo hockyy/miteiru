@@ -48,7 +48,7 @@
 
 - For the first run, you can press this button, and wait for about 2 minutes because it is caching
   the japanese dictionary..
-- ![image](https://github.com/hockyy/miteiru/assets/19528709/023e464d-ee80-4ddd-9a06-03d525e11e59)
+- ![image](https://github.com/hockyy/miteiru/assets/19528709/6d8bcf4f-73dd-4cfb-8a6f-4bbf7e10a25a)
 - You can start by dragging:
     - Any videos (Anime is good) you can get subtitle at https://kitsunekko.net/
     - Any youtube URL
@@ -59,10 +59,15 @@
         - Try this:
             - https://www.youtube.com/results?search_query=onomappu
             - https://www.youtube.com/results?search_query=nihongo+no+mori+kenshi+yonezu
+            - https://www.youtube.com/@funtv8964
+            - https://www.youtube.com/@mm.millmilk
             - ![image](https://github.com/hockyy/miteiru/assets/19528709/b97c3ef1-18ee-40d4-a0ab-ff7d9de81d66)
+            - ![image](https://github.com/hockyy/miteiru/assets/19528709/c5e21a69-6cdb-47c9-a842-ad97b81125be)
+
 - Press `X` and `Z` for the configs
 - Just read the front page's keyboard shortcut, you can press `Q` to go back to the front page.
 - ![image](https://github.com/hockyy/miteiru/assets/19528709/46cd3065-29cf-4d0a-957b-62ef28386693)
+- ![image](https://github.com/hockyy/miteiru/assets/19528709/2b54c704-019d-47c1-b183-55ad350c4b18)
 - Profit 💰
 
 ## For Casual Users: Installation Guide
