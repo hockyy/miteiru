@@ -97,23 +97,24 @@ export const defaultPrimarySubtitleStyling: CJKStyling = {
 
 export const defaultLearningStyling: CJKStyling = {
   stroke: {
-    width: "5px",
-    color: "#00000000",
-    hoverColor: "#00000000"
+    width: "0.34px",
+    color: "#000000",
+    hoverColor: "#000000"
   },
   text: {
-    color: "#000000",
-    hoverColor: "#860000",
-    fontSize: "30px",
-    weight: 200,
+    color: "#ffdd00",
+    hoverColor: "#00ffda",
+    fontSize: "42px",
+    weight: 600
   },
   textMeaning: {
-    color: "#d70000",
-    hoverColor: "#860000",
+    color: "#fadddd",
+    hoverColor: "#00ffda",
     fontSize: "35px",
-    weight: 200,
+    weight: 600
   },
-  background: "rgba(0,0,0,0)",
+  learning: true,
+  background: "#000000ab",
   position: "2vh",
   positionFromTop: true,
   positionMeaningTop: true,
@@ -152,13 +153,13 @@ export const defaultLearningColorStyling: AllLearningStateStyling = {
   learningColor: [{
     color: "#f3f3f3",
     hoverColor: "#a1a1a1",
-  },{
+  }, {
     color: "#fff189",
     hoverColor: "#f1dc4f",
-  },{
+  }, {
     color: "#8effb9",
     hoverColor: "#00be4d",
-  },{
+  }, {
     color: "#69e3ff",
     hoverColor: "#13c7f1",
   }]

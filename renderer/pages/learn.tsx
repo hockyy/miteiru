@@ -14,6 +14,7 @@ import {useStoreData} from "../hooks/useStoreData";
 import useLearningKeyBind from "../hooks/useLearningKeyBind";
 import 'react-awesome-button/dist/styles.css';
 import {videoConstants} from "../utils/constants";
+import useLearningState from "../hooks/useLearningState";
 
 function Learn() {
 
@@ -26,7 +27,10 @@ function Learn() {
   useLearningKeyBind(setMeaning, setShowSidebar, undo)
   const router = useRouter();
   const {tokenizerMode, tokenizeMiteiru, lang} = useMiteiruTokenizer();
-
+  const {
+    getLearningStateClass,
+    changeLearningState,
+  } = useLearningState(lang);
   useEffect(() => {
     if (tokenizerMode !== '' && tokenizeMiteiru) {
       const tmpSub = (new SubtitleContainer(directInput, lang))
@@ -74,8 +78,9 @@ function Learn() {
                                  currentTime={currentTime}
                                  subtitle={primarySub}
                                  shift={0}
-                                 subtitleStyling={primaryStyling}/>
-
+                                 subtitleStyling={primaryStyling}
+                                 getLearningStateClass={getLearningStateClass}
+                                 changeLearningState={changeLearningState}/>
               </div>
             </ContainerHome>
 
