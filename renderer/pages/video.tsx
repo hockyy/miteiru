@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import VideoJS from "../components/VideoPlayer/VideoJS";
 import MiteiruDropzone from "../components/VideoPlayer/MiteiruDropzone";
 import {PrimarySubtitle, SecondarySubtitle} from "../components/Subtitle/Subtitle";
@@ -25,10 +25,27 @@ import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
 import 'react-awesome-button/dist/styles.css';
 import useLearningState from "../hooks/useLearningState";
 import usePauseAndRepeat from "../hooks/usePauseAndRepeat";
+import useTranslationLinks from "../hooks/useTranslationLinks";
+import useContentString from "../hooks/useContentString";
 
 function Video() {
-  const {tokenizerMode, tokenizeMiteiru, lang} = useMiteiruTokenizer();
-  const {toastInfo, setToastInfo} = useMiteiruToast();
+  const {
+    contentString,
+    setExternalContent
+  } = useContentString();
+  const {
+    openDeepL,
+    openGoogleTranslate
+  } = useTranslationLinks(contentString);
+  const {
+    tokenizerMode,
+    tokenizeMiteiru,
+    lang
+  } = useMiteiruTokenizer();
+  const {
+    toastInfo,
+    setToastInfo
+  } = useMiteiruToast();
   const {
     readyCallback,
     metadata,
@@ -65,7 +82,11 @@ function Video() {
     learningPercentage,
     setLearningPercentage
   } = useLearningState(lang);
-  const {meaning, setMeaning, undo} = useMeaning();
+  const {
+    meaning,
+    setMeaning,
+    undo
+  } = useMeaning();
   const {
     duration,
     deltaTime,
@@ -73,22 +94,36 @@ function Video() {
     enableSeeker,
     setEnableSeeker
   } = useVideoTimeChanger(player, setCurrentTime, metadata);
-  const {videoSrc, onLoadFiles, onVideoChangeHandler} =
-      useLoadFiles(setToastInfo,
-          primarySub, setPrimarySub,
-          secondarySub, setSecondarySub,
-          primaryStyling,
-          tokenizeMiteiru, setEnableSeeker, changeTimeTo, player, lang, setFrequencyPrimary);
-  const {showController, setShowController, showSidebar, setShowSidebar} = useMenuDisplay();
+  const {
+    videoSrc,
+    onLoadFiles,
+    onVideoChangeHandler
+  } = useLoadFiles(setToastInfo,
+      primarySub, setPrimarySub,
+      secondarySub, setSecondarySub,
+      primaryStyling,
+      tokenizeMiteiru, setEnableSeeker, changeTimeTo, player, lang, setFrequencyPrimary);
+  const {
+    showController,
+    setShowController,
+    showSidebar,
+    setShowSidebar
+  } = useMenuDisplay();
   useKeyBind(setMeaning, setShowController, setShowSidebar,
       setPrimarySub, setSecondarySub, primarySub, undo,
-      setShowPrimarySub, setShowSecondarySub, primaryStyling, setPrimaryStyling);
-  const {togglePlay, isPlaying, setIsPlaying} = useVideoPlayingToggle(player, metadata);
+      setShowPrimarySub, setShowSecondarySub, primaryStyling, setPrimaryStyling,
+      openDeepL, openGoogleTranslate);
+  const {
+    togglePlay,
+    isPlaying,
+    setIsPlaying
+  } = useVideoPlayingToggle(player, metadata);
   const {
     autoPause,
     setAutoPause,
     backToHead
   } = usePauseAndRepeat(primaryTimeCache, player, currentTime, primaryShift, setIsPlaying, changeTimeTo);
+
   useVideoKeyboardControls(togglePlay, deltaTime, setPrimaryShift, setSecondaryShift,
       setToastInfo, backToHead, setIsPlaying);
   usePlayNextAfterEnd(player, currentTime, onVideoChangeHandler, duration, setEnableSeeker);
@@ -135,7 +170,8 @@ function Video() {
                                                 getLearningStateClass={getLearningStateClass}
                                                 changeLearningState={changeLearningState}
                                                 timeCache={primaryTimeCache}
-                                                setTimeCache={setPrimaryTimeCache}/>}
+                                                setTimeCache={setPrimaryTimeCache}
+                                                setExternalContent={setExternalContent}/>}
             {showSecondarySub && <SecondarySubtitle
                 currentTime={currentTime}
                 subtitle={secondarySub}

@@ -17,6 +17,8 @@ export default function useKeyBind(
     setShowSecondarySub,
     primaryStyling,
     setPrimaryStyling,
+    openDeepL,
+    openGoogleTranslate
 ) {
   const router = useRouter();
   useEffect(() => {
@@ -57,6 +59,10 @@ export default function useKeyBind(
       } else if (event.code === "Space") {
         event.preventDefault();
         event.stopPropagation();
+      } else if (event.code === "KeyG") {
+        openGoogleTranslate();
+      } else if (event.code === "KeyT") {
+        openDeepL();
       }
     };
 
@@ -65,6 +71,6 @@ export default function useKeyBind(
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [router, setMeaning, setShowController, setShowSidebar, setPrimarySub, setSecondarySub, setPrimaryStyling, primarySub.id, setShowPrimarySub, setShowSecondarySub, undo, primaryStyling]);
+  }, [router, setMeaning, setShowController, setShowSidebar, setPrimarySub, setSecondarySub, setPrimaryStyling, primarySub.id, setShowPrimarySub, setShowSecondarySub, undo, primaryStyling, openGoogleTranslate, openDeepL]);
 
 }

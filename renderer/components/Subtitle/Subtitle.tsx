@@ -14,7 +14,8 @@ export const PrimarySubtitle = ({
                                   changeLearningState,
                                   getLearningStateClass,
                                   timeCache,
-                                  setTimeCache
+                                  setTimeCache,
+                                  setExternalContent,
                                 }: {
                                   currentTime: number,
                                   subtitle: SubtitleContainer,
@@ -24,13 +25,15 @@ export const PrimarySubtitle = ({
                                   changeLearningState?: (newMeaning: string) => void,
                                   getLearningStateClass?: (newMeaning: string) => string,
                                   timeCache?: number[],
-                                  setTimeCache?: (cache: number[]) => void;
+                                  setTimeCache?: (cache: number[]) => void,
+                                  setExternalContent?: (content: any[]) => void;
                                 }
 ) => {
   const [caption, setCaption] = useState([]);
 
 
   const setFromContent = useCallback((content, wordMeaning = []) => {
+    if(setExternalContent) setExternalContent(content);
     if (content === '' || content.length === 0) {
       setCaption([])
       return;
