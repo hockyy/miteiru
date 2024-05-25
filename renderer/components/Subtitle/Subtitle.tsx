@@ -33,7 +33,7 @@ export const PrimarySubtitle = ({
 
 
   const setFromContent = useCallback((content, wordMeaning = []) => {
-    if(setExternalContent) setExternalContent(content);
+    if (setExternalContent) setExternalContent(content);
     if (content === '' || content.length === 0) {
       setCaption([])
       return;
@@ -78,7 +78,7 @@ export const PrimarySubtitle = ({
       }</>
     })
     setCaption(current)
-  }, [subtitleStyling, getLearningStateClass, changeLearningState, setMeaning]);
+  }, [setExternalContent, subtitleStyling, setMeaning, getLearningStateClass, changeLearningState]);
 
   const setSubtitle = useCallback((currentAdjustedTime) => {
     try {
