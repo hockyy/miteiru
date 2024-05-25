@@ -30,6 +30,12 @@ const shortcutInformation = [
     key: "P",
     description: "Toggle Show Other/Secondary Subtitle"
   }, {
+    key: "G",
+    description: "Open Google Translate for current string"
+  }, {
+    key: "T",
+    description: "Open DeepL for current string"
+  }, {
     key: "Ctrl + O",
     description: "Remove CJK Subtitle"
   }, {
@@ -52,7 +58,10 @@ const shortcutInformation = [
     description: "Shift Main Subtitle Faster"
   }]
 
-export const Key = ({value, extraClass = ""}) => {
+export const Key = ({
+                      value,
+                      extraClass = ""
+                    }) => {
   return <div
       className={"font-mono font-bold text-black bg-gray-100 rounded-lg px-3 py-2 unselectable border-[1px] border-black " + extraClass}
       style={{
