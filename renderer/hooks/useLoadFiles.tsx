@@ -110,10 +110,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
           const tmpSub = SubtitleContainer.createFromArrayEntries(null, entries, lang)
           subLoader(tmpSub, videoConstants.englishLang);
         })
-        console.log(lang)
-        console.log(videoConstants)
         const langList = videoConstants.varLang[lang]??[];
-        console.log(langList)
         for (const findLang of langList) {
           ipcRenderer.invoke("getYoutubeSubtitle", extractVideoId(currentPath), findLang).then(entries => {
             entries = convertSubtitlesToEntries(entries)

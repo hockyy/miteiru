@@ -3,6 +3,7 @@ import {getLineByTime, SubtitleContainer} from "./DataStructures";
 import {ChineseSentence, JapaneseSentence, PlainSentence} from "./Sentence";
 import {CJKStyling, defaultSecondarySubtitleStyling} from "../../utils/CJKStyling";
 import {adjustTimeWithShift} from "../../utils/utils";
+import useSubtitleContainerStyle from "../../hooks/useSubtitleContainerStyle";
 
 
 export const PrimarySubtitle = ({
@@ -170,11 +171,8 @@ export const Subtitle = (
       subtitleStyling: CJKStyling,
       extraContainerStyle?: React.CSSProperties
     }) => {
-  const currentContainerStyle: React.CSSProperties = {
-    ...extraContainerStyle,
-    fontFamily: "Arial",
-    fontWeight: subtitleStyling.text.weight
-  }
+  const currentContainerStyle = useSubtitleContainerStyle(subtitleStyling, extraContainerStyle);
+
   currentContainerStyle[subtitleStyling.positionFromTop ? 'top' : 'bottom'] = subtitleStyling.position;
   return <div
       className={"unselectable fixed w-[100vw] z-10 text-center " + extraClass}

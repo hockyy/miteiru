@@ -9,6 +9,7 @@ interface TextStyling {
   hoverColor: string
   fontSize: string
   weight: number
+  fontFamily: string
 }
 
 interface LearningStateStyling {
@@ -49,7 +50,8 @@ export const defaultMeaningBoxStyling: CJKStyling = {
     color: "#001fc4",
     hoverColor: "#5474ff",
     fontSize: "24px",
-    weight: 200
+    weight: 200,
+    fontFamily: "Arial"
   },
   background: "#00000000",
   position: "0vh",
@@ -72,13 +74,15 @@ export const defaultPrimarySubtitleStyling: CJKStyling = {
     color: "#ffdd00",
     hoverColor: "#00ffda",
     fontSize: "55px",
-    weight: 600
+    weight: 600,
+    fontFamily: "Arial"
   },
   textMeaning: {
     color: "#fadddd",
     hoverColor: "#00ffda",
     fontSize: "35px",
-    weight: 400
+    weight: 400,
+    fontFamily: "Arial"
   },
   background: "#000000ab",
   position: "1vh",
@@ -105,13 +109,15 @@ export const defaultLearningStyling: CJKStyling = {
     color: "#ffdd00",
     hoverColor: "#00ffda",
     fontSize: "42px",
-    weight: 600
+    weight: 600,
+    fontFamily: "Arial"
   },
   textMeaning: {
     color: "#fadddd",
     hoverColor: "#00ffda",
     fontSize: "35px",
-    weight: 600
+    weight: 600,
+    fontFamily: "Arial"
   },
   learning: true,
   background: "#000000ab",
@@ -137,7 +143,8 @@ export const defaultSecondarySubtitleStyling: CJKStyling = {
     color: "#ffffff",
     hoverColor: "#00ffda",
     fontSize: "52px",
-    weight: 800
+    weight: 600,
+    fontFamily: "Arial"
   },
   background: "#0000009c",
   position: "10vh",
