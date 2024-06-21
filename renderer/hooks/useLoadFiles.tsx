@@ -116,23 +116,25 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       if (isYoutube(currentPath)) {
         ipcRenderer.invoke("getYoutubeSubtitle", extractVideoId(currentPath), videoConstants.englishLang).then(entries => {
           entries = convertSubtitlesToEntries(entries)
-          const tmpSub = SubtitleContainer.createFromArrayEntries(null, entries, lang)
+          const tmpSub = SubtitleContainer.createFromArrayEntries(
+              null, entries, lang, primaryStyling.forceSimplified)
           subLoader(tmpSub, videoConstants.englishLang);
         })
         const langList = videoConstants.varLang[lang] ?? [];
         for (const findLang of langList) {
           ipcRenderer.invoke("getYoutubeSubtitle", extractVideoId(currentPath), findLang).then(entries => {
             entries = convertSubtitlesToEntries(entries)
-            const tmpSub = SubtitleContainer.createFromArrayEntries(null, entries, lang)
+            const tmpSub = SubtitleContainer.createFromArrayEntries(
+                null, entries, lang, primaryStyling.forceSimplified);
             subLoader(tmpSub, lang);
           })
         }
       } else {
-        SubtitleContainer.create(draggedSubtitle.src, lang).then(subLoader);
+        SubtitleContainer.create(draggedSubtitle.src, lang, primaryStyling.forceSimplified).then(subLoader);
       }
     }
     queue.end(currentHash);
-  }, [lang, queue, resetSub, setFrequencyPrimary, setPrimarySub, setSecondarySub, setToastInfo, tokenizeMiteiru]);
+  }, [lang, primaryStyling.forceSimplified, queue, resetSub, setFrequencyPrimary, setPrimarySub, setSecondarySub, setToastInfo, tokenizeMiteiru]);
 
   const onVideoChangeHandler = useCallback(async (delta: number = 1) => {
     if (!isLocalPath(videoSrc.path)) return;

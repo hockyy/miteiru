@@ -43,10 +43,8 @@ const parseVerbs = async (res) => {
       if (!whitelistPos.includes(currentPos)) {
         return false;
       }
-      if (['と', 'でしょ', 'の', 'という'].includes(currentEntry.origin)) {
-        return false;
-      }
-      return true;
+      return !['と', 'でしょ', 'の', 'という'].includes(currentEntry.origin);
+
     }
 
     let accumIndex = [i];

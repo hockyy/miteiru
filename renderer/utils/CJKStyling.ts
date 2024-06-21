@@ -37,6 +37,7 @@ export interface CJKStyling {
   showMeaning: boolean;
   showSpace?: boolean;
   removeHearingImpaired: boolean;
+  forceSimplified?: boolean;
 }
 
 
@@ -95,7 +96,8 @@ export const defaultPrimarySubtitleStyling: CJKStyling = {
   showSpace: false,
   maximalMeaningLengthPerCharacter: 20,
   removeHearingImpaired: true,
-  learning: true
+  learning: true,
+  forceSimplified: true
 }
 
 

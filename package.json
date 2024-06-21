@@ -2,7 +2,7 @@
   "private": true,
   "name": "miteiru",
   "description": "Miteiru",
-  "version": "4.3.2",
+  "version": "4.3.3",
   "author": "Hocky Yudhiono <hocky.yudhiono@gmail.com>",
   "main": "app/background.js",
   "build": {
@@ -67,6 +67,7 @@
     "kanjidic-wrapper": "^1.0.2",
     "kuromojin": "^3.0.0",
     "level": "^8.0.1",
+    "opencc-js": "^1.0.5",
     "patch-package": "^7.0.2",
     "python-shell": "^5.0.0",
     "react-awesome-button": "6.1.0",
