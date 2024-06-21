@@ -97,7 +97,9 @@ function Video() {
   const {
     videoSrc,
     onLoadFiles,
-    onVideoChangeHandler
+    onVideoChangeHandler,
+    reloadLastPrimarySubtitle,
+    reloadLastSecondarySubtitle
   } = useLoadFiles(setToastInfo,
       primarySub, setPrimarySub,
       secondarySub, setSecondarySub,
@@ -112,7 +114,7 @@ function Video() {
   useKeyBind(setMeaning, setShowController, setShowSidebar,
       setPrimarySub, setSecondarySub, primarySub, undo,
       setShowPrimarySub, setShowSecondarySub, primaryStyling, setPrimaryStyling,
-      openDeepL, openGoogleTranslate);
+      openDeepL, openGoogleTranslate, reloadLastPrimarySubtitle, reloadLastSecondarySubtitle);
   const {
     togglePlay,
     isPlaying,

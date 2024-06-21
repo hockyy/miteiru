@@ -18,17 +18,18 @@ export default function useKeyBind(
     primaryStyling,
     setPrimaryStyling,
     openDeepL,
-    openGoogleTranslate
+    openGoogleTranslate,
+    reloadLastPrimarySubtitle,
+    reloadLastSecondarySubtitle
 ) {
   const router = useRouter();
   useEffect(() => {
     const handleKeyPress = async (event) => {
-      if (event.code === "Escape") {
+      if (event.code === "KeyQ") {
         setMeaning("");
-      } else if (event.code === "KeyQ") {
-        await router.push('/home');
+        if (event.ctrlKey) await router.push('/home');
       } else if (event.code === "KeyL") {
-        await router.push('/learn');
+        if (event.ctrlKey) await router.push('/learn');
       } else if (event.code === "KeyZ") {
         setShowController((old) => {
           return !old;
@@ -54,7 +55,7 @@ export default function useKeyBind(
         } else {
           setShowSecondarySub(old => !old);
         }
-      } else if (event.code === "KeyD") {
+      } else if (event.code === "Escape") {
         undo();
       } else if (event.code === "Space") {
         event.preventDefault();
@@ -63,6 +64,9 @@ export default function useKeyBind(
         openGoogleTranslate();
       } else if (event.code === "KeyT") {
         openDeepL();
+      } else if (event.code === "KeyA") {
+        reloadLastSecondarySubtitle();
+        reloadLastPrimarySubtitle();
       }
     };
 
@@ -71,6 +75,6 @@ export default function useKeyBind(
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [router, setMeaning, setShowController, setShowSidebar, setPrimarySub, setSecondarySub, setPrimaryStyling, primarySub.id, setShowPrimarySub, setShowSecondarySub, undo, primaryStyling, openGoogleTranslate, openDeepL]);
+  }, [router, setMeaning, setShowController, setShowSidebar, setPrimarySub, setSecondarySub, setPrimaryStyling, primarySub.id, setShowPrimarySub, setShowSecondarySub, undo, primaryStyling, openGoogleTranslate, openDeepL, reloadLastSecondarySubtitle, reloadLastPrimarySubtitle]);
 
 }
