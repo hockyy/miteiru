@@ -30,6 +30,11 @@ export const StylingBox = ({
       }
     })
   }, [setSubtitleStyling]);
+  const cjkForceSimplifiedHandler = useCallback((val) => {
+    const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+    newCopy.forceSimplified = val;
+    setSubtitleStyling(newCopy)
+  }, [setSubtitleStyling, subtitleStyling]);
   const cjkShowFuriganaHandler = useCallback((val) => {
     const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
     newCopy.showFurigana = val;
@@ -172,6 +177,10 @@ export const StylingBox = ({
     {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
       <Toggle isChecked={subtitleStyling.showFurigana} onChange={cjkShowFuriganaHandler}/>
       {subtitleName} Show Furigana
+    </div>}
+    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
+      <Toggle isChecked={subtitleStyling.forceSimplified} onChange={cjkForceSimplifiedHandler}/>
+      {subtitleName} Force Simplified ZH
     </div>}
     {subtitleName == "CJK" && subtitleStyling.showFurigana &&
         <div className={"flex flex-row items-center gap-3"}>

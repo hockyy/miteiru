@@ -8,12 +8,21 @@ import {isHiragana, isKatakana, toHiragana} from 'wanakana'
 import {videoConstants} from "../../utils/constants";
 import {randomUUID} from "crypto";
 import {Entry} from "@plussub/srt-vtt-parser/dist/src/types";
+import * as OpenCC from 'opencc-js';
 
 function removeTags(text) {
   const regex = /\{\\.+?}/g;
   return text.replace(regex, '');
 }
 
+const toSimplified = OpenCC.Converter({ from: 'tw', to: 'cn' });
+const toTraditional = OpenCC.Converter({ from: 'cn', to: 'tw' });
+const noChanger = (text: string) => {return text};
+
+function preProcess(text, accentChanger = noChanger) {
+  const removedTag = removeTags(text);
+  return accentChanger(removedTag);
+}
 
 export class Line {
   timeStart: number;
@@ -145,7 +154,7 @@ export class SubtitleContainer {
     return
   }
 
-  static async create(filename: string, lang: string) {
+  static async create(filename: string, lang: string, isSimplified : boolean) {
     if (filename === '') return
     const subtitleContainer = new SubtitleContainer();
     subtitleContainer.path = filename;
@@ -161,12 +170,12 @@ export class SubtitleContainer {
       const data = parseSRT(text);
       entries = data.entries;
     }
-    this.createFromArrayEntries(subtitleContainer, entries, lang);
+    this.createFromArrayEntries(subtitleContainer, entries, lang, isSimplified);
     return subtitleContainer;
   }
 
 
-  static createFromArrayEntries(subtitleContainer: SubtitleContainer, entries: Entry[], lang: string) {
+  static createFromArrayEntries(subtitleContainer: SubtitleContainer, entries: Entry[], lang: string, isSimplified : boolean = true) {
     if (subtitleContainer === null) {
       subtitleContainer = new SubtitleContainer();
     }
@@ -186,7 +195,12 @@ export class SubtitleContainer {
       const realFrom = Math.max(from - videoConstants.subtitleFramerate * videoConstants.subtitleStartPlusMultiplier, last);
       const realTo = to + videoConstants.subtitleFramerate * videoConstants.subtitleEndPlusMultiplier;
       if(realFrom > realTo) continue;
-      subtitleContainer.lines.push(new Line(Math.max(from, last), realTo, removeTags(text)));
+      let changeAccent = noChanger;
+      if(videoConstants.chineseLang) {
+        if(isSimplified) changeAccent = toSimplified;
+        else changeAccent = toTraditional;
+      }
+      subtitleContainer.lines.push(new Line(Math.max(from, last), realTo, preProcess(text, changeAccent)));
       last = Math.max(last, realTo + videoConstants.subtitleFramerate + 1);
     }
     return subtitleContainer;
