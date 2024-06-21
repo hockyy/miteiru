@@ -17,8 +17,15 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
                       secondarySub, setSecondarySub,
                       primaryStyling,
                       tokenizeMiteiru, setEnableSeeker, changeTimeTo, player, lang, setFrequencyPrimary) => {
-  const [videoSrc, setVideoSrc] = useState({src: '', type: '', path: ''});
+  const [videoSrc, setVideoSrc] = useState({
+    src: '',
+    type: '',
+    path: ''
+  });
   const queue = useAsyncAwaitQueue();
+
+  const [lastPrimarySubPath, setLastPrimarySubPath] = useState([{path: ''}]);
+  const [lastSecondarySubPath, setLastSecondarySubPath] = useState([{path: ''}]);
   const resetSub = useCallback((subSetter) => {
     subSetter(new SubtitleContainer(''));
   }, []);
@@ -73,8 +80,10 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
             || tmpSub.language === videoConstants.cantoneseLang
             || tmpSub.language === videoConstants.chineseLang) {
           setPrimarySub(tmpSub);
+          setLastPrimarySubPath([{path: currentPath}]);  // Save the last primary subtitle path
           setGlobalSubtitleId(tmpSub.id);
         } else {
+          setLastSecondarySubPath([{path: currentPath}]);  // Save the last secondary subtitle path
           setSecondarySub(tmpSub);
         }
         setToastInfo({
@@ -86,7 +95,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
             || tmpSub.language === videoConstants.chineseLang) {
           const toastSetter = setInterval(() => {
             setToastInfo({
-              message: `${tmpSub.language} cache: ${tmpSub.progress}`,
+              message: `${tmpSub.language}: ${tmpSub.progress}`,
               update: randomUUID()
             });
           }, TOAST_TIMEOUT / 10);
@@ -110,7 +119,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
           const tmpSub = SubtitleContainer.createFromArrayEntries(null, entries, lang)
           subLoader(tmpSub, videoConstants.englishLang);
         })
-        const langList = videoConstants.varLang[lang]??[];
+        const langList = videoConstants.varLang[lang] ?? [];
         for (const findLang of langList) {
           ipcRenderer.invoke("getYoutubeSubtitle", extractVideoId(currentPath), findLang).then(entries => {
             entries = convertSubtitlesToEntries(entries)
@@ -122,7 +131,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
         SubtitleContainer.create(draggedSubtitle.src, lang).then(subLoader);
       }
     }
-    await queue.end(currentHash);
+    queue.end(currentHash);
   }, [lang, queue, resetSub, setFrequencyPrimary, setPrimarySub, setSecondarySub, setToastInfo, tokenizeMiteiru]);
 
   const onVideoChangeHandler = useCallback(async (delta: number = 1) => {
@@ -163,10 +172,23 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     }
   }, [changeTimeTo, player, setEnableSeeker, videoSrc.path])
 
+  const reloadLastPrimarySubtitle = useCallback(() => {
+    if (lastPrimarySubPath) {
+      onLoadFiles(lastPrimarySubPath);
+    }
+  }, [lastPrimarySubPath, onLoadFiles]);
+
+  const reloadLastSecondarySubtitle = useCallback(() => {
+    if (lastSecondarySubPath) {
+      onLoadFiles(lastSecondarySubPath);
+    }
+  }, [lastSecondarySubPath, onLoadFiles]);
   return {
     onLoadFiles,
     videoSrc,
-    onVideoChangeHandler
+    onVideoChangeHandler,
+    reloadLastPrimarySubtitle,
+    reloadLastSecondarySubtitle
   }
 };
 

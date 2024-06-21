@@ -36,8 +36,9 @@ export const isDomainUri = (url) => {
 }
 
 export const isLocalPath = (url) => {
+
   // If it's not a valid URL, it might be a local path
-  return !isDomainUri(url);
+  return url.includes('\\') && !isDomainUri(url);
 }
 
 
