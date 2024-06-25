@@ -59,6 +59,7 @@
     "electron-store": "^8.2.0",
     "fs": "^0.0.1-security",
     "fs-extra": "^11.2.0",
+    "hanzi-writer": "^3.7.0",
     "html-entities": "^2.5.2",
     "html-react-parser": "^3.0.16",
     "iconv-lite": "^0.6.3",

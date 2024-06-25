@@ -9,6 +9,7 @@ import KanjiVGDisplay from "./KanjiVGDisplay";
 import WanikaniRadicalDisplay from "./WanikaniRadicalDisplay";
 import {videoConstants} from "../../utils/constants";
 import MakeMeAHanziDisplay from "./MakeMeAHanziDisplay";
+import QuizDisplay from "./QuizDisplay";
 
 const initialContentState = {id: "", sense: [], single: []};
 const initialCharacterContentState = {literal: null};
@@ -425,6 +426,7 @@ const HanziBoxEntry = ({meaningHanzi, setMeaning, subtitleStyling}) => {
     </div>
     <div className={'flex flex-row'}>
       <MakeMeAHanziDisplay character={meaningHanzi.literal}/>
+      <QuizDisplay character={meaningHanzi.literal}/>
       <div className={'flex flex-col gap-2 m-3'}>
         <div className={'text-5xl flex flex-row gap-5'}>
 

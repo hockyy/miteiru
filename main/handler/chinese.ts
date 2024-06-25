@@ -54,7 +54,7 @@ class Chinese {
       }
       const scriptContent = fs.readFileSync(this.scriptPath, 'utf-8').toString();
       fs.writeFileSync(this.scriptOutPath, scriptContent);
-      let pyshellOptions = {
+      const pyshellOptions = {
         pythonOptions: ['-X', 'utf8']
       }
       this.pyshell = new PythonShell(this.scriptOutPath, pyshellOptions);
@@ -68,7 +68,7 @@ class Chinese {
   static registerJieba() {
     ipcMain.handle('tokenizeUsingJieba', async (event, sentence) => {
       this.pyshell.send(sentence);
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         this.pyshell.once('message', function (message) {
           resolve(JSON.parse(message));
         });
@@ -79,7 +79,7 @@ class Chinese {
   static registerPyCantonese() {
     ipcMain.handle('tokenizeUsingPyCantonese', async (event, sentence) => {
       this.pyshell.send(sentence);
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         this.pyshell.once('message', function (message) {
           resolve(JSON.parse(message));
         });

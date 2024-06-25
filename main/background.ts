@@ -9,6 +9,7 @@ import {registerStartupHandlers} from "./handler/startup";
 import Japanese from "./handler/japanese";
 import Chinese from "./handler/chinese";
 import Learning from "./handler/learning";
+import SRS from "./handler/srs";
 
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
@@ -47,6 +48,8 @@ if (isProd) {
 
   Learning.setup();
   Learning.registerHandler();
+  SRS.setup();
+  SRS.registerHandler();
 
   protocol.registerFileProtocol(scheme, requestHandler); /* eng-disable PROTOCOL_HANDLER_JS_CHECK */
   if (isProd) {

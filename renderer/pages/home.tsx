@@ -114,7 +114,7 @@ function Home() {
             <SmoothCollapse expanded={tokenizerMode === 2}>
               <ContainerHome>
                 <div className={'text-blue-800'}>
-                  You can run: <pre className={'font-bold'}>pip install setuptools pycantonese</pre>
+                  You can run: <pre className={'font-bold'}>python3 -m pip install setuptools pycantonese</pre>
                 </div>
               </ContainerHome>
             </SmoothCollapse>
@@ -122,7 +122,7 @@ function Home() {
             <SmoothCollapse expanded={tokenizerMode === 3}>
               <ContainerHome>
                 <div className={'text-blue-800'}>
-                  You can run: <pre className={'font-bold'}>pip install jieba pypinyin</pre>
+                  You can run: <pre className={'font-bold'}>python3 -m pip install jieba pypinyin</pre>
                 </div>
               </ContainerHome>
             </SmoothCollapse>
