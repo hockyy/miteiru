@@ -153,9 +153,9 @@ button {
   transition: transform 500ms;
 }
 
-.hovery:hover {
-  transform: scale(1.05);
-}
+/*.hovery:hover {*/
+/*  transform: scale(1);*/
+/*}*/
 
 .scrollable-container {
   overflow-y: auto;

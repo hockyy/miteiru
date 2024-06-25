@@ -1,9 +1,11 @@
 import React, {useEffect, useRef, useState} from "react";
 import HanziWriter from "hanzi-writer";
 
+import {AwesomeButton} from "react-awesome-button";
 const QuizDisplay = ({character, mode = 'plain'}) => {
   const writingRef = useRef(null);
   const [hanziWriter, setHanziWriter] = useState(null);
+  const [changer, setChanger] = useState(0);
   useEffect(() => {
     if (hanziWriter === null && writingRef.current) {
       try {
@@ -27,7 +29,9 @@ const QuizDisplay = ({character, mode = 'plain'}) => {
         hanziWriter.setCharacter(character);
         hanziWriter.quiz({
           showHintAfterMisses: mode === 'plain' ? 3 : false,
-          onComplete: () => console.log('Quiz complete'),
+          onComplete: () => {
+            console.log('Quiz complete')
+          },
         }).then(r => console.log(r)).catch(error => {
           console.log(error)
         });
@@ -40,17 +44,23 @@ const QuizDisplay = ({character, mode = 'plain'}) => {
         console.log(e);
       }
     }
-  }, [character, mode, hanziWriter]);
+  }, [character, mode, hanziWriter, changer]);
 
   return (
       <div
-          className="flex flex-col w-[350px] h-[350px] p-4 gap-4 justify-center items-center border-2 border-gray-300 rounded-md">
+          className="flex flex-col w-[350px] h-[430px] p-4 gap-4 justify-center items-center border-2 border-gray-300 rounded-md">
         <svg ref={writingRef} xmlns="http://www.w3.org/2000/svg" width="300" height="300">
           <line x1="0" y1="0" x2="300" y2="300" stroke="lightgray" strokeWidth="1"/>
           <line x1="300" y1="0" x2="0" y2="300" stroke="lightgray" strokeWidth="1"/>
           <line x1="150" y1="0" x2="150" y2="300" stroke="lightgray" strokeWidth="1"/>
           <line x1="0" y1="150" x2="300" y2="150" stroke="lightgray" strokeWidth="1"/>
         </svg>
+
+        <AwesomeButton type={'primary'} onPress={() => {
+          setChanger(old => {
+            return old + 1;
+          })
+        }}>Repeat Quiz</AwesomeButton>
       </div>
   );
 }
