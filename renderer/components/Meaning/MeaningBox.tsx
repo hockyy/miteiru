@@ -426,7 +426,6 @@ const HanziBoxEntry = ({meaningHanzi, setMeaning, subtitleStyling}) => {
     </div>
     <div className={'flex flex-row'}>
       <MakeMeAHanziDisplay character={meaningHanzi.literal}/>
-      <QuizDisplay character={meaningHanzi.literal}/>
       <div className={'flex flex-col gap-2 m-3'}>
         <div className={'text-5xl flex flex-row gap-5'}>
 
@@ -462,6 +461,9 @@ const HanziBoxEntry = ({meaningHanzi, setMeaning, subtitleStyling}) => {
         })}
         <hr/>
       </div>
+    </div>
+    <div className={'flex flex-row m-3'}>
+      <QuizDisplay character={meaningHanzi.literal}/>
     </div>
   </div>
 }
