@@ -40,7 +40,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     if (isLocalPath(currentPath)) {
       currentPath = currentPath.replaceAll('\\', '/')
       pathUri = currentPath;
-      if (process.platform === 'win32') {
+      if (process.platform === 'win32' && !pathUri.startsWith('/')) {
         pathUri = '/' + currentPath;
       }
     }
