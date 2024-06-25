@@ -168,7 +168,7 @@ const MeaningBox = ({
                                                  extraClass={"unselectable meaning-kanji text-md"}
                                                  subtitleStyling={subtitleStyling}/>
                               ))]}
-                          {(lang === videoConstants.chineseLang || videoConstants.cantoneseLang) && [...romajied.map((val, idx) => {
+                          {(lang === videoConstants.chineseLang || lang === videoConstants.cantoneseLang) && [...romajied.map((val, idx) => {
                             return (
                                 <HanziSentence key={idx}
                                                origin={val.origin}

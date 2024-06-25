@@ -196,7 +196,7 @@ export class SubtitleContainer {
       const realTo = to + videoConstants.subtitleFramerate * videoConstants.subtitleEndPlusMultiplier;
       if(realFrom > realTo) continue;
       let changeAccent = noChanger;
-      if(videoConstants.chineseLang) {
+      if(lang === videoConstants.chineseLang) {
         if(isSimplified) changeAccent = toSimplified;
         else changeAccent = toTraditional;
       }
