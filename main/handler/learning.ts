@@ -24,7 +24,7 @@ class Skill {
   lastUpdated: number;
   level: number;
 
-  constructor(name) {
+  constructor(name: string) {
     this.skillName = name;
     this.lastUpdated = now();
     this.level = 0;
@@ -40,7 +40,7 @@ class Skill {
   }
 
   // Static method to create an instance from a JSON string
-  static fromJSON(obj) {
+  static fromJSON(obj: { skillName: string; lastUpdated: number; level: number; }) {
     const skill = new Skill(obj.skillName);
     skill.lastUpdated = obj.lastUpdated;
     skill.level = obj.level;
@@ -66,7 +66,7 @@ class SRSData {
   lang: string;
   skills: Map<SkillConstant, Skill>;
 
-  constructor(char, language: string) {
+  constructor(char: string, language: string) {
     this.character = char;
     this.lastUpdated = now();
     this.lastCreated = now();
@@ -90,7 +90,7 @@ class SRSData {
   }
 
   // Static method to create an instance from a JSON string
-  static fromJSON(jsonStr) {
+  static fromJSON(jsonStr: string) {
     const obj = JSON.parse(jsonStr);
     const instance = new SRSData(obj.character, obj.lang);
     instance.lastUpdated = obj.lastUpdated;
@@ -142,8 +142,8 @@ class SRSDatabase {
   static learningTrees: Map<string, OrderedTree> = new Map();
   // map <lang, map <char, data>>
   static srsData: Map<string, Map<string, SRSData>> = new Map();
-  static db;
-  static async setup(lang) {
+  static db: Level;
+  static async setup(lang: string) {
     if (this.srsData.get(lang)) return;
     for (const key of Object.keys(SkillConstant)) {
       this.learningTrees.set(
@@ -155,7 +155,7 @@ class SRSDatabase {
     return SRSDatabase.loadSRS(lang);
   }
 
-  static async loadSRS(lang) {
+  static async loadSRS(lang: string) {
     const prefix = `srs/${lang}/`;
 
     const queryOptions = {
@@ -171,10 +171,10 @@ class SRSDatabase {
   }
 
   static storeOrUpdate(lang: string, ch: string, srsData: SRSData) {
-    this.db.put(`srs/${lang}/${ch}`, srsData.toJSON());
+    this.db.put(`srs/${lang}/${ch}`, srsData.toJSON()).then(r => console.log(r));
   }
 
-  static insertNew(lang, character) {
+  static insertNew(lang: string, character: string) {
     if (!this.srsData.has(lang)) {
       console.warn(`ERROR: srsData ${lang} not initted`)
       return;
@@ -210,8 +210,8 @@ class SRSDatabase {
 
 
 class Learning {
-  static dbPath;
-  static db;
+  static dbPath: string;
+  static db: Level;
 
   static setup() {
     // Define the path to the database
@@ -221,7 +221,7 @@ class Learning {
   }
 
   static registerHandler() {
-    ipcMain.handle('loadLearningState', async (event, lang) => {
+    ipcMain.handle('loadLearningState', async (_event, lang) => {
       try {
         await SRSDatabase.setup(lang);
         const prefix = `${lang}/`; // Define the prefix for keys
@@ -236,7 +236,7 @@ class Learning {
         // Efficiently iterate over keys within the specified range
         for await (const [key, value] of this.db.iterator(queryOptions)) {
           const strippedKey = key.substring(prefix.length);
-          let parsedValue;
+          let parsedValue: { level: any; updTime: any; };
 
           try {
             parsedValue = JSON.parse(value);
@@ -266,7 +266,7 @@ class Learning {
 
 
     // Handler to update a specific content's learning state
-    ipcMain.handle('updateContent', async (event, content, lang, data) => {
+    ipcMain.handle('updateContent', async (_event, content, lang, data) => {
       if (!content) return true;
       try {
         await this.db.put(`${lang}/${content}`, JSON.stringify(data));
@@ -278,7 +278,7 @@ class Learning {
     });
 
     // Handler to update a batch of contents' learning states
-    ipcMain.handle('updateContentBatch', async (event, contents: LearningStateType, lang) => {
+    ipcMain.handle('updateContentBatch', async (_event, contents: LearningStateType, lang) => {
       if (!contents) return true;
       try {
         for (const [key, value] of Object.entries(contents)) {
@@ -299,7 +299,7 @@ class Learning {
       }
     });
 
-    ipcMain.handle('updateSRSContent', async (event, char, lang, data) => {
+    ipcMain.handle('updateSRSContent', async (_event, char, lang, data) => {
       if (!char) return false;
       try {
         await this.db.put(`srs/${lang}/${char}`, JSON.stringify(data));
@@ -310,7 +310,7 @@ class Learning {
       }
     });
 
-    ipcMain.handle('getQuestion', async (event, lang) => {
+    ipcMain.handle('getQuestion', async (_event, lang) => {
       try {
         const prefix = `srs/${lang}/`;
         const srsState = {};
