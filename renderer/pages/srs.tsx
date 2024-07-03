@@ -35,7 +35,7 @@ const SRS = () => {
   useEffect(() => {
     if (currentCharacter) {
       const fetchProgress = async () => {
-        const progress = await ipcRenderer.invoke('loadSRSState', videoConstants.chineseLang);
+        const progress = {currentCharacter: null};
         setHanziProgress(progress[currentCharacter] || {
           level: {reading: 0, meaning: 0, writing: 0},
           timeCreated: Date.now(),

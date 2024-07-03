@@ -66,10 +66,11 @@ class SRSData {
   lang: string;
   skills: Map<SkillConstant, Skill>;
 
-  constructor(char) {
+  constructor(char, language: string) {
     this.character = char;
     this.lastUpdated = now();
     this.lastCreated = now();
+    this.lang = language;
     this.skills = new Map();
     for (const key of Object.keys(SkillConstant)) {
       this.skills.set(SkillConstant[key], new Skill(key));
@@ -91,7 +92,7 @@ class SRSData {
   // Static method to create an instance from a JSON string
   static fromJSON(jsonStr) {
     const obj = JSON.parse(jsonStr);
-    const instance = new SRSData(obj.character);
+    const instance = new SRSData(obj.character, obj.lang);
     instance.lastUpdated = obj.lastUpdated;
     instance.lastCreated = obj.lastCreated;
     instance.lang = obj.lang;
@@ -142,7 +143,6 @@ class SRSDatabase {
   // map <lang, map <char, data>>
   static srsData: Map<string, Map<string, SRSData>> = new Map();
   static db;
-
   static async setup(lang) {
     if (this.srsData.get(lang)) return;
     for (const key of Object.keys(SkillConstant)) {
@@ -167,7 +167,6 @@ class SRSDatabase {
       const strippedKey = key.substring(prefix.length);
       const parsedValue = SRSData.fromJSON(value);
       this.srsData.get(lang).set(strippedKey, parsedValue);
-      this.insertNew(lang, strippedKey)
     }
   }
 
@@ -177,11 +176,14 @@ class SRSDatabase {
 
   static insertNew(lang, character) {
     if (!this.srsData.has(lang)) {
-      console.log(`ERROR: srsData ${lang} not initted`)
+      console.warn(`ERROR: srsData ${lang} not initted`)
       return;
     }
-    const newSrs = new SRSData(character);
-    if (this.srsData.get(lang).has(character)) return;
+
+    if (this.srsData.get(lang).has(character)) {
+      return;
+    }
+    const newSrs = new SRSData(character, lang);
     this.storeOrUpdate(lang, character, newSrs);
     this.srsData.get(lang).set(character, newSrs);
   }
@@ -215,6 +217,7 @@ class Learning {
     // Define the path to the database
     this.dbPath = path.join(app.getPath('userData'), 'learningStateDB');
     this.db = new Level(this.dbPath);
+    SRSDatabase.db = this.db;
   }
 
   static registerHandler() {
