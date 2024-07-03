@@ -2,6 +2,7 @@ import {app, ipcMain} from "electron";
 import {Level} from 'level';
 import path from 'path';
 import {LearningStateType} from "../../renderer/components/types";
+import {OrderedSet} from "js-sdsl";
 
 
 // Skill Constants
@@ -27,6 +28,16 @@ class Skill {
   }
 }
 
+class ComparatorKey {
+  value: number;
+  character: string;
+
+  constructor(char: string, skill: Skill) {
+    this.value = skill.lastUpdated;
+    this.character = char;
+  }
+}
+
 // SRSData Class
 class SRSData {
   character: string;
@@ -47,11 +58,16 @@ class SRSData {
 
 // OrderedTree Class
 class OrderedTree {
-  container
-  generateKey: (SRSData) => any;
+  container: OrderedSet<ComparatorKey>;
+  generateKey: (arg0: SRSData) => ComparatorKey;
 
-  constructor(initialData = [], keyGenerator) {
-    this.container = new Set();
+  constructor(initialData = [], keyGenerator: (arg0: SRSData) => ComparatorKey) {
+
+    this.container = new OrderedSet<ComparatorKey>([], (a: ComparatorKey, b: ComparatorKey) => {
+      if (a.value != b.value) return a.value - b.value;
+      return a.character < b.character ? -1 : 1;
+    }, true);
+
     this.generateKey = keyGenerator;
     for (const curData of initialData) {
       this.insert(curData);
@@ -59,44 +75,31 @@ class OrderedTree {
   }
 
   insert(a) {
-    const currentKey = this.generateKey(a);
-    this.container.add({key: currentKey, character: a.character});
+    this.container.insert(this.generateKey(a));
   }
 
   erase(a) {
-    const currentKey = this.generateKey(a);
-    this.container.delete(currentKey);
+    this.container.eraseElementByKey(this.generateKey(a));
   }
 
-  orderOfKey(a) {
-    const currentKey = this.generateKey(a);
+  orderOfKey(srsData : SRSData) {
+    const currentKey = this.generateKey(srsData);
     let index = 0;
-    for (const item of this.container) {
-      if (item.key === currentKey) {
-        return index;
-      }
-      index++;
-    }
-    return -1;
+    const res = this.container.find(this.generateKey(srsData));
+    if (res.equals(this.container.end())) return -1;
+    return res.index;
   }
 
-  findByOrder(index) {
-    if (index >= this.container.size) return null;
-    let i = 0;
-    for (const item of this.container) {
-      if (i === index) {
-        return item;
-      }
-      i++;
-    }
-    return null;
+  findByOrder(index: number) {
+    if (index >= this.container.size()) return null;
+    return this.container.getElementByPos(index);
   }
 }
 
 // SRSDatabase Class
 class SRSDatabase {
-  static learningTrees = new Map();
-  static srsData = new Map();
+  static learningTrees: Map<string, OrderedTree> = new Map();
+  static srsData: Map<string, SRSData> = new Map();
   static db;
 
   static setup(db) {
@@ -142,9 +145,9 @@ class SRSDatabase {
     this.learningTrees.get(SkillConstants[skillName]).insert(ptrToSRSData);
   }
 
-  static classicKeyGen(srsData) {
+  static classicKeyGen(srsData: SRSData) {
     // Example key generator based on lastUpdated
-    return srsData.lastUpdated;
+    return new ComparatorKey(srsData.character, srsData.skills.get(SkillConstants.Conveyance));
   }
 }
 
