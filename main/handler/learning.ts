@@ -4,13 +4,16 @@ import path from 'path';
 import {LearningStateType} from "../../renderer/components/types";
 import {OrderedSet} from "js-sdsl";
 
+enum SkillConstant {
+  Writing,
+  Conveyance,
+  Translation,
+}
 
-// Skill Constants
-const SkillConstants = {
-  Writing: 'writing',
-  Conveyance: 'conveyance',
-  Translation: 'translation'
-};
+
+function getPair(lang: string, skill: SkillConstant) {
+  return lang + '-' + skill;
+}
 
 // Utility function to get the current timestamp
 const now = () => Math.floor(Date.now() / 1000);
@@ -25,6 +28,23 @@ class Skill {
     this.skillName = name;
     this.lastUpdated = now();
     this.level = 0;
+  }
+
+  // Method to convert the instance to a JSON string
+  toJSON() {
+    return {
+      skillName: this.skillName,
+      lastUpdated: this.lastUpdated,
+      level: this.level,
+    };
+  }
+
+  // Static method to create an instance from a JSON string
+  static fromJSON(obj) {
+    const skill = new Skill(obj.skillName);
+    skill.lastUpdated = obj.lastUpdated;
+    skill.level = obj.level;
+    return skill;
   }
 }
 
@@ -43,16 +63,40 @@ class SRSData {
   character: string;
   lastUpdated: number;
   lastCreated: number;
-  skills: Map<string, Skill>;
+  lang: string;
+  skills: Map<SkillConstant, Skill>;
 
   constructor(char) {
     this.character = char;
     this.lastUpdated = now();
     this.lastCreated = now();
     this.skills = new Map();
-    for (const key of Object.keys(SkillConstants)) {
-      this.skills.set(SkillConstants[key], new Skill(SkillConstants[key]));
+    for (const key of Object.keys(SkillConstant)) {
+      this.skills.set(SkillConstant[key], new Skill(key));
     }
+  }
+
+  // Method to convert the instance to a JSON string
+  toJSON() {
+    const obj = {
+      character: this.character,
+      lastUpdated: this.lastUpdated,
+      lastCreated: this.lastCreated,
+      lang: this.lang,
+      skills: Array.from(this.skills.entries()).map(([key, value]) => [key, value.toJSON()]),
+    };
+    return JSON.stringify(obj);
+  }
+
+  // Static method to create an instance from a JSON string
+  static fromJSON(jsonStr) {
+    const obj = JSON.parse(jsonStr);
+    const instance = new SRSData(obj.character);
+    instance.lastUpdated = obj.lastUpdated;
+    instance.lastCreated = obj.lastCreated;
+    instance.lang = obj.lang;
+    instance.skills = new Map(obj.skills.map(([key, value]) => [key, Skill.fromJSON(value)]));
+    return instance;
   }
 }
 
@@ -61,7 +105,7 @@ class OrderedTree {
   container: OrderedSet<ComparatorKey>;
   generateKey: (arg0: SRSData) => ComparatorKey;
 
-  constructor(initialData = [], keyGenerator: (arg0: SRSData) => ComparatorKey) {
+  constructor(keyGenerator: (arg0: SRSData) => ComparatorKey) {
 
     this.container = new OrderedSet<ComparatorKey>([], (a: ComparatorKey, b: ComparatorKey) => {
       if (a.value != b.value) return a.value - b.value;
@@ -69,22 +113,17 @@ class OrderedTree {
     }, true);
 
     this.generateKey = keyGenerator;
-    for (const curData of initialData) {
-      this.insert(curData);
-    }
   }
 
-  insert(a) {
+  insert(a: SRSData) {
     this.container.insert(this.generateKey(a));
   }
 
-  erase(a) {
+  erase(a: SRSData) {
     this.container.eraseElementByKey(this.generateKey(a));
   }
 
-  orderOfKey(srsData : SRSData) {
-    const currentKey = this.generateKey(srsData);
-    let index = 0;
+  orderOfKey(srsData: SRSData) {
     const res = this.container.find(this.generateKey(srsData));
     if (res.equals(this.container.end())) return -1;
     return res.index;
@@ -98,18 +137,22 @@ class OrderedTree {
 
 // SRSDatabase Class
 class SRSDatabase {
+  // Maps pair <lang, skillType> => Sets of next SRS
   static learningTrees: Map<string, OrderedTree> = new Map();
-  static srsData: Map<string, SRSData> = new Map();
+  // map <lang, map <char, data>>
+  static srsData: Map<string, Map<string, SRSData>> = new Map();
   static db;
 
-  static setup(db) {
-    for (const key of Object.keys(SkillConstants)) {
+  static async setup(lang) {
+    if (this.srsData.get(lang)) return;
+    for (const key of Object.keys(SkillConstant)) {
       this.learningTrees.set(
-          SkillConstants[key],
-          new OrderedTree(Array.from(this.srsData.values()), this.classicKeyGen)
+          getPair(lang, SkillConstant[key]),
+          new OrderedTree(this.classicKeyGen)
       );
     }
-    this.db = db;
+    this.srsData.set(lang, new Map())
+    return SRSDatabase.loadSRS(lang);
   }
 
   static async loadSRS(lang) {
@@ -122,32 +165,44 @@ class SRSDatabase {
 
     for await (const [key, value] of this.db.iterator(queryOptions)) {
       const strippedKey = key.substring(prefix.length);
-      const parsedValue = JSON.parse(value);
-      this.srsData.set(strippedKey, parsedValue);
+      const parsedValue = SRSData.fromJSON(value);
+      this.srsData.get(lang).set(strippedKey, parsedValue);
+      this.insertNew(lang, strippedKey)
     }
   }
 
-  static insertNew(character) {
-    const newSrs = new SRSData(character);
-    this.srsData.set(character, newSrs);
+  static storeOrUpdate(lang: string, ch: string, srsData: SRSData) {
+    this.db.put(`srs/${lang}/${ch}`, srsData.toJSON());
   }
 
-  static updateLearningTrees(character, skillName, newLevel) {
-    const ptrToSRSData = this.srsData.get(character);
+  static insertNew(lang, character) {
+    if (!this.srsData.has(lang)) {
+      console.log(`ERROR: srsData ${lang} not initted`)
+      return;
+    }
+    const newSrs = new SRSData(character);
+    if (this.srsData.get(lang).has(character)) return;
+    this.storeOrUpdate(lang, character, newSrs);
+    this.srsData.get(lang).set(character, newSrs);
+  }
+
+  static updateLearningTrees(lang: string, character: string, skillName: SkillConstant, newLevel: number) {
+    const ptrToSRSData = this.srsData.get(lang).get(character);
     if (!ptrToSRSData) return;
 
-    this.learningTrees.get(SkillConstants[skillName]).erase(ptrToSRSData);
+    this.learningTrees.get(getPair(lang, skillName)).erase(ptrToSRSData);
 
     ptrToSRSData.skills.get(skillName).level = newLevel;
     ptrToSRSData.skills.get(skillName).lastUpdated = now();
     ptrToSRSData.lastUpdated = now();
 
-    this.learningTrees.get(SkillConstants[skillName]).insert(ptrToSRSData);
+    this.learningTrees.get(getPair(lang, skillName)).insert(ptrToSRSData);
+    this.storeOrUpdate(lang, character, ptrToSRSData);
   }
 
   static classicKeyGen(srsData: SRSData) {
     // Example key generator based on lastUpdated
-    return new ComparatorKey(srsData.character, srsData.skills.get(SkillConstants.Conveyance));
+    return new ComparatorKey(srsData.character, srsData.skills.get(SkillConstant.Writing));
   }
 }
 
@@ -160,12 +215,12 @@ class Learning {
     // Define the path to the database
     this.dbPath = path.join(app.getPath('userData'), 'learningStateDB');
     this.db = new Level(this.dbPath);
-    SRSDatabase.setup(this.db)
   }
 
   static registerHandler() {
     ipcMain.handle('loadLearningState', async (event, lang) => {
       try {
+        await SRSDatabase.setup(lang);
         const prefix = `${lang}/`; // Define the prefix for keys
         const learningState = {};
 
@@ -193,7 +248,9 @@ class Learning {
             };
             await this.db.put(key, JSON.stringify(parsedValue));
           }
-
+          if (parsedValue.level) for (const ch of strippedKey) {
+            SRSDatabase.insertNew(lang, ch);
+          }
           learningState[strippedKey] = parsedValue;
         }
 
