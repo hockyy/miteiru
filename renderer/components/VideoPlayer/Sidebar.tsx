@@ -137,6 +137,12 @@ export const StylingBox = ({
         setSubtitleStyling(newCopy)
       }
       , [setSubtitleStyling, subtitleStyling]);
+
+  const subtitleFontFamilyHandler = useCallback((event) => {
+    const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
+    newCopy.text.fontFamily = event.target.value;
+    setSubtitleStyling(newCopy)
+  }, [setSubtitleStyling, subtitleStyling]);
   const fontWeightHandler = useCallback(event => {
     const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
     newCopy.text.weight = parseInt(event.target.value);
@@ -217,6 +223,14 @@ export const StylingBox = ({
       {subtitleName} Show More Space Between Each Token
     </div>}
     <div className={"flex flex-row items-center gap-3"}>
+      Font Family &nbsp;
+      <input
+          className={"p-3 text-black"}
+          value={subtitleStyling.text.fontFamily}
+          onChange={subtitleFontFamilyHandler}
+      />
+    </div>
+    <div className={"flex flex-row items-center gap-3"}>
       <PopoverPicker color={subtitleStyling.text.color} onChange={subtitleTextColorHandler}/>
       {subtitleName} Subtitle Text Color
     </div>
@@ -247,6 +261,7 @@ export const StylingBox = ({
                          onChange={cjkMeaningHoverTextHandler}/>
           {subtitleName} Meaning Hover Text Color
         </div>}
+
     {subtitleName == "CJK" &&
         <div className={"flex w-full justify-center items-center"}>
           Meaning Font Weight <span>{subtitleStyling.textMeaning.weight}</span> &nbsp;
