@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from "react";
 import HanziWriter from "hanzi-writer";
 
 import {AwesomeButton} from "react-awesome-button";
-const QuizDisplay = ({character, mode = 'plain'}) => {
+const QuizDisplay = ({character, mode = 'plain', onAnswer}) => {
   const writingRef = useRef(null);
   const [hanziWriter, setHanziWriter] = useState(null);
   const [changer, setChanger] = useState(0);
@@ -31,6 +31,7 @@ const QuizDisplay = ({character, mode = 'plain'}) => {
           showHintAfterMisses: mode === 'plain' ? 3 : false,
           onComplete: () => {
             console.log('Quiz complete')
+            onAnswer(true);
           },
         }).then(r => console.log(r)).catch(error => {
           console.log(error)
@@ -44,7 +45,7 @@ const QuizDisplay = ({character, mode = 'plain'}) => {
         console.log(e);
       }
     }
-  }, [character, mode, hanziWriter, changer]);
+  }, [character, mode, hanziWriter, changer, onAnswer]);
 
   return (
       <div

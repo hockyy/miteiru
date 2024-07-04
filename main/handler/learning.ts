@@ -181,7 +181,7 @@ class SRSDatabase {
   static db: Level;
 
   static async setup(lang: string) {
-    if (this.srsData.get(lang)) return;
+    if (this.srsData.has(lang)) return;
     for (const key of Object.keys(SkillConstant)) {
       this.learningTrees.set(
           getPair(lang, SkillConstant[key]),
@@ -207,36 +207,26 @@ class SRSDatabase {
     }
   }
 
-  static storeOrUpdate(lang: string, ch: string, srsData: SRSData) {
+  static storeOrUpdateToDB(lang: string, ch: string, srsData: SRSData) {
     this.db.put(`srs/${lang}/${ch}`, srsData.toJSON()).then(r => console.log(r));
   }
 
-  static insertNew(lang: string, character: string) {
+  static storeOrUpdate(lang: string, character: string, srsData?: SRSData) {
     if (!this.srsData.has(lang)) {
       console.warn(`ERROR: srsData ${lang} not initted`)
       return;
     }
 
-    if (this.srsData.get(lang).has(character)) {
+    if (!srsData && this.srsData.get(lang).has(character)) {
       return;
     }
-    const newSrs = new SRSData(character, lang);
-    this.storeOrUpdate(lang, character, newSrs);
-    this.srsData.get(lang).set(character, newSrs);
-  }
 
-  static updateLearningTrees(lang: string, character: string, skillName: SkillConstant, newLevel: number) {
-    const ptrToSRSData = this.srsData.get(lang).get(character);
-    if (!ptrToSRSData) return;
-
-    this.learningTrees.get(getPair(lang, skillName)).erase(ptrToSRSData);
-
-    ptrToSRSData.skills.get(skillName).level = newLevel;
-    ptrToSRSData.skills.get(skillName).lastUpdated = now();
-    ptrToSRSData.lastUpdated = now();
-
-    this.learningTrees.get(getPair(lang, skillName)).insert(ptrToSRSData);
-    this.storeOrUpdate(lang, character, ptrToSRSData);
+    if(!srsData) srsData = new SRSData(character, lang);
+    this.storeOrUpdateToDB(lang, character, srsData);
+    this.srsData.get(lang).set(character, srsData);
+    for(const key of Object.keys(SkillConstant)) {
+      this.learningTrees.get(getPair(lang, SkillConstant[key])).insert(srsData);
+    }
   }
 
   static classicKeyGen(srsData: SRSData, skillType: SkillConstant) {
@@ -252,19 +242,17 @@ class SRSDatabase {
 
     sm2Algorithm(skill, grade);
 
-    this.learningTrees.get(getPair(lang, skillType)).insert(ptrToSRSData);
     this.storeOrUpdate(lang, character, ptrToSRSData);
   }
 
   static getQuestion(lang: string, skillType: SkillConstant, optionNumber: number = 3) {
     const learningTree = this.learningTrees.get(getPair(lang, skillType));
     const treeSize = learningTree.container.size();
+    console.log(treeSize)
     if (treeSize < 1) return null; // Not enough characters to generate a question
-
     const nextCharacter = learningTree.findByOrder(0); // Get the closest character to be learned
     // Ensure optionNumber does not exceed the available distinct characters
     optionNumber = Math.min(optionNumber, treeSize - 1);
-
     let selectedIndices: number[] = []
     if (optionNumber > 100) {
 
@@ -347,7 +335,7 @@ class Learning {
             await this.db.put(key, JSON.stringify(parsedValue));
           }
           if (parsedValue.level) for (const ch of strippedKey) {
-            SRSDatabase.insertNew(lang, ch);
+            SRSDatabase.storeOrUpdate(lang, ch);
           }
           learningState[strippedKey] = parsedValue;
         }
@@ -415,12 +403,23 @@ class Learning {
       }
     });
 
-    ipcMain.handle('getOneQuestion', async (_event, lang, skillType) => {
+    ipcMain.handle('learn-getOneQuestion', async (_event, lang, skillType) => {
       try {
         return SRSDatabase.getQuestion(lang, skillType);
       } catch (error) {
         console.error('Error getting one question:', error);
         return null;
+      }
+    });
+
+    ipcMain.handle('learn-updateOneCharacter', async (_event, skillType, lang, character, isCorrect) => {
+      try {
+        const grade = isCorrect ? 5 : 2; // SM2 grading: 5 for correct, 2 for incorrect
+        SRSDatabase.updateSkillLevel(lang, character, skillType, grade);
+        return true;
+      } catch (error) {
+        console.error('Error updating one character:', error);
+        return false;
       }
     });
   }
