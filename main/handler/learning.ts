@@ -10,9 +10,35 @@ enum SkillConstant {
   Translation,
 }
 
+function sm2Algorithm(skill: Skill, grade: number) {
+  const now = Math.floor(Date.now() / 1000);
+  if (grade >= 3) {
+    if (skill.level === 0) {
+      skill.level = 1;
+      skill.nextReviewTime = now + 24 * 60 * 60; // Review in 1 day
+    } else {
+      skill.level++;
+      const interval = Math.pow(2, skill.level - 1); // Interval doubles each level
+      skill.nextReviewTime = now + interval * 24 * 60 * 60; // Next review time
+    }
+  } else {
+    skill.level = 0;
+    skill.nextReviewTime = now; // Review immediately
+  }
+  skill.lastUpdated = now;
+  return skill;
+}
+
 
 function getPair(lang: string, skill: SkillConstant) {
   return lang + '-' + skill;
+}
+
+// Utility function to generate a random integer between a and b (inclusive)
+function getRange(a: number, b: number): number {
+  const min = Math.ceil(a);
+  const max = Math.floor(b);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 // Utility function to get the current timestamp
@@ -23,11 +49,13 @@ class Skill {
   skillName: string;
   lastUpdated: number;
   level: number;
+  nextReviewTime: number
 
   constructor(name: string) {
     this.skillName = name;
     this.lastUpdated = now();
     this.level = 0;
+    this.nextReviewTime = now();
   }
 
   // Method to convert the instance to a JSON string
@@ -36,24 +64,31 @@ class Skill {
       skillName: this.skillName,
       lastUpdated: this.lastUpdated,
       level: this.level,
+      nextReviewTime: this.nextReviewTime
     };
   }
 
   // Static method to create an instance from a JSON string
-  static fromJSON(obj: { skillName: string; lastUpdated: number; level: number; }) {
+  static fromJSON(obj: {
+    skillName: string;
+    lastUpdated: number;
+    level: number;
+    nextReviewTime: number;
+  }) {
     const skill = new Skill(obj.skillName);
     skill.lastUpdated = obj.lastUpdated;
     skill.level = obj.level;
+    skill.nextReviewTime = obj.nextReviewTime;
     return skill;
   }
 }
 
 class ComparatorKey {
-  value: number;
+  nextReviewTime: number;
   character: string;
 
-  constructor(char: string, skill: Skill) {
-    this.value = skill.lastUpdated;
+  constructor(char: string, nextReview: number) {
+    this.nextReviewTime = nextReview;
     this.character = char;
   }
 }
@@ -104,12 +139,13 @@ class SRSData {
 // OrderedTree Class
 class OrderedTree {
   container: OrderedSet<ComparatorKey>;
-  generateKey: (arg0: SRSData) => ComparatorKey;
+  generateKey: (arg0: SRSData, skillType: SkillConstant) => ComparatorKey;
+  skillSpecific: SkillConstant
 
-  constructor(keyGenerator: (arg0: SRSData) => ComparatorKey) {
-
+  constructor(keyGenerator: (arg0: SRSData, skill: SkillConstant) => ComparatorKey, skill: SkillConstant) {
+    this.skillSpecific = skill;
     this.container = new OrderedSet<ComparatorKey>([], (a: ComparatorKey, b: ComparatorKey) => {
-      if (a.value != b.value) return a.value - b.value;
+      if (a.nextReviewTime != b.nextReviewTime) return a.nextReviewTime - b.nextReviewTime;
       return a.character < b.character ? -1 : 1;
     }, true);
 
@@ -117,15 +153,15 @@ class OrderedTree {
   }
 
   insert(a: SRSData) {
-    this.container.insert(this.generateKey(a));
+    this.container.insert(this.generateKey(a, this.skillSpecific));
   }
 
   erase(a: SRSData) {
-    this.container.eraseElementByKey(this.generateKey(a));
+    this.container.eraseElementByKey(this.generateKey(a, this.skillSpecific));
   }
 
   orderOfKey(srsData: SRSData) {
-    const res = this.container.find(this.generateKey(srsData));
+    const res = this.container.find(this.generateKey(srsData, this.skillSpecific));
     if (res.equals(this.container.end())) return -1;
     return res.index;
   }
@@ -143,12 +179,13 @@ class SRSDatabase {
   // map <lang, map <char, data>>
   static srsData: Map<string, Map<string, SRSData>> = new Map();
   static db: Level;
+
   static async setup(lang: string) {
     if (this.srsData.get(lang)) return;
     for (const key of Object.keys(SkillConstant)) {
       this.learningTrees.set(
           getPair(lang, SkillConstant[key]),
-          new OrderedTree(this.classicKeyGen)
+          new OrderedTree(this.classicKeyGen, SkillConstant[key])
       );
     }
     this.srsData.set(lang, new Map())
@@ -202,10 +239,68 @@ class SRSDatabase {
     this.storeOrUpdate(lang, character, ptrToSRSData);
   }
 
-  static classicKeyGen(srsData: SRSData) {
-    // Example key generator based on lastUpdated
-    return new ComparatorKey(srsData.character, srsData.skills.get(SkillConstant.Writing));
+  static classicKeyGen(srsData: SRSData, skillType: SkillConstant) {
+    return new ComparatorKey(srsData.character, srsData.skills.get(skillType).nextReviewTime);
   }
+
+  static updateSkillLevel(lang: string, character: string, skillType: SkillConstant, grade: number) {
+    const ptrToSRSData = this.srsData.get(lang).get(character);
+    if (!ptrToSRSData) return;
+
+    const skill = ptrToSRSData.skills.get(skillType);
+    this.learningTrees.get(getPair(lang, skillType)).erase(ptrToSRSData);
+
+    sm2Algorithm(skill, grade);
+
+    this.learningTrees.get(getPair(lang, skillType)).insert(ptrToSRSData);
+    this.storeOrUpdate(lang, character, ptrToSRSData);
+  }
+
+  static getQuestion(lang: string, skillType: SkillConstant, optionNumber: number = 3) {
+    const learningTree = this.learningTrees.get(getPair(lang, skillType));
+    const treeSize = learningTree.container.size();
+    if (treeSize < 1) return null; // Not enough characters to generate a question
+
+    const nextCharacter = learningTree.findByOrder(0); // Get the closest character to be learned
+    // Ensure optionNumber does not exceed the available distinct characters
+    optionNumber = Math.min(optionNumber, treeSize - 1);
+
+    let selectedIndices: number[] = []
+    if (optionNumber > 100) {
+
+      // Generate iota from [1, size - 1]
+      const indices = Array.from({length: treeSize - 1}, (_, i) => i + 1);
+
+      // Shuffle the indices
+      for (let i = indices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [indices[i], indices[j]] = [indices[j], indices[i]];
+      }
+
+      // Select the first optionNumber indices
+      selectedIndices = indices.slice(0, optionNumber);
+    } else {
+      for (let i = 0; i < optionNumber; i++) {
+        let currentPicked = getRange(1, treeSize - 1 - i);
+        for (const pre of selectedIndices) {
+          if (currentPicked >= pre) currentPicked++;
+        }
+        selectedIndices.push(currentPicked);
+      }
+    }
+    // Get the corresponding characters
+    const options = [];
+    for (const index of selectedIndices) {
+      const characterAtRandomIndex = learningTree.findByOrder(index);
+      if (characterAtRandomIndex) options.push(characterAtRandomIndex.character);
+    }
+
+    return {
+      question: nextCharacter.character,
+      options: options.sort(() => 0.5 - Math.random()), // Shuffle the options
+    };
+  }
+
 }
 
 
@@ -310,24 +405,22 @@ class Learning {
       }
     });
 
-    ipcMain.handle('getQuestion', async (_event, lang) => {
+    ipcMain.handle('updateSkillLevel', async (_event, lang, character, skillType, grade) => {
       try {
-        const prefix = `srs/${lang}/`;
-        const srsState = {};
-        const queryOptions = {
-          gte: prefix,
-          lte: `${prefix}\uFFFF`,
-        };
-
-        for await (const [key, value] of this.db.iterator(queryOptions)) {
-          const strippedKey = key.substring(prefix.length);
-          srsState[strippedKey] = JSON.parse(value);
-        }
-
-        return srsState;
+        SRSDatabase.updateSkillLevel(lang, character, skillType, grade);
+        return true;
       } catch (error) {
-        console.error('Error loading SRS state:', error);
-        return {};
+        console.error('Error updating skill level:', error);
+        return false;
+      }
+    });
+
+    ipcMain.handle('getOneQuestion', async (_event, lang, skillType) => {
+      try {
+        return SRSDatabase.getQuestion(lang, skillType);
+      } catch (error) {
+        console.error('Error getting one question:', error);
+        return null;
       }
     });
   }
