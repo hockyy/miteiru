@@ -58,7 +58,6 @@ const StyledChineseSentence = styled.button<{ subtitleStyling: CJKStyling }>`
     -webkit-text-fill-color: ${props => props.subtitleStyling.text.color};
   }
 
-
   .state0 {
     -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[0].color};
   }

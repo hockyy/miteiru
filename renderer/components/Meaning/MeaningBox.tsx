@@ -11,7 +11,11 @@ import {videoConstants} from "../../utils/constants";
 import MakeMeAHanziDisplay from "./MakeMeAHanziDisplay";
 import QuizDisplay from "./QuizDisplay";
 
-const initialContentState = {id: "", sense: [], single: []};
+const initialContentState = {
+  id: "",
+  sense: [],
+  single: []
+};
 const initialCharacterContentState = {literal: null};
 
 const MeaningBox = ({
@@ -20,7 +24,13 @@ const MeaningBox = ({
                       tokenizeMiteiru,
                       subtitleStyling = defaultMeaningBoxStyling,
                       lang
-                    }: { meaning: string, setMeaning: any, tokenizeMiteiru: (value: string) => Promise<any[]>, subtitleStyling?: CJKStyling, lang: string }) => {
+                    }: {
+  meaning: string,
+  setMeaning: any,
+  tokenizeMiteiru: (value: string) => Promise<any[]>,
+  subtitleStyling?: CJKStyling,
+  lang: string
+}) => {
   const [meaningContent, setMeaningContent] = useState(initialContentState)
   const [meaningCharacter, setMeaningCharacter] = useState(initialCharacterContentState)
   const [otherMeanings, setOtherMeanings] = useState([]);
@@ -35,13 +45,19 @@ const MeaningBox = ({
     if (meaning.length === 1 && lang === videoConstants.japaneseLang && isKanji(meaning)) {
       ipcRenderer.invoke("queryKanji", meaning).then(result => {
         ipcRenderer.invoke("getWaniKanji", meaning).then(waniResult => {
-          setMeaningCharacter({...result, wanikani: waniResult});
+          setMeaningCharacter({
+            ...result,
+            wanikani: waniResult
+          });
         })
       })
     } else if (meaning.length === 1 &&
         (lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang)) {
       ipcRenderer.invoke("queryHanzi", meaning).then(result => {
-        setMeaningCharacter({...result, literal: meaning[0]});
+        setMeaningCharacter({
+          ...result,
+          literal: meaning[0]
+        });
       })
     } else {
       setMeaningCharacter(initialCharacterContentState);
@@ -150,7 +166,10 @@ const MeaningBox = ({
                 fontFamily: "Arial",
                 fontSize: "40px",
               }}>
-                {romajiedData.map(({key, romajied}) => {
+                {romajiedData.map(({
+                                     key,
+                                     romajied
+                                   }) => {
                   const queryText = romajied.reduce((accumulator, nextValue) => {
                     return accumulator + nextValue.origin
                   }, "")
@@ -281,10 +300,16 @@ const MeaningMnemonics = ({content}) => {
       // Add tagged content
       if (tag === 'radical') {
         parts.push(<span key={index}
-                         style={{fontWeight: 'bold', color: '#3B82F6'}}>{innerContent}</span>);
+                         style={{
+                           fontWeight: 'bold',
+                           color: '#3B82F6'
+                         }}>{innerContent}</span>);
       } else if (tag === 'kanji') {
         parts.push(<span key={index}
-                         style={{fontWeight: 'bold', color: '#000000'}}>{innerContent}</span>);
+                         style={{
+                           fontWeight: 'bold',
+                           color: '#000000'
+                         }}>{innerContent}</span>);
       }
 
       lastIndex = index + fullMatch.length;
@@ -375,7 +400,11 @@ const kanjiBoxEntry = (meaningKanji) => {
 }
 
 
-const HanziBoxEntry = ({meaningHanzi, setMeaning, subtitleStyling}) => {
+const HanziBoxEntry = ({
+                         meaningHanzi,
+                         setMeaning,
+                         subtitleStyling
+                       }) => {
   const bubbleBox = [
     `CantoDict ${meaningHanzi.cantodict_id}`,
     meaningHanzi.dialect ? `${meaningHanzi.dialect} dialect` : '',
@@ -463,7 +492,8 @@ const HanziBoxEntry = ({meaningHanzi, setMeaning, subtitleStyling}) => {
       </div>
     </div>
     <div className={'flex flex-row m-3'}>
-      <QuizDisplay character={meaningHanzi.literal}/>
+      <QuizDisplay character={meaningHanzi.literal} onAnswer={() => {
+      }}/>
     </div>
   </div>
 }
@@ -539,7 +569,12 @@ const meaningBoxEntryChinese = (meaningContent) => {
   </div>
 }
 
-const ExternalLink = ({urlBase, displayText, query, style = {}}) => {
+const ExternalLink = ({
+                        urlBase,
+                        displayText,
+                        query,
+                        style = {}
+                      }) => {
   const handleClick = (event) => {
     event.preventDefault();
     shell.openExternal(`${urlBase}${query}`);

@@ -48,7 +48,7 @@ const SRS = () => {
   }, [lang]);
 
   useEffect(() => {
-    fetchQuestion().then(r => console.log("OK"));
+    fetchQuestion().then(() => console.log("OK"));
   }, [fetchQuestion]);
 
   const handleAnswer = async (isCorrect: boolean) => {
