@@ -146,7 +146,8 @@ class OrderedTree {
     this.skillSpecific = skill;
     this.container = new OrderedSet<ComparatorKey>([], (a: ComparatorKey, b: ComparatorKey) => {
       if (a.nextReviewTime != b.nextReviewTime) return a.nextReviewTime - b.nextReviewTime;
-      return a.character < b.character ? -1 : 1;
+      if (a.character != b.character) return a.character < b.character ? -1 : 1;
+      return 0;
     }, true);
 
     this.generateKey = keyGenerator;
@@ -157,7 +158,9 @@ class OrderedTree {
   }
 
   erase(a: SRSData) {
-    this.container.eraseElementByKey(this.generateKey(a, this.skillSpecific));
+    console.log("Trying to delete ", this.generateKey(a, this.skillSpecific))
+    const deleted = this.container.eraseElementByKey(this.generateKey(a, this.skillSpecific));
+    console.log(deleted)
   }
 
   orderOfKey(srsData: SRSData) {
@@ -181,15 +184,21 @@ class SRSDatabase {
   static db: Level;
 
   static async setup(lang: string) {
-    if (this.srsData.has(lang)) return;
-    for (const key of Object.keys(SkillConstant)) {
-      this.learningTrees.set(
-          getPair(lang, SkillConstant[key]),
-          new OrderedTree(this.classicKeyGen, SkillConstant[key])
-      );
+    console.log("here")
+    if (!this.srsData.has(lang)) {
+      for (const key of Object.keys(SkillConstant)) {
+        this.learningTrees.set(
+            getPair(lang, SkillConstant[key]),
+            new OrderedTree(this.classicKeyGen, SkillConstant[key])
+        );
+      }
+      this.srsData.set(lang, new Map())
     }
-    this.srsData.set(lang, new Map())
-    return SRSDatabase.loadSRS(lang);
+    console.log(this.srsData.get(lang).size)
+    if (!this.srsData.get(lang).size) {
+      console.log("0?")
+      return SRSDatabase.loadSRS(lang);
+    }
   }
 
   static async loadSRS(lang: string) {
@@ -216,15 +225,16 @@ class SRSDatabase {
       console.warn(`ERROR: srsData ${lang} not initted`)
       return;
     }
-
+    console.log(srsData, character)
     if (!srsData && this.srsData.get(lang).has(character)) {
-      return;
+      srsData = this.srsData.get(lang).get(character)
     }
+    console.log("OK")
 
-    if(!srsData) srsData = new SRSData(character, lang);
+    if (!srsData) srsData = new SRSData(character, lang);
     this.storeOrUpdateToDB(lang, character, srsData);
     this.srsData.get(lang).set(character, srsData);
-    for(const key of Object.keys(SkillConstant)) {
+    for (const key of Object.keys(SkillConstant)) {
       this.learningTrees.get(getPair(lang, SkillConstant[key])).insert(srsData);
     }
   }
@@ -239,8 +249,10 @@ class SRSDatabase {
 
     const skill = ptrToSRSData.skills.get(skillType);
     this.learningTrees.get(getPair(lang, skillType)).erase(ptrToSRSData);
-
+    this.srsData.get(lang).delete(character);
+    console.log(ptrToSRSData.toJSON())
     sm2Algorithm(skill, grade);
+    console.log(ptrToSRSData.toJSON())
 
     this.storeOrUpdate(lang, character, ptrToSRSData);
   }
@@ -248,7 +260,7 @@ class SRSDatabase {
   static getQuestion(lang: string, skillType: SkillConstant, optionNumber: number = 3) {
     const learningTree = this.learningTrees.get(getPair(lang, skillType));
     const treeSize = learningTree.container.size();
-    console.log(treeSize)
+    console.log(skillType, "tree", treeSize)
     if (treeSize < 1) return null; // Not enough characters to generate a question
     const nextCharacter = learningTree.findByOrder(0); // Get the closest character to be learned
     // Ensure optionNumber does not exceed the available distinct characters
@@ -413,7 +425,9 @@ class Learning {
     });
 
     ipcMain.handle('learn-updateOneCharacter', async (_event, skillType, lang, character, isCorrect) => {
+      console.log(">>>>>>")
       try {
+        console.log("Updated")
         const grade = isCorrect ? 5 : 2; // SM2 grading: 5 for correct, 2 for incorrect
         SRSDatabase.updateSkillLevel(lang, character, skillType, grade);
         return true;

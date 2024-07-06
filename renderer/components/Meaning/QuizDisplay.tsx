@@ -61,7 +61,8 @@ const QuizDisplay = ({character, mode = 'plain', onAnswer}) => {
           setChanger(old => {
             return old + 1;
           })
-        }}>Repeat Quiz</AwesomeButton>
+        }}>Reset</AwesomeButton>
+
       </div>
   );
 }
