@@ -10,6 +10,7 @@ import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
 import {LearningSidebar} from "../components/VideoPlayer/LearningSidebar";
 import {defaultLearningStyling} from "../utils/CJKStyling";
 import {useStoreData} from "../hooks/useStoreData";
+import {AwesomeButton} from "react-awesome-button";
 
 // Define the types
 enum SkillConstant {
@@ -30,7 +31,6 @@ const SRS = () => {
   } = useMiteiruTokenizer();
   const [showSidebar, setShowSidebar] = useState(0);
   useLearningKeyBind(setMeaning, setShowSidebar, undo);
-
   const [mode, setMode] = useState("help");
   const [questionData, setQuestionData] = useState<{
     question: string;
@@ -51,18 +51,20 @@ const SRS = () => {
     fetchQuestion().then(() => console.log("OK"));
   }, [fetchQuestion]);
 
-  const handleAnswer = async (isCorrect: boolean) => {
-    if (questionData) {
-      await ipcRenderer.invoke(
-          "learn-updateOneCharacter",
-          SkillConstant.Writing,
-          lang,
-          questionData.question,
-          isCorrect
-      );
-      fetchQuestion(); // Fetch the next question
-    }
-  };
+  const handleAnswer = useCallback(async (isCorrect: boolean) => {
+    console.log("OK correct", isCorrect)
+    await ipcRenderer.invoke(
+        "learn-updateOneCharacter",
+        SkillConstant.Writing,
+        lang,
+        questionData ? questionData.question : '',
+        isCorrect
+    );
+    fetchQuestion(); // Fetch the next question
+  }, [fetchQuestion, lang, questionData]);
+  const nextQuestionHandler = useCallback(() => {
+    handleAnswer(false);
+  }, [handleAnswer])
 
   const handleModeChange = useCallback((newMode: string) => {
     setMode(newMode);
@@ -97,6 +99,8 @@ const SRS = () => {
                 />
               </div>
           )}
+          <AwesomeButton type={'primary'} onPress={nextQuestionHandler}>Next
+            Question</AwesomeButton>
           <LearningSidebar
               showSidebar={showSidebar}
               setShowSidebar={setShowSidebar}
