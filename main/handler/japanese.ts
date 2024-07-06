@@ -146,7 +146,6 @@ class Japanese {
       return (this.waniradical[radicalSlug]);
     });
 
-
     ipcMain.handle('readKanjiSVG', async (event, filename) => {
       const kanjiFilePath = path.join(this.importBaseSVG, `${filename}`);
       try {

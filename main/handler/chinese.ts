@@ -14,6 +14,13 @@ class Chinese {
   static importBaseSVG: string;
   static pyshell
 
+  static queryHanziChinese = async (query) => {
+    try {
+      return (await hanzi(this.Dict.db, query, 1))[0];
+    } catch (e) {
+      return {}
+    }
+  }
 
   static getMandarinSettings = (appDataDirectory, replacements: any = {}) => {
     return {
@@ -117,7 +124,7 @@ class Chinese {
 
     ipcMain.handle('queryHanzi', async (event, query) => {
       try {
-        return (await hanzi(this.Dict.db, query, 1))[0];
+        return this.queryHanziChinese(query);
       } catch (e) {
         return {}
       }

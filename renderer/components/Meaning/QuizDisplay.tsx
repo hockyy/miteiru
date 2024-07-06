@@ -2,6 +2,7 @@ import React, {useEffect, useRef, useState} from "react";
 import HanziWriter from "hanzi-writer";
 
 import {AwesomeButton} from "react-awesome-button";
+import chinese from "../../../main/handler/chinese";
 const QuizDisplay = ({character, mode = 'plain', onAnswer}) => {
   const writingRef = useRef(null);
   const [hanziWriter, setHanziWriter] = useState(null);
@@ -23,10 +24,11 @@ const QuizDisplay = ({character, mode = 'plain', onAnswer}) => {
     }
   }, [hanziWriter]);
   useEffect(() => {
-    if (writingRef.current && hanziWriter && character.length === 1) {
+    console.log(character)
+    if (writingRef.current && hanziWriter && character && character.content.length === 1) {
       try {
         hanziWriter.cancelQuiz();
-        hanziWriter.setCharacter(character);
+        hanziWriter.setCharacter(character.content);
         hanziWriter.quiz({
           showHintAfterMisses: mode === 'plain' ? 3 : false,
           onComplete: () => {
