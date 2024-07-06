@@ -31,9 +31,9 @@ const SRS = () => {
   } = useMiteiruTokenizer();
   const [showSidebar, setShowSidebar] = useState(0);
   useLearningKeyBind(setMeaning, setShowSidebar, undo);
-  const [mode, setMode] = useState("help");
+  const [mode,] = useState("plain");
   const [questionData, setQuestionData] = useState<{
-    question: string;
+    question: any;
     options: string[]
   } | null>(null);
   const [primaryStyling, setPrimaryStyling] = useStoreData(
@@ -57,7 +57,7 @@ const SRS = () => {
         "learn-updateOneCharacter",
         SkillConstant.Writing,
         lang,
-        questionData ? questionData.question : '',
+        questionData.question ? questionData.question.content : '',
         isCorrect
     );
     fetchQuestion(); // Fetch the next question
@@ -66,9 +66,9 @@ const SRS = () => {
     handleAnswer(false);
   }, [handleAnswer])
 
-  const handleModeChange = useCallback((newMode: string) => {
-    setMode(newMode);
-  }, []);
+  // const handleModeChange = useCallback((newMode: string) => {
+  //   setMode(newMode);
+  // }, []);
 
   return (
       <React.Fragment>
@@ -76,19 +76,19 @@ const SRS = () => {
           <title>SRS</title>
         </Head>
         <div
-            className="flex flex-col items-center justify-center bg-blue-50 text-black min-h-screen p-6">
+            className="flex flex-col items-center justify-center bg-blue-50 text-black min-h-screen p-6 gap-3">
           <MeaningBox lang={lang} meaning={meaning} setMeaning={setMeaning}
                       tokenizeMiteiru={tokenizeMiteiru}/>
-          <h1 className="text-3xl font-bold mb-6">Hanzi/Kanji Practice</h1>
+          <h1 className="text-3xl font-bold mb-6">SRS</h1>
           <div className="mb-4 flex items-center gap-4">
-            <label className="flex items-center gap-2">
-              Mode:
-              <select value={mode} onChange={(e) => handleModeChange(e.target.value)}
-                      className="border p-2 rounded-md">
-                <option value="help">Help</option>
-                <option value="plain">Plain</option>
-              </select>
-            </label>
+            {/*<label className="flex items-center gap-2">*/}
+            {/*Mode:*/}
+            {/*<select value={mode} onChange={(e) => handleModeChange(e.target.value)}*/}
+            {/*        className="border p-2 rounded-md">*/}
+            {/*  <option value="help">Help</option>*/}
+            {/*  <option value="plain">Plain</option>*/}
+            {/*</select>*/}
+            {/*</label>*/}
           </div>
           {questionData && (
               <div className="w-full flex justify-center">
