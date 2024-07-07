@@ -28,7 +28,6 @@ const QuizDisplay = ({
     }
   }, [hanziWriter]);
   useEffect(() => {
-    console.log(character)
     if (writingRef.current && hanziWriter && character && character.content.length === 1) {
       try {
         hanziWriter.cancelQuiz();
@@ -36,10 +35,9 @@ const QuizDisplay = ({
         hanziWriter.quiz({
           showHintAfterMisses: mode === 'plain' ? 3 : false,
           onComplete: () => {
-            console.log('Quiz complete')
             onAnswer(true);
           },
-        }).then(r => console.log(r)).catch(error => {
+        }).catch(error => {
           console.log(error)
         });
         if (mode === 'help') {

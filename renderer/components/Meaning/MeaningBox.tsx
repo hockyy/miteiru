@@ -491,10 +491,6 @@ const HanziBoxEntry = ({
         <hr/>
       </div>
     </div>
-    <div className={'flex flex-row m-3'}>
-      <QuizDisplay character={meaningHanzi.literal} onAnswer={() => {
-      }}/>
-    </div>
   </div>
 }
 
