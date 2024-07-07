@@ -2,8 +2,12 @@ import React, {useEffect, useRef, useState} from "react";
 import HanziWriter from "hanzi-writer";
 
 import {AwesomeButton} from "react-awesome-button";
-import chinese from "../../../main/handler/chinese";
-const QuizDisplay = ({character, mode = 'plain', onAnswer}) => {
+
+const QuizDisplay = ({
+                       character,
+                       mode = 'plain',
+                       onAnswer
+                     }) => {
   const writingRef = useRef(null);
   const [hanziWriter, setHanziWriter] = useState(null);
   const [changer, setChanger] = useState(0);
