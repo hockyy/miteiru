@@ -43,7 +43,6 @@ const SRS = () => {
 
   const fetchQuestion = useCallback(async () => {
     const question = await ipcRenderer.invoke("learn-getOneQuestion", lang, SkillConstant.Writing, 0);
-    console.log(question)
     setQuestionData(question);
   }, [lang]);
 
@@ -52,7 +51,6 @@ const SRS = () => {
   }, [fetchQuestion]);
 
   const handleAnswer = useCallback(async (isCorrect: boolean) => {
-    console.log("OK correct", isCorrect)
     await ipcRenderer.invoke(
         "learn-updateOneCharacter",
         SkillConstant.Writing,

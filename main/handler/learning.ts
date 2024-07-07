@@ -16,11 +16,6 @@ enum ExamModeConstant {
   Review,
 }
 
-function printDate(epoch: number) {
-   // The 0 there is the key, which sets the date to the epoch
-  return new Date(epoch * 1000);
-}
-
 function sm2Algorithm(skill: Skill, grade: number) {
   const now = Math.floor(Date.now() / 1000);
   if (grade >= 3) {
@@ -66,7 +61,6 @@ class Skill {
 
   // Method to convert the instance to a JSON string
   toJSON() {
-    console.log(printDate(this.lastUpdated));
     return {
       skillName: this.skillName,
       lastUpdated: this.lastUpdated,
@@ -165,9 +159,7 @@ class OrderedTree {
   }
 
   erase(a: SRSData) {
-    console.log("Trying to delete ", this.generateKey(a, this.skillSpecific))
-    const deleted = this.container.eraseElementByKey(this.generateKey(a, this.skillSpecific));
-    console.log(deleted)
+    this.container.eraseElementByKey(this.generateKey(a, this.skillSpecific));
   }
 
   orderOfKey(srsData: SRSData) {
@@ -191,7 +183,6 @@ class SRSDatabase {
   static db: Level;
 
   static async setup(lang: string) {
-    console.log("here")
     if (!this.srsData.has(lang)) {
       for (const key of Object.keys(SkillConstant)) {
         this.learningTrees.set(
@@ -201,9 +192,7 @@ class SRSDatabase {
       }
       this.srsData.set(lang, new Map())
     }
-    console.log(this.srsData.get(lang).size)
     if (!this.srsData.get(lang).size) {
-      console.log("0?")
       return SRSDatabase.loadSRS(lang);
     }
   }
@@ -224,7 +213,7 @@ class SRSDatabase {
   }
 
   static storeOrUpdateToDB(lang: string, ch: string, srsData: SRSData) {
-    this.db.put(`srs/${lang}/${ch}`, srsData.toJSON()).then(r => console.log(r));
+    this.db.put(`srs/${lang}/${ch}`, srsData.toJSON());
   }
 
   static storeOrUpdate(lang: string, character: string, srsData?: SRSData) {
@@ -232,11 +221,9 @@ class SRSDatabase {
       console.warn(`ERROR: srsData ${lang} not initted`)
       return;
     }
-    console.log(srsData, character)
     if (!srsData && this.srsData.get(lang).has(character)) {
       srsData = this.srsData.get(lang).get(character)
     }
-    console.log("OK")
 
     if (!srsData) srsData = new SRSData(character, lang);
     this.storeOrUpdateToDB(lang, character, srsData);
@@ -257,10 +244,7 @@ class SRSDatabase {
     const skill = ptrToSRSData.skills.get(skillType);
     this.learningTrees.get(getPair(lang, skillType)).erase(ptrToSRSData);
     this.srsData.get(lang).delete(character);
-    console.log(ptrToSRSData.toJSON())
     sm2Algorithm(skill, grade);
-    console.log(ptrToSRSData.toJSON())
-
     this.storeOrUpdate(lang, character, ptrToSRSData);
   }
 
