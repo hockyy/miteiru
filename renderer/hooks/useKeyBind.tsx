@@ -25,7 +25,7 @@ export default function useKeyBind(
   const router = useRouter();
   useEffect(() => {
     const handleKeyPress = async (event) => {
-      if (event.code === "KeyQ") {
+      if (event.code === "KeyH") {
         setMeaning("");
         if (event.ctrlKey) await router.push('/home');
       } else if (event.code === "KeyL") {
@@ -63,9 +63,6 @@ export default function useKeyBind(
         }
       } else if (event.code === "Escape") {
         undo();
-      } else if (event.code === "Space") {
-        event.preventDefault();
-        event.stopPropagation();
       } else if (event.code === "KeyG") {
         openGoogleTranslate();
       } else if (event.code === "KeyT") {

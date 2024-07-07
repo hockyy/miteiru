@@ -1,6 +1,6 @@
 const shortcutInformation = [
   {
-    key: "⎵",
+    key: "E",
     description: "Toggle Pause"
   }, {
     key: "Z",
@@ -9,7 +9,7 @@ const shortcutInformation = [
     key: "X",
     description: "Toggle Sidebar"
   }, {
-    key: "Q",
+    key: "Ctrl + H",
     description: "Back to Home"
   }, {
     key: "Esc",
@@ -23,6 +23,9 @@ const shortcutInformation = [
   }, {
     key: "Y",
     description: "Toggle Show Transliterations"
+  }, {
+    key: "A",
+    description: "Reload Subtitle"
   }, {
     key: "O",
     description: "Toggle Show CJK Subtitle"
@@ -42,7 +45,10 @@ const shortcutInformation = [
     key: "Ctrl + P",
     description: "Remove Other/Secondary Subtitle"
   }, {
-    key: "L",
+    key: "Ctrl + L",
+    description: "Toggle SRS Mode"
+  }, {
+    key: "Ctrl + Shift + L",
     description: "Toggle Learning Mode"
   }, {
     key: "[",
