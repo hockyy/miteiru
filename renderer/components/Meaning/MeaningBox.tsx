@@ -9,7 +9,6 @@ import KanjiVGDisplay from "./KanjiVGDisplay";
 import WanikaniRadicalDisplay from "./WanikaniRadicalDisplay";
 import {videoConstants} from "../../utils/constants";
 import MakeMeAHanziDisplay from "./MakeMeAHanziDisplay";
-import QuizDisplay from "./QuizDisplay";
 
 const initialContentState = {
   id: "",
