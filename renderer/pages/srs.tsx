@@ -11,7 +11,7 @@ import {defaultLearningStyling} from "../utils/CJKStyling";
 import {useStoreData} from "../hooks/useStoreData";
 import {AwesomeButton} from "react-awesome-button";
 import {
-  MultipleChoiceQuizDisplay,
+  ConveyanceQuizDisplay, ReadingQuizDisplay,
   WritingQuizDisplay
 } from "../components/Meaning/QuizDisplay";
 import {learningConstants} from "../utils/constants";
@@ -20,8 +20,11 @@ import {learningConstants} from "../utils/constants";
 enum SkillConstant {
   Writing,
   Conveyance,
+  Reading,
   Translation,
 }
+
+const usedQuestion = 3;
 
 const SRS = () => {
   const {
@@ -56,7 +59,7 @@ const SRS = () => {
 
   useEffect(() => {
     if (questionCounter == 0) {
-      fetchQuestion(questionCounter % 2).then(r => {
+      fetchQuestion(questionCounter % usedQuestion).then(r => {
         console.log(r)
       });
     }
@@ -70,7 +73,7 @@ const SRS = () => {
         questionData.correct ? questionData.correct.content : '',
         score
     );
-    await fetchQuestion(questionCounter % 2); // Fetch the next question
+    await fetchQuestion(questionCounter % usedQuestion); // Fetch the next question
     setQuestionCounter(questionCounter + 1);
   }, [fetchQuestion, lang, questionCounter, questionData]);
   const nextQuestionHandler = useCallback(() => {
@@ -102,7 +105,15 @@ const SRS = () => {
           )}
           {questionData && questionData.skillType === 1 && (
               <div className="w-full flex justify-center">
-                <MultipleChoiceQuizDisplay
+                <ConveyanceQuizDisplay
+                    questionData={questionData}
+                    onAnswer={handleAnswer}
+                />
+              </div>
+          )}
+          {questionData && questionData.skillType === 2 && (
+              <div className="w-full flex justify-center">
+                <ReadingQuizDisplay
                     questionData={questionData}
                     onAnswer={handleAnswer}
                 />
