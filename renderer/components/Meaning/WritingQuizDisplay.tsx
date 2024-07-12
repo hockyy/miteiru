@@ -3,11 +3,11 @@ import HanziWriter from "hanzi-writer";
 
 import {AwesomeButton} from "react-awesome-button";
 
-const QuizDisplay = ({
-                       character,
-                       mode = 'plain',
-                       onAnswer
-                     }) => {
+const WritingQuizDisplay = ({
+                              character,
+                              mode = 'plain',
+                              onAnswer
+                            }) => {
   const writingRef = useRef(null);
   const [hanziWriter, setHanziWriter] = useState(null);
   const [changer, setChanger] = useState(0);
@@ -70,5 +70,29 @@ const QuizDisplay = ({
       </div>
   );
 }
+const MultipleChoiceQuizDisplay = ({questionData, onAnswer}) => {
+  const handleOptionClick = (optionContent) => {
+    const isCorrect = optionContent === questionData.question.correct.content;
+    onAnswer(isCorrect);
+  };
 
-export default QuizDisplay;
+  return (
+      <div
+          className="flex flex-col w-[350px] h-[430px] p-4 gap-4 justify-center items-center border-2 border-gray-300 rounded-md">
+        <h2 className="text-2xl font-bold mb-4">Identify the correct character</h2>
+        <div className="flex flex-col gap-2 w-full">
+          {questionData.options.map((option, index) => (
+              <AwesomeButton key={index} type="primary"
+                             onPress={() => handleOptionClick(option.content)}>
+                {option.content}
+              </AwesomeButton>
+          ))}
+        </div>
+      </div>
+  );
+};
+
+export {MultipleChoiceQuizDisplay};
+
+export {WritingQuizDisplay};
+

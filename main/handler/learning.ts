@@ -251,7 +251,6 @@ class SRSDatabase {
   static async getQuestion(lang: string, skillType: SkillConstant, optionNumber: number = 3) {
     const learningTree = this.learningTrees.get(getPair(lang, skillType));
     const treeSize = learningTree.container.size();
-    console.log(skillType, "tree", treeSize)
     if (treeSize < 1) return null; // Not enough characters to generate a question
     const nextCharacter = learningTree.findByOrder(0); // Get the closest character to be learned
     let mode = ExamModeConstant.Exam;
@@ -282,18 +281,22 @@ class SRSDatabase {
       }
     }
     // Get the corresponding characters
-    let options = [];
+    const correct = await Chinese.queryHanziChinese(nextCharacter.character);
+    let options = [correct];
     for (const index of selectedIndices) {
       const characterAtRandomIndex = learningTree.findByOrder(index);
       if (characterAtRandomIndex) options.push(await Chinese.queryHanziChinese(characterAtRandomIndex.character));
     }
     options = options.sort(() => 0.5 - Math.random());
-    return {
+    const res = {
       // TODO: Change this to other languages
-      question: await Chinese.queryHanziChinese(nextCharacter.character),
+      question: "",
+      correct,
       options,
       mode
     };
+    console.log(res)
+    return res;
   }
 
 }
@@ -419,9 +422,7 @@ class Learning {
     });
 
     ipcMain.handle('learn-updateOneCharacter', async (_event, skillType, lang, character, isCorrect) => {
-      console.log(">>>>>>")
       try {
-        console.log("Updated")
         const grade = isCorrect ? 5 : 2; // SM2 grading: 5 for correct, 2 for incorrect
         SRSDatabase.updateSkillLevel(lang, character, skillType, grade);
         return true;

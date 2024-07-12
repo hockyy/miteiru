@@ -1,6 +1,5 @@
 import React, {useCallback, useEffect, useState} from "react";
 import {ipcRenderer} from "electron";
-import QuizDisplay from "../components/Meaning/QuizDisplay";
 import "react-awesome-button/dist/styles.css";
 import Head from "next/head";
 import useMeaning from "../hooks/useMeaning";
@@ -11,6 +10,10 @@ import {LearningSidebar} from "../components/VideoPlayer/LearningSidebar";
 import {defaultLearningStyling} from "../utils/CJKStyling";
 import {useStoreData} from "../hooks/useStoreData";
 import {AwesomeButton} from "react-awesome-button";
+import {
+  MultipleChoiceQuizDisplay,
+  WritingQuizDisplay
+} from "../components/Meaning/WritingQuizDisplay";
 
 // Define the types
 enum SkillConstant {
@@ -34,7 +37,9 @@ const SRS = () => {
   const [mode,] = useState("plain");
   const [questionData, setQuestionData] = useState<{
     question: any;
-    options: string[]
+    correct: any;
+    options: any[];
+    mode: number;
   } | null>(null);
   const [primaryStyling, setPrimaryStyling] = useStoreData(
       "user.styling.learning",
@@ -47,7 +52,9 @@ const SRS = () => {
   }, [lang]);
 
   useEffect(() => {
-    fetchQuestion().then(() => console.log("OK"));
+    fetchQuestion().then(r => {
+      console.log(r)
+    });
   }, [fetchQuestion]);
 
   const handleAnswer = useCallback(async (isCorrect: boolean) => {
@@ -55,7 +62,7 @@ const SRS = () => {
         "learn-updateOneCharacter",
         SkillConstant.Writing,
         lang,
-        questionData.question ? questionData.question.content : '',
+        questionData.correct ? questionData.correct.content : '',
         isCorrect
     );
     fetchQuestion(); // Fetch the next question
@@ -88,12 +95,21 @@ const SRS = () => {
             {/*</select>*/}
             {/*</label>*/}
           </div>
-          {questionData && (
+          {questionData && questionData.mode === 1 && (
               <div className="w-full flex justify-center">
-                <QuizDisplay
-                    character={questionData.question}
+                <WritingQuizDisplay
+                    character={questionData.correct}
                     onAnswer={handleAnswer}
                     mode={mode}
+                />
+              </div>
+          )}
+
+          {questionData && questionData.mode === 0 && (
+              <div className="w-full flex justify-center">
+                <MultipleChoiceQuizDisplay
+                    questionData={questionData}
+                    onAnswer={handleAnswer}
                 />
               </div>
           )}
