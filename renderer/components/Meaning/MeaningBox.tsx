@@ -398,7 +398,6 @@ const kanjiBoxEntry = (meaningKanji) => {
   </div>
 }
 
-
 const HanziBoxEntry = ({
                          meaningHanzi,
                          setMeaning,

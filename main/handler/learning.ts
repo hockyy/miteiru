@@ -42,6 +42,26 @@ function getRange(a: number, b: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+function epochToLocalDate(epochTimestamp: number): string {
+  // Convert epoch to milliseconds
+  const date = new Date(epochTimestamp * 1000);
+
+  // Options for date formatting
+  const options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+    timeZoneName: 'short'
+  };
+
+  // Convert to local date string
+  return date.toLocaleString('en-US', options);
+}
+
 // Utility function to get the current timestamp
 const now = () => Math.floor(Date.now() / 1000);
 
@@ -244,7 +264,9 @@ class SRSDatabase {
     const skill = ptrToSRSData.skills.get(skillType);
     this.learningTrees.get(getPair(lang, skillType)).erase(ptrToSRSData);
     this.srsData.get(lang).delete(character);
+    console.log(`Updated ${character} from ${epochToLocalDate(skill.lastUpdated)}`)
     sm2Algorithm(skill, grade);
+    console.log(`Updated ${character} to ${epochToLocalDate(skill.lastUpdated)}`)
     this.storeOrUpdate(lang, character, ptrToSRSData);
   }
 
@@ -288,15 +310,13 @@ class SRSDatabase {
       if (characterAtRandomIndex) options.push(await Chinese.queryHanziChinese(characterAtRandomIndex.character));
     }
     options = options.sort(() => 0.5 - Math.random());
-    const res = {
+    return {
       // TODO: Change this to other languages
       question: "",
       correct,
       options,
       mode
     };
-    console.log(res)
-    return res;
   }
 
 }
@@ -414,16 +434,16 @@ class Learning {
 
     ipcMain.handle('learn-getOneQuestion', async (_event, lang, skillType) => {
       try {
-        return await SRSDatabase.getQuestion(lang, skillType);
+        return {...(await SRSDatabase.getQuestion(lang, skillType)), skillType};
       } catch (error) {
         console.error('Error getting one question:', error);
         return null;
       }
     });
 
-    ipcMain.handle('learn-updateOneCharacter', async (_event, skillType, lang, character, isCorrect) => {
+    ipcMain.handle('learn-updateOneCharacter', async (_event, skillType, lang, character, grade) => {
+      console.log(skillType, lang, character, grade)
       try {
-        const grade = isCorrect ? 5 : 2; // SM2 grading: 5 for correct, 2 for incorrect
         SRSDatabase.updateSkillLevel(lang, character, skillType, grade);
         return true;
       } catch (error) {

@@ -23,3 +23,8 @@ export const videoConstants = {
   },
   learningStateLength: 3
 }
+
+export const learningConstants = {
+  scoreCorrect: 5,
+  scoreWrong: 2
+}

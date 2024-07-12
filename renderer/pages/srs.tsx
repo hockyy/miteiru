@@ -13,7 +13,8 @@ import {AwesomeButton} from "react-awesome-button";
 import {
   MultipleChoiceQuizDisplay,
   WritingQuizDisplay
-} from "../components/Meaning/WritingQuizDisplay";
+} from "../components/Meaning/QuizDisplay";
+import {learningConstants} from "../utils/constants";
 
 // Define the types
 enum SkillConstant {
@@ -35,40 +36,45 @@ const SRS = () => {
   const [showSidebar, setShowSidebar] = useState(0);
   useLearningKeyBind(setMeaning, setShowSidebar, undo);
   const [mode,] = useState("plain");
+  const [questionCounter, setQuestionCounter] = useState(0);
   const [questionData, setQuestionData] = useState<{
     question: any;
     correct: any;
     options: any[];
     mode: number;
+    skillType: number;
   } | null>(null);
   const [primaryStyling, setPrimaryStyling] = useStoreData(
       "user.styling.learning",
       defaultLearningStyling
   );
 
-  const fetchQuestion = useCallback(async () => {
-    const question = await ipcRenderer.invoke("learn-getOneQuestion", lang, SkillConstant.Writing, 0);
+  const fetchQuestion = useCallback(async (kind:number) => {
+    const question = await ipcRenderer.invoke("learn-getOneQuestion", lang, kind);
     setQuestionData(question);
   }, [lang]);
 
   useEffect(() => {
-    fetchQuestion().then(r => {
-      console.log(r)
-    });
-  }, [fetchQuestion]);
+    if (questionCounter == 0) {
+      fetchQuestion(questionCounter % 2).then(r => {
+        console.log(r)
+      });
+    }
+  }, [fetchQuestion, questionCounter]);
 
-  const handleAnswer = useCallback(async (isCorrect: boolean) => {
+  const handleAnswer = useCallback(async (score: number) => {
     await ipcRenderer.invoke(
         "learn-updateOneCharacter",
-        SkillConstant.Writing,
+        questionData.skillType,
         lang,
         questionData.correct ? questionData.correct.content : '',
-        isCorrect
+        score
     );
-    fetchQuestion(); // Fetch the next question
-  }, [fetchQuestion, lang, questionData]);
+    await fetchQuestion(questionCounter % 2); // Fetch the next question
+    setQuestionCounter(questionCounter + 1);
+  }, [fetchQuestion, lang, questionCounter, questionData]);
   const nextQuestionHandler = useCallback(() => {
-    handleAnswer(false);
+    handleAnswer(learningConstants.scoreWrong);
   }, [handleAnswer])
 
   // const handleModeChange = useCallback((newMode: string) => {
@@ -78,24 +84,14 @@ const SRS = () => {
   return (
       <React.Fragment>
         <Head>
-          <title>SRS</title>
+          <title>SRS - Question {questionCounter}</title>
         </Head>
         <div
             className="flex flex-col items-center justify-center bg-blue-50 text-black min-h-screen p-6 gap-3">
           <MeaningBox lang={lang} meaning={meaning} setMeaning={setMeaning}
                       tokenizeMiteiru={tokenizeMiteiru}/>
-          <h1 className="text-3xl font-bold mb-6">SRS</h1>
-          <div className="mb-4 flex items-center gap-4">
-            {/*<label className="flex items-center gap-2">*/}
-            {/*Mode:*/}
-            {/*<select value={mode} onChange={(e) => handleModeChange(e.target.value)}*/}
-            {/*        className="border p-2 rounded-md">*/}
-            {/*  <option value="help">Help</option>*/}
-            {/*  <option value="plain">Plain</option>*/}
-            {/*</select>*/}
-            {/*</label>*/}
-          </div>
-          {questionData && questionData.mode === 1 && (
+          <h1 className="text-3xl font-bold mb-6">SRS - Question {questionCounter} - {questionData ? SkillConstant[questionData.skillType] : ''}</h1>
+          {questionData && questionData.skillType === 0 && (
               <div className="w-full flex justify-center">
                 <WritingQuizDisplay
                     character={questionData.correct}
@@ -104,8 +100,7 @@ const SRS = () => {
                 />
               </div>
           )}
-
-          {questionData && questionData.mode === 0 && (
+          {questionData && questionData.skillType === 1 && (
               <div className="w-full flex justify-center">
                 <MultipleChoiceQuizDisplay
                     questionData={questionData}
@@ -113,7 +108,7 @@ const SRS = () => {
                 />
               </div>
           )}
-          <AwesomeButton type={'primary'} onPress={nextQuestionHandler}>Next
+          <AwesomeButton type={'primary'} onPress={nextQuestionHandler}>Skip
             Question</AwesomeButton>
           <LearningSidebar
               showSidebar={showSidebar}
