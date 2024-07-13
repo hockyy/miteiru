@@ -5,10 +5,27 @@ import {LearningStateType} from "../../renderer/components/types";
 import {OrderedSet} from "js-sdsl";
 import Chinese from "./chinese";
 
-enum SkillConstant {
+const enum SkillConstant {
   Writing,
   Conveyance,
   Translation,
+}
+
+const SKILL_NAMES = ['Writing', 'Conveyance', 'Translation'] as const;
+type SkillName = typeof SKILL_NAMES[number];
+
+function convertToSkillConstant(value: string | number): SkillConstant {
+  if (typeof value === 'number') {
+    if (value >= 0 && value < SKILL_NAMES.length) {
+      return value;
+    }
+  } else if (typeof value === 'string') {
+    const index = SKILL_NAMES.indexOf(value as SkillName);
+    if (index !== -1) {
+      return index;
+    }
+  }
+  throw new Error(`Invalid skill type: ${value}`);
 }
 
 enum ExamModeConstant {
@@ -17,11 +34,11 @@ enum ExamModeConstant {
 }
 
 function sm2Algorithm(skill: Skill, grade: number) {
-  const now = Math.floor(Date.now() / 1000);
+  const now = Math.floor(Date.now());
   if (grade >= 3) {
     skill.level++;
     const interval = Math.pow(1.4, skill.level - 1); // Interval doubles each level
-    skill.nextReviewTime = now + interval * 24 * 60 * 60; // Next review time
+    skill.nextReviewTime = now + interval * 24 * 60 * 60 * 1000; // Next review time
   } else {
     skill.level = Math.max(skill.level - 1, 0);
     skill.nextReviewTime = now; // Review immediately
@@ -44,7 +61,7 @@ function getRange(a: number, b: number): number {
 
 function epochToLocalDate(epochTimestamp: number): string {
   // Convert epoch to milliseconds
-  const date = new Date(epochTimestamp * 1000);
+  const date = new Date(epochTimestamp);
 
   // Options for date formatting
   const options: Intl.DateTimeFormatOptions = {
@@ -63,7 +80,7 @@ function epochToLocalDate(epochTimestamp: number): string {
 }
 
 // Utility function to get the current timestamp
-const now = () => Math.floor(Date.now() / 1000);
+const now = () => Math.floor(Date.now());
 
 // Skill Class
 class Skill {
@@ -128,9 +145,9 @@ class SRSData {
     this.lastCreated = now();
     this.lang = language;
     this.skills = new Map();
-    for (const key of Object.keys(SkillConstant)) {
-      this.skills.set(SkillConstant[key], new Skill(key));
-    }
+    SKILL_NAMES.forEach((skillName, index) => {
+      this.skills.set(index, new Skill(skillName));
+    });
   }
 
   // Method to convert the instance to a JSON string
@@ -204,16 +221,46 @@ class SRSDatabase {
 
   static async setup(lang: string) {
     if (!this.srsData.has(lang)) {
-      for (const key of Object.keys(SkillConstant)) {
+      SKILL_NAMES.forEach((skillName, index) => {
         this.learningTrees.set(
-            getPair(lang, SkillConstant[key]),
-            new OrderedTree(this.classicKeyGen, SkillConstant[key])
+            getPair(lang, index),
+            new OrderedTree(this.classicKeyGen, index)
         );
-      }
-      this.srsData.set(lang, new Map())
+      });
+      this.srsData.set(lang, new Map());
     }
-    if (!this.srsData.get(lang).size) {
+    if (!this.srsData.get(lang)!.size) {
       return SRSDatabase.loadSRS(lang);
+    }
+  }
+
+  static async getAllSRSData(lang: string) {
+    const prefix = `srs/${lang}/`;
+    const queryOptions = {
+      gte: prefix,
+      lte: `${prefix}\uFFFF`
+    };
+
+    const srsData = new Map();
+
+    for await (const [key, value] of this.db.iterator(queryOptions)) {
+      const character = key.substring(prefix.length);
+      const parsedValue = JSON.parse(value);
+      srsData.set(character, parsedValue);
+    }
+
+    return srsData;
+  }
+
+  static async banish() {
+    const keys: string[] = [];
+
+    for await (const [key] of this.db.iterator({gt: 'srs/', lt: 'srs/\uffff'})) {
+      keys.push(key);
+    }
+
+    for (const key of keys) {
+      await this.db.del(key);
     }
   }
 
@@ -248,9 +295,9 @@ class SRSDatabase {
     if (!srsData) srsData = new SRSData(character, lang);
     this.storeOrUpdateToDB(lang, character, srsData);
     this.srsData.get(lang).set(character, srsData);
-    for (const key of Object.keys(SkillConstant)) {
-      this.learningTrees.get(getPair(lang, SkillConstant[key])).insert(srsData);
-    }
+    SKILL_NAMES.forEach((skillName, index) => {
+      this.learningTrees.get(getPair(lang, index)).insert(srsData);
+    });
   }
 
   static classicKeyGen(srsData: SRSData, skillType: SkillConstant) {
@@ -264,9 +311,9 @@ class SRSDatabase {
     const skill = ptrToSRSData.skills.get(skillType);
     this.learningTrees.get(getPair(lang, skillType)).erase(ptrToSRSData);
     this.srsData.get(lang).delete(character);
-    console.log(`Updated ${character} from ${epochToLocalDate(skill.lastUpdated)}`)
+    console.log(`Updated ${character} from ${epochToLocalDate(skill.nextReviewTime)}`)
     sm2Algorithm(skill, grade);
-    console.log(`Updated ${character} to ${epochToLocalDate(skill.lastUpdated)}`)
+    console.log(`Updated ${character} to ${epochToLocalDate(skill.nextReviewTime)}`)
     this.storeOrUpdate(lang, character, ptrToSRSData);
   }
 
@@ -382,6 +429,9 @@ class Learning {
       if (!content) return true;
       try {
         await this.db.put(`${lang}/${content}`, JSON.stringify(data));
+        for (const ch of content) {
+          SRSDatabase.storeOrUpdate(lang, ch);
+        }
         return true; // Indicate success
       } catch (error) {
         console.error('Error updating content:', error);
@@ -403,6 +453,9 @@ class Learning {
           }).catch(async () => {
             await goUpdate();
           })
+          for (const ch of key) {
+            SRSDatabase.storeOrUpdate(lang, ch);
+          }
         }
         return true; // Indicate success
       } catch (error) {
@@ -411,30 +464,11 @@ class Learning {
       }
     });
 
-    ipcMain.handle('updateSRSContent', async (_event, char, lang, data) => {
-      if (!char) return false;
-      try {
-        await this.db.put(`srs/${lang}/${char}`, JSON.stringify(data));
-        return true;
-      } catch (error) {
-        console.error('Error updating SRS content:', error);
-        return false;
-      }
-    });
-
-    ipcMain.handle('updateSkillLevel', async (_event, lang, character, skillType, grade) => {
-      try {
-        SRSDatabase.updateSkillLevel(lang, character, skillType, grade);
-        return true;
-      } catch (error) {
-        console.error('Error updating skill level:', error);
-        return false;
-      }
-    });
-
     ipcMain.handle('learn-getOneQuestion', async (_event, lang, skillType) => {
       try {
-        return {...(await SRSDatabase.getQuestion(lang, skillType)), skillType};
+        const convertedSkillType = convertToSkillConstant(skillType);
+        const question = await SRSDatabase.getQuestion(lang, convertedSkillType);
+        return {...question, skillType: convertedSkillType as number};
       } catch (error) {
         console.error('Error getting one question:', error);
         return null;
@@ -442,13 +476,50 @@ class Learning {
     });
 
     ipcMain.handle('learn-updateOneCharacter', async (_event, skillType, lang, character, grade) => {
-      console.log(skillType, lang, character, grade)
       try {
-        SRSDatabase.updateSkillLevel(lang, character, skillType, grade);
+        const convertedSkillType = convertToSkillConstant(skillType);
+        SRSDatabase.updateSkillLevel(lang, character, convertedSkillType, grade);
         return true;
       } catch (error) {
         console.error('Error updating one character:', error);
         return false;
+      }
+    });
+
+    ipcMain.handle('getAllSRS', async (_event, lang) => {
+      try {
+        const srsData = await SRSDatabase.getAllSRSData(lang);
+
+        // Convert Map to a plain object for serialization
+        return Object.fromEntries(srsData);
+      } catch (error) {
+        console.error('Error in getAllSRS:', error);
+        throw error; // This will be caught in the renderer process
+      }
+    });
+    ipcMain.handle('banishSRS', async () => {
+      try {
+        await SRSDatabase.banish();
+        return {success: true, message: 'All SRS entries have been banished.'};
+      } catch (error) {
+        console.error('Error banishing SRS entries:', error);
+        return {success: false, error: error.message};
+      }
+    });
+    ipcMain.handle('setSRS', async (_event, lang: string, character: string, srsData?: string) => {
+      const realData = SRSData.fromJSON(srsData);
+      try {
+        SRSDatabase.storeOrUpdate(lang, character, realData);
+        return {
+          success: true,
+          message: `SRS data for ${character} in ${lang} has been stored or updated successfully.`
+        };
+      } catch (error) {
+        console.error('Error in setSRS:', error);
+        return {
+          success: false,
+          error: error.message
+        };
       }
     });
   }

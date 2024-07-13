@@ -73,7 +73,7 @@ const SRS = () => {
         questionData.correct ? questionData.correct.content : '',
         score
     );
-    await fetchQuestion(questionCounter % usedQuestion); // Fetch the next question
+    await fetchQuestion((questionCounter + 1) % usedQuestion); // Fetch the next question
     setQuestionCounter(questionCounter + 1);
   }, [fetchQuestion, lang, questionCounter, questionData]);
   const nextQuestionHandler = useCallback(() => {
