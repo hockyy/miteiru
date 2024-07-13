@@ -36,6 +36,10 @@ export default function useKeyBind(
             await router.push('/srs');
           }
         }
+      } else if (event.code === "KeyK") {
+        if (event.ctrlKey) {
+          await router.push('/db');
+        }
       } else if (event.code === "KeyZ") {
         setShowController((old) => {
           return !old;
