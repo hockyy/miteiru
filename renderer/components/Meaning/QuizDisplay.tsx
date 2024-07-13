@@ -136,6 +136,27 @@ const MultipleChoiceComponent = ({
     setSelectedOption(null);
     setShowReview(false);
   }, [onAnswer, questionData, selectedOption]);
+  const handleKeyPress = useCallback((event) => {
+    if (showReview) {
+      if (event.key === 'd') {
+        handleNextQuestion();
+      }
+      return;
+    }
+
+    const keyIndex = ['1', '2', '3', '4'].indexOf(event.key);
+    if (keyIndex !== -1 && keyIndex < questionData.options.length) {
+      handleOptionClick(questionData.options[keyIndex].content);
+    }
+  }, [showReview, handleNextQuestion, questionData.options, handleOptionClick]);
+
+  // Set up event listener for keypress
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyPress);
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [handleKeyPress]);
 
   return (
       <QuizContainer>
