@@ -88,7 +88,7 @@ const VocabFlashCards = () => {
           </div>
         </div>
     ) : <></>
-  }, [currentWord, showNextCard, showPreCard]);
+  }, [currentWord, index, showNextCard, showPreCard]);
 
   return (
       <React.Fragment>
