@@ -38,7 +38,11 @@ export default function useKeyBind(
         }
       } else if (event.code === "KeyK") {
         if (event.ctrlKey) {
-          await router.push('/db');
+          if (event.shiftKey) {
+            await router.push('/db');
+          } else {
+            await router.push('/flash');
+          }
         }
       } else if (event.code === "KeyZ") {
         setShowController((old) => {

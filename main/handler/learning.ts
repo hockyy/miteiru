@@ -416,7 +416,6 @@ class Learning {
           }
           learningState[strippedKey] = parsedValue;
         }
-
         return learningState;
       } catch (error) {
         console.error('Error loading learning state:', error);

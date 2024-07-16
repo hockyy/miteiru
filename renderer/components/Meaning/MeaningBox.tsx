@@ -18,12 +18,13 @@ const initialContentState = {
 const initialCharacterContentState = {literal: null};
 
 const MeaningBox = ({
-  meaning,
-  setMeaning,
-  tokenizeMiteiru,
-  subtitleStyling = defaultMeaningBoxStyling,
-  lang
-}) => {
+                      meaning,
+                      setMeaning,
+                      tokenizeMiteiru,
+                      subtitleStyling = defaultMeaningBoxStyling,
+                      customComponent = null,
+                      lang
+                    }) => {
   const [meaningContent, setMeaningContent] = useState(initialContentState);
   const [meaningCharacter, setMeaningCharacter] = useState(initialCharacterContentState);
   const [otherMeanings, setOtherMeanings] = useState([]);
@@ -43,10 +44,10 @@ const MeaningBox = ({
         if (lang === videoConstants.japaneseLang && isKanji(meaning)) {
           const result = await ipcRenderer.invoke("queryKanji", meaning);
           const waniResult = await ipcRenderer.invoke("getWaniKanji", meaning);
-          setMeaningCharacter({ ...result, wanikani: waniResult });
+          setMeaningCharacter({...result, wanikani: waniResult});
         } else if (lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang) {
           const result = await ipcRenderer.invoke("queryHanzi", meaning);
-          setMeaningCharacter({ ...result, literal: meaning[0] });
+          setMeaningCharacter({...result, literal: meaning[0]});
         }
       } else {
         setMeaningCharacter(initialCharacterContentState);
@@ -58,20 +59,20 @@ const MeaningBox = ({
       if (lang === videoConstants.japaneseLang) {
         entries = await ipcRenderer.invoke('queryJapanese', meaning, 5);
         entries.forEach(entry => {
-          entry.single = entry.kanji.length ? entry.kanji : [{ text: meaning }];
+          entry.single = entry.kanji.length ? entry.kanji : [{text: meaning}];
         });
         setTags(await ipcRenderer.invoke('japaneseTags'));
       } else if (lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang) {
         entries = await ipcRenderer.invoke('queryChinese', meaning, 5);
         entries.forEach(entry => {
-          entry.single = entry.content.split('，').map(text => ({ text }));
+          entry.single = entry.content.split('，').map(text => ({text}));
         });
       }
 
       if (entries.length === 0) {
         entries.push({
           id: "0",
-          single: [{ text: meaning }],
+          single: [{text: meaning}],
           sense: []
         });
       }
@@ -88,10 +89,10 @@ const MeaningBox = ({
   useEffect(() => {
     const fetchRomajiedData = async () => {
       const data = await Promise.all(
-        meaningContent.single.map(async (val) => ({
-          key: val.key,
-          romajied: await tokenizeMiteiru(val.text)
-        }))
+          meaningContent.single.map(async (val) => ({
+            key: val.key,
+            romajied: await tokenizeMiteiru(val.text)
+          }))
       );
       setRomajiedData(data);
     };
@@ -122,53 +123,66 @@ const MeaningBox = ({
   if (meaningContent.single.length === 0) return null;
 
   return (
-    <div onClick={handleBGClick} className="z-[18] fixed bg-blue-200/20 w-[100vw] h-[100vh]">
-      <div onClick={(e) => e.stopPropagation()} className="overflow-auto border-2 border-blue-700 inset-x-0 mx-auto mt-10 bg-blue-100 z-[101] fixed rounded-lg w-[80vw] h-[80vh]">
-        <div className="z-[100] sticky top-0 h-auto flex flex-row justify-between gap-3 items-center bg-white p-5 rounded-t-lg">
-          <AwesomeButton type="primary" disabled={meaningIndex === 0} onPress={handlePrevious}>
-            Previous
-          </AwesomeButton>
-          <div className="flex flex-wrap gap-2" style={{ fontFamily: "Arial", fontSize: "40px" }}>
-            {romajiedData.map(({ key, romajied }) => (
-              <RomajiedContent key={key} romajied={romajied} lang={lang} setMeaning={setMeaning} subtitleStyling={subtitleStyling} />
-            ))}
+      <div onClick={handleBGClick} className="z-[18] fixed bg-blue-200/20 w-[100vw] h-[100vh]">
+        <div onClick={(e) => e.stopPropagation()}
+             className="overflow-auto border-2 border-blue-700 inset-x-0 mx-auto mt-10 bg-blue-100 z-[101] fixed rounded-lg w-[80vw] h-[80vh]">
+          <div className={'flex flex-col'}>
+            {customComponent}
+            <div
+                className="z-[100] sticky top-0 h-auto flex flex-row justify-between gap-3 items-center bg-white p-5 rounded-t-lg">
+
+              <AwesomeButton type="primary" disabled={meaningIndex === 0} onPress={handlePrevious}>
+                Previous
+              </AwesomeButton>
+              <div className="flex flex-wrap gap-2" style={{fontFamily: "Arial", fontSize: "40px"}}>
+                {romajiedData.map(({key, romajied}) => (
+                    <RomajiedContent key={key} romajied={romajied} lang={lang}
+                                     setMeaning={setMeaning}
+                                     subtitleStyling={subtitleStyling}/>
+                ))}
+              </div>
+              <AwesomeButton type="primary" disabled={meaningIndex === otherMeanings.length - 1}
+                             onPress={handleNext}>
+                Next
+              </AwesomeButton>
+            </div>
           </div>
-          <AwesomeButton type="primary" disabled={meaningIndex === otherMeanings.length - 1} onPress={handleNext}>
-            Next
-          </AwesomeButton>
-        </div>
-        <div className="rounded-b-lg text-blue-800 text-lg p-2">
-          <CharacterContent lang={lang} meaningCharacter={meaningCharacter} setMeaning={setMeaning} subtitleStyling={subtitleStyling} />
-          <MeaningContent meaningContent={meaningContent} lang={lang} tags={tags} />
+          <div className="rounded-b-lg text-blue-800 text-lg p-2">
+            <CharacterContent lang={lang} meaningCharacter={meaningCharacter}
+                              setMeaning={setMeaning} subtitleStyling={subtitleStyling}/>
+            <MeaningContent meaningContent={meaningContent} lang={lang} tags={tags}/>
+          </div>
         </div>
       </div>
-    </div>
   );
 };
 
-const ExternalLinkComponent = ({ lang, queryText }) => {
+const ExternalLinkComponent = ({lang, queryText}) => {
   if (lang === videoConstants.japaneseLang) {
-    return <ExternalLink style={{ color: "black" }} urlBase="https://jisho.org/search/" displayText="Jisho" query={queryText} />;
+    return <ExternalLink style={{color: "black"}} urlBase="https://jisho.org/search/"
+                         displayText="Jisho" query={queryText}/>;
   }
   if (lang === videoConstants.cantoneseLang) {
-    return <ExternalLink style={{ color: "black" }} urlBase="https://cantonese.org/search.php?q=" displayText="Cantonese.org" query={queryText} />;
+    return <ExternalLink style={{color: "black"}} urlBase="https://cantonese.org/search.php?q="
+                         displayText="Cantonese.org" query={queryText}/>;
   }
   return null;
 };
 
-const CharacterContent = ({ lang, meaningCharacter, setMeaning, subtitleStyling }) => {
+const CharacterContent = ({lang, meaningCharacter, setMeaning, subtitleStyling}) => {
   if (!meaningCharacter.literal) return null;
 
   if (lang === videoConstants.japaneseLang) {
     return kanjiBoxEntry(meaningCharacter);
   }
   if (lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang) {
-    return <HanziBoxEntry meaningHanzi={meaningCharacter} setMeaning={setMeaning} subtitleStyling={subtitleStyling} />;
+    return <HanziBoxEntry meaningHanzi={meaningCharacter} setMeaning={setMeaning}
+                          subtitleStyling={subtitleStyling}/>;
   }
   return null;
 };
 
-const MeaningContent = ({ meaningContent, lang, tags }) => {
+const MeaningContent = ({meaningContent, lang, tags}) => {
   if (meaningContent.sense) {
     return meaningContent.sense.map((sense, idxSense) => meaningBoxEntry(sense, idxSense, tags));
   }
@@ -178,21 +192,28 @@ const MeaningContent = ({ meaningContent, lang, tags }) => {
   return null;
 };
 
-const RomajiedContent = ({ romajied, lang, setMeaning, subtitleStyling }) => {
+const RomajiedContent = ({romajied, lang, setMeaning, subtitleStyling}) => {
   const queryText = romajied.reduce((acc, next) => acc + next.origin, "");
 
   return (
-    <div className="flex flex-col justify-between items-center gap-2">
-      <div className="bg-white gap-0 rounded-xl p-2 border-2 border-blue-700 w-fit unselectable hovery">
-        {lang === videoConstants.japaneseLang && romajied.map((val, idx) => (
-          <KanjiSentence key={idx} origin={val.origin} setMeaning={setMeaning} separation={val.separation} extraClass="unselectable meaning-kanji text-md" subtitleStyling={subtitleStyling} />
-        ))}
-        {(lang === videoConstants.chineseLang || lang === videoConstants.cantoneseLang) && romajied.map((val, idx) => (
-          <HanziSentence key={idx} origin={val.origin} pinyin={(lang === videoConstants.chineseLang ? val.pinyin : val.jyutping).split(' ')} setMeaning={setMeaning} extraClass="unselectable meaning-kanji text-md" subtitleStyling={subtitleStyling} />
-        ))}
+      <div className="flex flex-col justify-between items-center gap-2">
+        <div
+            className="bg-white gap-0 rounded-xl p-2 border-2 border-blue-700 w-fit unselectable hovery">
+          {lang === videoConstants.japaneseLang && romajied.map((val, idx) => (
+              <KanjiSentence key={idx} origin={val.origin} setMeaning={setMeaning}
+                             separation={val.separation}
+                             extraClass="unselectable meaning-kanji text-md"
+                             subtitleStyling={subtitleStyling}/>
+          ))}
+          {(lang === videoConstants.chineseLang || lang === videoConstants.cantoneseLang) && romajied.map((val, idx) => (
+              <HanziSentence key={idx} origin={val.origin}
+                             pinyin={(lang === videoConstants.chineseLang ? val.pinyin : val.jyutping).split(' ')}
+                             setMeaning={setMeaning} extraClass="unselectable meaning-kanji text-md"
+                             subtitleStyling={subtitleStyling}/>
+          ))}
+        </div>
+        <ExternalLinkComponent lang={lang} queryText={queryText}/>
       </div>
-      <ExternalLinkComponent lang={lang} queryText={queryText} />
-    </div>
   );
 };
 
