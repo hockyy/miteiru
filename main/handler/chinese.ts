@@ -16,8 +16,6 @@ interface JyutpingResult {
 class Chinese {
 
   static Dict = {db: null};
-  static scriptPath: string;
-  static scriptOutPath: string;
   static dictPath: string;
   static importDict: string;
   static importBaseSVG: string;
@@ -34,9 +32,7 @@ class Chinese {
 
   static getMandarinSettings = (appDataDirectory, replacements: any = {}) => {
     return {
-      scriptPath: path.join(__dirname, `chinese/chinese.py`),
       jiebaDictPath: path.join(__dirname, 'chinese/zh.jieba.txt'),
-      scriptOutPath: path.join(appDataDirectory, 'chinese.py'),
       dictPath: path.join(appDataDirectory, `cccedict-db`),
       importDict: path.join(__dirname, 'chinese/chinese.json'),
       importBaseSVG: path.join(__dirname, 'hanzi'),
@@ -46,9 +42,7 @@ class Chinese {
 
   static getCantoneseSettings = (appDataDirectory, replacements: any = {}) => {
     return {
-      scriptPath: path.join(__dirname, `cantonese/cantonese.py`),
       jiebaDictPath: path.join(__dirname, 'cantonese/yue.jieba.txt'),
-      scriptOutPath: path.join(appDataDirectory, 'cantonese.py'),
       dictPath: path.join(appDataDirectory, `cantodict-db`),
       importDict: path.join(__dirname, 'cantonese/cantodict.json'),
       importBaseSVG: path.join(__dirname, 'hanzi'),
