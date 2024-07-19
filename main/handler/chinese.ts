@@ -2,9 +2,10 @@ import {charAnywhere, charBeginning, hanzi, setup as wrapperChinese} from "cc-ch
 import {ipcMain} from "electron";
 import path from "path";
 import fs from "fs";
-import * as nodejieba from "nodejieba";
 import {pinyin} from "pinyin-pro";
 import ToJyutping from "to-jyutping";
+import { loadDict, cut } from '@node-rs/jieba'
+
 
 interface JyutpingResult {
   origin: string;
@@ -64,9 +65,9 @@ class Chinese {
 
     // this.setupPy(settings)
     // Initialize nodejieba
-    nodejieba.load({
-      userDict: this.jiebaDictPath
-    });
+
+    const dictBuffer = fs.readFileSync(this.jiebaDictPath)
+    loadDict(dictBuffer);
     try {
       if (this.Dict.db) {
         this.Dict.db.close();
@@ -90,7 +91,7 @@ class Chinese {
   static registerNodeJieba() {
     ipcMain.handle('tokenizeUsingJieba', async (event, sentence) => {
       // Use nodejieba for segmentation
-      const tokens = nodejieba.cut(sentence);
+      const tokens = cut(sentence);
 
       return tokens.map(word => {
         // Get all pinyin information at once
@@ -113,7 +114,7 @@ class Chinese {
 
 
   static async getJyutpingForSentence(sentence: string): Promise<JyutpingResult[]> {
-    const segments = nodejieba.cut(sentence);
+    const segments = cut(sentence);
     const result: JyutpingResult[] = [];
 
     for (const segment of segments) {
