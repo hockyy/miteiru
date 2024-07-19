@@ -118,14 +118,6 @@ function Home() {
                 </div>
               </ContainerHome>
             </SmoothCollapse>
-
-            <SmoothCollapse expanded={tokenizerMode === 3}>
-              <ContainerHome>
-                <div className={'text-blue-800'}>
-                  You can run: <pre className={'font-bold'}>python3 -m pip install jieba pypinyin</pre>
-                </div>
-              </ContainerHome>
-            </SmoothCollapse>
             <div className={'text-black'}>
               {checkSymbol[check.ok]}{' '}{check.message}
             </div>
