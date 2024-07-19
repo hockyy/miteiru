@@ -48,8 +48,8 @@
   },
   "dependencies": {
     "@electron/asar": "^3.2.10",
-    "@electron/osx-sign": "^1.3.0",
-    "@plussub/srt-vtt-parser": "^1.1.1",
+    "@electron/osx-sign": "^1.3.1",
+    "@plussub/srt-vtt-parser": "^1.1.3",
     "ass-compiler": "^0.1.11",
     "async-await-queue": "^2.1.4",
     "axios": "^1.7.2",
@@ -80,13 +80,13 @@
     "react-svg": "^16.1.34",
     "react-video-seek-slider": "^6.0.6",
     "shunou": "1.0.3",
-    "styled-components": "^6.1.11",
+    "styled-components": "^6.1.12",
     "to-jyutping": "github:hockyy/to-jyutping",
-    "video.js": "^8.12.0",
+    "video.js": "^8.16.1",
     "videojs-youtube": "^3.0.1"
   },
   "devDependencies": {
-    "@types/node": "^16.18.101",
+    "@types/node": "^16.18.103",
     "@types/react": "^18.3.3",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
@@ -96,16 +96,16 @@
     "electron-builder": "^24.13.3",
     "eslint": "^8.57.0",
     "eslint-config-next": "^13.5.6",
-    "eslint-plugin-react": "^7.34.3",
+    "eslint-plugin-react": "^7.34.4",
     "eslint-plugin-react-hooks": "^4.6.2",
     "extract-zip": "^2.0.1",
     "html-minifier": "^4.0.0",
     "next": "^13.5.6",
     "nextron": "^8.24.0",
-    "postcss": "^8.4.38",
+    "postcss": "^8.4.39",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "tailwindcss": "^3.4.4",
+    "tailwindcss": "^3.4.6",
     "typescript": "^4.9.5"
   }
 }
