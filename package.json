@@ -49,6 +49,7 @@
   "dependencies": {
     "@electron/asar": "^3.2.10",
     "@electron/osx-sign": "^1.3.1",
+    "@node-rs/jieba": "^1.10.3",
     "@plussub/srt-vtt-parser": "^1.1.3",
     "ass-compiler": "^0.1.11",
     "async-await-queue": "^2.1.4",
@@ -69,7 +70,6 @@
     "kanjidic-wrapper": "^1.0.2",
     "kuromojin": "^3.0.0",
     "level": "^8.0.1",
-    "nodejieba": "^3.2.0",
     "opencc-js": "^1.0.5",
     "patch-package": "^7.0.2",
     "pinyin-pro": "^3.23.1",
