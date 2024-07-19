@@ -2,7 +2,6 @@ import {charAnywhere, charBeginning, hanzi, setup as wrapperChinese} from "cc-ch
 import {ipcMain} from "electron";
 import path from "path";
 import fs from "fs";
-import {PythonShell} from "python-shell";
 import * as nodejieba from "nodejieba";
 import {pinyin} from "pinyin-pro";
 import ToJyutping from "to-jyutping";
@@ -56,22 +55,6 @@ class Chinese {
     }
   }
 
-  static setupPy(settings) {
-    this.scriptPath = settings.scriptPath;
-    this.scriptOutPath = settings.scriptOutPath;
-    try {
-
-      const scriptContent = fs.readFileSync(this.scriptPath, 'utf-8').toString();
-      fs.writeFileSync(this.scriptOutPath, scriptContent);
-      const pyshellOptions = {
-        pythonOptions: ['-X', 'utf8']
-      }
-      this.pyshell = new PythonShell(this.scriptOutPath, pyshellOptions);
-    } catch (e) {
-
-    }
-  }
-
   // Static setup method to initialize properties
   static async setup(settings) {
     this.dictPath = settings.dictPath;
@@ -79,7 +62,7 @@ class Chinese {
     this.importDict = settings.importDict;
     this.importBaseSVG = settings.importBaseSVG
 
-    this.setupPy(settings)
+    // this.setupPy(settings)
     // Initialize nodejieba
     nodejieba.load({
       userDict: this.jiebaDictPath
@@ -102,7 +85,6 @@ class Chinese {
   static registerJieba() {
     // This method now calls registerNodeJieba for backwards compatibility
     this.registerNodeJieba();
-    // this.registerPyJieba();
   }
 
   static registerNodeJieba() {
@@ -129,17 +111,6 @@ class Chinese {
     });
   }
 
-
-  static registerPyCantonese() {
-    ipcMain.handle('tokenizeUsingPyCantonese', async (event, sentence) => {
-      this.pyshell.send(sentence);
-      return new Promise((resolve) => {
-        this.pyshell.once('message', function (message) {
-          resolve(JSON.parse(message));
-        });
-      });
-    });
-  }
 
   static async getJyutpingForSentence(sentence: string): Promise<JyutpingResult[]> {
     const segments = nodejieba.cut(sentence);
