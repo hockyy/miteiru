@@ -88,7 +88,7 @@ function Home() {
                 <div className="custom-radio">
                   <input type="radio" id="mode2" value="2" name="tokenizerMode"
                          checked={tokenizerMode === 2} readOnly/>
-                  <label htmlFor="mode2">PyCantonese - Cantonese 🥘</label>
+                  <label htmlFor="mode2">Jieba - Cantonese 🥘</label>
                 </div>
                 <div className="custom-radio">
                   <input type="radio" id="mode3" value="3" name="tokenizerMode"
@@ -111,13 +111,6 @@ function Home() {
                     }}></input>
               </div>
             </ContainerHome></SmoothCollapse>
-            <SmoothCollapse expanded={tokenizerMode === 2}>
-              <ContainerHome>
-                <div className={'text-blue-800'}>
-                  You can run: <pre className={'font-bold'}>python3 -m pip install setuptools pycantonese</pre>
-                </div>
-              </ContainerHome>
-            </SmoothCollapse>
             <div className={'text-black'}>
               {checkSymbol[check.ok]}{' '}{check.message}
             </div>

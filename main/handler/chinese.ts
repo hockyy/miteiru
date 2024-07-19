@@ -5,7 +5,7 @@ import fs from "fs";
 import {PythonShell} from "python-shell";
 import * as nodejieba from "nodejieba";
 import {pinyin} from "pinyin-pro";
-import {getJyutpingList} from "to-jyutping";
+import ToJyutping from "to-jyutping";
 
 interface JyutpingResult {
   origin: string;
@@ -80,7 +80,6 @@ class Chinese {
     this.importBaseSVG = settings.importBaseSVG
 
     this.setupPy(settings)
-    console.log(this.jiebaDictPath)
     // Initialize nodejieba
     nodejieba.load({
       userDict: this.jiebaDictPath
@@ -142,32 +141,23 @@ class Chinese {
     });
   }
 
-  static getJyutpingForSentence(sentence: string): JyutpingResult[] {
+  static async getJyutpingForSentence(sentence: string): Promise<JyutpingResult[]> {
     const segments = nodejieba.cut(sentence);
     const result: JyutpingResult[] = [];
 
-    // Use ToJyutping here
     for (const segment of segments) {
-      const jyutpingList = [[segment, ""]];
-      for (const [origin, jyutping] of jyutpingList) {
-        if (jyutping === null) {
-          result.push({
-            origin,
-            jyutping: '',
-            separation: [{main: origin, jyutping: null}]
-          });
-        } else {
-          const separation = jyutping.split(' ').map((syllable, index) => ({
-            main: origin.charAt(index),
-            jyutping: syllable
-          }));
-          result.push({
-            origin,
-            jyutping,
-            separation
-          });
-        }
-      }
+      const jyutpingList = ToJyutping.getJyutpingList(segment);
+      const jyutping = jyutpingList.map(([, jp]) => jp).join(' ');
+      const separation = jyutpingList.map(([char, jp]) => ({
+        main: char,
+        jyutping: jp
+      }));
+
+      result.push({
+        origin: segment,
+        jyutping: jyutping,
+        separation: separation
+      });
     }
 
     return result;
@@ -176,7 +166,6 @@ class Chinese {
   static registerCantoJieba() {
     ipcMain.handle('tokenizeUsingCantoneseJieba', async (event, sentence) => {
       const res = this.getJyutpingForSentence(sentence);
-      console.log(res)
       return res;
     });
 
