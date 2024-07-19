@@ -5,6 +5,13 @@ import fs from "fs";
 import {PythonShell} from "python-shell";
 import * as nodejieba from "nodejieba";
 import {pinyin} from "pinyin-pro";
+import {getJyutpingList} from "to-jyutping";
+
+interface JyutpingResult {
+  origin: string;
+  jyutping: string;
+  separation: { main: string; jyutping: string | null }[];
+}
 
 class Chinese {
 
@@ -123,6 +130,7 @@ class Chinese {
     });
   }
 
+
   static registerPyCantonese() {
     ipcMain.handle('tokenizeUsingPyCantonese', async (event, sentence) => {
       this.pyshell.send(sentence);
@@ -132,6 +140,46 @@ class Chinese {
         });
       });
     });
+  }
+
+  static getJyutpingForSentence(sentence: string): JyutpingResult[] {
+    const segments = nodejieba.cut(sentence);
+    const result: JyutpingResult[] = [];
+
+    // Use ToJyutping here
+    for (const segment of segments) {
+      const jyutpingList = [[segment, ""]];
+      for (const [origin, jyutping] of jyutpingList) {
+        if (jyutping === null) {
+          result.push({
+            origin,
+            jyutping: '',
+            separation: [{main: origin, jyutping: null}]
+          });
+        } else {
+          const separation = jyutping.split(' ').map((syllable, index) => ({
+            main: origin.charAt(index),
+            jyutping: syllable
+          }));
+          result.push({
+            origin,
+            jyutping,
+            separation
+          });
+        }
+      }
+    }
+
+    return result;
+  }
+
+  static registerCantoJieba() {
+    ipcMain.handle('tokenizeUsingCantoneseJieba', async (event, sentence) => {
+      const res = this.getJyutpingForSentence(sentence);
+      console.log(res)
+      return res;
+    });
+
   }
 
   static registerHandlers() {

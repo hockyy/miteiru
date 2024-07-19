@@ -43,7 +43,8 @@ if (isProd) {
   Chinese.registerHandlers();
   Japanese.registerKuromoji();
   Chinese.registerJieba();
-  Chinese.registerPyCantonese();
+  // Chinese.registerPyCantonese();
+  Chinese.registerCantoJieba();
 
   Learning.setup();
   Learning.registerHandler();
