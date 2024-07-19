@@ -1,77 +1,83 @@
-/* @flow */
-
 import axios from 'axios';
 import {find} from 'lodash';
 import {decode} from 'html-entities';
 import {videoConstants} from "../../renderer/utils/constants";
 
-function stripTags(input, allowedTags = [], replacement = '') {
-  // Create a string of allowed tags, joined by '|'
-  let tags = allowedTags.join('|');
+interface SubtitleEntry {
+  start: string;
+  dur: string;
+  text: string;
+}
 
-  // Create a new RegExp object
-  let regex = new RegExp(`<(?!\/?(${tags})[^>]*)\/?.*?>`, 'g');
-
-  // Replace disallowed tags with replacement string
+function stripTags(input: string, allowedTags: string[] = [], replacement: string = ''): string {
+  const tags = allowedTags.join('|');
+  const regex = new RegExp(`<(?!\/?(${tags})[^>]*)\/?.*?>`, 'g');
   return input.replace(regex, replacement);
 }
 
-export async function getSubtitles({videoID, lang = videoConstants.japaneseLang}) {
-  const {data} = await axios.get(
-      `https://youtube.com/watch?v=${videoID}`
-  );
+function extractCaptionTracks(data: string): any[] {
+  const regex = /"captionTracks":(\[.*?\])/;
+  const match = regex.exec(data);
+  if (!match) throw new Error("Could not find caption tracks data");
+  return JSON.parse(`{${match[0]}}`).captionTracks;
+}
 
-  // * ensure we have access to captions data
-  if (!data.includes('captionTracks'))
-    throw new Error(`Could not find captions for video: ${videoID}`);
-
-  const regex =  /"captionTracks":(\[.*?\])/;
-  const [match] = regex.exec(data);
-  const { captionTracks } = JSON.parse(`{${match}}`);
-  const subtitle =
-      find(captionTracks, {
-        vssId: `.${lang}`,
-      }) ||
-      find(captionTracks, {
-        vssId: `a.${lang}`,
-      }) ||
+function findSubtitle(captionTracks: any[], lang: string): any {
+  return find(captionTracks, {vssId: `.${lang}`}) ||
+      find(captionTracks, {vssId: `a.${lang}`}) ||
       find(captionTracks, ({vssId}) => vssId && vssId.match(`.${lang}`));
+}
 
-  // * ensure we have found the correct subtitle lang
-  if (!subtitle || (subtitle && !subtitle.baseUrl))
-    throw new Error(`Could not find ${lang} captions for ${videoID}`);
-  const {data: transcript} = await axios.get(subtitle.baseUrl);
-  return transcript
-  .replace('<?xml version="1.0" encoding="utf-8" ?><transcript>', '')
-  .replace('</transcript>', '')
-  .split('</text>')
-  .map(line => {
-    const startRegex = /start="([\d.]+)"/;
-    const durRegex = /dur="([\d.]+)"/;
-    let start = '0.00'
-    let dur = '0.00'
-    try {
-      start = startRegex.exec(line)[1];
-      dur = durRegex.exec(line)[1];
-    } catch (e) {
+function parseTranscriptLine(line: string): SubtitleEntry {
+  const startRegex = /start="([\d.]+)"/;
+  const durRegex = /dur="([\d.]+)"/;
+
+  const start = startRegex.exec(line)?.[1] || '0.00';
+  const dur = durRegex.exec(line)?.[1] || '0.00';
+
+  let text = '';
+  try {
+    const htmlText = line
+    .replace(/<text.+>/, '')
+    .replace(/&amp;/gi, '&')
+    .replace(/<\/?[^>]+(>|$)/g, '');
+    const decodedText = decode(htmlText || '');
+    text = stripTags(decodedText);
+  } catch (e) {
+    console.error('Error processing text:', e);
+  }
+
+  return {start, dur, text};
+}
+
+export async function getSubtitles({
+                                     videoID,
+                                     lang = videoConstants.japaneseLang
+                                   }): Promise<SubtitleEntry[]> {
+  try {
+    const {data} = await axios.get(`https://youtube.com/watch?v=${videoID}`);
+
+    if (!data.includes('captionTracks')) {
+      throw new Error(`Could not find captions for video: ${videoID}`);
     }
 
-    let text = ''
-    try {
-      let htmlText = line
-      .replace(/<text.+>/, '')
-      .replace(/&amp;/gi, '&')
-      .replace(/<\/?[^>]+(>|$)/g, '');
-      if (!htmlText) htmlText = ''
-      const decodedText = decode(htmlText);
-      text = stripTags(decodedText);
-    } catch (e) {
+    const captionTracks = extractCaptionTracks(data);
+    const subtitle = findSubtitle(captionTracks, lang);
+
+    if (!subtitle || !subtitle.baseUrl) {
+      throw new Error(`Could not find ${lang} captions for ${videoID}`);
     }
 
-    return {
-      start,
-      dur,
-      text,
-    };
-  });
+    const {data: transcript} = await axios.get(subtitle.baseUrl);
+
+    return transcript
+    .replace('<?xml version="1.0" encoding="utf-8" ?><transcript>', '')
+    .replace('</transcript>', '')
+    .split('</text>')
+    .map(parseTranscriptLine);
+
+  } catch (error) {
+    console.error('Error fetching subtitles:', error);
+    throw error;
+  }
 }
