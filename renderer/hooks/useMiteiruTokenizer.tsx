@@ -142,8 +142,8 @@ const useMiteiruTokenizer = (): { tokenizeMiteiru: (sentence: string) => Promise
       res = processKuromojinToSeparations(kuromojiEntries);
       res = await parseVerbs(res);
     } else if (tokenizerMode === "cantonese") {
-      res = await ipcRenderer.invoke('tokenizeUsingPyCantonese', sentence);
-      // res = await ipcRenderer.invoke('tokenizeUsingCantoneseJieba', sentence);
+      // res = await ipcRenderer.invoke('tokenizeUsingPyCantonese', sentence);
+      res = await ipcRenderer.invoke('tokenizeUsingCantoneseJieba', sentence);
     } else if (tokenizerMode.includes('mecab')) {
       res = getFurigana(sentence, tokenizerMode);
       res = await parseVerbs(res);
