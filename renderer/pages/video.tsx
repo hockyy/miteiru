@@ -225,6 +225,7 @@ function Video() {
             setShowVocabSidebar={setShowVocabSidebar}
             lang={lang}
             setMeaning={setMeaning}
+            tokenizeMiteiru={tokenizeMiteiru}
         />
       </React.Fragment>
   );
