@@ -59,7 +59,6 @@ function Video() {
   const {
     showVocabSidebar,
     setShowVocabSidebar,
-    toggleVocabSidebar
   } = useVocabSidebar();
 
   const {
@@ -89,7 +88,8 @@ function Video() {
     changeLearningState,
     setFrequencyPrimary,
     learningPercentage,
-    setLearningPercentage
+    setLearningPercentage,
+    getLearningState,
   } = useLearningState(lang);
   const {
     meaning,
@@ -147,7 +147,8 @@ function Video() {
         <div>
           <Toast info={toastInfo}/>
           <MeaningBox meaning={meaning} setMeaning={setMeaning} tokenizeMiteiru={tokenizeMiteiru}
-                      lang={lang}/>
+                      lang={lang} changeLearningState={changeLearningState}
+                      getLearningState={getLearningState}/>
           <VideoJS options={{
             techOrder: ["html5", "youtube"],
             sources: [videoSrc],

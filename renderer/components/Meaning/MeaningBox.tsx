@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useMemo, useState} from "react";
 import {ipcRenderer, shell} from "electron";
 import {HanziSentence, KanjiSentence} from "../Subtitle/Sentence";
-import {defaultMeaningBoxStyling} from "../../utils/CJKStyling";
+import {defaultLearningColorStyling, defaultMeaningBoxStyling} from "../../utils/CJKStyling";
 import {joinString} from "../../utils/utils";
 import {AwesomeButton} from "react-awesome-button";
 import {isKanji, toHiragana} from 'wanakana'
@@ -9,6 +9,29 @@ import KanjiVGDisplay from "./KanjiVGDisplay";
 import WanikaniRadicalDisplay from "./WanikaniRadicalDisplay";
 import {videoConstants} from "../../utils/constants";
 import MakeMeAHanziDisplay from "./MakeMeAHanziDisplay";
+import {FaStar} from 'react-icons/fa';
+
+const OutlinedStar = ({color, size, outlineColor = 'black', outlineWidth = 1}) => {
+  const id = `star-outline-${color.replace('#', '')}`;
+
+  return (
+      <svg width={size} height={size}>
+        <defs>
+          <filter id={id}>
+            <feMorphology in="SourceAlpha" result="expanded" operator="dilate"
+                          radius={outlineWidth}/>
+            <feFlood floodColor={outlineColor}/>
+            <feComposite in2="expanded" operator="in"/>
+            <feComposite in="SourceGraphic"/>
+          </filter>
+        </defs>
+        <g filter={`url(#${id})`}>
+          <FaStar color={color} size={size}/>
+        </g>
+      </svg>
+  );
+};
+
 
 const initialContentState = {
   id: "",
@@ -17,13 +40,18 @@ const initialContentState = {
 };
 const initialCharacterContentState = {literal: null};
 
+const getStarColor = (learningState) => {
+  return defaultLearningColorStyling.learningColor[learningState].color;
+};
 const MeaningBox = ({
                       meaning,
                       setMeaning,
                       tokenizeMiteiru,
                       subtitleStyling = defaultMeaningBoxStyling,
                       customComponent = null,
-                      lang
+                      lang,
+                      changeLearningState = null,
+                      getLearningState = null
                     }) => {
   const [meaningContent, setMeaningContent] = useState(initialContentState);
   const [meaningCharacter, setMeaningCharacter] = useState(initialCharacterContentState);
@@ -31,7 +59,9 @@ const MeaningBox = ({
   const [meaningIndex, setMeaningIndex] = useState(0);
   const [tags, setTags] = useState({});
   const [romajiedData, setRomajiedData] = useState([]);
-
+  const handleStarClick = useCallback(() => {
+    changeLearningState(meaning);
+  }, [changeLearningState, meaning]);
   useEffect(() => {
     if (meaning === '') {
       setMeaningContent(initialContentState);
@@ -140,6 +170,16 @@ const MeaningBox = ({
                                      setMeaning={setMeaning}
                                      subtitleStyling={subtitleStyling}/>
                 ))}
+                {getLearningState && changeLearningState &&
+                    <button onClick={handleStarClick} className="ml-4">
+                      <OutlinedStar
+                          color={getStarColor(getLearningState(meaning))}
+                          size={24}
+                          outlineColor="black"
+                          outlineWidth={1}
+                      />
+                    </button>
+                }
               </div>
               <AwesomeButton type="primary" disabled={meaningIndex === otherMeanings.length - 1}
                              onPress={handleNext}>
