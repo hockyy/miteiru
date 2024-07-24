@@ -27,6 +27,8 @@ import useLearningState from "../hooks/useLearningState";
 import usePauseAndRepeat from "../hooks/usePauseAndRepeat";
 import useTranslationLinks from "../hooks/useTranslationLinks";
 import useContentString from "../hooks/useContentString";
+import useVocabSidebar from "../hooks/useVocabSidebar";
+import VocabSidebar from "../components/VideoPlayer/VocabSidebar";
 
 function Video() {
   const {
@@ -53,6 +55,13 @@ function Video() {
     currentTime,
     setCurrentTime
   } = useReadyPlayerCallback();
+
+  const {
+    showVocabSidebar,
+    setShowVocabSidebar,
+    toggleVocabSidebar
+  } = useVocabSidebar();
+
   const {
     primarySub,
     setPrimarySub,
@@ -114,7 +123,8 @@ function Video() {
   useKeyBind(setMeaning, setShowController, setShowSidebar,
       setPrimarySub, setSecondarySub, primarySub, undo,
       setShowPrimarySub, setShowSecondarySub, primaryStyling, setPrimaryStyling,
-      openDeepL, openGoogleTranslate, reloadLastPrimarySubtitle, reloadLastSecondarySubtitle);
+      openDeepL, openGoogleTranslate, reloadLastPrimarySubtitle, reloadLastSecondarySubtitle,
+      setShowVocabSidebar);
   const {
     togglePlay,
     isPlaying,
@@ -209,6 +219,12 @@ function Video() {
                  setAutoPause={setAutoPause}
                  learningPercentage={learningPercentage}
                  setLearningPercentage={setLearningPercentage} lang={lang}/>
+        <VocabSidebar
+            showVocabSidebar={showVocabSidebar}
+            setShowVocabSidebar={setShowVocabSidebar}
+            lang={lang}
+            setMeaning={setMeaning}
+        />
       </React.Fragment>
   );
 }

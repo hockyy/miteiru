@@ -108,3 +108,36 @@ export const sortAndFilterTopXPercentToJson = (frequency, x: number) => {
     return obj;
   }, {});
 }
+
+
+export const getRelativeTime = (timestamp) => {
+  const now = new Date().getTime();
+  const updatedDate = new Date(timestamp).getTime();
+  const diffTime = Math.abs(now - updatedDate);
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+  const diffMinutes = Math.floor(diffTime / (1000 * 60));
+
+  if (diffDays > 0) {
+    return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  } else if (diffHours > 0) {
+    return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+  } else if (diffMinutes > 0) {
+    return `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`;
+  } else {
+    return 'Just now';
+  }
+};
+export const getColorGradient = (timestamp) => {
+  const now = new Date().getTime();
+  const diff = now - timestamp;
+  const maxDiff = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
+  const ratio = Math.min(diff / maxDiff, 1);
+
+  // Pastel green (newest) to pastel red (oldest)
+  const red = Math.round(255 * (0.5 + ratio * 0.5));
+  const green = Math.round(255 * (1 - ratio * 0.5));
+  const blue = Math.round(255 * (0.5 + Math.abs(ratio - 0.5) * 0.5));
+
+  return `rgb(${red}, ${green}, ${blue})`;
+};
