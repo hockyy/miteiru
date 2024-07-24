@@ -20,7 +20,8 @@ export default function useKeyBind(
     openDeepL,
     openGoogleTranslate,
     reloadLastPrimarySubtitle,
-    reloadLastSecondarySubtitle
+    reloadLastSecondarySubtitle,
+    setShowVocabSidebar
 ) {
   const router = useRouter();
   useEffect(() => {
@@ -49,9 +50,15 @@ export default function useKeyBind(
           return !old;
         });
       } else if (event.code === "KeyX") {
-        setShowSidebar((old) => {
-          return !old;
-        });
+        if (event.ctrlKey) {
+          setShowVocabSidebar((old) => {
+            return !old;
+          })
+        } else {
+          setShowSidebar((old) => {
+            return !old;
+          });
+        }
       } else if (event.code === "KeyY") {
         const newCopy = JSON.parse(JSON.stringify(primaryStyling))
         newCopy.showFurigana = !primaryStyling.showFurigana;
@@ -86,6 +93,6 @@ export default function useKeyBind(
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [router, setMeaning, setShowController, setShowSidebar, setPrimarySub, setSecondarySub, setPrimaryStyling, primarySub.id, setShowPrimarySub, setShowSecondarySub, undo, primaryStyling, openGoogleTranslate, openDeepL, reloadLastSecondarySubtitle, reloadLastPrimarySubtitle]);
+  }, [router, setMeaning, setShowController, setShowSidebar, setPrimarySub, setSecondarySub, setPrimaryStyling, primarySub.id, setShowPrimarySub, setShowSecondarySub, undo, primaryStyling, openGoogleTranslate, openDeepL, reloadLastSecondarySubtitle, reloadLastPrimarySubtitle, setShowVocabSidebar]);
 
 }
