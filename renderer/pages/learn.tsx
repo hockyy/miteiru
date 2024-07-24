@@ -16,6 +16,7 @@ import 'react-awesome-button/dist/styles.css';
 import {videoConstants} from "../utils/constants";
 import useLearningState from "../hooks/useLearningState";
 import useTranslationLinks from "../hooks/useTranslationLinks";
+import 'react-awesome-button/dist/styles.css';
 
 function Learn() {
 
