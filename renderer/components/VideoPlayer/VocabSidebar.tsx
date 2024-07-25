@@ -1,12 +1,9 @@
 // components/VideoPlayer/VocabSidebar.js
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {ipcRenderer} from 'electron';
 import {getColorGradient, getRelativeTime} from '../../utils/utils';
 import {ArrowRight} from "./Icons";
-import {HanziSentence, KanjiSentence} from "../Subtitle/Sentence";
 import {videoConstants} from "../../utils/constants";
-import {defaultLearningStyling, defaultMeaningBoxStyling} from "../../utils/CJKStyling";
-import SmoothCollapse from "react-smooth-collapse";
 
 const VocabSidebar = ({
                         showVocabSidebar,
