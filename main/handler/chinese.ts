@@ -4,7 +4,7 @@ import path from "path";
 import fs from "fs";
 import {pinyin} from "pinyin-pro";
 import ToJyutping from "to-jyutping";
-import { loadDict, cut } from '@node-rs/jieba'
+import {loadDict, cut} from '@node-rs/jieba'
 
 
 interface JyutpingResult {
@@ -107,31 +107,33 @@ class Chinese {
   }
 
 
-  static async getJyutpingForSentence(sentence: string): Promise<JyutpingResult[]> {
-    const segments = cut(sentence);
-    const result: JyutpingResult[] = [];
+  static getJyutpingForSentence(sentence: string): Promise<JyutpingResult[]> {
+    return Promise.resolve().then(() => {
+      const segments = cut(sentence);
+      const result: JyutpingResult[] = [];
 
-    for (const segment of segments) {
-      const jyutpingList = ToJyutping.getJyutpingList(segment);
-      const jyutping = jyutpingList.map(([, jp]) => jp).join(' ');
-      const separation = jyutpingList.map(([char, jp]) => ({
-        main: char,
-        jyutping: jp
-      }));
+      for (const segment of segments) {
+        const jyutpingList = ToJyutping.getJyutpingList(segment);
+        const jyutping = jyutpingList.map(([, jp]) => jp).join(' ');
+        const separation = jyutpingList.map(([char, jp]) => ({
+          main: char,
+          jyutping: jp
+        }));
 
-      result.push({
-        origin: segment,
-        jyutping: jyutping,
-        separation: separation
-      });
-    }
+        result.push({
+          origin: segment,
+          jyutping: jyutping,
+          separation: separation
+        });
+      }
 
-    return result;
+      return result;
+    });
   }
 
   static registerCantoJieba() {
     ipcMain.handle('tokenizeUsingCantoneseJieba', async (event, sentence) => {
-      const res = this.getJyutpingForSentence(sentence);
+      const res = await this.getJyutpingForSentence(sentence);
       return res;
     });
 
