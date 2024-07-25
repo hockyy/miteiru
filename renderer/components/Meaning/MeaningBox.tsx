@@ -45,32 +45,49 @@ const initialCharacterContentState = {literal: null};
 const getStarColor = (learningState) => {
   return defaultLearningColorStyling.learningColor[learningState].color;
 };
+
 const MeaningBox = ({
-                      meaning,
-                      setMeaning,
-                      tokenizeMiteiru,
-                      subtitleStyling = defaultMeaningBoxStyling,
-                      customComponent = null,
-                      lang,
-                      changeLearningState = null,
-                      getLearningState = null
-                    }) => {
+  meaning,
+  setMeaning,
+  tokenizeMiteiru,
+  subtitleStyling = defaultMeaningBoxStyling,
+  customComponent = null,
+  lang,
+  changeLearningState = null,
+  getLearningState = null
+}) => {
   const [meaningContent, setMeaningContent] = useState(initialContentState);
   const [meaningCharacter, setMeaningCharacter] = useState(initialCharacterContentState);
   const [otherMeanings, setOtherMeanings] = useState([]);
   const [meaningIndex, setMeaningIndex] = useState(0);
   const [tags, setTags] = useState({});
   const [romajiedData, setRomajiedData] = useState([]);
+
   const handleStarClick = useCallback(() => {
     changeLearningState(meaning);
   }, [changeLearningState, meaning]);
-  useEffect(() => {
-    if (meaning === '') {
-      setMeaningContent(initialContentState);
-      setMeaningCharacter(initialCharacterContentState);
-      return;
-    }
 
+  const handleBGClick = useCallback(() => setMeaning(''), [setMeaning]);
+
+  const handlePrevious = useCallback(() => {
+    if (meaningIndex > 0) {
+      setMeaningIndex(old => {
+        setMeaningContent(otherMeanings[old - 1]);
+        return old - 1;
+      });
+    }
+  }, [meaningIndex, otherMeanings]);
+
+  const handleNext = useCallback(() => {
+    if (meaningIndex < otherMeanings.length - 1) {
+      setMeaningIndex(old => {
+        setMeaningContent(otherMeanings[old + 1]);
+        return old + 1;
+      });
+    }
+  }, [meaningIndex, otherMeanings]);
+
+  useEffect(() => {
     const fetchCharacterData = async () => {
       if (meaning.length === 1) {
         if (lang === videoConstants.japaneseLang && isKanji(meaning)) {
@@ -114,25 +131,27 @@ const MeaningBox = ({
       setMeaningIndex(0);
     };
 
-    fetchCharacterData();
-    fetchMeaningData();
+    if (meaning === '') {
+      setMeaningContent(initialContentState);
+      setMeaningCharacter(initialCharacterContentState);
+    } else {
+      fetchCharacterData();
+      fetchMeaningData();
+    }
   }, [lang, meaning]);
 
   useEffect(() => {
     const fetchRomajiedData = async () => {
-      console.log(meaningContent);
       if (lang === videoConstants.japaneseLang) {
         const data = await Promise.all(
-            meaningContent.single.map(async (val) => {
-              return ({
-                key: val.key,
-                romajied: await tokenizeMiteiru(val.text)
-              });
-            })
+          meaningContent.single.map(async (val) => ({
+            key: val.key,
+            romajied: await tokenizeMiteiru(val.text)
+          }))
         );
         setRomajiedData(data);
-      } else if (lang === videoConstants.cantoneseLang || videoConstants.chineseLang) {
-        const usedData = (meaningContent.simplified.includes(meaning)) ? meaningContent.simplified : meaningContent.content;
+      } else if (lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang) {
+        const usedData = (meaningContent && meaningContent.simplified && meaningContent.simplified.includes(meaning)) ? meaningContent.simplified : meaningContent.content;
         const data = [{key: 0, romajied: (await tokenizeMiteiru(usedData))}];
         setRomajiedData(data);
       }
@@ -141,70 +160,75 @@ const MeaningBox = ({
     if (meaningContent.single.length) fetchRomajiedData();
   }, [lang, meaning, meaningContent, tokenizeMiteiru]);
 
-  const handleBGClick = useCallback(() => setMeaning(''), [setMeaning]);
+  const renderRomajiedContent = useCallback(() => (
+    romajiedData.map(({key, romajied}) => (
+      <RomajiedContent
+        key={key}
+        romajied={romajied}
+        lang={lang}
+        setMeaning={setMeaning}
+        subtitleStyling={subtitleStyling}
+      />
+    ))
+  ), [romajiedData, lang, setMeaning, subtitleStyling]);
 
-  const handlePrevious = useCallback(() => {
-    if (meaningIndex > 0) {
-      setMeaningIndex(old => {
-        setMeaningContent(otherMeanings[old - 1]);
-        return old - 1;
-      });
-    }
-  }, [meaningIndex, otherMeanings]);
+  const renderStarButton = useCallback(() => (
+    getLearningState && changeLearningState && (
+      <button onClick={handleStarClick} className="ml-4">
+        <OutlinedStar
+          color={getStarColor(getLearningState(meaning))}
+          size={24}
+          outlineColor="black"
+          outlineWidth={1}
+        />
+      </button>
+    )
+  ), [getLearningState, changeLearningState, handleStarClick, meaning]);
 
-  const handleNext = useCallback(() => {
-    if (meaningIndex < otherMeanings.length - 1) {
-      setMeaningIndex(old => {
-        setMeaningContent(otherMeanings[old + 1]);
-        return old + 1;
-      });
-    }
-  }, [meaningIndex, otherMeanings]);
+  const memoizedCustomComponent = useMemo(() => customComponent, [customComponent]);
+
+  const memoizedCharacterContent = useMemo(() => (
+    <CharacterContent
+      lang={lang}
+      meaningCharacter={meaningCharacter}
+      setMeaning={setMeaning}
+      subtitleStyling={subtitleStyling}
+    />
+  ), [lang, meaningCharacter, setMeaning, subtitleStyling]);
+
+  const memoizedMeaningContent = useMemo(() => (
+    <MeaningContent meaningContent={meaningContent} lang={lang} tags={tags} />
+  ), [meaningContent, lang, tags]);
 
   if (meaningContent.single.length === 0) return null;
 
   return (
-      <div onClick={handleBGClick} className="z-[18] fixed bg-blue-200/20 w-[100vw] h-[100vh]">
-        <div onClick={(e) => e.stopPropagation()}
-             className="overflow-auto border-2 border-blue-700 inset-x-0 mx-auto mt-10 bg-blue-100 z-[101] fixed rounded-lg w-[80vw] h-[80vh]">
-          <div className={'flex flex-col'}>
-            {customComponent}
-            <div
-                className="z-[100] sticky top-0 h-auto flex flex-row justify-between gap-3 items-center bg-white p-5 rounded-t-lg">
-
-              <AwesomeButton type="primary" disabled={meaningIndex === 0} onPress={handlePrevious}>
-                Previous
-              </AwesomeButton>
-              <div className="flex flex-wrap gap-2" style={{fontFamily: "Arial", fontSize: "40px"}}>
-                {romajiedData.map(({key, romajied}) => (
-                    <RomajiedContent key={key} romajied={romajied} lang={lang}
-                                     setMeaning={setMeaning}
-                                     subtitleStyling={subtitleStyling}/>
-                ))}
-                {getLearningState && changeLearningState &&
-                    <button onClick={handleStarClick} className="ml-4">
-                      <OutlinedStar
-                          color={getStarColor(getLearningState(meaning))}
-                          size={24}
-                          outlineColor="black"
-                          outlineWidth={1}
-                      />
-                    </button>
-                }
-              </div>
-              <AwesomeButton type="primary" disabled={meaningIndex === otherMeanings.length - 1}
-                             onPress={handleNext}>
-                Next
-              </AwesomeButton>
+    <div onClick={handleBGClick} className="z-[18] fixed bg-blue-200/20 w-[100vw] h-[100vh]">
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="overflow-auto border-2 border-blue-700 inset-x-0 mx-auto mt-10 bg-blue-100 z-[101] fixed rounded-lg w-[80vw] h-[80vh]"
+      >
+        <div className={'flex flex-col'}>
+          {memoizedCustomComponent}
+          <div className="z-[100] sticky top-0 h-auto flex flex-row justify-between gap-3 items-center bg-white p-5 rounded-t-lg">
+            <AwesomeButton type="primary" disabled={meaningIndex === 0} onPress={handlePrevious}>
+              Previous
+            </AwesomeButton>
+            <div className="flex flex-wrap gap-2" style={{fontFamily: "Arial", fontSize: "40px"}}>
+              {renderRomajiedContent()}
+              {renderStarButton()}
             </div>
-          </div>
-          <div className="rounded-b-lg text-blue-800 text-lg p-2">
-            <CharacterContent lang={lang} meaningCharacter={meaningCharacter}
-                              setMeaning={setMeaning} subtitleStyling={subtitleStyling}/>
-            <MeaningContent meaningContent={meaningContent} lang={lang} tags={tags}/>
+            <AwesomeButton type="primary" disabled={meaningIndex === otherMeanings.length - 1} onPress={handleNext}>
+              Next
+            </AwesomeButton>
           </div>
         </div>
+        <div className="rounded-b-lg text-blue-800 text-lg p-2">
+          {memoizedCharacterContent}
+          {memoizedMeaningContent}
+        </div>
       </div>
+    </div>
   );
 };
 
