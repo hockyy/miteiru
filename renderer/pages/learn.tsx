@@ -45,7 +45,7 @@ function Learn() {
   const {
     openDeepL,
     openGoogleTranslate
-  } = useTranslationLinks(directInput); // Use the custom hook
+  } = useTranslationLinks(directInput, lang); // Use the custom hook
 
   useEffect(() => {
     if (tokenizerMode !== '' && tokenizeMiteiru) {

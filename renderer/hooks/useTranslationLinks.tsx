@@ -1,7 +1,7 @@
 import {useCallback} from 'react';
 import {shell} from 'electron';
 
-const useTranslationLinks = (content: string) => {
+const useTranslationLinks = (content: string, lang: string) => {
 
   const openDeepL = useCallback(() => {
     const url = `https://www.deepl.com/translator#zh/en/${encodeURIComponent(content)}`;
@@ -9,9 +9,9 @@ const useTranslationLinks = (content: string) => {
   }, [content]);
 
   const openGoogleTranslate = useCallback(() => {
-    const url = `https://translate.google.com/?sl=zh-CN&tl=en&text=${encodeURIComponent(content)}&op=translate`;
+    const url = `https://translate.google.com/?sl=${lang}&tl=en&text=${encodeURIComponent(content)}&op=translate`;
     shell.openExternal(url);
-  }, [content]);
+  }, [content, lang]);
 
   return {
     openDeepL,
