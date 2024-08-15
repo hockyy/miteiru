@@ -36,14 +36,14 @@ function Video() {
     setExternalContent
   } = useContentString();
   const {
-    openDeepL,
-    openGoogleTranslate
-  } = useTranslationLinks(contentString);
-  const {
     tokenizerMode,
     tokenizeMiteiru,
     lang
   } = useMiteiruTokenizer();
+  const {
+    openDeepL,
+    openGoogleTranslate
+  } = useTranslationLinks(contentString, lang);
   const {
     toastInfo,
     setToastInfo
