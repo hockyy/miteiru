@@ -10,11 +10,24 @@ import {basename, dirname, extname, join} from 'path';
 import {parse as parseSRT} from '@plussub/srt-vtt-parser';
 import languageEncoding from "detect-file-encoding-and-language";
 import iconv from "iconv-lite"
-import {isArrayEndsWithMatcher, isSubtitle, isVideo} from "../../renderer/utils/utils";
 import {videoConstants} from "../../renderer/utils/constants";
 
 const store = new Store();
+const isArrayEndsWithMatcher = (path, arrayMatcher) => {
+  for (const videoFormat of arrayMatcher) {
+    if (path.endsWith('.' + videoFormat)) {
+      return true
+    }
+  }
+  return false;
+}
 
+const isVideo = (path) => {
+  return isArrayEndsWithMatcher(path, videoConstants.supportedVideoFormats);
+}
+const isSubtitle = (path) => {
+  return isArrayEndsWithMatcher(path, videoConstants.supportedSubtitleFormats);
+}
 
 export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirectory) => {
 

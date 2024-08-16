@@ -1,6 +1,6 @@
 import {isHiragana, isKatakana, toHiragana} from 'wanakana'
 import {videoConstants} from "../../utils/constants";
-import {randomUUID} from "crypto";
+import {v4 as uuidv4} from 'uuid';
 import {Entry} from "@plussub/srt-vtt-parser/dist/src/types";
 import * as OpenCC from 'opencc-js';
 import {parse as parseASS} from 'ass-compiler';
@@ -149,7 +149,7 @@ export class SubtitleContainer {
 
   constructor(content: string = '', language: string = videoConstants.japaneseLang) {
     this.frequency = new Map();
-    this.id = randomUUID();
+    this.id = uuidv4();
     this.lines = []
     if (content === '') return
     this.language = language

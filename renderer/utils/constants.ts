@@ -11,7 +11,7 @@ export const videoConstants = {
   subtitleEndPlusMultiplier: 8,
   autoPauseMultiplier: 1.02,
   playingClass: ["", "playing"],
-  cjkRegex: /\p{Script=Han}|\p{Script=Hiragana}|\p{Script=Katakana}|\p{Script=Hangul}/gu,
+  cjkRegex: /[\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af\u3000-\u303f]/g,
   cantoneseLang: 'yue',
   englishLang: 'en',
   japaneseLang: 'ja',

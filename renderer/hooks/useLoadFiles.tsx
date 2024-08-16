@@ -5,7 +5,7 @@ import {
   setGlobalSubtitleId,
   SubtitleContainer
 } from "../components/Subtitle/DataStructures";
-import {randomUUID} from "crypto";
+import {v4 as uuidv4} from 'uuid';
 import {TOAST_TIMEOUT} from "../components/VideoPlayer/Toast";
 import {extractVideoId, isLocalPath, isSubtitle, isVideo, isYoutube} from "../utils/utils";
 import {findPositionDeltaInFolder} from "../utils/folderUtils";
@@ -60,12 +60,12 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     if (isSubtitle(currentPath) || isYoutube(currentPath)) {
       setToastInfo({
         message: 'Loading subtitle, please wait!',
-        update: randomUUID()
+        update: uuidv4()
       });
       const toastSetter = setInterval(() => {
         setToastInfo({
           message: 'Still loading subtitle, please wait!',
-          update: randomUUID()
+          update: uuidv4()
         });
       }, TOAST_TIMEOUT);
       const draggedSubtitle = {
@@ -87,7 +87,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
         }
         setToastInfo({
           message: 'Subtitle loaded',
-          update: randomUUID()
+          update: uuidv4()
         });
         if (tmpSub.language === videoConstants.japaneseLang
             || tmpSub.language === videoConstants.cantoneseLang
@@ -95,7 +95,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
           const toastSetter = setInterval(() => {
             setToastInfo({
               message: `${tmpSub.language}: ${tmpSub.progress}`,
-              update: randomUUID()
+              update: uuidv4()
             });
           }, TOAST_TIMEOUT / 10);
           if (tmpSub.language === videoConstants.japaneseLang) {
