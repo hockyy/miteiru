@@ -1,6 +1,5 @@
 import React, {useCallback, useState} from 'react';
 import Head from 'next/head';
-import {ipcRenderer} from 'electron';
 import {ContainerHome} from "../components/VideoPlayer/ContainerHome";
 import {KeyboardHelp} from "../components/VideoPlayer/KeyboardHelp";
 import useMiteiruVersion from "../hooks/useMiteiruVersion";

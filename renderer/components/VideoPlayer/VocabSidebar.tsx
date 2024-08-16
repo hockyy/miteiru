@@ -1,6 +1,5 @@
 // components/VideoPlayer/VocabSidebar.js
 import React, {useCallback, useEffect, useState} from 'react';
-import {ipcRenderer} from 'electron';
 import {getColorGradient, getRelativeTime} from '../../utils/utils';
 import {ArrowRight} from "./Icons";
 import {videoConstants} from "../../utils/constants";

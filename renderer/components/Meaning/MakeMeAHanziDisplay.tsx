@@ -1,5 +1,4 @@
 import React, {useEffect, useRef, useState} from "react";
-import {ipcRenderer} from 'electron';
 
 import {AwesomeButton} from "react-awesome-button";
 
