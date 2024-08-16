@@ -1,4 +1,4 @@
-import {app} from 'electron';
+import {app, protocol} from 'electron';
 import serve from 'electron-serve';
 import {createWindow} from './helpers';
 import fs from "node:fs";
@@ -50,11 +50,19 @@ if (isProd) {
   Learning.setup();
   Learning.registerHandler();
 
+  protocol.registerFileProtocol('miteiru', (request, callback) => {
+    const url = request.url.replace('miteiru://', '');
+    try {
+      return callback(decodeURIComponent(path.normalize(url)));
+    } catch (error) {
+      console.error(error);
+    }
+  });
   if (isProd) {
-    await mainWindow.loadURL('app://./miteiruHome.html');
+    await mainWindow.loadURL('app://./home.html');
   } else {
     const port = process.argv[2];
-    await mainWindow.loadURL(`http://localhost:${port}/miteiruHome`);
+    await mainWindow.loadURL(`http://localhost:${port}/home`);
   }
 })();
 
