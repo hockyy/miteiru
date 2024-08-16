@@ -2,8 +2,9 @@ import parse from "html-react-parser";
 import styled from "styled-components";
 import {CJKStyling, defaultLearningColorStyling} from "../../utils/CJKStyling";
 import React, {useCallback, useEffect, useState} from "react";
-import {randomUUID} from "crypto";
 import {isMixed, toRomaji} from "wanakana"
+import {v4 as uuidv4} from 'uuid';
+
 
 const StyledSentence = styled.button<{ subtitleStyling: CJKStyling }>`
   ruby {
@@ -131,8 +132,13 @@ interface SentenceParam {
 }
 
 export const JapaneseSentence = ({
-                                   origin, setMeaning, separation, extraClass,
-                                   subtitleStyling, basicForm = '', wordMeaning = '',
+                                   origin,
+                                   setMeaning,
+                                   separation,
+                                   extraClass,
+                                   subtitleStyling,
+                                   basicForm = '',
+                                   wordMeaning = '',
                                    changeLearningState = () => '',
                                    getLearningStateClass = () => ''
                                  }: SentenceParam) => {
@@ -215,12 +221,14 @@ export const JapaneseSentence = ({
 }
 
 export const PlainSentence = ({origin}) => {
-  return <div key={randomUUID()}>{parse(origin)}</div>
+  return <div key={uuidv4()}>{parse(origin)}</div>
 }
 
 export const KanjiSentence = ({
-                                setMeaning, separation,
-                                extraClass, subtitleStyling,
+                                setMeaning,
+                                separation,
+                                extraClass,
+                                subtitleStyling,
                               }: SentenceParam) => {
   const handleChange = useCallback((newWord) => {
     navigator.clipboard.writeText(newWord);
@@ -258,8 +266,10 @@ export const KanjiSentence = ({
 
 
 export const HanziSentence = ({
-                                origin, setMeaning,
-                                extraClass, subtitleStyling,
+                                origin,
+                                setMeaning,
+                                extraClass,
+                                subtitleStyling,
                                 pinyin
                               }: SentenceParam) => {
   const handleChange = useCallback((newWord) => {
@@ -280,7 +290,7 @@ export const HanziSentence = ({
                 handleChange(val)
               }}><>{val}</>
           </StyledChineseSentence>
-          <rt className={"unselectable"}>{index < (pinyin??'').length ? pinyin[index] : ''}</rt>
+          <rt className={"unselectable"}>{index < (pinyin ?? '').length ? pinyin[index] : ''}</rt>
         </ruby>
       </ruby>
     })}

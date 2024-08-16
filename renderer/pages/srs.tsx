@@ -1,5 +1,4 @@
 import React, {useCallback, useEffect, useState} from "react";
-import {ipcRenderer} from "electron";
 import "react-awesome-button/dist/styles.css";
 import Head from "next/head";
 import useMeaning from "../hooks/useMeaning";
@@ -11,7 +10,8 @@ import {defaultLearningStyling} from "../utils/CJKStyling";
 import {useStoreData} from "../hooks/useStoreData";
 import {AwesomeButton} from "react-awesome-button";
 import {
-  ConveyanceQuizDisplay, ReadingQuizDisplay,
+  ConveyanceQuizDisplay,
+  ReadingQuizDisplay,
   WritingQuizDisplay
 } from "../components/Meaning/QuizDisplay";
 import {learningConstants} from "../utils/constants";
@@ -53,7 +53,7 @@ const SRS = () => {
   );
 
   const fetchQuestion = useCallback(async (kind:number) => {
-    const question = await ipcRenderer.invoke("learn-getOneQuestion", lang, kind);
+    const question = await window.ipc.invoke("learn-getOneQuestion", lang, kind);
     setQuestionData(question);
   }, [lang]);
 
@@ -66,7 +66,7 @@ const SRS = () => {
   }, [fetchQuestion, questionCounter]);
 
   const handleAnswer = useCallback(async (score: number) => {
-    await ipcRenderer.invoke(
+    await window.ipc.invoke(
         "learn-updateOneCharacter",
         questionData.skillType,
         lang,

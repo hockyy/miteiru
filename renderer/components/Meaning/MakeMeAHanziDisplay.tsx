@@ -1,5 +1,4 @@
 import React, {useEffect, useRef, useState} from "react";
-import {ipcRenderer} from 'electron';
 
 import {AwesomeButton} from "react-awesome-button";
 
@@ -9,7 +8,7 @@ const MakeMeAHanziDisplay = ({character}) => {
   useEffect(() => {
     if (character) {
       const filename = character.charCodeAt(0) + '.svg';
-      ipcRenderer.invoke("readHanziSVG", filename).then(val => {
+      window.ipc.invoke("readHanziSVG", filename).then(val => {
         const addSize = val.replace('<svg ', '<svg width=109 height=109 ');
         setSvgData(addSize);
       });

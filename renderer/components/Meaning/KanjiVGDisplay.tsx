@@ -1,5 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react';
-import {ipcRenderer} from 'electron';
+import React, {useEffect, useRef, useState} from 'react';
 import {AwesomeButton} from "react-awesome-button";
 
 const KanjiVGDisplay = ({filename}) => {
@@ -10,7 +9,7 @@ const KanjiVGDisplay = ({filename}) => {
 
   useEffect(() => {
     if (filename) {
-      ipcRenderer.invoke("readKanjiSVG", filename).then(val => {
+      window.ipc.invoke("readKanjiSVG", filename).then(val => {
         setSvgData(val);
       });
     }

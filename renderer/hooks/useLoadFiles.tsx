@@ -5,12 +5,11 @@ import {
   setGlobalSubtitleId,
   SubtitleContainer
 } from "../components/Subtitle/DataStructures";
-import {randomUUID} from "crypto";
+import {v4 as uuidv4} from 'uuid';
 import {TOAST_TIMEOUT} from "../components/VideoPlayer/Toast";
 import {extractVideoId, isLocalPath, isSubtitle, isVideo, isYoutube} from "../utils/utils";
 import {findPositionDeltaInFolder} from "../utils/folderUtils";
 import {useAsyncAwaitQueue} from "./useAsyncAwaitQueue";
-import {ipcRenderer} from 'electron';
 import {videoConstants} from "../utils/constants";
 
 const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
@@ -61,12 +60,12 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     if (isSubtitle(currentPath) || isYoutube(currentPath)) {
       setToastInfo({
         message: 'Loading subtitle, please wait!',
-        update: randomUUID()
+        update: uuidv4()
       });
       const toastSetter = setInterval(() => {
         setToastInfo({
           message: 'Still loading subtitle, please wait!',
-          update: randomUUID()
+          update: uuidv4()
         });
       }, TOAST_TIMEOUT);
       const draggedSubtitle = {
@@ -88,7 +87,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
         }
         setToastInfo({
           message: 'Subtitle loaded',
-          update: randomUUID()
+          update: uuidv4()
         });
         if (tmpSub.language === videoConstants.japaneseLang
             || tmpSub.language === videoConstants.cantoneseLang
@@ -96,7 +95,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
           const toastSetter = setInterval(() => {
             setToastInfo({
               message: `${tmpSub.language}: ${tmpSub.progress}`,
-              update: randomUUID()
+              update: uuidv4()
             });
           }, TOAST_TIMEOUT / 10);
           if (tmpSub.language === videoConstants.japaneseLang) {
@@ -114,7 +113,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
         }
       };
       if (isYoutube(currentPath)) {
-        ipcRenderer.invoke("getYoutubeSubtitle", extractVideoId(currentPath), videoConstants.englishLang).then(entries => {
+        window.ipc.invoke("getYoutubeSubtitle", extractVideoId(currentPath), videoConstants.englishLang).then(entries => {
           entries = convertSubtitlesToEntries(entries)
           const tmpSub = SubtitleContainer.createFromArrayEntries(
               null, entries, lang, primaryStyling.forceSimplified)
@@ -122,7 +121,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
         })
         const langList = videoConstants.varLang[lang] ?? [];
         for (const findLang of langList) {
-          ipcRenderer.invoke("getYoutubeSubtitle", extractVideoId(currentPath), findLang).then(entries => {
+          window.ipc.invoke("getYoutubeSubtitle", extractVideoId(currentPath), findLang).then(entries => {
             entries = convertSubtitlesToEntries(entries)
             const tmpSub = SubtitleContainer.createFromArrayEntries(
                 null, entries, lang, primaryStyling.forceSimplified);
@@ -140,7 +139,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     if (!isLocalPath(videoSrc.path)) return;
     if (videoSrc.path) {
       const nextVideo = findPositionDeltaInFolder(videoSrc.path, delta);
-      if (nextVideo !== '') {
+      if (await nextVideo !== '') {
         await onLoadFiles([{path: nextVideo}]);
       } else {
         setEnableSeeker(true);
@@ -148,13 +147,13 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     }
     if (primarySub.path) {
       const nextPrimary = findPositionDeltaInFolder(primarySub.path, delta);
-      if (nextPrimary !== '') {
+      if (await nextPrimary !== '') {
         await onLoadFiles([{path: nextPrimary}]);
       }
     }
     if (secondarySub.path) {
       const nextSecondary = findPositionDeltaInFolder(secondarySub.path, delta);
-      if (nextSecondary !== '') {
+      if (await nextSecondary !== '') {
         await onLoadFiles([{path: nextSecondary}]);
       }
     }
