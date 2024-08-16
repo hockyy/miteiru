@@ -1,5 +1,4 @@
 import React, {useCallback, useEffect, useMemo, useState} from "react";
-import {ipcRenderer, shell} from "electron";
 import {HanziSentence, KanjiSentence} from "../Subtitle/Sentence";
 import {defaultLearningColorStyling, defaultMeaningBoxStyling} from "../../utils/CJKStyling";
 import {joinString} from "../../utils/utils";
@@ -11,7 +10,12 @@ import {videoConstants} from "../../utils/constants";
 import MakeMeAHanziDisplay from "./MakeMeAHanziDisplay";
 import {FaStar} from 'react-icons/fa';
 
-const OutlinedStar = ({color, size, outlineColor = 'black', outlineWidth = 1}) => {
+const OutlinedStar = ({
+                        color,
+                        size,
+                        outlineColor = 'black',
+                        outlineWidth = 1
+                      }) => {
   const id = `star-outline-${color.replace('#', '')}`;
 
   return (
@@ -47,15 +51,15 @@ const getStarColor = (learningState) => {
 };
 
 const MeaningBox = ({
-  meaning,
-  setMeaning,
-  tokenizeMiteiru,
-  subtitleStyling = defaultMeaningBoxStyling,
-  customComponent = null,
-  lang,
-  changeLearningState = null,
-  getLearningState = null
-}) => {
+                      meaning,
+                      setMeaning,
+                      tokenizeMiteiru,
+                      subtitleStyling = defaultMeaningBoxStyling,
+                      customComponent = null,
+                      lang,
+                      changeLearningState = null,
+                      getLearningState = null
+                    }) => {
   const [meaningContent, setMeaningContent] = useState(initialContentState);
   const [meaningCharacter, setMeaningCharacter] = useState(initialCharacterContentState);
   const [otherMeanings, setOtherMeanings] = useState([]);
@@ -91,12 +95,18 @@ const MeaningBox = ({
     const fetchCharacterData = async () => {
       if (meaning.length === 1) {
         if (lang === videoConstants.japaneseLang && isKanji(meaning)) {
-          const result = await ipcRenderer.invoke("queryKanji", meaning);
-          const waniResult = await ipcRenderer.invoke("getWaniKanji", meaning);
-          setMeaningCharacter({...result, wanikani: waniResult});
+          const result = await window.ipc.invoke("queryKanji", meaning);
+          const waniResult = await window.ipc.invoke("getWaniKanji", meaning);
+          setMeaningCharacter({
+            ...result,
+            wanikani: waniResult
+          });
         } else if (lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang) {
-          const result = await ipcRenderer.invoke("queryHanzi", meaning);
-          setMeaningCharacter({...result, literal: meaning[0]});
+          const result = await window.ipc.invoke("queryHanzi", meaning);
+          setMeaningCharacter({
+            ...result,
+            literal: meaning[0]
+          });
         }
       } else {
         setMeaningCharacter(initialCharacterContentState);
@@ -106,13 +116,13 @@ const MeaningBox = ({
     const fetchMeaningData = async () => {
       let entries = [];
       if (lang === videoConstants.japaneseLang) {
-        entries = await ipcRenderer.invoke('queryJapanese', meaning, 5);
+        entries = await window.ipc.invoke('queryJapanese', meaning, 5);
         entries.forEach(entry => {
           entry.single = entry.kanji.length ? entry.kanji : [{text: meaning}];
         });
-        setTags(await ipcRenderer.invoke('japaneseTags'));
+        setTags(await window.ipc.invoke('japaneseTags'));
       } else if (lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang) {
-        entries = await ipcRenderer.invoke('queryChinese', meaning, 5);
+        entries = await window.ipc.invoke('queryChinese', meaning, 5);
         entries.forEach(entry => {
           entry.single = entry.content.split('，').map(text => ({text}));
         });
@@ -144,15 +154,18 @@ const MeaningBox = ({
     const fetchRomajiedData = async () => {
       if (lang === videoConstants.japaneseLang) {
         const data = await Promise.all(
-          meaningContent.single.map(async (val) => ({
-            key: val.key,
-            romajied: await tokenizeMiteiru(val.text)
-          }))
+            meaningContent.single.map(async (val) => ({
+              key: val.key,
+              romajied: await tokenizeMiteiru(val.text)
+            }))
         );
         setRomajiedData(data);
       } else if (lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang) {
         const usedData = (meaningContent && meaningContent.simplified && meaningContent.simplified.includes(meaning)) ? meaningContent.simplified : meaningContent.content;
-        const data = [{key: 0, romajied: (await tokenizeMiteiru(usedData))}];
+        const data = [{
+          key: 0,
+          romajied: (await tokenizeMiteiru(usedData))
+        }];
         setRomajiedData(data);
       }
     };
@@ -161,78 +174,89 @@ const MeaningBox = ({
   }, [lang, meaning, meaningContent, tokenizeMiteiru]);
 
   const renderRomajiedContent = useCallback(() => (
-    romajiedData.map(({key, romajied}) => (
-      <RomajiedContent
-        key={key}
-        romajied={romajied}
-        lang={lang}
-        setMeaning={setMeaning}
-        subtitleStyling={subtitleStyling}
-      />
-    ))
+      romajiedData.map(({
+                          key,
+                          romajied
+                        }) => (
+          <RomajiedContent
+              key={key}
+              romajied={romajied}
+              lang={lang}
+              setMeaning={setMeaning}
+              subtitleStyling={subtitleStyling}
+          />
+      ))
   ), [romajiedData, lang, setMeaning, subtitleStyling]);
 
   const renderStarButton = useCallback(() => (
-    getLearningState && changeLearningState && (
-      <button onClick={handleStarClick} className="ml-4">
-        <OutlinedStar
-          color={getStarColor(getLearningState(meaning))}
-          size={24}
-          outlineColor="black"
-          outlineWidth={1}
-        />
-      </button>
-    )
+      getLearningState && changeLearningState && (
+          <button onClick={handleStarClick} className="ml-4">
+            <OutlinedStar
+                color={getStarColor(getLearningState(meaning))}
+                size={24}
+                outlineColor="black"
+                outlineWidth={1}
+            />
+          </button>
+      )
   ), [getLearningState, changeLearningState, handleStarClick, meaning]);
 
   const memoizedCustomComponent = useMemo(() => customComponent, [customComponent]);
 
   const memoizedCharacterContent = useMemo(() => (
-    <CharacterContent
-      lang={lang}
-      meaningCharacter={meaningCharacter}
-      setMeaning={setMeaning}
-      subtitleStyling={subtitleStyling}
-    />
+      <CharacterContent
+          lang={lang}
+          meaningCharacter={meaningCharacter}
+          setMeaning={setMeaning}
+          subtitleStyling={subtitleStyling}
+      />
   ), [lang, meaningCharacter, setMeaning, subtitleStyling]);
 
   const memoizedMeaningContent = useMemo(() => (
-    <MeaningContent meaningContent={meaningContent} lang={lang} tags={tags} />
+      <MeaningContent meaningContent={meaningContent} lang={lang} tags={tags}/>
   ), [meaningContent, lang, tags]);
 
   if (meaningContent.single.length === 0) return null;
 
   return (
-    <div onClick={handleBGClick} className="z-[18] fixed bg-blue-200/20 w-[100vw] h-[100vh]">
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="overflow-auto border-2 border-blue-700 inset-x-0 mx-auto mt-10 bg-blue-100 z-[101] fixed rounded-lg w-[80vw] h-[80vh]"
-      >
-        <div className={'flex flex-col'}>
-          {memoizedCustomComponent}
-          <div className="z-[100] sticky top-0 h-auto flex flex-row justify-between gap-3 items-center bg-white p-5 rounded-t-lg">
-            <AwesomeButton type="primary" disabled={meaningIndex === 0} onPress={handlePrevious}>
-              Previous
-            </AwesomeButton>
-            <div className="flex flex-wrap gap-2" style={{fontFamily: "Arial", fontSize: "40px"}}>
-              {renderRomajiedContent()}
-              {renderStarButton()}
+      <div onClick={handleBGClick} className="z-[18] fixed bg-blue-200/20 w-[100vw] h-[100vh]">
+        <div
+            onClick={(e) => e.stopPropagation()}
+            className="overflow-auto border-2 border-blue-700 inset-x-0 mx-auto mt-10 bg-blue-100 z-[101] fixed rounded-lg w-[80vw] h-[80vh]"
+        >
+          <div className={'flex flex-col'}>
+            {memoizedCustomComponent}
+            <div
+                className="z-[100] sticky top-0 h-auto flex flex-row justify-between gap-3 items-center bg-white p-5 rounded-t-lg">
+              <AwesomeButton type="primary" disabled={meaningIndex === 0} onPress={handlePrevious}>
+                Previous
+              </AwesomeButton>
+              <div className="flex flex-wrap gap-2" style={{
+                fontFamily: "Arial",
+                fontSize: "40px"
+              }}>
+                {renderRomajiedContent()}
+                {renderStarButton()}
+              </div>
+              <AwesomeButton type="primary" disabled={meaningIndex === otherMeanings.length - 1}
+                             onPress={handleNext}>
+                Next
+              </AwesomeButton>
             </div>
-            <AwesomeButton type="primary" disabled={meaningIndex === otherMeanings.length - 1} onPress={handleNext}>
-              Next
-            </AwesomeButton>
+          </div>
+          <div className="rounded-b-lg text-blue-800 text-lg p-2">
+            {memoizedCharacterContent}
+            {memoizedMeaningContent}
           </div>
         </div>
-        <div className="rounded-b-lg text-blue-800 text-lg p-2">
-          {memoizedCharacterContent}
-          {memoizedMeaningContent}
-        </div>
       </div>
-    </div>
   );
 };
 
-const ExternalLinkComponent = ({lang, queryText}) => {
+const ExternalLinkComponent = ({
+                                 lang,
+                                 queryText
+                               }) => {
   if (lang === videoConstants.japaneseLang) {
     return <ExternalLink style={{color: "black"}} urlBase="https://jisho.org/search/"
                          displayText="Jisho" query={queryText}/>;
@@ -244,7 +268,12 @@ const ExternalLinkComponent = ({lang, queryText}) => {
   return null;
 };
 
-const CharacterContent = ({lang, meaningCharacter, setMeaning, subtitleStyling}) => {
+const CharacterContent = ({
+                            lang,
+                            meaningCharacter,
+                            setMeaning,
+                            subtitleStyling
+                          }) => {
   if (!meaningCharacter.literal) return null;
 
   if (lang === videoConstants.japaneseLang) {
@@ -257,7 +286,11 @@ const CharacterContent = ({lang, meaningCharacter, setMeaning, subtitleStyling})
   return null;
 };
 
-const MeaningContent = ({meaningContent, lang, tags}) => {
+const MeaningContent = ({
+                          meaningContent,
+                          lang,
+                          tags
+                        }) => {
   if (meaningContent.sense) {
     return meaningContent.sense.map((sense, idxSense) => meaningBoxEntry(sense, idxSense, tags));
   }
@@ -267,7 +300,12 @@ const MeaningContent = ({meaningContent, lang, tags}) => {
   return null;
 };
 
-const RomajiedContent = ({romajied, lang, setMeaning, subtitleStyling}) => {
+const RomajiedContent = ({
+                           romajied,
+                           lang,
+                           setMeaning,
+                           subtitleStyling
+                         }) => {
   const queryText = romajied.reduce((acc, next) => acc + next.origin, "");
   return (
       <div className="flex flex-col justify-between items-center gap-2">
@@ -301,14 +339,14 @@ const entryClasses = "bg-white rounded-lg flex flex-col gap-2 border-2 m-4 hover
 const WaniKaniComponent = ({slug}) => {
   const handleClick = (event) => {
     event.preventDefault();
-    shell.openExternal(`https://www.wanikani.com/radicals/${slug}`);
+    window.electronAPI.openExternal(`https://www.wanikani.com/radicals/${slug}`);
   };
 
 
   const [radicalDisplay, setRadicalDisplay] = useState('');
   const [radicalName, setRadicalName] = useState('');
   useEffect(() => {
-    ipcRenderer.invoke("getWaniRadical", slug)
+    window.ipc.invoke("getWaniRadical", slug)
     .then(radical => {
       setRadicalDisplay(radical.character);
       setRadicalName(radical.meaning);
@@ -614,7 +652,7 @@ const ExternalLink = ({
                       }) => {
   const handleClick = (event) => {
     event.preventDefault();
-    shell.openExternal(`${urlBase}${query}`);
+    window.electronAPI.openExternal(`${urlBase}${query}`);
   };
 
   return (

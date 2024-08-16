@@ -1,6 +1,5 @@
 import {useCallback, useEffect, useState} from 'react';
-import {ipcRenderer} from "electron";
-import {getFurigana, processKuromojinToSeparations, ShunouWordWithSeparations} from "shunou";
+import {ShunouWordWithSeparations} from "shunou";
 import Conjugator from 'jp-verbs';
 import {videoConstants} from "../utils/constants";
 
@@ -86,7 +85,7 @@ const parseVerbs = async (res) => {
         baseVerb += res[baseIndex[j]].origin;
       }
       baseVerb += res[baseIndex[baseIndex.length - 1]].basicForm;
-      // const existance = await ipcRenderer.invoke('exactQuery', baseVerb);
+      // const existance = await window.ipc.invoke('exactQuery', baseVerb);
       // if(existance.length === 0) baseVerb = '';
       // Filter all unconjugation result and find the correct base
       currentUnconjugation = currentUnconjugation.filter(result => {
@@ -127,28 +126,31 @@ const parseVerbs = async (res) => {
   return newRes;
 }
 
-const useMiteiruTokenizer = (): { tokenizeMiteiru: (sentence: string) => Promise<any[]>, tokenizerMode: string, lang: string } => {
+const useMiteiruTokenizer = (): {
+  tokenizeMiteiru: (sentence: string) => Promise<any[]>,
+  tokenizerMode: string,
+  lang: string
+} => {
   const [tokenizerMode, setMode] = useState('');
 
   useEffect(() => {
-    ipcRenderer.invoke('getTokenizerMode').then(val => {
+    window.ipc.invoke('getTokenizerMode').then(val => {
       setMode(val);
     });
   }, []);
   const tokenizeMiteiru = useCallback(async (sentence) => {
     let res = []
     if (tokenizerMode === 'kuromoji') {
-      const kuromojiEntries = await ipcRenderer.invoke('tokenizeUsingKuromoji', sentence)
-      res = processKuromojinToSeparations(kuromojiEntries);
+      const kuromojiEntries = await window.ipc.invoke('tokenizeUsingKuromoji', sentence)
+      res = await window.shunou.processKuromojinToSeparations(kuromojiEntries);
       res = await parseVerbs(res);
     } else if (tokenizerMode === "cantonese") {
-      // res = await ipcRenderer.invoke('tokenizeUsingPyCantonese', sentence);
-      res = await ipcRenderer.invoke('tokenizeUsingCantoneseJieba', sentence);
+      res = await window.ipc.invoke('tokenizeUsingCantoneseJieba', sentence);
     } else if (tokenizerMode.includes('mecab')) {
-      res = getFurigana(sentence, tokenizerMode);
+      res = await window.shunou.getFurigana(sentence, tokenizerMode);
       res = await parseVerbs(res);
     } else if (tokenizerMode === "jieba") {
-      res = await ipcRenderer.invoke('tokenizeUsingJieba', sentence);
+      res = await window.ipc.invoke('tokenizeUsingJieba', sentence);
     }
     return res;
   }, [tokenizerMode]);
