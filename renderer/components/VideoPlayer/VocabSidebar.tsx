@@ -18,7 +18,7 @@ const VocabSidebar = ({
 
   const loadVocabulary = useCallback(async () => {
     try {
-      const loadedState = await ipcRenderer.invoke('loadLearningState', lang);
+      const loadedState = await window.ipc.invoke('loadLearningState', lang);
       const sorted = Object.entries(loadedState).sort((a: any[], b: any[]) => b[1].updTime - a[1].updTime);
       setSortedVocab(sorted);
     } catch (error) {

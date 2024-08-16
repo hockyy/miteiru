@@ -1,23 +1,26 @@
-import fs from 'node:fs';
-import {parse as parseSRT} from '@plussub/srt-vtt-parser';
-import {parse as parseASS} from 'ass-compiler';
-import languageEncoding from "detect-file-encoding-and-language";
-import iconv from "iconv-lite"
-import {ipcRenderer} from "electron";
 import {isHiragana, isKatakana, toHiragana} from 'wanakana'
 import {videoConstants} from "../../utils/constants";
 import {randomUUID} from "crypto";
 import {Entry} from "@plussub/srt-vtt-parser/dist/src/types";
 import * as OpenCC from 'opencc-js';
+import {parse as parseASS} from 'ass-compiler';
 
 function removeTags(text) {
   const regex = /\{\\.+?}/g;
   return text.replace(regex, '');
 }
 
-const toSimplified = OpenCC.Converter({ from: 'tw', to: 'cn' });
-const toTraditional = OpenCC.Converter({ from: 'cn', to: 'tw' });
-const noChanger = (text: string) => {return text};
+const toSimplified = OpenCC.Converter({
+  from: 'tw',
+  to: 'cn'
+});
+const toTraditional = OpenCC.Converter({
+  from: 'cn',
+  to: 'tw'
+});
+const noChanger = (text: string) => {
+  return text
+};
 
 function preProcess(text, accentChanger = noChanger) {
   const removedTag = removeTags(text);
@@ -52,7 +55,7 @@ export class Line {
       const target = word.basicForm;
       frequency.set(target, (frequency.get(target) ?? 0) + 1);
       if ((isHiragana(target) || isKatakana(target)) && target.length <= 3) continue;
-      await ipcRenderer.invoke('queryJapanese', target, 2).then(val => {
+      await window.ipc.invoke('queryJapanese', target, 2).then(val => {
         let got = 0;
         for (const entry of val) {
           if (got) break;
@@ -89,7 +92,7 @@ export class Line {
       const word = this.content[i];
       const target = word.origin;
       frequency.set(target, (frequency.get(target) ?? 0) + 1);
-      await ipcRenderer.invoke('queryChinese', target, 3).then(val => {
+      await window.ipc.invoke('queryChinese', target, 3).then(val => {
         let got = 0;
         for (const entry of val) {
           if (got) break;
@@ -154,28 +157,43 @@ export class SubtitleContainer {
     return
   }
 
-  static async create(filename: string, lang: string, isSimplified : boolean) {
+  static async create(filename: string, lang: string, isSimplified: boolean) {
     if (filename === '') return
     const subtitleContainer = new SubtitleContainer();
     subtitleContainer.path = filename;
-    let entries;
-    const buffer = await fs.promises.readFile(filename)
-    const blob = new Blob([buffer]);
 
-    const currentData = await languageEncoding(blob);
-    const text = iconv.decode(buffer, currentData.encoding)
-    if (filename.endsWith('.ass')) {
-      entries = parseAssSubtitle(text);
-    } else {
-      const data = parseSRT(text);
-      entries = data.entries;
+    try {
+      const parsedSubtitle = await window.electronAPI.parseSubtitle(filename);
+
+      let entries;
+      if (parsedSubtitle.type === 'ass') {
+        const assData = parseASS(parsedSubtitle.content);
+        entries = this.parseAssSubtitle(assData);
+      } else {
+        entries = parsedSubtitle.content.entries;
+      }
+
+      this.createFromArrayEntries(subtitleContainer, entries, lang, isSimplified);
+      return subtitleContainer;
+    } catch (error) {
+      console.error('Error parsing subtitle:', error);
+      return null;
     }
-    this.createFromArrayEntries(subtitleContainer, entries, lang, isSimplified);
-    return subtitleContainer;
+  }
+
+  static parseAssSubtitle(parsedASS) {
+    return parsedASS.events.dialogue.map((event, index) => {
+      return {
+        id: index.toString(),
+        from: Math.round(event.Start * 1000),
+        to: Math.round(event.End * 1000),
+        text: event.Text.combined.replace(/\\N/g, '\n')
+      };
+    });
   }
 
 
-  static createFromArrayEntries(subtitleContainer: SubtitleContainer, entries: Entry[], lang: string, isSimplified : boolean = true) {
+  static createFromArrayEntries(subtitleContainer: SubtitleContainer, entries: Entry[], lang: string, isSimplified: boolean = true) {
     if (subtitleContainer === null) {
       subtitleContainer = new SubtitleContainer();
     }
@@ -190,14 +208,18 @@ export class SubtitleContainer {
     subtitleContainer.language = videoConstants.englishLang;
     if (ans >= 3) subtitleContainer.language = lang;
     let last = 0;
-    for (const {from, to, text} of entries) {
+    for (const {
+      from,
+      to,
+      text
+    } of entries) {
       // process transcript entry
       const realFrom = Math.max(from - videoConstants.subtitleFramerate * videoConstants.subtitleStartPlusMultiplier, last);
       const realTo = to + videoConstants.subtitleFramerate * videoConstants.subtitleEndPlusMultiplier;
-      if(realFrom > realTo) continue;
+      if (realFrom > realTo) continue;
       let changeAccent = noChanger;
-      if(lang === videoConstants.chineseLang) {
-        if(isSimplified) changeAccent = toSimplified;
+      if (lang === videoConstants.chineseLang) {
+        if (isSimplified) changeAccent = toSimplified;
         else changeAccent = toTraditional;
       }
       subtitleContainer.lines.push(new Line(Math.max(from, last), realTo, preProcess(text, changeAccent)));
@@ -255,19 +277,6 @@ export function getLineByTime(subtitle: SubtitleContainer, t: number) {
       meaning: []
     };
   }
-}
-
-function parseAssSubtitle(text: string) {
-  const parsedASS = parseASS(text);
-  // Extract plain-text dialogue lines
-  return parsedASS.events.dialogue.map((event, index) => {
-    return {
-      id: index.toString(),
-      from: Math.round(event.Start * 1000),
-      to: Math.round(event.End * 1000),
-      text: event.Text.combined.replace(/\\N/g, '\n')
-    };
-  });
 }
 
 interface YoutubeSubtitleEntry {

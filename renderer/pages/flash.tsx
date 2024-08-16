@@ -1,6 +1,5 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import Head from 'next/head';
-import {ipcRenderer} from 'electron';
 import "react-awesome-button/dist/styles.css";
 import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
 import MeaningBox from '../components/Meaning/MeaningBox';
@@ -53,7 +52,7 @@ const VocabFlashCards = () => {
 
   const loadVocabulary = useCallback(async () => {
     try {
-      const loadedState = await ipcRenderer.invoke('loadLearningState', lang);
+      const loadedState = await window.ipc.invoke('loadLearningState', lang);
       const sorted = Object.entries(loadedState).sort((a: any[], b: any[]) => b[1].updTime - a[1].updTime);
       setSortedVocab(sorted);
       if (sorted.length > 0) {

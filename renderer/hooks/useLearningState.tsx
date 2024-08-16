@@ -40,13 +40,13 @@ const useLearningState = (lang: string) => {
         level: nextVal,
         updTime: updTime
       };
-      ipcRenderer.invoke('updateContent', content, lang, newCopy[content]);
+      window.ipc.invoke('updateContent', content, lang, newCopy[content]);
       return newCopy;
     });
   }, [getLearningState, lang]);
 
   useEffect(() => {
-    ipcRenderer.invoke('loadLearningState', lang).then((val) => {
+    window.ipc.invoke('loadLearningState', lang).then((val) => {
       setLearningState(val);
     })
   }, [lang]);

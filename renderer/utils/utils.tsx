@@ -60,22 +60,22 @@ const getFormattedNameFromPath = (path) => {
   return path ? (' - ' + pathList[pathList.length - 1]) : ''
 
 }
+
 export const getMiteiruVideoTitle = (videoPath = '', primarySub = '', secondarySub = '', showPrimarySub: boolean, showSecondarySub: boolean) => {
   let tmpTitle = `Miteiru${getFormattedNameFromPath(videoPath)}${getFormattedNameFromPath(primarySub)}${getFormattedNameFromPath(secondarySub)}`
   tmpTitle += `-CJK${showPrimarySub ? '✅' : '❌'}-Other${showSecondarySub ? '✅' : '❌'}`
   return tmpTitle
 }
 
-
 export const toTime = (time: number) => {
   time = Math.trunc(time)
-  let seconds = time % 60;
+  const seconds = time % 60;
   time -= seconds;
   time /= 60;
-  let minutes = time % 60;
+  const minutes = time % 60;
   time -= minutes;
   time /= 60;
-  let hours = time;
+  const hours = time;
 
   return `${hours > 0 ? (hours + ':') : ''}${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
 }

@@ -1,7 +1,6 @@
-import {app, protocol} from 'electron';
+import {app} from 'electron';
 import serve from 'electron-serve';
 import {createWindow} from './helpers';
-import {requestHandler, scheme} from "./protocol";
 import fs from "node:fs";
 import path from "path";
 import {registerCommonHandlers} from "./handler/common";
@@ -52,10 +51,10 @@ if (isProd) {
   Learning.registerHandler();
 
   if (isProd) {
-    await mainWindow.loadURL('app://./home.html');
+    await mainWindow.loadURL('app://./miteiruHome.html');
   } else {
     const port = process.argv[2];
-    await mainWindow.loadURL(`http://localhost:${port}/home`);
+    await mainWindow.loadURL(`http://localhost:${port}/miteiruHome`);
   }
 })();
 

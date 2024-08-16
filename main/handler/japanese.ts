@@ -5,10 +5,14 @@ import path from "path";
 import {readJsonFile} from "../utils";
 import fs from "node:fs";
 import {getTokenizer} from "kuromojin";
+import {getFurigana, processKuromojinToSeparations} from "shunou";
 
 class Japanese {
 
-  static Dict = {db: null, tags: {}};
+  static Dict = {
+    db: null,
+    tags: {}
+  };
   static KanjiDict = {db: null};
 
   static wanikanji;
@@ -69,6 +73,7 @@ class Japanese {
       return e.message;
     }
   }
+
   /**
    * TODO: Refactor this koakowakowakowko males bgt anjing
    */
@@ -154,6 +159,14 @@ class Japanese {
         return ''
       }
     })
+
+    ipcMain.handle('shunou-getFurigana', async (event, sentence, mode) => {
+      return getFurigana(sentence, mode);
+    });
+
+    ipcMain.handle('shunou-processKuromojinToSeparations', async (event, kuromojiEntries) => {
+      return processKuromojinToSeparations(kuromojiEntries);
+    });
   }
 
 }
