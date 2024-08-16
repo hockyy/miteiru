@@ -1,7 +1,7 @@
 import {charAnywhere, charBeginning, hanzi, setup as wrapperChinese} from "cc-chinese-wrapper";
 import {ipcMain} from "electron";
 import path from "path";
-import fs from "fs";
+import fs from "node:fs";
 import {pinyin} from "pinyin-pro";
 import ToJyutping from "to-jyutping";
 import {loadDict, cut} from '@node-rs/jieba'

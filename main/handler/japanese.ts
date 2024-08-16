@@ -3,7 +3,7 @@ import {getTags, kanjiBeginning, readingBeginning, setup as wrapperJM} from "jmd
 import {search, setup as wrapperKanji} from "kanjidic-wrapper";
 import path from "path";
 import {readJsonFile} from "../utils";
-import fs from "fs";
+import fs from "node:fs";
 import {getTokenizer} from "kuromojin";
 
 class Japanese {

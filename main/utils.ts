@@ -1,5 +1,5 @@
 // Async function to read a JSON file and parse its content
-import fs from "fs";
+import fs from "node:fs";
 
 export async function readJsonFile(filePath) {
   return new Promise((resolve, reject) => {

@@ -2,7 +2,7 @@ import {app, protocol} from 'electron';
 import serve from 'electron-serve';
 import {createWindow} from './helpers';
 import {requestHandler, scheme} from "./protocol";
-import fs from "fs";
+import fs from "node:fs";
 import path from "path";
 import {registerCommonHandlers} from "./handler/common";
 import {registerStartupHandlers} from "./handler/startup";
@@ -34,8 +34,11 @@ if (isProd) {
   const mainWindow = createWindow('main', {
     width: 1000,
     height: 600,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+    },
     icon: path.join(__dirname, 'images/logo.png')
-  });
+  })
 
   registerCommonHandlers(getTokenizer, packageJson, appDataDirectory);
   registerStartupHandlers(setTokenizer, appDataDirectory);
@@ -48,13 +51,11 @@ if (isProd) {
   Learning.setup();
   Learning.registerHandler();
 
-  protocol.registerFileProtocol(scheme, requestHandler); /* eng-disable PROTOCOL_HANDLER_JS_CHECK */
   if (isProd) {
     await mainWindow.loadURL('app://./home.html');
   } else {
     const port = process.argv[2];
     await mainWindow.loadURL(`http://localhost:${port}/home`);
-    mainWindow.webContents.openDevTools();
   }
 })();
 

@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'node:fs';
 import {parse as parseSRT} from '@plussub/srt-vtt-parser';
 import {parse as parseASS} from 'ass-compiler';
 import languageEncoding from "detect-file-encoding-and-language";

@@ -1,6 +1,6 @@
 import {dialog, ipcMain} from "electron";
 import {getSubtitles} from "../helpers/getSubtitles";
-import fs from "fs";
+import fs from "node:fs";
 import Japanese from "./japanese";
 import Chinese from "./chinese";
 
