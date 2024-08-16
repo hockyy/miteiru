@@ -171,8 +171,7 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
   ipcMain.handle('parse-subtitle', async (event, filename) => {
     try {
       const buffer = await fsPromises.readFile(filename);
-      const blob = new Blob([buffer]);
-      const currentData = await languageEncoding(blob);
+      const currentData = await languageEncoding(buffer);
       const text = iconv.decode(buffer, currentData.encoding);
 
       if (filename.toLowerCase().endsWith('.ass')) {
@@ -225,6 +224,19 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
     } catch (error) {
       console.error('Error reading directory:', error);
       return '';
+    }
+  });
+
+  ipcMain.handle('read-video-file', async (event, filePath) => {
+    try {
+      const stats = await fs.promises.stat(filePath);
+      return {
+        path: filePath,
+        size: stats.size,
+      };
+    } catch (error) {
+      console.error('Error reading video file:', error);
+      throw error;
     }
   });
 

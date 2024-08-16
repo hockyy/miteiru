@@ -164,8 +164,7 @@ export class SubtitleContainer {
 
     try {
       const parsedSubtitle = await window.electronAPI.parseSubtitle(filename);
-
-      let entries;
+      let entries = []
       if (parsedSubtitle.type === 'ass') {
         const assData = parseASS(parsedSubtitle.content);
         entries = this.parseAssSubtitle(assData);

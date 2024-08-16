@@ -14,6 +14,7 @@ interface ElectronAPI {
   };
   parseSubtitle: (filename: string) => Promise<any>;
   findPositionDeltaInFolder: (path: string, delta?: number) => Promise<string>;
+  readVideoFile: (path: string) => Promise<any>;
 }
 
 interface Shunou {

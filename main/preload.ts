@@ -36,6 +36,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   parseSubtitle: (filename: string) => ipcRenderer.invoke('parse-subtitle', filename),
   findPositionDeltaInFolder: (path: string, delta: number = 1) =>
       ipcRenderer.invoke('find-position-delta-in-folder', path, delta),
+  readVideoFile: (path) => ipcRenderer.invoke('read-video-file', path),
 });
 
 contextBridge.exposeInMainWorld('shunou', {
