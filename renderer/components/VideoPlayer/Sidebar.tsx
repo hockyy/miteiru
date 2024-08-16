@@ -6,7 +6,6 @@ import {
   defaultPrimarySubtitleStyling,
   defaultSecondarySubtitleStyling
 } from "../../utils/CJKStyling";
-import {ipcRenderer} from "electron";
 import Toggle from "./Toggle";
 import {AwesomeButton} from "react-awesome-button";
 
@@ -18,10 +17,10 @@ export const StylingBox = ({
                              lang
                            }) => {
   const saveHandler = useCallback(() => {
-    ipcRenderer.invoke("saveFile", ["json"], JSON.stringify(subtitleStyling))
+    window.ipc.invoke("saveFile", ["json"], JSON.stringify(subtitleStyling))
   }, [subtitleStyling]);
   const loadHandler = useCallback(() => {
-    ipcRenderer.invoke("readFile", ["json"]).then((val) => {
+    window.ipc.invoke("readFile", ["json"]).then((val) => {
       try {
         const parsed = JSON.parse(val) as CJKStyling;
         setSubtitleStyling(parsed)
@@ -164,16 +163,16 @@ export const StylingBox = ({
     setSubtitleStyling(newCopy)
   }, [setSubtitleStyling, subtitleStyling]);
   const saveLearningHandler = useCallback(() => {
-    ipcRenderer.invoke('loadLearningState', lang).then((val) => {
-      ipcRenderer.invoke("saveFile", ["json"], JSON.stringify(val))
+    window.ipc.invoke('loadLearningState', lang).then((val) => {
+      window.ipc.invoke("saveFile", ["json"], JSON.stringify(val))
     })
   }, [lang]);
 
   const loadLearningHandler = useCallback(() => {
-    ipcRenderer.invoke("readFile", ["json"]).then((val) => {
+    window.ipc.invoke("readFile", ["json"]).then((val) => {
       try {
         const parsed = JSON.parse(val);
-        ipcRenderer.invoke("updateContentBatch", parsed, lang)
+        window.ipc.invoke("updateContentBatch", parsed, lang)
       } catch (e) {
         console.error(e)
       }

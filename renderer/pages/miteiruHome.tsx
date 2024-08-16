@@ -29,7 +29,7 @@ function MiteiruHome() {
   const handleClick = useCallback(async () => {
     const channels = ['loadKuromoji', 'loadMecab', 'loadCantonese', 'loadChinese']
     setCheck(checkingMessage);
-    const res = await ipcRenderer.invoke(channels[tokenizerMode]);
+    const res = await window.ipc.invoke(channels[tokenizerMode]);
     setCheck(res);
     if (res.ok !== 1) {
       return;
@@ -38,7 +38,7 @@ function MiteiruHome() {
   }, [router, tokenizerMode]);
 
   const handleSelectMecabPath = useCallback(() => {
-    ipcRenderer.invoke('pickFile', ['*']).then((val) => {
+    window.ipc.invoke('pickFile', ['*']).then((val) => {
       if (!val.canceled) setMecab(val.filePaths[0]);
     });
   }, []);
@@ -47,7 +47,7 @@ function MiteiruHome() {
       ok: 2,
       message: 'Removing Caches '
     });
-    ipcRenderer.invoke('removeDictCache').then((result) => {
+    window.ipc.invoke('removeDictCache').then((result) => {
       setCheck({
         ok: 0,
         message: result

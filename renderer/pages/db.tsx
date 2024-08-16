@@ -1,9 +1,7 @@
-import React from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import Head from 'next/head';
-import {useState, useEffect, useCallback} from 'react';
 import useMeaning from "../hooks/useMeaning";
 import useLearningKeyBind from "../hooks/useLearningKeyBind";
-import {ipcRenderer} from 'electron';
 
 
 const curLang = 'zh-CN';
@@ -21,7 +19,7 @@ function DBEditorPage() {
 
   const fetchData = useCallback(async () => {
     try {
-      const data = await ipcRenderer.invoke('getAllSRS', curLang);
+      const data = await window.ipc.invoke('getAllSRS', curLang);
       setSrsData(data);
     } catch (error) {
       console.error('Failed to fetch SRS data:', error);
@@ -58,7 +56,7 @@ function DBEditorPage() {
   const handleBanishAllProgress = useCallback(async () => {
     if (confirm('Are you sure you want to banish all SRS entries? This action cannot be undone.')) {
       try {
-        const result = await ipcRenderer.invoke('banishSRS');
+        const result = await window.ipc.invoke('banishSRS');
         if (result.success) {
           alert(result.message);
           setSrsData({}); // Clear the local state
@@ -75,7 +73,7 @@ function DBEditorPage() {
 
   const handleSetSRS = async (character: string) => {
     try {
-      const result = await ipcRenderer.invoke('setSRS', curLang, character, JSON.stringify(srsData[character]));
+      const result = await window.ipc.invoke('setSRS', curLang, character, JSON.stringify(srsData[character]));
       if (result.success) {
         console.log(result.message);
         // Maybe refresh your data or update UI here
