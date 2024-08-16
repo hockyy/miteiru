@@ -36,7 +36,7 @@ export const VideoController = ({
     }
   }, [enableSeeker, changeTimeTo])
   return <div>
-    <div className={"w-[100vw] h-6 content-center -mb-4"}>
+    <div className={"w-[100vw] h-14 content-center -mb-4"}>
       <VideoSeekSlider
           max={duration}
           currentTime={currentTime * 1000}

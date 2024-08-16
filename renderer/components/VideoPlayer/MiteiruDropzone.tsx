@@ -28,7 +28,9 @@ export const MiteiruDropzone = ({onDrop}) => {
         const videoFilePath = videoFile.path;
         window.electronAPI.checkSubtitleFile(videoFilePath).then(subtitleFilePath => {
           if (subtitleFilePath) {
-            onDrop([{path: videoFilePath}, {path: subtitleFilePath}]);
+            // If a subtitle file is found, include it in the onDrop call
+            onDrop([{path: videoFilePath}]);
+            onDrop([{path: subtitleFilePath}]);
           } else {
             onDrop([{path: videoFilePath}]);
           }
