@@ -13,13 +13,13 @@
 ## Download ૮ ˶ᵔ ᵕ ᵔ˶ ა✩°｡ ⋆⸜
 <div align="center">
 
-<a href="https://github.com/hockyy/miteiru/releases/tag/v4.2.3" target="_blank" rel="noopener noreferrer" style="">
+<a href="https://github.com/hockyy/miteiru/releases/latest" target="_blank" rel="noopener noreferrer" style="">
 <img width="9%" src="./renderer/public/images/kiwi.png" alt="kiwi"/>
 </a>
-<a href="https://github.com/hockyy/miteiru/releases/tag/v4.2.3" target="_blank" rel="noopener noreferrer" style="">
+<a href="https://github.com/hockyy/miteiru/releases/latest" target="_blank" rel="noopener noreferrer" style="">
 <img width="60%" src="./renderer/public/images/downloadBanner.gif" alt="banner"/>
 </a>
-<a href="https://github.com/hockyy/miteiru/releases/tag/v4.2.3" target="_blank" rel="noopener noreferrer" style="">
+<a href="https://github.com/hockyy/miteiru/releases/latest" target="_blank" rel="noopener noreferrer" style="">
 <img width="7%" src="./renderer/public/images/pome.png" alt="pomegranate"/>
 </a>
 </div>
