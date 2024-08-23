@@ -174,8 +174,7 @@ export class SubtitleContainer {
       }
 
       this.createFromArrayEntries(subtitleContainer, entries,
-          isForcedEnglish ? lang : videoConstants.englishLang, isSimplified);
-      return subtitleContainer;
+          isForcedEnglish ? videoConstants.englishLang : lang);
     } catch (error) {
       console.error('Error parsing subtitle:', error);
       return null;
