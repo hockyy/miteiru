@@ -1,4 +1,4 @@
-import {dialog, ipcMain} from "electron";
+import {dialog, ipcMain, shell} from "electron";
 import {getSubtitles} from "../helpers/getSubtitles";
 import fs from "node:fs";
 import * as fsPromises from 'node:fs/promises';
@@ -239,5 +239,52 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
       throw error;
     }
   });
+  ipcMain.handle('open-external', async (event, url) => {
+    await shell.openExternal(url);
+  });
 
+
+  async function translateHandler(text, lang) {
+    const targetLang = 'en';
+    const url = 'https://translate.googleapis.com/translate_a/single';
+
+    const params = new URLSearchParams({
+      client: 'gtx',
+      sl: lang,
+      tl: targetLang,
+      dt: 't',
+      q: text
+    });
+
+    const headers = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    };
+
+    try {
+      const response = await fetch(`${url}?${params.toString()}`, {
+        method: 'GET',
+        headers: headers
+      });
+
+      if (!response.ok) {
+        throw new Error(`Translation request failed with status code: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data[0].map(sentence => sentence[0]).join('');
+    } catch (error) {
+      console.error('Translation error:', error);
+      throw error;
+    }
+  }
+
+  ipcMain.handle('gtrans', async (event, text, lang) => {
+    try {
+      const result = await translateHandler(text, lang);
+      console.log(result, text, lang)
+      return {success: true, translatedText: result};
+    } catch (error) {
+      return {success: false, error: error.message};
+    }
+  });
 }

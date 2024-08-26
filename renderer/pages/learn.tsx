@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState, useRef} from "react";
 import Head from "next/head";
 import {ContainerHome} from "../components/VideoPlayer/ContainerHome";
 import {PrimarySubtitle} from "../components/Subtitle/Subtitle";
@@ -17,9 +17,10 @@ import {videoConstants} from "../utils/constants";
 import useLearningState from "../hooks/useLearningState";
 import useTranslationLinks from "../hooks/useTranslationLinks";
 import 'react-awesome-button/dist/styles.css';
+import useGoogleTranslator from "../hooks/useGoogleTranslator";
+import TranslationDisplay from "../components/Subtitle/TranslationDisplay";
 
 function Learn() {
-
   const {
     meaning,
     setMeaning,
@@ -45,7 +46,11 @@ function Learn() {
   const {
     openDeepL,
     openGoogleTranslate
-  } = useTranslationLinks(directInput, lang); // Use the custom hook
+  } = useTranslationLinks(directInput, lang);
+
+  const {
+    translate
+  } = useGoogleTranslator();
 
   useEffect(() => {
     if (tokenizerMode !== '' && tokenizeMiteiru) {
@@ -62,7 +67,41 @@ function Learn() {
         })
       }
     }
-  }, [tokenizerMode, directInput, lang, tokenizeMiteiru])
+  }, [tokenizerMode, directInput, lang, tokenizeMiteiru]);
+
+  const [translation, setTranslation] = useState('');
+  const [isAutoTranslating, setIsAutoTranslating] = useState(false);
+  const lastTranslatedInput = useRef('');
+  const lastTranslationTime = useRef(0);
+
+  const handleTranslate = useCallback(async (forceTranslate = false) => {
+    const currentTime = Date.now();
+    if (forceTranslate || (directInput !== lastTranslatedInput.current && currentTime - lastTranslationTime.current >= 1000)) {
+      try {
+        const result = await translate(directInput, lang);
+        setTranslation(result.translatedText);
+        lastTranslatedInput.current = directInput;
+        lastTranslationTime.current = currentTime;
+      } catch (error) {
+        console.error('Translation failed:', error);
+        setTranslation('Translation failed. Please try again.');
+      }
+    }
+  }, [directInput, lang, translate]);
+
+  useEffect(() => {
+    let interval;
+    if (isAutoTranslating) {
+      interval = setInterval(() => {
+        handleTranslate();
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isAutoTranslating, handleTranslate]);
+
+  const toggleAutoTranslate = () => {
+    setIsAutoTranslating(prev => !prev);
+  };
 
   return (
       <React.Fragment>
@@ -71,17 +110,19 @@ function Learn() {
         </Head>
         <div
             className={"flex flex-col justify-center items-center bg-white min-h-screen w-[100vw]"}>
-
           <MeaningBox lang={lang} meaning={meaning} setMeaning={setMeaning}
                       tokenizeMiteiru={tokenizeMiteiru}/>
           <div
               className={"flex flex-col h-[100vh] w-full items-center justify-end bg-blue-50 gap-4 p-5 border rounded-lg border-blue-800"}>
             <ContainerHome>
               <div className={"flex flex-col items-center justify-center gap-4"}>
-                <textarea className={"text-black m-auto p-4 min-w-[40vw]"} value={directInput}
-                          onChange={val => {
-                            setDirectInput(val.target.value)
-                          }}></textarea>
+              <textarea
+                  className={"text-black m-auto p-4 min-w-[40vw]"}
+                  value={directInput}
+                  onChange={val => {
+                    setDirectInput(val.target.value)
+                  }}
+              />
                 <div className="flex gap-4">
                   <AwesomeButton type={'primary'} onPress={openDeepL}>
                     Translate with DeepL
@@ -89,30 +130,41 @@ function Learn() {
                   <AwesomeButton type={'primary'} onPress={openGoogleTranslate}>
                     Translate with Google
                   </AwesomeButton>
+                  <AwesomeButton type={'primary'} onPress={() => handleTranslate(true)}>
+                    Translate Now
+                  </AwesomeButton>
+                  <AwesomeButton type={isAutoTranslating ? 'secondary' : 'primary'} onPress={toggleAutoTranslate}>
+                    {isAutoTranslating ? 'Stop Auto Translate' : 'Start Auto Translate'}
+                  </AwesomeButton>
                 </div>
+                <TranslationDisplay translation={translation}/>
                 <AwesomeButton
                     type={'secondary'}
                     onPress={async () => {
                       await router.push('/video')
-                    }
-                    }>
+                    }}
+                >
                   Back to Video
                 </AwesomeButton>
-                <PrimarySubtitle setMeaning={setMeaning}
-                                 currentTime={currentTime}
-                                 subtitle={primarySub}
-                                 shift={0}
-                                 subtitleStyling={primaryStyling}
-                                 getLearningStateClass={getLearningStateClass}
-                                 changeLearningState={changeLearningState}/>
-
+                <PrimarySubtitle
+                    setMeaning={setMeaning}
+                    currentTime={currentTime}
+                    subtitle={primarySub}
+                    shift={0}
+                    subtitleStyling={primaryStyling}
+                    getLearningStateClass={getLearningStateClass}
+                    changeLearningState={changeLearningState}
+                />
               </div>
             </ContainerHome>
-
           </div>
-          <LearningSidebar showSidebar={showSidebar} setShowSidebar={setShowSidebar}
-                           primaryStyling={primaryStyling}
-                           setPrimaryStyling={setPrimaryStyling} lang={lang}/>
+          <LearningSidebar
+              showSidebar={showSidebar}
+              setShowSidebar={setShowSidebar}
+              primaryStyling={primaryStyling}
+              setPrimaryStyling={setPrimaryStyling}
+              lang={lang}
+          />
         </div>
       </React.Fragment>
   )
