@@ -281,7 +281,6 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
   ipcMain.handle('gtrans', async (event, text, lang) => {
     try {
       const result = await translateHandler(text, lang);
-      console.log(result, text, lang)
       return {success: true, translatedText: result};
     } catch (error) {
       return {success: false, error: error.message};
