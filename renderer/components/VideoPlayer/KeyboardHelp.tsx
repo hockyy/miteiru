@@ -9,11 +9,14 @@ const shortcutInformation = [
     key: "X",
     description: "Toggle Sidebar"
   }, {
+    key: "Ctrl + X",
+    description: "Toggle Vocab Sidebar"
+  }, {
     key: "Ctrl + H",
     description: "Back to Home"
   }, {
     key: "Esc",
-    description: "Exit From CJK Information Box"
+    description: "Exit From CJK Information Box / Undo"
   }, {
     key: "D",
     description: "Go Back to Previous Meaning Box"
@@ -51,6 +54,12 @@ const shortcutInformation = [
     key: "Ctrl + Shift + L",
     description: "Toggle Learning Mode"
   }, {
+    key: "Ctrl + K",
+    description: "Open Flash Cards"
+  }, {
+    key: "Ctrl + Shift + K",
+    description: "Open Database"
+  }, {
     key: "[",
     description: "Shift CJK Subtitle Slower"
   }, {
@@ -62,7 +71,11 @@ const shortcutInformation = [
   }, {
     key: "Ctrl + ]",
     description: "Shift Main Subtitle Faster"
-  }]
+  }, {
+    key: "C",
+    description: "Copy Ruby Content"
+  }
+]
 
 export const Key = ({
                       value,

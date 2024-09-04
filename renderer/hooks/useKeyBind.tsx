@@ -21,7 +21,8 @@ export default function useKeyBind(
     openGoogleTranslate,
     reloadLastPrimarySubtitle,
     reloadLastSecondarySubtitle,
-    setShowVocabSidebar
+    setShowVocabSidebar,
+    rubyContent
 ) {
   const router = useRouter();
   useEffect(() => {
@@ -85,6 +86,15 @@ export default function useKeyBind(
       } else if (event.code === "KeyA") {
         reloadLastSecondarySubtitle();
         reloadLastPrimarySubtitle();
+      } else if (event.code === "KeyC") {
+        // New copy functionality
+        if (rubyContent) {
+          try {
+            await navigator.clipboard.writeText(rubyContent);
+          } catch (err) {
+            console.error("Failed to copy text: ", err);
+          }
+        }
       }
     };
 
@@ -93,6 +103,6 @@ export default function useKeyBind(
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [router, setMeaning, setShowController, setShowSidebar, setPrimarySub, setSecondarySub, setPrimaryStyling, primarySub.id, setShowPrimarySub, setShowSecondarySub, undo, primaryStyling, openGoogleTranslate, openDeepL, reloadLastSecondarySubtitle, reloadLastPrimarySubtitle, setShowVocabSidebar]);
+  }, [router, setMeaning, setShowController, setShowSidebar, setPrimarySub, setSecondarySub, setPrimaryStyling, primarySub.id, setShowPrimarySub, setShowSecondarySub, undo, primaryStyling, openGoogleTranslate, openDeepL, reloadLastSecondarySubtitle, reloadLastPrimarySubtitle, setShowVocabSidebar, rubyContent]);
 
 }

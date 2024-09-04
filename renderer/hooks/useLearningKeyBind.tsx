@@ -4,7 +4,8 @@ import {useRouter} from "next/router";
 export default function useLearningKeyBind(
     setMeaning,
     setShowSidebar,
-    undo
+    undo,
+    rubyContent: any = ''
 ) {
   const router = useRouter();
   useEffect(() => {
@@ -21,6 +22,10 @@ export default function useLearningKeyBind(
         setShowSidebar((old) => {
           return !old;
         });
+      } else if (event.code === "KeyC" && event.ctrlKey) {
+        if (rubyContent) {
+          await navigator.clipboard.writeText(rubyContent);
+        }
       }
     };
 
@@ -29,6 +34,6 @@ export default function useLearningKeyBind(
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [router, setMeaning, setShowSidebar, undo]);
+  }, [router, rubyContent, setMeaning, setShowSidebar, undo]);
 
 }

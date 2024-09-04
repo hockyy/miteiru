@@ -19,6 +19,7 @@ import useTranslationLinks from "../hooks/useTranslationLinks";
 import 'react-awesome-button/dist/styles.css';
 import useGoogleTranslator from "../hooks/useGoogleTranslator";
 import TranslationDisplay from "../components/Subtitle/TranslationDisplay";
+import useRubyCopy from "../hooks/useRubyCopy";
 
 function Learn() {
   const {
@@ -31,7 +32,8 @@ function Learn() {
   const [directInput, setDirectInput] = useState('');
   const [showSidebar, setShowSidebar] = useState(0)
   const [primaryStyling, setPrimaryStyling] = useStoreData('user.styling.learning', defaultLearningStyling);
-  useLearningKeyBind(setMeaning, setShowSidebar, undo)
+  const [rubyContent, setRubyCopyContent] = useRubyCopy();
+  useLearningKeyBind(setMeaning, setShowSidebar, undo, rubyContent);
   const router = useRouter();
   const {
     tokenizerMode,
@@ -133,7 +135,8 @@ function Learn() {
                   <AwesomeButton type={'primary'} onPress={() => handleTranslate(true)}>
                     Translate Now
                   </AwesomeButton>
-                  <AwesomeButton type={isAutoTranslating ? 'secondary' : 'primary'} onPress={toggleAutoTranslate}>
+                  <AwesomeButton type={isAutoTranslating ? 'secondary' : 'primary'}
+                                 onPress={toggleAutoTranslate}>
                     {isAutoTranslating ? 'Stop Auto Translate' : 'Start Auto Translate'}
                   </AwesomeButton>
                 </div>
@@ -154,6 +157,7 @@ function Learn() {
                     subtitleStyling={primaryStyling}
                     getLearningStateClass={getLearningStateClass}
                     changeLearningState={changeLearningState}
+                    setRubyCopyContent={setRubyCopyContent}
                 />
               </div>
             </ContainerHome>
