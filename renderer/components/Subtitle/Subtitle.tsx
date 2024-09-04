@@ -17,6 +17,7 @@ export const PrimarySubtitle = ({
                                   timeCache,
                                   setTimeCache,
                                   setExternalContent,
+                                  setRubyCopyContent
                                 }: {
                                   currentTime: number,
                                   subtitle: SubtitleContainer,
@@ -27,7 +28,8 @@ export const PrimarySubtitle = ({
                                   getLearningStateClass?: (newMeaning: string) => string,
                                   timeCache?: number[],
                                   setTimeCache?: (cache: number[]) => void,
-                                  setExternalContent?: (content: any[]) => void;
+                                  setExternalContent?: (content: any[]) => void,
+                                  setRubyCopyContent: any;
                                 }
 ) => {
   const [caption, setCaption] = useState([]);
@@ -36,7 +38,8 @@ export const PrimarySubtitle = ({
   const setFromContent = useCallback((content, wordMeaning = []) => {
     if (setExternalContent) setExternalContent(content);
     if (content === '' || content.length === 0) {
-      setCaption([])
+      setCaption([]);
+      setRubyCopyContent('');
       return;
     }
     if (typeof content === 'string') {
@@ -49,37 +52,68 @@ export const PrimarySubtitle = ({
           extraClass={"subtitle"}
           subtitleStyling={subtitleStyling}
           wordMeaning={''}/>]);
+      setRubyCopyContent(content);
       return;
     }
+    let rubyCopyContent = '';
     const current = content.map((val, index) => {
       const validBasicForm = val.basicForm != '' && val.basicForm != '*';
-      return <> {(val.jyutping || val.pinyin) ? <ChineseSentence
-          key={index}
-          origin={val.origin}
-          separation={val.separation}
-          setMeaning={setMeaning}
-          extraClass={"subtitle"}
-          subtitleStyling={subtitleStyling}
-          basicForm={validBasicForm ? val.basicForm : ''}
-          wordMeaning={wordMeaning[index]}
-          getLearningStateClass={getLearningStateClass}
-          changeLearningState={changeLearningState}/> : <JapaneseSentence
-          key={index}
-          origin={val.origin}
-          separation={val.separation}
-          setMeaning={setMeaning}
-          extraClass={"subtitle"}
-          subtitleStyling={subtitleStyling}
-          basicForm={validBasicForm ? val.basicForm : ''}
-          wordMeaning={wordMeaning[index]}
-          getLearningStateClass={getLearningStateClass}
-          changeLearningState={changeLearningState}/>}{
-        index + 1 < content.length
-        && subtitleStyling.showSpace ? " " : " "
-      }</>
-    })
-    setCaption(current)
-  }, [setExternalContent, subtitleStyling, setMeaning, getLearningStateClass, changeLearningState]);
+      const isChineseSentence = val.jyutping || val.pinyin;
+      const isJapaneseSentence = val.hiragana !== undefined;
+
+      // Generate ruby HTML for copying
+      const rubyHtml = val.separation.map(part => {
+        let reading;
+        if (isChineseSentence) {
+          reading = part.jyutping || part.pinyin;
+        } else if (isJapaneseSentence) {
+          reading = part.hiragana || part.romaji;
+        } else {
+          reading = '';
+        }
+        return `<ruby>${part.main}<rt>${reading || ''}</rt></ruby>`;
+      }).join('');
+      rubyCopyContent += rubyHtml;
+
+      if (index + 1 < content.length && subtitleStyling.showSpace) {
+        rubyCopyContent += ' ';
+      }
+
+      return (
+          <React.Fragment key={index}>
+            {isChineseSentence ? (
+                <ChineseSentence
+                    origin={val.origin}
+                    separation={val.separation}
+                    setMeaning={setMeaning}
+                    extraClass={"subtitle"}
+                    subtitleStyling={subtitleStyling}
+                    basicForm={validBasicForm ? val.basicForm : ''}
+                    wordMeaning={wordMeaning[index]}
+                    getLearningStateClass={getLearningStateClass}
+                    changeLearningState={changeLearningState}
+                />
+            ) : (
+                <JapaneseSentence
+                    origin={val.origin}
+                    separation={val.separation}
+                    setMeaning={setMeaning}
+                    extraClass={"subtitle"}
+                    subtitleStyling={subtitleStyling}
+                    basicForm={validBasicForm ? val.basicForm : ''}
+                    wordMeaning={wordMeaning[index]}
+                    getLearningStateClass={getLearningStateClass}
+                    changeLearningState={changeLearningState}
+                />
+            )}
+            {index + 1 < content.length && subtitleStyling.showSpace ? " " : " "}
+          </React.Fragment>
+      );
+    });
+
+    setCaption(current);
+    setRubyCopyContent(rubyCopyContent);
+  }, [setExternalContent, setRubyCopyContent, subtitleStyling, setMeaning, getLearningStateClass, changeLearningState]);
 
   const setSubtitle = useCallback((currentAdjustedTime) => {
     try {

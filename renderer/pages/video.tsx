@@ -29,6 +29,7 @@ import useTranslationLinks from "../hooks/useTranslationLinks";
 import useContentString from "../hooks/useContentString";
 import useVocabSidebar from "../hooks/useVocabSidebar";
 import VocabSidebar from "../components/VideoPlayer/VocabSidebar";
+import useRubyCopy from "../hooks/useRubyCopy";
 
 function Video() {
   const {
@@ -120,11 +121,13 @@ function Video() {
     showSidebar,
     setShowSidebar
   } = useMenuDisplay();
+
+  const [rubyContent, setRubyCopyContent] = useRubyCopy();
   useKeyBind(setMeaning, setShowController, setShowSidebar,
       setPrimarySub, setSecondarySub, primarySub, undo,
       setShowPrimarySub, setShowSecondarySub, primaryStyling, setPrimaryStyling,
       openDeepL, openGoogleTranslate, reloadLastPrimarySubtitle, reloadLastSecondarySubtitle,
-      setShowVocabSidebar);
+      setShowVocabSidebar, rubyContent);
   const {
     togglePlay,
     isPlaying,
@@ -184,7 +187,8 @@ function Video() {
                                                 changeLearningState={changeLearningState}
                                                 timeCache={primaryTimeCache}
                                                 setTimeCache={setPrimaryTimeCache}
-                                                setExternalContent={setExternalContent}/>}
+                                                setExternalContent={setExternalContent}
+                                                setRubyCopyContent={setRubyCopyContent}/>}
             {showSecondarySub && <SecondarySubtitle
                 currentTime={currentTime}
                 subtitle={secondarySub}
