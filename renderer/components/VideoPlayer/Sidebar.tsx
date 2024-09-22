@@ -8,6 +8,7 @@ import {
 } from "../../utils/CJKStyling";
 import Toggle from "./Toggle";
 import {AwesomeButton} from "react-awesome-button";
+import { GistManager } from "../Data/GistManager";
 
 export const StylingBox = ({
                              subtitleStyling,
@@ -438,5 +439,8 @@ export const Sidebar = ({
     <StylingBox subtitleStyling={secondaryStyling} setSubtitleStyling={setSecondaryStyling}
                 subtitleName={"Other"} defaultStyling={defaultSecondarySubtitleStyling}
                 lang={lang}/>
+    <div className={'w-full mt-4 mx-5 px-3 flex flex-col content-center gap-3'}>
+      <GistManager lang={lang}/>
+    </div>
   </div>
 }

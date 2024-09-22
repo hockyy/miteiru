@@ -15,7 +15,9 @@ interface ElectronAPI {
   };
   parseSubtitle: (filename: string) => Promise<any>;
   findPositionDeltaInFolder: (path: string, delta?: number) => Promise<string>;
-  readVideoFile: (path: string) => Promise<any>;
+  createGitHubGist: (filename: string, content: string, description: string, isPublic: boolean, token: string) => Promise<any>;
+  loadGitHubGists: (username: string, token: string, perPage?: number, page?: number) => Promise<any>;
+  getGitHubGistContent: (gistId: string, token: string) => Promise<any>;
 }
 
 interface Shunou {

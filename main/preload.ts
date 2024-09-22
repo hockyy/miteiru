@@ -37,7 +37,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   parseSubtitle: (filename: string) => ipcRenderer.invoke('parse-subtitle', filename),
   findPositionDeltaInFolder: (path: string, delta: number = 1) =>
       ipcRenderer.invoke('find-position-delta-in-folder', path, delta),
-  readVideoFile: (path) => ipcRenderer.invoke('read-video-file', path),
+
+  // Update the Gist-related methods to include the token
+  createGitHubGist: (filename: string, content: string, description: string, isPublic: boolean, token: string) =>
+      ipcRenderer.invoke('createGitHubGist', filename, content, description, isPublic, token),
+  loadGitHubGists: (username: string, token: string, perPage: number = 30, page: number = 1) =>
+      ipcRenderer.invoke('loadGitHubGists', username, token, perPage, page),
+  getGitHubGistContent: (gistId: string, token: string) =>
+      ipcRenderer.invoke('getGitHubGistContent', gistId, token),
 });
 
 contextBridge.exposeInMainWorld('shunou', {
