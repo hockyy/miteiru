@@ -40,7 +40,7 @@ export const GistManager: React.FC<GistManagerProps> = ({lang}) => {
     } finally {
       setIsLoading(false);
     }
-  }, [lang, githubToken, githubUsername]);
+  }, [lang, githubToken]);
 
   const loadLearningHandler = useCallback(async () => {
     if (!githubUsername) {
@@ -122,7 +122,7 @@ export const GistManager: React.FC<GistManagerProps> = ({lang}) => {
           </button>
         </div>
         <div className="text-sm text-red-500 mb-2">
-          <strong>Warning: The token ONLY requires 'gist' scope permissions.</strong>
+          <strong>Warning: The token ONLY requires &apos;gist&apos; scope permissions.</strong>
           <p>Do not share your token with others.</p>
           <a
               href="#"
