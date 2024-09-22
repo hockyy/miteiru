@@ -12,6 +12,7 @@ import languageEncoding from "detect-file-encoding-and-language";
 import iconv from "iconv-lite"
 import {videoConstants} from "../../renderer/utils/constants";
 import axios from "axios";
+import Tesseract from "tesseract.js";
 
 const store = new Store();
 const isArrayEndsWithMatcher = (path, arrayMatcher) => {
@@ -382,6 +383,17 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
         success: false,
         error: error.response ? error.response.data.message : error.message,
       };
+    }
+  });
+  ipcMain.handle('performOCR', async (event, imageData: string, lang: string) => {
+
+    let ocrLang = 'eng'; // Default to English
+    try {
+      const result = await Tesseract.recognize(imageData, lang, {});
+      return {success: true, text: result.data.text};
+    } catch (error) {
+      console.error('OCR error:', error);
+      return {success: false, error: error.message};
     }
   });
 }

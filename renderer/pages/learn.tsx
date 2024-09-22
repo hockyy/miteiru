@@ -20,6 +20,7 @@ import 'react-awesome-button/dist/styles.css';
 import useGoogleTranslator from "../hooks/useGoogleTranslator";
 import TranslationDisplay from "../components/Subtitle/TranslationDisplay";
 import useRubyCopy from "../hooks/useRubyCopy";
+import {ImageOCR} from "../components/ImageOCR";
 
 function Learn() {
   const {
@@ -76,6 +77,9 @@ function Learn() {
   const lastTranslatedInput = useRef('');
   const lastTranslationTime = useRef(0);
 
+  const handleExtractedText = useCallback((text: string) => {
+    setDirectInput(text);
+  }, []);
   const handleTranslate = useCallback(async (forceTranslate = false) => {
     const currentTime = Date.now();
     if (forceTranslate || (directInput !== lastTranslatedInput.current && currentTime - lastTranslationTime.current >= 1000)) {
@@ -115,9 +119,12 @@ function Learn() {
           <MeaningBox lang={lang} meaning={meaning} setMeaning={setMeaning}
                       tokenizeMiteiru={tokenizeMiteiru}/>
           <div
-              className={"flex flex-col h-[100vh] w-full items-center justify-end bg-blue-50 gap-4 p-5 border rounded-lg border-blue-800"}>
+              className={"flex flex-col min-h-screen w-full items-center justify-end bg-blue-50 gap-4 p-5 border rounded-lg border-blue-800"}>
             <ContainerHome>
-              <div className={"flex flex-col items-center justify-center gap-4"}>
+              <div className='h-screen'></div>
+              <div className="flex-grow overflow-y-auto">
+                <div className="container mx-auto px-4 py-8">
+                  <div className={"flex flex-col items-center justify-center gap-4"}>
               <textarea
                   className={"text-black m-auto p-4 min-w-[40vw]"}
                   value={directInput}
@@ -125,41 +132,48 @@ function Learn() {
                     setDirectInput(val.target.value)
                   }}
               />
-                <div className="flex gap-4">
-                  <AwesomeButton type={'primary'} onPress={openDeepL}>
-                    Translate with DeepL
-                  </AwesomeButton>
-                  <AwesomeButton type={'primary'} onPress={openGoogleTranslate}>
-                    Translate with Google
-                  </AwesomeButton>
-                  <AwesomeButton type={'primary'} onPress={() => handleTranslate(true)}>
-                    Translate Now
-                  </AwesomeButton>
-                  <AwesomeButton type={isAutoTranslating ? 'secondary' : 'primary'}
-                                 onPress={toggleAutoTranslate}>
-                    {isAutoTranslating ? 'Stop Auto Translate' : 'Start Auto Translate'}
-                  </AwesomeButton>
+                    <div className="flex gap-4">
+                      <AwesomeButton type={'primary'} onPress={openDeepL}>
+                        Translate with DeepL
+                      </AwesomeButton>
+                      <AwesomeButton type={'primary'} onPress={openGoogleTranslate}>
+                        Translate with Google
+                      </AwesomeButton>
+                      <AwesomeButton type={'primary'} onPress={() => handleTranslate(true)}>
+                        Translate Now
+                      </AwesomeButton>
+                      <AwesomeButton type={isAutoTranslating ? 'secondary' : 'primary'}
+                                     onPress={toggleAutoTranslate}>
+                        {isAutoTranslating ? 'Stop Auto Translate' : 'Start Auto Translate'}
+                      </AwesomeButton>
+                    </div>
+                    <TranslationDisplay translation={translation}/>
+                    <AwesomeButton
+                        type={'secondary'}
+                        onPress={async () => {
+                          await router.push('/video')
+                        }}
+                    >
+                      Back to Video
+                    </AwesomeButton>
+                    <PrimarySubtitle
+                        setMeaning={setMeaning}
+                        currentTime={currentTime}
+                        subtitle={primarySub}
+                        shift={0}
+                        subtitleStyling={primaryStyling}
+                        getLearningStateClass={getLearningStateClass}
+                        changeLearningState={changeLearningState}
+                        setRubyCopyContent={setRubyCopyContent}
+                    />
+                    <div className="text-black mt-8 w-full max-w-2xl">
+                      <h2 className="text-2xl font-bold mb-4">Image OCR</h2><ImageOCR
+                        onTextExtracted={handleExtractedText} lang={lang}/>
+                    </div>
+                  </div>
                 </div>
-                <TranslationDisplay translation={translation}/>
-                <AwesomeButton
-                    type={'secondary'}
-                    onPress={async () => {
-                      await router.push('/video')
-                    }}
-                >
-                  Back to Video
-                </AwesomeButton>
-                <PrimarySubtitle
-                    setMeaning={setMeaning}
-                    currentTime={currentTime}
-                    subtitle={primarySub}
-                    shift={0}
-                    subtitleStyling={primaryStyling}
-                    getLearningStateClass={getLearningStateClass}
-                    changeLearningState={changeLearningState}
-                    setRubyCopyContent={setRubyCopyContent}
-                />
               </div>
+
             </ContainerHome>
           </div>
           <LearningSidebar
