@@ -21,6 +21,11 @@ export const videoConstants = {
     "ja": ["ja"],
     "zh-CN": ['zh-TW', 'zh-CN']
   },
+  ocrLang: {
+    "yue": "chi_tra",
+    "ja": "jpn",
+    "zh-CN": "chi_tra",
+  },
   learningStateLength: 3
 }
 

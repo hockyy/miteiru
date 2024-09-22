@@ -2,6 +2,7 @@
 .idea/
 node_modules
 *.log
+*.traineddata
 .next
 app
 dist
