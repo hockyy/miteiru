@@ -128,7 +128,6 @@ function Learn() {
           <div
               className={"flex flex-col min-h-screen w-full items-center justify-end bg-blue-50 gap-4 p-5 border rounded-lg border-blue-800"}>
             <ContainerHome>
-              <div className='h-screen'></div>
               <div className="flex-grow overflow-y-auto">
                 <div className="container mx-auto px-4 py-8">
                   <div className={"flex flex-col items-center justify-center gap-4"}>
