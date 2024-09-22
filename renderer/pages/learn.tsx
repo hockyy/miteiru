@@ -131,14 +131,14 @@ function Learn() {
               <div className="flex-grow overflow-y-auto">
                 <div className="container mx-auto px-4 py-8">
                   <div className={"flex flex-col items-center justify-center gap-4"}>
-              <textarea
-                  className={"text-black m-auto p-4 min-w-[40vw]"}
-                  value={sentenceInput}
-                  onChange={val => {
-                    setSentenceInput(val.target.value)
-                    setSentences(splitIntoSentences(val.target.value))
-                  }}
-              />
+                    <textarea
+                        className={"text-black m-auto p-4 min-w-[40vw]"}
+                        value={sentenceInput}
+                        onChange={val => {
+                          setSentenceInput(val.target.value)
+                          setSentences(splitIntoSentences(val.target.value))
+                        }}
+                    />
                     <SentenceList sentences={sentences} onSentenceClick={handleSentenceClick}/>
                     <div className="flex gap-4">
                       <AwesomeButton type={'primary'} onPress={openDeepL}>
