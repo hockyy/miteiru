@@ -27,6 +27,9 @@ export default function useKeyBind(
   const router = useRouter();
   useEffect(() => {
     const handleKeyPress = async (event) => {
+      if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+        return; // Exit the function early if an input element is focused
+      }
       if (event.code === "KeyH") {
         setMeaning("");
         if (event.ctrlKey) await router.push('/home');
