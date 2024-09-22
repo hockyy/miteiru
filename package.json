@@ -64,7 +64,6 @@
     "react-video-seek-slider": "^6.0.6",
     "shunou": "1.0.3",
     "styled-components": "^6.1.13",
-    "tesseract.js": "^5.1.1",
     "to-jyutping": "github:hockyy/to-jyutping",
     "uuid": "^10.0.0",
     "video.js": "^8.17.3",
