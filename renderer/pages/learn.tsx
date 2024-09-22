@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState, useRef} from "react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import Head from "next/head";
 import {ContainerHome} from "../components/VideoPlayer/ContainerHome";
 import {PrimarySubtitle} from "../components/Subtitle/Subtitle";
@@ -16,11 +16,10 @@ import 'react-awesome-button/dist/styles.css';
 import {videoConstants} from "../utils/constants";
 import useLearningState from "../hooks/useLearningState";
 import useTranslationLinks from "../hooks/useTranslationLinks";
-import 'react-awesome-button/dist/styles.css';
 import useGoogleTranslator from "../hooks/useGoogleTranslator";
 import TranslationDisplay from "../components/Subtitle/TranslationDisplay";
 import useRubyCopy from "../hooks/useRubyCopy";
-import {ImageOCR} from "../components/ImageOCR";
+import {SentenceList} from "../components/Meaning/SentenceList";
 
 function Learn() {
   const {
@@ -34,6 +33,12 @@ function Learn() {
   const [showSidebar, setShowSidebar] = useState(0)
   const [primaryStyling, setPrimaryStyling] = useStoreData('user.styling.learning', defaultLearningStyling);
   const [rubyContent, setRubyCopyContent] = useRubyCopy();
+  const [sentences, setSentences] = useState<string[]>([]);
+  const [sentenceInput, setSentenceInput] = useState('');
+  const handleSentenceClick = useCallback((sentence: string) => {
+    setDirectInput(sentence);
+  }, [setDirectInput]);
+
   useLearningKeyBind(setMeaning, setShowSidebar, undo, rubyContent);
   const router = useRouter();
   const {
@@ -77,9 +82,6 @@ function Learn() {
   const lastTranslatedInput = useRef('');
   const lastTranslationTime = useRef(0);
 
-  const handleExtractedText = useCallback((text: string) => {
-    setDirectInput(text);
-  }, []);
   const handleTranslate = useCallback(async (forceTranslate = false) => {
     const currentTime = Date.now();
     if (forceTranslate || (directInput !== lastTranslatedInput.current && currentTime - lastTranslationTime.current >= 1000)) {
@@ -109,6 +111,11 @@ function Learn() {
     setIsAutoTranslating(prev => !prev);
   };
 
+  // New function to split text into sentences
+  const splitIntoSentences = useCallback((text: string) => {
+    return text.split(/[\n\t]+/).filter(sentence => sentence.trim() !== '');
+  }, []);
+
   return (
       <React.Fragment>
         <Head>
@@ -127,11 +134,13 @@ function Learn() {
                   <div className={"flex flex-col items-center justify-center gap-4"}>
               <textarea
                   className={"text-black m-auto p-4 min-w-[40vw]"}
-                  value={directInput}
+                  value={sentenceInput}
                   onChange={val => {
-                    setDirectInput(val.target.value)
+                    setSentenceInput(val.target.value)
+                    setSentences(splitIntoSentences(val.target.value))
                   }}
               />
+                    <SentenceList sentences={sentences} onSentenceClick={handleSentenceClick}/>
                     <div className="flex gap-4">
                       <AwesomeButton type={'primary'} onPress={openDeepL}>
                         Translate with DeepL
@@ -167,8 +176,7 @@ function Learn() {
                         setRubyCopyContent={setRubyCopyContent}
                     />
                     <div className="text-black mt-8 w-full max-w-2xl">
-                      <h2 className="text-2xl font-bold mb-4">Image OCR</h2><ImageOCR
-                        onTextExtracted={handleExtractedText} lang={lang}/>
+
                     </div>
                   </div>
                 </div>
