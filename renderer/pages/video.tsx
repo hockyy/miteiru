@@ -213,7 +213,7 @@ function Video() {
                 onVideoChangeHandler={onVideoChangeHandler}
                 backToHead={backToHead}/>}
           </div>
-          {tokenizerMode !== '' && <MiteiruDropzone onDrop={onLoadFiles}/>}
+          {tokenizerMode !== '' && <MiteiruDropzone onDrop={onLoadFiles} deltaTime={deltaTime}/>}
         </div>
         <Sidebar showSidebar={showSidebar} setShowSidebar={setShowSidebar}
                  primaryStyling={primaryStyling}
