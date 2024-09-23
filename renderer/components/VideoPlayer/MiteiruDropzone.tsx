@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useMemo, useRef} from "react";
 import {extractVideoId, isVideo, isYoutube} from "../../utils/utils";
 
-export const MiteiruDropzone = ({onDrop}) => {
+export const MiteiruDropzone = ({onDrop, deltaTime}) => {
   const dropRef = useRef<HTMLDivElement>(null);
 
   const handleDrag = useCallback((e: DragEvent) => {
@@ -57,17 +57,34 @@ export const MiteiruDropzone = ({onDrop}) => {
     };
   }, [pasteEvent]);
 
+  const handleDoubleClick = useCallback((e: MouseEvent) => {
+    const div = dropRef.current;
+    if (div && deltaTime) {
+      const rect = div.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      if (x > rect.width / 2) {
+        // Double click on the right half
+        deltaTime(5); // Skip forward 5 seconds
+      } else {
+        // Double click on the left half
+        deltaTime(-5); // Skip backward 5 seconds
+      }
+    }
+  }, [deltaTime]);
+
   useEffect(() => {
     const div = dropRef.current;
     if (div) {
       div.addEventListener('dragover', handleDrag);
       div.addEventListener('drop', handleDrop);
+      div.addEventListener('dblclick', handleDoubleClick);
       return () => {
         div.removeEventListener('dragover', handleDrag);
         div.removeEventListener('drop', handleDrop);
+        div.removeEventListener('dblclick', handleDoubleClick);
       };
     }
-  }, [handleDrag, handleDrop]);
+  }, [handleDrag, handleDrop, handleDoubleClick]);
 
   const divStyle = useMemo(() => ({
     zIndex: 4,

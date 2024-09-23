@@ -140,6 +140,9 @@ const useMiteiruTokenizer = (): {
   }, []);
   const tokenizeMiteiru = useCallback(async (sentence) => {
     let res = []
+    if(!sentence) {
+      return res;
+    }
     if (tokenizerMode === 'kuromoji') {
       const kuromojiEntries = await window.ipc.invoke('tokenizeUsingKuromoji', sentence)
       res = await window.shunou.processKuromojinToSeparations(kuromojiEntries);

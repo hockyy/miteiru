@@ -75,7 +75,7 @@ export const useVideoTimeChanger = (player, setCurrentTime, metadata) => {
     if (player) {
       changeTimeTo(player.currentTime() + plusDelta)
     }
-  }, [player]);
+  }, [changeTimeTo, player]);
 
   return {changeTimeTo, deltaTime, duration, setDuration, enableSeeker, setEnableSeeker};
 }

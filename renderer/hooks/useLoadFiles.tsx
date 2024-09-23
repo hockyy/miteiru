@@ -36,9 +36,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     await queue.wait(currentHash);
     let currentPath = await acceptedFiles[0].path;
     let pathUri;
-    console.log(currentPath)
     if (isLocalPath(currentPath)) {
-      console.log(currentPath)
       currentPath = currentPath.replaceAll('\\', '/')
       pathUri = currentPath;
       if (process.platform === 'win32' && !pathUri.startsWith('/')) {

@@ -127,13 +127,24 @@ const MeaningBox = ({
           entry.single = entry.content.split('，').map(text => ({text}));
         });
       }
-
       if (entries.length === 0) {
-        entries.push({
-          id: "0",
-          single: [{text: meaning}],
-          sense: []
-        });
+        if (lang === videoConstants.japaneseLang) {
+          entries.push({
+            id: "0",
+            single: [{text: meaning}],
+            sense: []
+          });
+        } else {
+          entries.push({
+            id: "0",
+            content: meaning,
+            simplified: meaning,
+            pinyin: [],
+            jyutping: [],
+            meaning: [],
+            single: [{text: meaning}]
+          })
+        }
       }
 
       setOtherMeanings(entries);
