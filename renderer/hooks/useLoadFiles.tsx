@@ -34,9 +34,11 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
   const onLoadFiles = useCallback(async acceptedFiles => {
     const currentHash = Symbol();
     await queue.wait(currentHash);
-    let currentPath = acceptedFiles[0].path;
+    let currentPath = await acceptedFiles[0].path;
     let pathUri;
+    console.log(currentPath)
     if (isLocalPath(currentPath)) {
+      console.log(currentPath)
       currentPath = currentPath.replaceAll('\\', '/')
       pathUri = currentPath;
       if (process.platform === 'win32' && !pathUri.startsWith('/')) {
