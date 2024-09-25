@@ -8,7 +8,8 @@ import KanjiVGDisplay from "./KanjiVGDisplay";
 import WanikaniRadicalDisplay from "./WanikaniRadicalDisplay";
 import {videoConstants} from "../../utils/constants";
 import MakeMeAHanziDisplay from "./MakeMeAHanziDisplay";
-import {FaStar} from 'react-icons/fa';
+import {FaStar, FaVolumeUp} from 'react-icons/fa';
+import useSpeech from "../../hooks/useSpeech";
 
 const OutlinedStar = ({
                         color,
@@ -66,6 +67,27 @@ const MeaningBox = ({
   const [meaningIndex, setMeaningIndex] = useState(0);
   const [tags, setTags] = useState({});
   const [romajiedData, setRomajiedData] = useState([]);
+
+  const {speak, stop, speaking, supported} = useSpeech();
+
+  const handleSpeak = useCallback(() => {
+    if (speaking) {
+      stop();
+    } else {
+      speak(meaning, {lang});
+    }
+  }, [speak, stop, speaking, meaning, lang]);
+
+
+  const renderSpeakButton = useCallback(() => (
+      <div className={'mr-4'}>
+        <AwesomeButton
+            onPress={handleSpeak}
+            disabled={!supported}
+        >
+          {speaking ? 'Stop' : <FaVolumeUp/>}
+        </AwesomeButton></div>
+  ), [handleSpeak, speaking, supported]);
 
   const handleStarClick = useCallback(() => {
     changeLearningState(meaning);
@@ -242,10 +264,11 @@ const MeaningBox = ({
               <AwesomeButton type="primary" disabled={meaningIndex === 0} onPress={handlePrevious}>
                 Previous
               </AwesomeButton>
-              <div className="flex flex-wrap gap-2" style={{
+              <div className="flex flex-wrap gap-5 items-center" style={{
                 fontFamily: "Arial",
                 fontSize: "40px"
               }}>
+                {renderSpeakButton()}
                 {renderRomajiedContent()}
                 {renderStarButton()}
               </div>
