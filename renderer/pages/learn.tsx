@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useRef, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import Head from "next/head";
 import {ContainerHome} from "../components/VideoPlayer/ContainerHome";
 import {PrimarySubtitle} from "../components/Subtitle/Subtitle";
@@ -20,6 +20,8 @@ import useGoogleTranslator from "../hooks/useGoogleTranslator";
 import TranslationDisplay from "../components/Subtitle/TranslationDisplay";
 import useRubyCopy from "../hooks/useRubyCopy";
 import {SentenceList} from "../components/Meaning/SentenceList";
+import {FaVolumeUp} from 'react-icons/fa';
+import useSpeech from "../hooks/useSpeech"; // Import the speaker icon
 
 function Learn() {
   const {
@@ -39,6 +41,7 @@ function Learn() {
     setDirectInput(sentence);
   }, [setDirectInput]);
 
+  const [selectedVoice, setSelectedVoice] = useState('');
   useLearningKeyBind(setMeaning, setShowSidebar, undo, rubyContent);
   const router = useRouter();
   const {
@@ -116,6 +119,33 @@ function Learn() {
     return text.split(/[\n\t]+/).filter(sentence => sentence.trim() !== '');
   }, []);
 
+
+  const {speak, speaking, supported, printVoices, voices} = useSpeech(); // Use the useSpeech hook
+
+  // Function to get supported language codes
+  const getSupportedLangCodes = useCallback(() => {
+    return Object.values(videoConstants.varLang).flat();
+  }, []);
+
+  // Filter voices based on supported languages
+  const filteredVoices = useMemo(() => {
+    const supportedLangCodes = getSupportedLangCodes();
+    return voices.filter(voice =>
+        supportedLangCodes.some(langCode => voice.lang.startsWith(langCode))
+    );
+  }, [getSupportedLangCodes, voices]);
+
+  const handleSpeak = useCallback(() => {
+    if (supported) {
+      speak(directInput, {voice: selectedVoice, lang});
+    }
+  }, [speak, supported, directInput, selectedVoice, lang]);
+
+
+  useEffect(() => {
+    printVoices();
+  }, [printVoices]);
+
   return (
       <React.Fragment>
         <Head>
@@ -140,6 +170,18 @@ function Learn() {
                         }}
                     />
                     <SentenceList sentences={sentences} onSentenceClick={handleSentenceClick}/>
+                    <select
+                        value={selectedVoice}
+                        onChange={(e) => setSelectedVoice(e.target.value)}
+                        className="p-2 border rounded"
+                    >
+                      <option value="">Default Voice</option>
+                      {filteredVoices.map((voice) => (
+                          <option key={voice.name} value={voice.name}>
+                            {`${voice.name} (${voice.lang})`}
+                          </option>
+                      ))}
+                    </select>
                     <div className="flex gap-4">
                       <AwesomeButton type={'primary'} onPress={openDeepL}>
                         Translate with DeepL
@@ -154,8 +196,16 @@ function Learn() {
                                      onPress={toggleAutoTranslate}>
                         {isAutoTranslating ? 'Stop Auto Translate' : 'Start Auto Translate'}
                       </AwesomeButton>
+                      <AwesomeButton
+                          type={'primary'}
+                          onPress={handleSpeak}
+                          disabled={!supported || speaking}
+                      >
+                        {speaking ? 'Speaking...' : <FaVolumeUp/>}
+                      </AwesomeButton>
                     </div>
                     <TranslationDisplay translation={translation}/>
+
                     <AwesomeButton
                         type={'secondary'}
                         onPress={async () => {
