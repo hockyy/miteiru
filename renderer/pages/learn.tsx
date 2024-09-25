@@ -120,7 +120,7 @@ function Learn() {
   }, []);
 
 
-  const {speak, speaking, supported, printVoices, voices} = useSpeech(); // Use the useSpeech hook
+  const {speak, speaking, supported, voices} = useSpeech(); // Use the useSpeech hook
 
   // Function to get supported language codes
   const getSupportedLangCodes = useCallback(() => {
@@ -141,10 +141,6 @@ function Learn() {
     }
   }, [speak, supported, directInput, selectedVoice, lang]);
 
-
-  useEffect(() => {
-    printVoices();
-  }, [printVoices]);
 
   return (
       <React.Fragment>
