@@ -22,7 +22,8 @@ export default function useKeyBind(
     reloadLastPrimarySubtitle,
     reloadLastSecondarySubtitle,
     setShowVocabSidebar,
-    rubyContent
+    rubyContent,
+    contentString
 ) {
   const router = useRouter();
   useEffect(() => {
@@ -89,11 +90,20 @@ export default function useKeyBind(
       } else if (event.code === "KeyA") {
         reloadLastSecondarySubtitle();
         reloadLastPrimarySubtitle();
-      } else if (event.code === "KeyC") {
+      } else if (event.code === "KeyG") {
         // New copy functionality
         if (rubyContent) {
           try {
             await navigator.clipboard.writeText(rubyContent);
+          } catch (err) {
+            console.error("Failed to copy text: ", err);
+          }
+        }
+      } else if (event.code === "KeyC") {
+        // New copy functionality
+        if (contentString) {
+          try {
+            await navigator.clipboard.writeText(contentString);
           } catch (err) {
             console.error("Failed to copy text: ", err);
           }
