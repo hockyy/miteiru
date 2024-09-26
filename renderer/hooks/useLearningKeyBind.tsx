@@ -22,7 +22,7 @@ export default function useLearningKeyBind(
         setShowSidebar((old) => {
           return !old;
         });
-      } else if (event.code === "KeyC" && event.ctrlKey) {
+      } else if (event.code === "KeyG" && event.ctrlKey) {
         if (rubyContent) {
           await navigator.clipboard.writeText(rubyContent);
         }
