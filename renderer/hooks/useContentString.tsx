@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import {useCallback, useMemo, useState} from 'react';
 
 const useContentString = () => {
   const [externalContent, setExternalContent] = useState<any[]>([]);
@@ -12,7 +12,7 @@ const useContentString = () => {
 
   const contentString = useMemo(() => generateContentString(externalContent), [externalContent, generateContentString]);
 
-  return { contentString, externalContent, setExternalContent };
+  return {contentString, externalContent, setExternalContent};
 };
 
 export default useContentString;

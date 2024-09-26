@@ -127,7 +127,7 @@ function Video() {
       setPrimarySub, setSecondarySub, primarySub, undo,
       setShowPrimarySub, setShowSecondarySub, primaryStyling, setPrimaryStyling,
       openDeepL, openGoogleTranslate, reloadLastPrimarySubtitle, reloadLastSecondarySubtitle,
-      setShowVocabSidebar, rubyContent);
+      setShowVocabSidebar, rubyContent, contentString);
   const {
     togglePlay,
     isPlaying,
