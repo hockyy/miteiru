@@ -16,5 +16,5 @@ export const usePlayNextAfterEnd = (player,
         player.off('ended', ender)
       }
     }
-  }, [player, currentTime, duration]);
+  }, [player, currentTime, duration, setEnableSeeker, onVideoChangeHandler]);
 }

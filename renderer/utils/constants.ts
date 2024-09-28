@@ -3,7 +3,7 @@ export const videoConstants = {
     'mkv', 'mp4', 'webm', 'ogg', 'mov', 'avi', 'flv', '3gp', 'wmv', 'wav', 'hls', 'mp3', 'mp2t', 'ts'
   ],
   supportedSubtitleFormats: [
-    'ass', 'srt', 'vrt'
+    'ass', 'srt', 'vrt', 'vtt',
   ],
   shiftAmount: 100,
   subtitleFramerate: 30,

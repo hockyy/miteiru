@@ -6,7 +6,7 @@ import {access} from 'node:fs/promises';
 import Japanese from "./japanese";
 import Chinese from "./chinese";
 import Store from 'electron-store';
-import {basename, dirname, extname, join} from 'path';
+import path, {basename, dirname, extname, join} from 'path';
 import {parse as parseSRT} from '@plussub/srt-vtt-parser';
 import languageEncoding from "detect-file-encoding-and-language";
 import iconv from "iconv-lite"
@@ -210,7 +210,7 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
       .map(fileName => join(folderPath, fileName))
       .filter(filePattern => isArrayEndsWithMatcher(filePattern, matcher))
       .sort();
-
+      filePath = path.normalize(filePath);
       const currentIndex = filesMatched.indexOf(filePath);
       if (currentIndex === -1) {
         if (delta < 0) delta++;
