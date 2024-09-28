@@ -137,21 +137,19 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
     const videoDirectory = dirname(videoFilePath);
     const subtitleExtensions = [...videoConstants.supportedSubtitleFormats];
     for (const ext of videoConstants.supportedSubtitleFormats) {
-      subtitleExtensions.push('.en' + ext);
+      subtitleExtensions.push('en.' + ext);
     }
     const availableSubs = [];
     for (const ext of subtitleExtensions) {
-      const subtitleFilePath = join(videoDirectory, videoFileName + ext);
+      const subtitleFilePath = join(videoDirectory, videoFileName + '.' + ext);
       try {
         await access(subtitleFilePath);
-        availableSubs.push(subtitleFilePath)
-        return subtitleFilePath;
+        availableSubs.push(subtitleFilePath);
       } catch (error) {
         // Subtitle file does not exist, continue to the next extension
       }
     }
-
-    return []; // No subtitle file found
+    return availableSubs; // No subtitle file found
   });
 
 
@@ -274,9 +272,15 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
   ipcMain.handle('gtrans', async (event, text, lang) => {
     try {
       const result = await translateHandler(text, lang);
-      return {success: true, translatedText: result};
+      return {
+        success: true,
+        translatedText: result
+      };
     } catch (error) {
-      return {success: false, error: error.message};
+      return {
+        success: false,
+        error: error.message
+      };
     }
   });
 
