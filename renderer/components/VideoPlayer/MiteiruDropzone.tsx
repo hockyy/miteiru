@@ -1,7 +1,10 @@
 import React, {useCallback, useEffect, useMemo, useRef} from "react";
 import {extractVideoId, isVideo, isYoutube} from "../../utils/utils";
 
-export const MiteiruDropzone = ({onDrop, deltaTime}) => {
+export const MiteiruDropzone = ({
+                                  onDrop,
+                                  deltaTime
+                                }) => {
   const dropRef = useRef<HTMLDivElement>(null);
 
   const handleDrag = useCallback((e: DragEvent) => {
@@ -27,12 +30,9 @@ export const MiteiruDropzone = ({onDrop, deltaTime}) => {
       if (videoFile) {
         const videoFilePath = videoFile.path;
         window.electronAPI.checkSubtitleFile(videoFilePath).then(subtitleFilePath => {
-          if (subtitleFilePath) {
-            // If a subtitle file is found, include it in the onDrop call
-            onDrop([{path: videoFilePath}]);
-            onDrop([{path: subtitleFilePath}]);
-          } else {
-            onDrop([{path: videoFilePath}]);
+          onDrop([{path: videoFilePath}]);
+          for (const subPath of subtitleFilePath) {
+            onDrop([{path: subPath}]);
           }
         });
       } else {

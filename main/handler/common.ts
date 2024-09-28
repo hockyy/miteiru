@@ -135,19 +135,23 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
   ipcMain.handle('check-subtitle-file', async (event, videoFilePath) => {
     const videoFileName = basename(videoFilePath, extname(videoFilePath));
     const videoDirectory = dirname(videoFilePath);
-    const subtitleExtensions = ['.srt', '.ass'];
-
+    const subtitleExtensions = [...videoConstants.supportedSubtitleFormats];
+    for (const ext of videoConstants.supportedSubtitleFormats) {
+      subtitleExtensions.push('.en' + ext);
+    }
+    const availableSubs = [];
     for (const ext of subtitleExtensions) {
       const subtitleFilePath = join(videoDirectory, videoFileName + ext);
       try {
         await access(subtitleFilePath);
+        availableSubs.push(subtitleFilePath)
         return subtitleFilePath;
       } catch (error) {
         // Subtitle file does not exist, continue to the next extension
       }
     }
 
-    return null; // No subtitle file found
+    return []; // No subtitle file found
   });
 
 

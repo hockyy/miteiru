@@ -8,7 +8,7 @@ interface ElectronStore {
 interface ElectronAPI {
   openExternal: (url: string) => Promise<void>;
   googleTranslate: (text: string, lang: string) => Promise<any>;
-  checkSubtitleFile: (videoFilePath: string) => Promise<string | null>;
+  checkSubtitleFile: (videoFilePath: string) => Promise<string[] | null>;
   fs: {
     readFile: (filename: string) => Promise<string>;
     writeFile: (filename: string, data: string) => Promise<boolean>;
