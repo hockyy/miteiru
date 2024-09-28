@@ -41,7 +41,7 @@ function Learn() {
     setDirectInput(sentence);
   }, [setDirectInput]);
 
-  const [selectedVoice, setSelectedVoice] = useState('');
+  const [selectedVoice, setSelectedVoice] = useStoreData('tts.option.voice','');
   useLearningKeyBind(setMeaning, setShowSidebar, undo, rubyContent);
   const router = useRouter();
   const {
@@ -120,13 +120,17 @@ function Learn() {
   }, []);
 
 
-  const {speak, speaking, supported, voices} = useSpeech(); // Use the useSpeech hook
+  const {
+    speak,
+    speaking,
+    supported,
+    voices
+  } = useSpeech(); // Use the useSpeech hook
 
   // Function to get supported language codes
   const getSupportedLangCodes = useCallback(() => {
     return Object.values(videoConstants.varLang).flat();
   }, []);
-
   // Filter voices based on supported languages
   const filteredVoices = useMemo(() => {
     const supportedLangCodes = getSupportedLangCodes();
@@ -137,10 +141,18 @@ function Learn() {
 
   const handleSpeak = useCallback(() => {
     if (supported) {
-      speak(directInput, {voice: selectedVoice, lang});
+      speak(directInput, {
+        voice: selectedVoice,
+        lang
+      });
     }
   }, [speak, supported, directInput, selectedVoice, lang]);
 
+  useEffect(() => {
+    if (sentences.length == 1) {
+      setDirectInput(sentences[0]);
+    }
+  }, [sentences]);
 
   return (
       <React.Fragment>
@@ -169,7 +181,7 @@ function Learn() {
                     <select
                         value={selectedVoice}
                         onChange={(e) => setSelectedVoice(e.target.value)}
-                        className="p-2 border rounded"
+                        className="text-black p-2 border rounded"
                     >
                       <option value="">Default Voice</option>
                       {filteredVoices.map((voice) => (
