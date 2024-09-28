@@ -10,6 +10,7 @@ import {videoConstants} from "../../utils/constants";
 import MakeMeAHanziDisplay from "./MakeMeAHanziDisplay";
 import {FaStar, FaVolumeUp} from 'react-icons/fa';
 import useSpeech from "../../hooks/useSpeech";
+import {useStoreData} from "../../hooks/useStoreData";
 
 const OutlinedStar = ({
                         color,
@@ -68,15 +69,23 @@ const MeaningBox = ({
   const [tags, setTags] = useState({});
   const [romajiedData, setRomajiedData] = useState([]);
 
-  const {speak, stop, speaking, supported} = useSpeech();
-
+  const {
+    speak,
+    stop,
+    speaking,
+    supported
+  } = useSpeech();
+  const [selectedVoice, ] = useStoreData('tts.option.voice', '');
   const handleSpeak = useCallback(() => {
     if (speaking) {
       stop();
     } else {
-      speak(meaning, {lang});
+      speak(meaning, {
+        lang,
+        voice: selectedVoice
+      });
     }
-  }, [speak, stop, speaking, meaning, lang]);
+  }, [speaking, stop, speak, meaning, lang, selectedVoice]);
 
 
   const renderSpeakButton = useCallback(() => (
