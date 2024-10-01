@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useRef, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import HanziWriter from "hanzi-writer";
 
 import {AwesomeButton} from "react-awesome-button";
@@ -106,7 +106,10 @@ const Review = ({questionData}) => {
   );
 };
 
-const QuizContainer = ({children, className = ''}) => {
+const QuizContainer = ({
+                         children,
+                         className = ''
+                       }) => {
   return (
       <div
           className={`flex flex-col min-w-[60vw] min-h-[50vh] p-4 gap-4 items-center border-2 border-gray-300 rounded-md bg-white shadow-lg ${className}`}
@@ -170,15 +173,19 @@ const MultipleChoiceComponent = ({
         </div>
 
         <div className="flex flex-col gap-2 w-full">
-          {questionData.options.map((option, index) => (
-              <OptionComponent
-                  key={index}
-                  option={option}
-                  isSelected={selectedOption === option.content}
-                  onClick={() => handleOptionClick(option.content)}
-                  disabled={showReview}
-              />
-          ))}
+          {questionData.options.map((option, index) => {
+            if (!option) return;
+            console.log(option)
+            return (
+                <OptionComponent
+                    key={index}
+                    option={option}
+                    isSelected={selectedOption === option.content}
+                    onClick={() => handleOptionClick(option.content)}
+                    disabled={showReview}
+                />
+            );
+          })}
         </div>
 
         {showReview && (
@@ -301,7 +308,20 @@ const WritingQuizDisplay = ({
   );
 }
 const QuestionInfo = ({questionData}) => {
-  const {meaning, pinyin, jyutping, decomposition} = questionData;
+  const {
+    meaning,
+    pinyin,
+    jyutping,
+    decomposition
+  } = useMemo(() => {
+    if (questionData) return questionData;
+    else return {
+      meaning: [],
+      pinyin: '',
+      jyutping: '',
+      decomposition: []
+    }
+  }, [questionData]);
   const [shownMeanings, setShownMeanings] = useState(1);
   const [showPronunciation, setShowPronunciation] = useState(false);
   const [showDecomposition, setShowDecomposition] = useState(false);
@@ -396,7 +416,12 @@ const ReadingQuestion = ({questionData}) => (
     <div className="text-4xl font-bold">{questionData.content}</div>
 );
 
-const ConveyanceOption = ({option, isSelected, onClick, disabled}) => (
+const ConveyanceOption = ({
+                            option,
+                            isSelected,
+                            onClick,
+                            disabled
+                          }) => (
     <button
         className={`py-2 px-4 rounded-md text-4xl transition-colors ${
             isSelected
@@ -421,7 +446,12 @@ const formatJyutping = (jyutping) => {
   return jyutping.join(' / ');
 };
 
-const ReadingOption = ({option, isSelected, onClick, disabled}) => {
+const ReadingOption = ({
+                         option,
+                         isSelected,
+                         onClick,
+                         disabled
+                       }) => {
   const pinyinReadings = option.pinyin || [];
   const jyutpingReadings = option.jyutping || [];
 
@@ -446,7 +476,10 @@ const ReadingOption = ({option, isSelected, onClick, disabled}) => {
       </button>
   );
 };
-const ConveyanceQuizDisplay = ({questionData, onAnswer}) => {
+const ConveyanceQuizDisplay = ({
+                                 questionData,
+                                 onAnswer
+                               }) => {
   return (
       <MultipleChoiceComponent
           questionData={questionData}
@@ -457,7 +490,10 @@ const ConveyanceQuizDisplay = ({questionData, onAnswer}) => {
   );
 };
 
-const ReadingQuizDisplay = ({questionData, onAnswer}) => {
+const ReadingQuizDisplay = ({
+                              questionData,
+                              onAnswer
+                            }) => {
   return (
       <MultipleChoiceComponent
           questionData={questionData}
