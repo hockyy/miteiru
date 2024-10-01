@@ -279,21 +279,22 @@ class SRSDatabase {
     }
   }
 
-  static storeOrUpdateToDB(lang: string, ch: string, srsData: SRSData) {
-    this.db.put(`srs/${lang}/${ch}`, srsData.toJSON());
+  static async storeOrUpdateToDB(lang: string, ch: string, srsData: SRSData) {
+    await this.db.put(`srs/${lang}/${ch}`, srsData.toJSON());
   }
 
-  static storeOrUpdate(lang: string, character: string, srsData?: SRSData) {
+  static async storeOrUpdate(lang: string, character: string, srsData?: SRSData) {
     if (!this.srsData.has(lang)) {
       console.warn(`ERROR: srsData ${lang} not initted`)
       return;
     }
+    if(!(await Chinese.queryHanziChinese(character))) return;
     if (!srsData && this.srsData.get(lang).has(character)) {
       srsData = this.srsData.get(lang).get(character)
     }
 
     if (!srsData) srsData = new SRSData(character, lang);
-    this.storeOrUpdateToDB(lang, character, srsData);
+    await this.storeOrUpdateToDB(lang, character, srsData);
     this.srsData.get(lang).set(character, srsData);
     SKILL_NAMES.forEach((skillName, index) => {
       this.learningTrees.get(getPair(lang, index)).insert(srsData);
@@ -318,8 +319,10 @@ class SRSDatabase {
   }
 
   static async getQuestion(lang: string, skillType: SkillConstant, optionNumber: number = 3) {
+    console.log("Querying ", lang, skillType, optionNumber)
     const learningTree = this.learningTrees.get(getPair(lang, skillType));
     const treeSize = learningTree.container.size();
+    console.log('tree Size', treeSize)
     if (treeSize < 1) return null; // Not enough characters to generate a question
     const nextCharacter = learningTree.findByOrder(0); // Get the closest character to be learned
     let mode = ExamModeConstant.Exam;
@@ -349,8 +352,11 @@ class SRSDatabase {
         selectedIndices.push(currentPicked);
       }
     }
+    console.log(selectedIndices)
+    console.log(nextCharacter)
     // Get the corresponding characters
     const correct = await Chinese.queryHanziChinese(nextCharacter.character);
+    console.log(correct)
     let options = [correct];
     for (const index of selectedIndices) {
       const characterAtRandomIndex = learningTree.findByOrder(index);
