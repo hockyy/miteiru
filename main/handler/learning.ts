@@ -305,7 +305,7 @@ class SRSDatabase {
     return new ComparatorKey(srsData.character, srsData.skills.get(skillType).nextReviewTime);
   }
 
-  static updateSkillLevel(lang: string, character: string, skillType: SkillConstant, grade: number) {
+  static async updateSkillLevel(lang: string, character: string, skillType: SkillConstant, grade: number) {
     const ptrToSRSData = this.srsData.get(lang).get(character);
     if (!ptrToSRSData) return;
 
@@ -314,15 +314,15 @@ class SRSDatabase {
     this.srsData.get(lang).delete(character);
     console.log(`Updated ${character} from ${epochToLocalDate(skill.nextReviewTime)}`)
     sm2Algorithm(skill, grade);
-    console.log(`Updated ${character} to ${epochToLocalDate(skill.nextReviewTime)}`)
-    this.storeOrUpdate(lang, character, ptrToSRSData);
+    // console.log(`Updated ${character} to ${epochToLocalDate(skill.nextReviewTime)}`)
+    await this.storeOrUpdate(lang, character, ptrToSRSData);
   }
 
   static async getQuestion(lang: string, skillType: SkillConstant, optionNumber: number = 3) {
-    console.log("Querying ", lang, skillType, optionNumber)
+    // console.log("Querying ", lang, skillType, optionNumber)
     const learningTree = this.learningTrees.get(getPair(lang, skillType));
     const treeSize = learningTree.container.size();
-    console.log('tree Size', treeSize)
+    // console.log('tree Size', treeSize)
     if (treeSize < 1) return null; // Not enough characters to generate a question
     const nextCharacter = learningTree.findByOrder(0); // Get the closest character to be learned
     let mode = ExamModeConstant.Exam;
@@ -352,11 +352,11 @@ class SRSDatabase {
         selectedIndices.push(currentPicked);
       }
     }
-    console.log(selectedIndices)
-    console.log(nextCharacter)
+    // console.log(selectedIndices)
+    // console.log(nextCharacter)
     // Get the corresponding characters
     const correct = await Chinese.queryHanziChinese(nextCharacter.character);
-    console.log(correct)
+    // console.log(correct)
     let options = [correct];
     for (const index of selectedIndices) {
       const characterAtRandomIndex = learningTree.findByOrder(index);
@@ -399,6 +399,7 @@ class Learning {
           lte: `${prefix}\uFFFF`, // End of the range: highest value that still matches the prefix
         };
 
+        const promises = []
         // Efficiently iterate over keys within the specified range
         for await (const [key, value] of this.db.iterator(queryOptions)) {
           const strippedKey = key.substring(prefix.length);
@@ -418,10 +419,11 @@ class Learning {
             await this.db.put(key, JSON.stringify(parsedValue));
           }
           if (parsedValue.level) for (const ch of strippedKey) {
-            SRSDatabase.storeOrUpdate(lang, ch);
+            promises.push(SRSDatabase.storeOrUpdate(lang, ch));
           }
           learningState[strippedKey] = parsedValue;
         }
+        await Promise.all(promises);
         return learningState;
       } catch (error) {
         console.error('Error loading learning state:', error);
@@ -433,10 +435,12 @@ class Learning {
     ipcMain.handle('updateContent', async (_event, content, lang, data) => {
       if (!content) return true;
       try {
+        const promises = []
         await this.db.put(`${lang}/${content}`, JSON.stringify(data));
         for (const ch of content) {
-          SRSDatabase.storeOrUpdate(lang, ch);
+          promises.push(SRSDatabase.storeOrUpdate(lang, ch));
         }
+        await Promise.all(promises);
         return true; // Indicate success
       } catch (error) {
         console.error('Error updating content:', error);
@@ -448,6 +452,7 @@ class Learning {
     ipcMain.handle('updateContentBatch', async (_event, contents: LearningStateType, lang) => {
       if (!contents) return true;
       try {
+        const promises = [];
         for (const [key, value] of Object.entries(contents)) {
           const goUpdate = async () => {
             await this.db.put(`${lang}/${key}`, JSON.stringify(value));
@@ -459,9 +464,10 @@ class Learning {
             await goUpdate();
           })
           for (const ch of key) {
-            SRSDatabase.storeOrUpdate(lang, ch);
+            promises.push(SRSDatabase.storeOrUpdate(lang, ch));
           }
         }
+        await Promise.all(promises);
         return true; // Indicate success
       } catch (error) {
         console.error('Error updating content:', error);
@@ -483,7 +489,7 @@ class Learning {
     ipcMain.handle('learn-updateOneCharacter', async (_event, skillType, lang, character, grade) => {
       try {
         const convertedSkillType = convertToSkillConstant(skillType);
-        SRSDatabase.updateSkillLevel(lang, character, convertedSkillType, grade);
+        await SRSDatabase.updateSkillLevel(lang, character, convertedSkillType, grade);
         return true;
       } catch (error) {
         console.error('Error updating one character:', error);
@@ -514,7 +520,7 @@ class Learning {
     ipcMain.handle('setSRS', async (_event, lang: string, character: string, srsData?: string) => {
       const realData = SRSData.fromJSON(srsData);
       try {
-        SRSDatabase.storeOrUpdate(lang, character, realData);
+        await SRSDatabase.storeOrUpdate(lang, character, realData);
         return {
           success: true,
           message: `SRS data for ${character} in ${lang} has been stored or updated successfully.`
