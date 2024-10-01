@@ -230,24 +230,29 @@ export class SubtitleContainer {
   }
 
   async adjustJapanese(tokenizeMiteiru: (string) => Promise<any[]>) {
+    const promises = [];
+
     for (let i = 0; i < this.lines.length; i++) {
       if (globalSubtitleId !== this.id) return;
       const line = this.lines[i];
-      await line.fillContentSeparations(tokenizeMiteiru)
-      await line.fillContentWithLearningKotoba(this.frequency);
+      promises.push(line.fillContentSeparations(tokenizeMiteiru));
+      promises.push(line.fillContentWithLearningKotoba(this.frequency));
       this.progress = `${((i + 1) * 100 / this.lines.length).toFixed(2)}%`;
     }
+    await Promise.all(promises);
     this.progress = 'done';
   }
 
   async adjustChinese(tokenizeMiteiru: (string) => Promise<any[]>) {
+    const promises = [];
     for (let i = 0; i < this.lines.length; i++) {
       if (globalSubtitleId !== this.id) return;
       const line = this.lines[i];
-      await line.fillContentSeparations(tokenizeMiteiru);
-      await line.fillContentWithLearningChinese(this.frequency);
+      promises.push(line.fillContentSeparations(tokenizeMiteiru));
+      promises.push(line.fillContentWithLearningChinese(this.frequency));
       this.progress = `${((i + 1) * 100 / this.lines.length).toFixed(2)}%`;
     }
+    await Promise.all(promises);
     this.progress = 'done';
   }
 }
