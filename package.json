@@ -76,7 +76,7 @@
     "@typescript-eslint/parser": "^6.21.0",
     "archiver": "^6.0.2",
     "autoprefixer": "^10.4.20",
-    "electron": "^32.1.2",
+    "electron": "^31",
     "electron-builder": "^24.13.3",
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.14",
