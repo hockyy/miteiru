@@ -26,9 +26,8 @@ export const MiteiruDropzone = ({
     } else if (files.length) {
       const filesWithPath = files.map(file => ({path: file.path}));
       const videoFile = files.find(file => isVideo(file.name));
-
       if (videoFile) {
-        const videoFilePath = videoFile.path;
+        const videoFilePath = window.electronAPI.getPath(videoFile);
         window.electronAPI.checkSubtitleFile(videoFilePath).then(subtitleFilePath => {
           onDrop([{path: videoFilePath}]);
           for (const subPath of subtitleFilePath) {

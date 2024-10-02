@@ -189,7 +189,8 @@ export const JapaneseSentence = ({
         }} key={index}>
           <ruby className={learningClassName}
                 style={{rubyPosition: "over"}}>
-            {val.main}
+            {/* @ts-expect-error rb wtf eslint*/}
+            <rb>{val.main}</rb>
             <rt className={"unselectable"}>{subtitleStyling.showFurigana && showFurigana && hiragana}</rt>
           </ruby>
           <rt className={"unselectable"}>{subtitleStyling.showRomaji && showRomaji && romaji}</rt>
@@ -198,6 +199,7 @@ export const JapaneseSentence = ({
     })
   }, [separation, subtitleStyling, learningClassName, origin]);
 
+  
   return <StyledSentence
       subtitleStyling={subtitleStyling}
       className={extraClass}
@@ -209,7 +211,8 @@ export const JapaneseSentence = ({
       WebkitTextStrokeColor: subtitleStyling.stroke.color,
       WebkitTextStrokeWidth: subtitleStyling.stroke.width,
     }}>
-      {separationContent}
+      {/* @ts-expect-error rb wtf eslint*/}
+      <rb>{separationContent}</rb>
       <rt style={{fontWeight: subtitleStyling.textMeaning.weight}}
           className={"internalMeaning unselectable"}>{
           subtitleStyling.showMeaning
@@ -288,7 +291,10 @@ export const HanziSentence = ({
               className={extraClass}
               onClick={() => {
                 handleChange(val)
-              }}><>{val}</>
+              }}>
+
+            {/* @ts-expect-error rb wtf eslint*/}
+            <rb>{val}</rb>
           </StyledChineseSentence>
           <rt className={"unselectable"}>{index < (pinyin ?? '').length ? pinyin[index] : ''}</rt>
         </ruby>
@@ -336,7 +342,8 @@ export const ChineseSentence = ({
                    style={{
                      rubyPosition: "over",
                    }} key={index}>
-        {val.main}
+        {/* @ts-expect-error rb wtf eslint*/}
+        <rb>{val.main}</rb>
         <rt className={"unselectable"}>{subtitleStyling.showFurigana && learningClassName !== 'state2' && (val.jyutping ?? val.pinyin)}</rt>
       </ruby>
     }));
@@ -353,7 +360,8 @@ export const ChineseSentence = ({
       WebkitTextStrokeColor: subtitleStyling.stroke.color,
       WebkitTextStrokeWidth: subtitleStyling.stroke.width,
     }}>
-      {separationContent}
+      {/* @ts-expect-error rb wtf eslint*/}
+      <rb>{separationContent}</rb>
       <rt style={{fontWeight: subtitleStyling.textMeaning.weight}}
           className={"internalMeaning unselectable"}>{
           (subtitleStyling.showMeaning || learningClassName === 'state0' || learningClassName === 'state3')
