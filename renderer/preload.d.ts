@@ -6,6 +6,7 @@ interface ElectronStore {
 }
 
 interface ElectronAPI {
+  getPath: (file: File) => string;
   openExternal: (url: string) => Promise<void>;
   googleTranslate: (text: string, lang: string) => Promise<any>;
   checkSubtitleFile: (videoFilePath: string) => Promise<string[] | null>;

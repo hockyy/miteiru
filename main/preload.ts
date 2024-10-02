@@ -1,4 +1,5 @@
 import {contextBridge, ipcRenderer, IpcRendererEvent} from 'electron'
+import {webUtils} from "electron";
 
 const handler = {
   send(channel: string, value: unknown) {
@@ -26,6 +27,9 @@ contextBridge.exposeInMainWorld('electronStore', {
 contextBridge.exposeInMainWorld('ipc', handler)
 
 contextBridge.exposeInMainWorld('electronAPI', {
+  getPath: (file) => {
+    return webUtils.getPathForFile(file);
+  },
   googleTranslate: (text: string, lang: string) => ipcRenderer.invoke('gtrans', text, lang),
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
   checkSubtitleFile: (videoFilePath: string) =>
