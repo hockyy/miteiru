@@ -1,4 +1,4 @@
-# Miteiru (見ている) / zai⁴kan⁴ (看看) / tai²gan² (睇緊)
+# Miteiru (見ている) / zai⁴kan⁴ (在看) / tai²gan² (睇緊)
 
 ![Stargazers repo roster for @hocky/miteiru](https://bytecrank.com/nastyox/reporoster/php/stargazersSVG.php?user=hockyy&repo=miteiru)
 
