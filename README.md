@@ -1,7 +1,7 @@
 # Miteiru (見ている) / zai⁴kan⁴ (在看) / tai²gan² (睇緊)
 
 ![Stargazers repo roster for @hocky/miteiru](https://bytecrank.com/nastyox/reporoster/php/stargazersSVG.php?user=hockyy&repo=miteiru)
-
+[![Star History Chart](https://api.star-history.com/svg?repos=miteiru/miteiru,hockyy/miteiru&type=Date)](https://star-history.com/#miteiru/miteiru&hockyy/miteiru&Date)
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-blue.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 ![GitHub release](https://img.shields.io/github/release/hockyy/miteiru.svg?color=purple)
 ![Open Issues](https://img.shields.io/github/issues/hockyy/miteiru?color=green)
