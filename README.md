@@ -10,6 +10,17 @@
 ![GitHub Stars](https://img.shields.io/github/stars/hockyy/miteiru.svg?color=yellow)
 ![GitHub Forks](https://img.shields.io/github/forks/hockyy/miteiru.svg)
 
+## Disclaimers
+### About the Developer
+Hello! I'm **Hocky Yudhiono**, the developer behind **Miteiru**. I created this video player app with the goal of providing a reliable and user-friendly experience for watching your favorite videos.
+
+### Commitment to Security
+
+I am **dedicated to ensuring that Miteiru is secure and free from any malicious components**. However, if you encounter any security issues or vulnerabilities, please reach out to me privately at [miteiru@hocky.id](mailto:miteiru@hocky.id) or just submit a GitHub issue, and I will do my best to address and resolve them promptly.
+
+### Liability Disclaimer
+While I strive to maintain a safe and secure application, I cannot be held responsible for any unintended consequences or damages that may occur from using **Miteiru**. **Use the app at your own risk**.
+
 ## Download ૮ ˶ᵔ ᵕ ᵔ˶ ა✩°｡ ⋆⸜
 <div align="center">
 
