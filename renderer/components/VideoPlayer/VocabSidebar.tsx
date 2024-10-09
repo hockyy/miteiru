@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useState, useRef} from 'react';
 import {getColorGradient, getRelativeTime} from '../../utils/utils';
-import {ArrowRight} from "./Icons";
+import {ArrowRight, ArrowUp, ArrowDown} from "./Icons"; // Assuming you have these icons
 import {videoConstants} from "../../utils/constants";
 
 const VocabSidebar = ({
@@ -14,6 +14,14 @@ const VocabSidebar = ({
   const [hoveredWord, setHoveredWord] = useState(null);
   const [tokenizedWord, setTokenizedWord] = useState(null);
   const containerRef = useRef(null);
+
+  const scrollToTop = useCallback(() => {
+    containerRef.current?.scrollTo({top: 0, behavior: 'smooth'});
+  }, []);
+
+  const scrollToBottom = useCallback(() => {
+    containerRef.current?.scrollTo({top: containerRef.current.scrollHeight, behavior: 'smooth'});
+  }, []);
 
   const loadVocabulary = useCallback(async () => {
     try {
@@ -87,6 +95,13 @@ const VocabSidebar = ({
           }}
           className={"overflow-y-scroll overflow-x-clip flex flex-col content-center items-center p-3 z-[19] fixed left-0 top-0 h-screen w-[30vw] bg-gray-700/70 text-white"}
       >
+        <div className="sticky top-0 z-10 w-full flex justify-center items-center bg-gray-800 p-2">
+          <button className="p-2 bg-blue-500 rounded" onClick={scrollToTop}>
+            <div className="h-5">
+              {ArrowUp}
+            </div>
+          </button>
+        </div>
         <button className={"self-end p-2"} onClick={() => setShowVocabSidebar(old => !old)}>
           <div className={"animation h-5"}>
             {ArrowRight}
@@ -114,6 +129,13 @@ const VocabSidebar = ({
                 {hoveredWord === word[0] && renderTokenizedWord()}
               </div>
           ))}
+        </div>
+        <div className="sticky bottom-0 z-10 w-full flex justify-center bg-gray-800 p-2">
+          <button className="p-2 bg-blue-500 rounded" onClick={scrollToBottom}>
+            <div className="h-5">
+              {ArrowDown}
+            </div>
+          </button>
         </div>
       </div>
   );

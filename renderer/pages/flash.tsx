@@ -7,6 +7,7 @@ import {AwesomeButton} from "react-awesome-button";
 import {getRelativeTime} from "../utils/utils";
 import useLearningState from "../hooks/useLearningState";
 import useLearningKeyBind from "../hooks/useLearningKeyBind";
+import 'react-awesome-button/dist/styles.css';
 
 interface LearningStateEntry {
   level: number;
@@ -15,7 +16,7 @@ interface LearningStateEntry {
 
 type SortedVocabEntry = [string, LearningStateEntry];
 
-type Difficulty = 'hard' | 'good' | 'easy';
+type Difficulty = 'hard' | 'good' | 'easy' | 'banish';
 
 const VocabFlashCards: React.FC = () => {
   const {lang, tokenizeMiteiru} = useMiteiruTokenizer();
@@ -73,6 +74,9 @@ const VocabFlashCards: React.FC = () => {
         case 'easy':
           interval = 7 * 24 * 60 * 60 * 1000; // 7 days
           break;
+        case 'banish':
+          interval = 365 * 24 * 60 * 60 * 1000; // 1 year lmao
+          break;
       }
 
       const newUpdTime = now + interval;
@@ -116,14 +120,18 @@ const VocabFlashCards: React.FC = () => {
               </AwesomeButton>
           ) : (
               <div className={'flex flex-row justify-center gap-4'}>
-                <AwesomeButton type="danger" onPress={() => handleAnswer('hard')}>
-                  Hard
+                <AwesomeButton type="secondary"
+                               onPress={() => handleAnswer('hard')}>
+                  Hard 🧠
                 </AwesomeButton>
-                <AwesomeButton type="warning" onPress={() => handleAnswer('good')}>
-                  Good
+                <AwesomeButton type="secondary" onPress={() => handleAnswer('good')}>
+                  Good 😊
                 </AwesomeButton>
-                <AwesomeButton type="success" onPress={() => handleAnswer('easy')}>
-                  Easy
+                <AwesomeButton type="secondary" onPress={() => handleAnswer('easy')}>
+                  Easy 😎
+                </AwesomeButton>
+                <AwesomeButton type="secondary" onPress={() => handleAnswer('banish')}>
+                  Banish 👻
                 </AwesomeButton>
               </div>
           )}
