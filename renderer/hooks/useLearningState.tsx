@@ -1,5 +1,4 @@
 import {useCallback, useEffect, useState} from 'react';
-import {ipcRenderer} from "electron";
 import {sortAndFilterTopXPercentToJson} from "../utils/utils";
 import {videoConstants} from "../utils/constants";
 import {useStoreData} from "./useStoreData";
@@ -45,6 +44,20 @@ const useLearningState = (lang: string) => {
     });
   }, [getLearningState, lang]);
 
+  const updateTimeWithSameLevel = useCallback((content: string, updTime: number) => {
+    setCachedLearningState(oldCached => {
+      if (!content) return oldCached;
+      const newCopy = {...oldCached};
+      const currentState = getLearningState(content);
+      newCopy[content] = {
+        level: currentState,
+        updTime: updTime
+      };
+      window.ipc.invoke('updateContent', content, lang, newCopy[content]);
+      return newCopy;
+    });
+  }, [getLearningState, lang]);
+
   useEffect(() => {
     window.ipc.invoke('loadLearningState', lang).then((val) => {
       setLearningState(val);
@@ -62,7 +75,8 @@ const useLearningState = (lang: string) => {
     frequencyPrimary,
     setFrequencyPrimary,
     learningPercentage,
-    setLearningPercentage
+    setLearningPercentage,
+    updateTimeWithSameLevel
   };
 }
 

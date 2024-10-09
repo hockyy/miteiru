@@ -388,6 +388,7 @@ class Learning {
 
   static registerHandler() {
     ipcMain.handle('loadLearningState', async (_event, lang) => {
+      if(!lang) return;
       try {
         await SRSDatabase.setup(lang);
         const prefix = `${lang}/`; // Define the prefix for keys
