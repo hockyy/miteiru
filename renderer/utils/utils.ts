@@ -108,26 +108,29 @@ export const sortAndFilterTopXPercentToJson = (frequency, x: number) => {
     return obj;
   }, {});
 }
-
-
-export const getRelativeTime = (timestamp) => {
+export const getRelativeTime = (timestamp: number): string => {
   const now = new Date().getTime();
   const updatedDate = new Date(timestamp).getTime();
-  const diffTime = Math.abs(now - updatedDate);
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
-  const diffMinutes = Math.floor(diffTime / (1000 * 60));
+  const diffTime = updatedDate - now;
+  const absDiffTime = Math.abs(diffTime);
+  const diffDays = Math.floor(absDiffTime / (1000 * 60 * 60 * 24));
+  const diffHours = Math.floor(absDiffTime / (1000 * 60 * 60));
+  const diffMinutes = Math.floor(absDiffTime / (1000 * 60));
+
+  const isPast = diffTime < 0;
+  const suffix = isPast ? 'ago' : 'from now';
 
   if (diffDays > 0) {
-    return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    return `${diffDays} day${diffDays > 1 ? 's' : ''} ${suffix}`;
   } else if (diffHours > 0) {
-    return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    return `${diffHours} hour${diffHours > 1 ? 's' : ''} ${suffix}`;
   } else if (diffMinutes > 0) {
-    return `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`;
+    return `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ${suffix}`;
   } else {
-    return 'Just now';
+    return isPast ? 'Just now' : 'In a moment';
   }
 };
+
 export const getColorGradient = (timestamp) => {
   const now = new Date().getTime();
   const diff = now - timestamp;

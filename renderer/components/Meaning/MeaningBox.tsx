@@ -60,7 +60,8 @@ const MeaningBox = ({
                       customComponent = null,
                       lang,
                       changeLearningState = null,
-                      getLearningState = null
+                      getLearningState = null,
+                      showMeaning = true,
                     }) => {
   const [meaningContent, setMeaningContent] = useState(initialContentState);
   const [meaningCharacter, setMeaningCharacter] = useState(initialCharacterContentState);
@@ -75,7 +76,7 @@ const MeaningBox = ({
     speaking,
     supported
   } = useSpeech();
-  const [selectedVoice, ] = useStoreData('tts.option.voice', '');
+  const [selectedVoice,] = useStoreData('tts.option.voice', '');
   const handleSpeak = useCallback(() => {
     if (speaking) {
       stop();
@@ -190,7 +191,7 @@ const MeaningBox = ({
       fetchCharacterData();
       fetchMeaningData();
     }
-  }, [lang, meaning]);
+  }, [lang, meaning, showMeaning]);
 
   useEffect(() => {
     const fetchRomajiedData = async () => {
@@ -245,18 +246,24 @@ const MeaningBox = ({
 
   const memoizedCustomComponent = useMemo(() => customComponent, [customComponent]);
 
-  const memoizedCharacterContent = useMemo(() => (
-      <CharacterContent
-          lang={lang}
-          meaningCharacter={meaningCharacter}
-          setMeaning={setMeaning}
-          subtitleStyling={subtitleStyling}
-      />
-  ), [lang, meaningCharacter, setMeaning, subtitleStyling]);
+  const memoizedCharacterContent = useMemo(() => {
+    if (!showMeaning) return <></>
+    return (
+        <CharacterContent
+            lang={lang}
+            meaningCharacter={meaningCharacter}
+            setMeaning={setMeaning}
+            subtitleStyling={subtitleStyling}
+        />
+    );
+  }, [lang, meaningCharacter, setMeaning, showMeaning, subtitleStyling]);
 
-  const memoizedMeaningContent = useMemo(() => (
-      <MeaningContent meaningContent={meaningContent} lang={lang} tags={tags}/>
-  ), [meaningContent, lang, tags]);
+  const memoizedMeaningContent = useMemo(() => {
+    if(!showMeaning) return <></>
+    return (
+        <MeaningContent meaningContent={meaningContent} lang={lang} tags={tags}/>
+    );
+  }, [showMeaning, meaningContent, lang, tags]);
 
   if (meaningContent.single.length === 0) return null;
 

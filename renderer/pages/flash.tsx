@@ -3,22 +3,41 @@ import Head from 'next/head';
 import "react-awesome-button/dist/styles.css";
 import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
 import MeaningBox from '../components/Meaning/MeaningBox';
-import useLearningKeyBind from "../hooks/useLearningKeyBind";
 import {AwesomeButton} from "react-awesome-button";
-import {getColorGradient, getRelativeTime} from "../utils/utils";
-import VocabSidebar from "../components/VideoPlayer/VocabSidebar";
+import {getRelativeTime} from "../utils/utils";
+import useLearningState from "../hooks/useLearningState";
+import useLearningKeyBind from "../hooks/useLearningKeyBind";
 
-const VocabFlashCards = () => {
+interface LearningStateEntry {
+  level: number;
+  updTime: number;
+}
+
+type SortedVocabEntry = [string, LearningStateEntry];
+
+type Difficulty = 'hard' | 'good' | 'easy';
+
+const VocabFlashCards: React.FC = () => {
   const {lang, tokenizeMiteiru} = useMiteiruTokenizer();
 
-  const [sortedVocab, setSortedVocab] = useState([]);
-  const [currentWord, setCurrentWord] = useState(null);
+  const [sortedVocab, setSortedVocab] = useState<SortedVocabEntry[]>([]);
+  const [currentWord, setCurrentWord] = useState<SortedVocabEntry | null>(null);
   const [index, setIndex] = useState(0);
+  const [showAnswer, setShowAnswer] = useState(false);
+
+  const {
+    changeLearningState,
+    getLearningState,
+    updateTimeWithSameLevel,
+  } = useLearningState(lang);
 
   const loadVocabulary = useCallback(async () => {
     try {
+      if (!lang) return;
       const loadedState = await window.ipc.invoke('loadLearningState', lang);
-      const sorted = Object.entries(loadedState).sort((a: any[], b: any[]) => b[1].updTime - a[1].updTime);
+      const sorted = Object.entries(loadedState).sort((a, b) =>
+          (b[1] as LearningStateEntry).updTime - (a[1] as LearningStateEntry).updTime
+      ) as SortedVocabEntry[];
       setSortedVocab(sorted);
       if (sorted.length > 0) {
         setCurrentWord(sorted[0]);
@@ -36,38 +55,86 @@ const VocabFlashCards = () => {
     const nextIndex = (index + 1) % sortedVocab.length;
     setCurrentWord(sortedVocab[nextIndex]);
     setIndex(nextIndex);
+    setShowAnswer(false);
   }, [index, sortedVocab]);
+  const handleAnswer = useCallback((difficulty: Difficulty) => {
+    if (currentWord) {
+      const [content, state] = currentWord;
+      const now = Date.now();
+      let interval: number;
 
-  const showPreCard = useCallback(() => {
-    const prevIndex = (index - 1 + sortedVocab.length) % sortedVocab.length;
-    setCurrentWord(sortedVocab[prevIndex]);
-    setIndex(prevIndex);
-  }, [index, sortedVocab]);
-  
+      switch (difficulty) {
+        case 'hard':
+          interval = 24 * 60 * 60 * 1000; // 1 day
+          break;
+        case 'good':
+          interval = 3 * 24 * 60 * 60 * 1000; // 3 days
+          break;
+        case 'easy':
+          interval = 7 * 24 * 60 * 60 * 1000; // 7 days
+          break;
+      }
+
+      const newUpdTime = now + interval;
+      updateTimeWithSameLevel(content, newUpdTime);
+
+      const updatedVocab = sortedVocab.map(word =>
+          word[0] === content ? [content, {...state, updTime: newUpdTime}] : word
+      );
+
+      const newSortedVocab = updatedVocab.sort((a, b) => {
+        if (typeof a[1] === 'string' || typeof b[1] === 'string') {
+          console.error('Unexpected state format:', a[1], b[1]);
+          return 0;
+        }
+        return a[1].updTime - b[1].updTime;
+      });
+      setSortedVocab(newSortedVocab as SortedVocabEntry[]);
+
+      showNextCard();
+    }
+  }, [currentWord, sortedVocab, updateTimeWithSameLevel, showNextCard]);
   const customComponent = useMemo(() => {
-    return currentWord ? (
+    if (!currentWord) return null;
+
+    const [, state] = currentWord;
+
+    return (
         <div className={'flex flex-col text-center bg-blue-200 gap-2 p-2 m-3'}>
           <div className={"font-bold"}>
-            Card No. {index}
+            Card No. {index + 1} of {sortedVocab.length}
           </div>
           <div className="text-sm text-blue-900 font-bold">
-            Last updated: {new Date(currentWord[1].updTime).toLocaleString()}
+            Next review: {new Date(state.updTime).toLocaleString()}
           </div>
           <div className="text-sm text-blue-700 italic">
-            ({getRelativeTime(currentWord[1].updTime)})
+            ({getRelativeTime(state.updTime)})
           </div>
-          <div className={'flex flex-row justify-center gap-4'}>
-            <AwesomeButton type="secondary" onPress={showPreCard}>
-              Previous Card
-            </AwesomeButton>
-            <AwesomeButton type="secondary" onPress={showNextCard}>
-              Next Card
-            </AwesomeButton>
-          </div>
+          {!showAnswer ? (
+              <AwesomeButton type="primary" onPress={() => setShowAnswer(true)}>
+                Show Answer
+              </AwesomeButton>
+          ) : (
+              <div className={'flex flex-row justify-center gap-4'}>
+                <AwesomeButton type="danger" onPress={() => handleAnswer('hard')}>
+                  Hard
+                </AwesomeButton>
+                <AwesomeButton type="warning" onPress={() => handleAnswer('good')}>
+                  Good
+                </AwesomeButton>
+                <AwesomeButton type="success" onPress={() => handleAnswer('easy')}>
+                  Easy
+                </AwesomeButton>
+              </div>
+          )}
         </div>
-    ) : <></>
-  }, [currentWord, index, showNextCard, showPreCard]);
+    );
+  }, [currentWord, index, sortedVocab.length, showAnswer, handleAnswer]);
 
+  useLearningKeyBind(() => {
+  }, () => {
+  }, () => {
+  });
   return (
       <React.Fragment>
         <Head>
@@ -76,16 +143,22 @@ const VocabFlashCards = () => {
         <div
             className="flex flex-col items-center justify-center bg-blue-50 text-black min-h-screen p-6 gap-3">
           <h1 className="text-3xl font-bold mb-6">Vocabulary Flash Cards</h1>
-          No Cards
-          {currentWord && (
-              <MeaningBox
-                  lang={lang}
-                  meaning={currentWord[0]}
-                  setMeaning={() => {
-                  }}
-                  tokenizeMiteiru={tokenizeMiteiru}
-                  customComponent={customComponent}
-              />
+          {sortedVocab.length === 0 ? (
+              <div>No Cards Available</div>
+          ) : (
+              currentWord && (
+                  <MeaningBox
+                      lang={lang}
+                      meaning={currentWord[0]}
+                      setMeaning={() => {
+                      }}
+                      tokenizeMiteiru={tokenizeMiteiru}
+                      customComponent={customComponent}
+                      changeLearningState={changeLearningState}
+                      getLearningState={getLearningState}
+                      showMeaning={showAnswer}
+                  />
+              )
           )}
         </div>
       </React.Fragment>

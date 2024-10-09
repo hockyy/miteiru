@@ -160,7 +160,7 @@ const useMiteiruTokenizer = (): {
   return {
     tokenizeMiteiru,
     tokenizerMode,
-    lang: langMap[tokenizerMode] ?? videoConstants.japaneseLang
+    lang: langMap[tokenizerMode] ?? ''
   };
 };
 
