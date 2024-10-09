@@ -460,7 +460,7 @@ class Learning {
           }
           this.db.get(`${lang}/${key}`).then(async val => {
             const parsedVal = JSON.parse(val);
-            if (parsedVal.level < value.level) await goUpdate();
+            if (parsedVal.updTime < value.updTime) await goUpdate();
           }).catch(async () => {
             await goUpdate();
           })

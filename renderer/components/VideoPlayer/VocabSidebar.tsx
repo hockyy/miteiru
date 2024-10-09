@@ -1,5 +1,4 @@
-// components/VideoPlayer/VocabSidebar.js
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState, useRef} from 'react';
 import {getColorGradient, getRelativeTime} from '../../utils/utils';
 import {ArrowRight} from "./Icons";
 import {videoConstants} from "../../utils/constants";
@@ -14,13 +13,14 @@ const VocabSidebar = ({
   const [sortedVocab, setSortedVocab] = useState([]);
   const [hoveredWord, setHoveredWord] = useState(null);
   const [tokenizedWord, setTokenizedWord] = useState(null);
+  const containerRef = useRef(null);
 
   const loadVocabulary = useCallback(async () => {
     try {
-      if(!lang) return;
+      if (!lang) return;
       const loadedState = await window.ipc.invoke('loadLearningState', lang);
-      const sorted = Object.entries(loadedState).toSorted((a: any[], b: any[]) => {
-        return b[1].updTime - a[1].updTime;
+      const sorted = Object.entries(loadedState).sort((a: any[], b: any[]) => {
+        return a[1].updTime - b[1].updTime;
       });
       setSortedVocab(sorted);
     } catch (error) {
@@ -31,6 +31,25 @@ const VocabSidebar = ({
   useEffect(() => {
     loadVocabulary();
   }, [lang, loadVocabulary]);
+
+  const findClosestWord = useCallback(() => {
+    const now = Date.now();
+    return sortedVocab.reduce((closest, current) => {
+      const closestDiff = Math.abs(closest[1].updTime - now);
+      const currentDiff = Math.abs(current[1].updTime - now);
+      return currentDiff < closestDiff ? current : closest;
+    });
+  }, [sortedVocab]);
+
+  useEffect(() => {
+    if (showVocabSidebar && containerRef.current && sortedVocab.length > 0) {
+      const closestWord = findClosestWord();
+      const wordElement = document.getElementById(`word-${closestWord[0]}`);
+      if (wordElement) {
+        wordElement.scrollIntoView({behavior: 'smooth', block: 'center'});
+      }
+    }
+  }, [showVocabSidebar, sortedVocab, findClosestWord]);
 
   const jumpToWord = useCallback((word) => {
     setMeaning(word);
@@ -51,9 +70,9 @@ const VocabSidebar = ({
     if (!tokenizedWord) return null;
 
     if (lang === videoConstants.japaneseLang) {
-      return (tokenizedWord);
+      return tokenizedWord;
     } else if (lang === videoConstants.chineseLang || lang === videoConstants.cantoneseLang) {
-      return (tokenizedWord.map(t => t.pinyin || t.jyutping));
+      return tokenizedWord.map(t => t.pinyin || t.jyutping);
     }
 
     return null;
@@ -61,6 +80,7 @@ const VocabSidebar = ({
 
   return (
       <div
+          ref={containerRef}
           style={{
             transition: "all 0.3s ease-out",
             transform: `translate(${showVocabSidebar ? "0" : "-30vw"}, 0`
@@ -77,10 +97,10 @@ const VocabSidebar = ({
         </div>
 
         <div className={"w-full mx-5 px-3 flex flex-col content-start gap-3 unselectable"}>
-
           {sortedVocab.map((word) => (
               <div
                   key={word[0]}
+                  id={`word-${word[0]}`}
                   className="cursor-pointer hover:bg-blue-200 p-2 rounded mb-2 flex flex-col justify-between items-start text-black"
                   onClick={() => jumpToWord(word[0])}
                   onMouseEnter={() => handleMouseEnter(word[0])}
