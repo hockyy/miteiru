@@ -328,11 +328,11 @@ export const ChineseSentence = ({
     })
   }, [subtitleStyling, origin, getLearningStateClass]);
 
-  const handleClick = useCallback(() => {
+  const handleRightClick = useCallback(() => {
     handleChange(origin);
   }, [handleChange, origin]);
 
-  const handleRightClick = useCallback(() => {
+  const handleClick = useCallback(() => {
     changeLearningState(origin);
   }, [changeLearningState, origin]);
 
