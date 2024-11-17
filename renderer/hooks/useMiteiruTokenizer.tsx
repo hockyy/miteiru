@@ -2,6 +2,7 @@ import {useCallback, useEffect, useState} from 'react';
 import {ShunouWordWithSeparations} from "shunou";
 import Conjugator from 'jp-verbs';
 import {videoConstants} from "../utils/constants";
+import {useStoreData} from "./useStoreData";
 
 const langMap = {
   "mecab": videoConstants.japaneseLang,
@@ -127,12 +128,14 @@ const parseVerbs = async (res) => {
 }
 
 const useMiteiruTokenizer = (): {
-  tokenizeMiteiru: (sentence: string) => Promise<any[]>,
+  tokenizeMiteiru: (sentence: string, toneType?: string) => Promise<any[]>,
   tokenizerMode: string,
-  lang: string
+  lang: string,
+  toneType: string,
+  setToneType
 } => {
   const [tokenizerMode, setMode] = useState('');
-
+  const [toneType, setToneType] = useStoreData('toneType', 'num');
   useEffect(() => {
     window.ipc.invoke('getTokenizerMode').then(val => {
       setMode(val);
@@ -140,7 +143,7 @@ const useMiteiruTokenizer = (): {
   }, []);
   const tokenizeMiteiru = useCallback(async (sentence) => {
     let res = []
-    if(!sentence) {
+    if (!sentence) {
       return res;
     }
     if (tokenizerMode === 'kuromoji') {
@@ -148,19 +151,21 @@ const useMiteiruTokenizer = (): {
       res = await window.shunou.processKuromojinToSeparations(kuromojiEntries);
       res = await parseVerbs(res);
     } else if (tokenizerMode === "cantonese") {
-      res = await window.ipc.invoke('tokenizeUsingCantoneseJieba', sentence);
+      res = await window.ipc.invoke('tokenizeUsingCantoneseJieba', sentence, toneType);
     } else if (tokenizerMode.includes('mecab')) {
       res = await window.shunou.getFurigana(sentence, tokenizerMode);
       res = await parseVerbs(res);
     } else if (tokenizerMode === "jieba") {
-      res = await window.ipc.invoke('tokenizeUsingJieba', sentence);
+      res = await window.ipc.invoke('tokenizeUsingJieba', sentence, toneType);
     }
     return res;
-  }, [tokenizerMode]);
+  }, [tokenizerMode, toneType]);
   return {
     tokenizeMiteiru,
     tokenizerMode,
-    lang: langMap[tokenizerMode] ?? ''
+    lang: langMap[tokenizerMode] ?? '',
+    toneType,
+    setToneType,
   };
 };
 

@@ -26,6 +26,14 @@ export const videoConstants = {
     "ja": "jpn",
     "zh-CN": "chi_tra",
   },
+  cantoneseToneMap: {
+    1: '‾',
+    2: '/',
+    3: '–',
+    4: '⦦',
+    5: '⦧',
+    6: '_'
+  },
   learningStateLength: 3
 }
 

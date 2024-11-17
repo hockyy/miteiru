@@ -8,7 +8,7 @@ import {
 } from "../../utils/CJKStyling";
 import Toggle from "./Toggle";
 import {AwesomeButton} from "react-awesome-button";
-import { GistManager } from "../Data/GistManager";
+import {GistManager} from "../Data/GistManager";
 
 export const StylingBox = ({
                              subtitleStyling,
@@ -386,6 +386,8 @@ export const Sidebar = ({
                           setAutoPause,
                           learningPercentage,
                           setLearningPercentage,
+                          toneType,
+                          setToneType,
                           lang
                         }) => {
   const learningPercentageHandler = useCallback(event => {
@@ -394,6 +396,9 @@ export const Sidebar = ({
   const autoPauseHandler = useCallback((val) => {
     setAutoPause(val);
   }, [setAutoPause])
+  const toneTypeHandler = useCallback((val) => {
+    setToneType(val ? 'num' : 'symbol');
+  }, [setToneType])
   return <div style={{
     transition: "all 0.3s ease-out",
     transform: `translate(${!showSidebar ? "30vw" : "0"}, 0`
@@ -413,6 +418,10 @@ export const Sidebar = ({
     </div>
 
     <div className={"w-full mx-5 px-3 flex flex-col content-start gap-3 unselectable"}>
+      <div className={"flex flex-row items-center gap-3"}>
+        <Toggle isChecked={toneType === 'num'} onChange={toneTypeHandler}/>
+        Use {toneType} Tone Type
+      </div>
       <div className={"flex flex-row items-center gap-3"}>
         <Toggle isChecked={autoPause} onChange={autoPauseHandler}/>
         Enable Auto Pause
