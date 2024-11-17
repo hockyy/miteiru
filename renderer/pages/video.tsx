@@ -39,7 +39,9 @@ function Video() {
   const {
     tokenizerMode,
     tokenizeMiteiru,
-    lang
+    lang,
+    toneType,
+    setToneType
   } = useMiteiruTokenizer();
   const {
     openDeepL,
@@ -223,7 +225,8 @@ function Video() {
                  autoPause={autoPause}
                  setAutoPause={setAutoPause}
                  learningPercentage={learningPercentage}
-                 setLearningPercentage={setLearningPercentage} lang={lang}/>
+                 setLearningPercentage={setLearningPercentage} lang={lang} toneType={toneType}
+                 setToneType={setToneType}/>
         <VocabSidebar
             showVocabSidebar={showVocabSidebar}
             setShowVocabSidebar={setShowVocabSidebar}

@@ -4,7 +4,8 @@ import path from "path";
 import fs from "node:fs";
 import {pinyin} from "pinyin-pro";
 import ToJyutping from "to-jyutping";
-import {loadDict, cut} from '@node-rs/jieba'
+import {cut, loadDict} from '@node-rs/jieba'
+import {videoConstants} from "../../renderer/utils/constants";
 
 
 interface JyutpingResult {
@@ -19,10 +20,9 @@ class Chinese {
   static dictPath: string;
   static importDict: string;
   static importBaseSVG: string;
-  static pyshell
   static jiebaDictPath: string
 
-  static queryHanziChinese = async (query) => {
+  static queryHanziChinese = async (query: string) => {
     try {
       return (await hanzi(this.Dict.db, query, 1))[0];
     } catch (e) {
@@ -30,7 +30,7 @@ class Chinese {
     }
   }
 
-  static getMandarinSettings = (appDataDirectory, replacements: any = {}) => {
+  static getMandarinSettings = (appDataDirectory: string, replacements: any = {}) => {
     return {
       jiebaDictPath: path.join(__dirname, 'chinese/zh.jieba.txt'),
       dictPath: path.join(appDataDirectory, `cccedict-db`),
@@ -40,7 +40,7 @@ class Chinese {
     }
   }
 
-  static getCantoneseSettings = (appDataDirectory, replacements: any = {}) => {
+  static getCantoneseSettings = (appDataDirectory: string, replacements: any = {}) => {
     return {
       jiebaDictPath: path.join(__dirname, 'cantonese/yue.jieba.txt'),
       dictPath: path.join(appDataDirectory, `cantodict-db`),
@@ -83,14 +83,14 @@ class Chinese {
   }
 
   static registerNodeJieba() {
-    ipcMain.handle('tokenizeUsingJieba', async (event, sentence) => {
+    ipcMain.handle('tokenizeUsingJieba', async (event, sentence, toneType) => {
       // Use nodejieba for segmentation
       const tokens = cut(sentence);
 
       return tokens.map(word => {
         // Get all pinyin information at once
         const pinyinInfo = pinyin(word, {
-          toneType: 'num',
+          toneType: toneType,
           type: 'all'
         });
 
@@ -107,7 +107,7 @@ class Chinese {
   }
 
 
-  static getJyutpingForSentence(sentence: string): Promise<JyutpingResult[]> {
+  static getJyutpingForSentence(sentence: string, toneType: string): Promise<JyutpingResult[]> {
     return Promise.resolve().then(() => {
       const segments = cut(sentence);
       const result: JyutpingResult[] = [];
@@ -115,10 +115,18 @@ class Chinese {
       for (const segment of segments) {
         const jyutpingList = ToJyutping.getJyutpingList(segment);
         const jyutping = jyutpingList.map(([, jp]) => jp).join(' ');
-        const separation = jyutpingList.map(([char, jp]) => ({
-          main: char,
-          jyutping: jp
-        }));
+        const separation = jyutpingList.map(([char, jp]) => {
+          if (toneType == 'symbol' && jp) {
+            const currentTone: string = jp.at(jp.length - 1);
+            if ('0' <= currentTone && currentTone <= '9') {
+              jp = jp.substring(0, jp.length - 1) + videoConstants.cantoneseToneMap[currentTone] + currentTone;
+            }
+          }
+          return ({
+            main: char,
+            jyutping: jp
+          });
+        });
 
         result.push({
           origin: segment,
@@ -132,9 +140,8 @@ class Chinese {
   }
 
   static registerCantoJieba() {
-    ipcMain.handle('tokenizeUsingCantoneseJieba', async (event, sentence) => {
-      const res = await this.getJyutpingForSentence(sentence);
-      return res;
+    ipcMain.handle('tokenizeUsingCantoneseJieba', async (event, sentence, toneType: string) => {
+      return await this.getJyutpingForSentence(sentence, toneType);
     });
 
   }
