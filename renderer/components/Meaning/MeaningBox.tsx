@@ -135,9 +135,11 @@ const MeaningBox = ({
           });
         } else if (lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang) {
           const result = await window.ipc.invoke("queryHanzi", meaning);
+          const waniResult = await window.ipc.invoke("getWaniKanji", meaning);
           setMeaningCharacter({
             ...result,
-            literal: meaning[0]
+            literal: meaning[0],
+            wanikani: waniResult
           });
         }
       } else {
@@ -259,7 +261,7 @@ const MeaningBox = ({
   }, [lang, meaningCharacter, setMeaning, showMeaning, subtitleStyling]);
 
   const memoizedMeaningContent = useMemo(() => {
-    if(!showMeaning) return <></>
+    if (!showMeaning) return <></>
     return (
         <MeaningContent meaningContent={meaningContent} lang={lang} tags={tags}/>
     );
@@ -555,6 +557,11 @@ const HanziBoxEntry = ({
     const notes = meaningHanzi.notes;
     const variants = meaningHanzi.variants;
     const similar = meaningHanzi.similar;
+    const wanikaniRadicals = meaningHanzi.wanikani ? meaningHanzi.wanikani.component_subject_ids.map(radicalName =>
+        <WaniKaniComponent key={radicalName} slug={radicalName}/>) : [];
+    const wanikaniMnemonics = meaningHanzi.wanikani ?
+        [<MeaningMnemonics key={'mnemonic'}
+                           content={meaningHanzi.wanikani.meaning_mnemonic}/>] : [];
     return {
       urls,
       pinyin,
@@ -564,9 +571,11 @@ const HanziBoxEntry = ({
       etymology,
       notes,
       variants,
-      similar
+      similar,
+      "Wanikani Radicals": wanikaniRadicals,
+      "Wanikani Mnemonics": wanikaniMnemonics
     }
-  }, [meaningHanzi.decomposition, meaningHanzi.etymology, meaningHanzi.jyutping, meaningHanzi.literal, meaningHanzi.notes, meaningHanzi.pinyin, meaningHanzi.radical, meaningHanzi.similar, meaningHanzi.variants]);
+  }, [meaningHanzi.decomposition, meaningHanzi.etymology, meaningHanzi.jyutping, meaningHanzi.literal, meaningHanzi.notes, meaningHanzi.pinyin, meaningHanzi.radical, meaningHanzi.similar, meaningHanzi.variants, meaningHanzi.wanikani]);
   const containerClassName = "flex flex-row gap-2 text-red-600 text-xl"
   const headerClassName = "flex flex-row gap-2 font-bold capitalize"
   return <div
@@ -624,11 +633,11 @@ const HanziBoxEntry = ({
 }
 
 
-const bubbleEntryReading = (readings) => {
+const bubbleEntryReading = (readings, extraClass = 'bg-red-100') => {
   return <div className={"flex flex-wrap gap-3"}>
     {readings && readings.map((val, index) => {
       if (!val) return;
-      return <div key={`bubble-${index}`} className={`rounded-md px-2 bg-red-100`}>{val}</div>
+      return <div key={`bubble-${index}`} className={'rounded-md px-2 ' + extraClass}>{val}</div>
     })}
   </div>
 }
