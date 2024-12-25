@@ -1,7 +1,7 @@
 import parse from "html-react-parser";
 import styled from "styled-components";
 import {CJKStyling, defaultLearningColorStyling} from "../../utils/CJKStyling";
-import React, {useCallback, useEffect, useState} from "react";
+import React, {ReactNode, useCallback, useEffect, useState} from "react";
 import {isMixed, toRomaji} from "wanakana"
 import {v4 as uuidv4} from 'uuid';
 
@@ -257,7 +257,7 @@ export const KanjiSentence = ({
                 className={extraClass}
                 onClick={() => {
                   handleChange(char)
-                }}><>{char}</>
+                }}><>{char as ReactNode}</>
             </StyledSentence>
           })}
           <rt className={"unselectable"}>{hiragana}</rt>
