@@ -61,7 +61,7 @@
     "react-icons": "^5.4.0",
     "react-smooth-collapse": "^2.1.2",
     "react-svg": "^16.2.0",
-    "react-video-seek-slider": "^6.0.7",
+    "react-video-seek-slider": "6.0.5",
     "shunou": "1.0.3",
     "styled-components": "^6.1.13",
     "to-jyutping": "github:hockyy/to-jyutping",
