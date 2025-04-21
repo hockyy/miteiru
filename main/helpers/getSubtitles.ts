@@ -56,7 +56,7 @@ export async function getSubtitles({
                                    }): Promise<SubtitleEntry[]> {
   try {
     const {data} = await axios.get(`https://youtube.com/watch?v=${videoID}`);
-
+    console.log(data)
     if (!data.includes('captionTracks')) {
       throw new Error(`Could not find captions for video: ${videoID}`);
     }

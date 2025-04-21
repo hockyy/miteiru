@@ -4,8 +4,7 @@ import path from "path";
 import fs from "node:fs";
 import {pinyin} from "pinyin-pro";
 import ToJyutping from "to-jyutping";
-import {cut, loadDict} from '@node-rs/jieba'
-import {videoConstants} from "../../renderer/utils/constants";
+import {Jieba} from '@node-rs/jieba'
 
 
 interface JyutpingResult {
@@ -20,7 +19,8 @@ class Chinese {
   static dictPath: string;
   static importDict: string;
   static importBaseSVG: string;
-  static jiebaDictPath: string
+  static jiebaDictPath: string;
+  static jieba;
 
   static queryHanziChinese = async (query: string) => {
     try {
@@ -61,7 +61,7 @@ class Chinese {
     // Initialize nodejieba
 
     const dictBuffer = fs.readFileSync(this.jiebaDictPath)
-    loadDict(dictBuffer);
+    this.jieba = Jieba.withDict(dictBuffer);
     try {
       if (this.Dict.db) {
         this.Dict.db.close();
@@ -85,7 +85,7 @@ class Chinese {
   static registerNodeJieba() {
     ipcMain.handle('tokenizeUsingJieba', async (event, sentence, toneType) => {
       // Use nodejieba for segmentation
-      const tokens = cut(sentence);
+      const tokens = this.jieba.cut(sentence);
 
       return tokens.map(word => {
         // Get all pinyin information at once
@@ -109,7 +109,7 @@ class Chinese {
 
   static getJyutpingForSentence(sentence: string, toneType: string): Promise<JyutpingResult[]> {
     return Promise.resolve().then(() => {
-      const segments = cut(sentence);
+      const segments = this.jieba.cut(sentence);
       const result: JyutpingResult[] = [];
 
       // Use only the Discord tone map as requested
@@ -134,7 +134,7 @@ class Chinese {
 
       for (const segment of segments) {
         const jyutpingList = ToJyutping.getJyutpingList(segment);
-        
+
         // Format jyutping based on toneType
         let formattedJyutping: string;
         if (toneType === 'symbol') {
@@ -145,11 +145,11 @@ class Chinese {
 
         const separation = jyutpingList.map(([char, jp]) => {
           let formattedJp = jp;
-          
+
           if (toneType === 'symbol' && jp) {
             formattedJp = replaceToneSymbol(jp);
           }
-          
+
           return {
             main: char,
             jyutping: formattedJp
