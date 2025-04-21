@@ -66,7 +66,7 @@
     "styled-components": "^6.1.17",
     "to-jyutping": "github:hockyy/to-jyutping",
     "uuid": "^10.0.0",
-    "video.js": "^8.22.0",
+    "video.js": "^8.23.3",
     "videojs-youtube": "^3.0.1"
   },
   "devDependencies": {
