@@ -2,7 +2,7 @@
   "private": true,
   "name": "miteiru",
   "description": "Miteiru",
-  "version": "5.8.0",
+  "version": "5.9.0",
   "author": "Hocky Yudhiono <hocky.yudhiono@gmail.com>",
   "main": "app/background.js",
   "build": {
@@ -65,7 +65,7 @@
     "shunou": "1.0.3",
     "styled-components": "^6.1.17",
     "to-jyutping": "github:hockyy/to-jyutping",
-    "uuid": "^10.0.0",
+    "uuid": "^11.1.0",
     "video.js": "^8.23.3",
     "videojs-youtube": "^3.0.1"
   },
