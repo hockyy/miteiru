@@ -112,25 +112,53 @@ class Chinese {
       const segments = cut(sentence);
       const result: JyutpingResult[] = [];
 
+      // Use only the Discord tone map as requested
+      const dcToneMap = {
+        '1': 'ˉ¹',
+        '2': '⸍²',
+        '3': '-₃',
+        '4': '⸜₄',
+        '5': '⸝₅',
+        '6': 'ˍ₆'
+      };
+
+      // Function to replace tone numbers with symbols
+      function replaceToneSymbol(syllable: string): string {
+        if(!syllable || !syllable.length) return ''
+        const tone = syllable.slice(-1); // Get the last character (the tone)
+        if (dcToneMap[tone]) {
+          return syllable.slice(0, -1) + dcToneMap[tone]; // Replace the tone
+        }
+        return syllable; // Return unchanged if no tone number
+      }
+
       for (const segment of segments) {
         const jyutpingList = ToJyutping.getJyutpingList(segment);
-        const jyutping = jyutpingList.map(([, jp]) => jp).join(' ');
+        
+        // Format jyutping based on toneType
+        let formattedJyutping: string;
+        if (toneType === 'symbol') {
+          formattedJyutping = jyutpingList.map(([, jp]) => replaceToneSymbol(jp)).join(' ');
+        } else {
+          formattedJyutping = jyutpingList.map(([, jp]) => jp).join(' ');
+        }
+
         const separation = jyutpingList.map(([char, jp]) => {
-          if (toneType == 'symbol' && jp) {
-            const currentTone: string = jp.at(jp.length - 1);
-            if ('0' <= currentTone && currentTone <= '9') {
-              jp = jp.substring(0, jp.length - 1) + videoConstants.cantoneseToneMap[currentTone] + currentTone;
-            }
+          let formattedJp = jp;
+          
+          if (toneType === 'symbol' && jp) {
+            formattedJp = replaceToneSymbol(jp);
           }
-          return ({
+          
+          return {
             main: char,
-            jyutping: jp
-          });
+            jyutping: formattedJp
+          };
         });
 
         result.push({
           origin: segment,
-          jyutping: jyutping,
+          jyutping: formattedJyutping,
           separation: separation
         });
       }
