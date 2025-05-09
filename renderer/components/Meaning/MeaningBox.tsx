@@ -653,7 +653,7 @@ const meaningBoxEntry = (sense, idxSense, tags) => {
             let ret = val;
             try {
               ret = tags[val];
-            } catch (e) {
+            } catch {
             }
             return <div
                 key={keyTags}
