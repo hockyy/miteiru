@@ -35,21 +35,13 @@ export default function useKeyBind(
         setMeaning("");
         if (event.ctrlKey) await router.push('/home');
       } else if (event.code === "KeyL") {
-        if (event.ctrlKey) {
           if (event.shiftKey) {
             await router.push('/learn');
-          } else {
-            await router.push('/srs');
           }
-        }
       } else if (event.code === "KeyK") {
-        if (event.ctrlKey) {
           if (event.shiftKey) {
-            await router.push('/db');
-          } else {
             await router.push('/flash');
           }
-        }
       } else if (event.code === "KeyZ") {
         setShowController((old) => {
           return !old;

@@ -121,7 +121,7 @@ export const PrimarySubtitle = ({
       const primaryContent = line.content;
       setFromContent(primaryContent, line.meaning);
       setTimeCache(line.timePair);
-    } catch (e) {
+    } catch {
     }
   }, [subtitle, setFromContent, setTimeCache]);
 

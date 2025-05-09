@@ -48,17 +48,11 @@ const shortcutInformation = [
     key: "Ctrl + P",
     description: "Remove Other/Secondary Subtitle"
   }, {
-    key: "Ctrl + L",
-    description: "Toggle SRS Mode"
-  }, {
     key: "Ctrl + Shift + L",
     description: "Toggle Learning Mode"
   }, {
-    key: "Ctrl + K",
-    description: "Open Flash Cards"
-  }, {
     key: "Ctrl + Shift + K",
-    description: "Open Database"
+    description: "Open Flash Cards"
   }, {
     key: "[",
     description: "Shift CJK Subtitle Slower"
