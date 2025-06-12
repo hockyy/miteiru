@@ -4,6 +4,7 @@ import {v4 as uuidv4} from 'uuid';
 import {Entry} from "@plussub/srt-vtt-parser/dist/src/types";
 import * as OpenCC from 'opencc-js';
 import {parse as parseASS} from 'ass-compiler';
+import {parseLRC} from "./LrcParser";
 
 function removeTags(text) {
   const regex = /\{\\.+?}/g;
@@ -166,13 +167,18 @@ export class SubtitleContainer {
     try {
       const parsedSubtitle = await window.electronAPI.parseSubtitle(filename);
       let entries = []
+
       if (parsedSubtitle.type === 'ass') {
         const assData = parseASS(parsedSubtitle.content);
         entries = this.parseAssSubtitle(assData);
+      } else if (parsedSubtitle.type === 'lrc' || filename.toLowerCase().endsWith('.lrc')) {
+        // Handle LRC format
+        entries = parseLRC(parsedSubtitle.content);
       } else {
         entries = parsedSubtitle.content.entries;
       }
-
+      console.log(lang);
+      console.log(isSimplified);
       this.createFromArrayEntries(subtitleContainer, entries,
           isForcedEnglish ? videoConstants.englishLang : lang, isSimplified);
       return subtitleContainer;

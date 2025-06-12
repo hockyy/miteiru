@@ -138,7 +138,7 @@ class Japanese {
     })
 
 
-    ipcMain.handle('japaneseTags', (event) => {
+    ipcMain.handle('japaneseTags', () => {
       return this.Dict.tags;
     })
 
@@ -155,7 +155,7 @@ class Japanese {
       const kanjiFilePath = path.join(this.importBaseSVG, `${filename}`);
       try {
         return fs.readFileSync(kanjiFilePath).toString();
-      } catch (e) {
+      } catch {
         return ''
       }
     })

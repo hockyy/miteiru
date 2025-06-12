@@ -73,6 +73,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
         src: `${currentPath}`
       };
       const subLoader = (tmpSub, mustMatch = null) => {
+        console.log(tmpSub);
         if (mustMatch !== null && tmpSub.language !== mustMatch) return;
         clearInterval(toastSetter);
         if (tmpSub.language === videoConstants.japaneseLang
