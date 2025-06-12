@@ -30,12 +30,17 @@ import useContentString from "../hooks/useContentString";
 import useVocabSidebar from "../hooks/useVocabSidebar";
 import VocabSidebar from "../components/VideoPlayer/VocabSidebar";
 import useRubyCopy from "../hooks/useRubyCopy";
+import usePitchValue from "../hooks/usePitchValue";
 
 function Video() {
   const {
     contentString,
     setExternalContent
   } = useContentString();
+  const {
+    pitchValue,
+    setPitchValue
+  } = usePitchValue();
   const {
     tokenizerMode,
     tokenizeMiteiru,
@@ -178,7 +183,7 @@ function Video() {
               playbackRateMenuButton: false,
               durationDisplay: true
             }
-          }} onReady={readyCallback} setCurrentTime={setCurrentTime}/>
+          }} onReady={readyCallback} setCurrentTime={setCurrentTime} pitchValue={pitchValue}/>
           <div>
             {showPrimarySub && <PrimarySubtitle setMeaning={setMeaning}
                                                 currentTime={currentTime}
@@ -213,7 +218,8 @@ function Video() {
                 enableSeeker={enableSeeker}
                 setEnableSeeker={setEnableSeeker}
                 onVideoChangeHandler={onVideoChangeHandler}
-                backToHead={backToHead}/>}
+                backToHead={backToHead}
+                setPitchValue={setPitchValue}/>}
           </div>
           {tokenizerMode !== '' && <MiteiruDropzone onDrop={onLoadFiles} deltaTime={deltaTime}/>}
         </div>

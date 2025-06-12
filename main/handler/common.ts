@@ -178,13 +178,16 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
       const text = iconv.decode(buffer, currentData.encoding);
 
       if (filename.toLowerCase().endsWith('.ass')) {
-        // For ASS files, just return the text content
         return {
           type: 'ass',
           content: text
         };
+      } else if (filename.toLowerCase().endsWith('.lrc')) {
+        return {
+          type: 'lrc',
+          content: text
+        };
       } else {
-        // For SRT files, parse and return the result
         return {
           type: 'srt',
           content: parseSRT(text)
