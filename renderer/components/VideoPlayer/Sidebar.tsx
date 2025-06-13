@@ -9,6 +9,7 @@ import {
 import Toggle from "./Toggle";
 import {AwesomeButton} from "react-awesome-button";
 import {GistManager} from "../Data/GistManager";
+import {SubtitleMode} from "../../utils/utils";
 
 export const StylingBox = ({
                              subtitleStyling,
@@ -388,7 +389,9 @@ export const Sidebar = ({
                           setLearningPercentage,
                           toneType,
                           setToneType,
-                          lang
+                          lang,
+                          subtitleMode,
+                          setSubtitleMode
                         }) => {
   const learningPercentageHandler = useCallback(event => {
     setLearningPercentage(parseFloat(event.target.value));
@@ -399,6 +402,9 @@ export const Sidebar = ({
   const toneTypeHandler = useCallback((val) => {
     setToneType(val ? 'num' : 'symbol');
   }, [setToneType])
+  const subtitleModeHandler = useCallback((val) => {
+    setSubtitleMode(val ? SubtitleMode.Karaoke : SubtitleMode.Normal);
+  }, [setSubtitleMode])
   return <div style={{
     transition: "all 0.3s ease-out",
     transform: `translate(${!showSidebar ? "30vw" : "0"}, 0`
@@ -425,6 +431,10 @@ export const Sidebar = ({
       <div className={"flex flex-row items-center gap-3"}>
         <Toggle isChecked={autoPause} onChange={autoPauseHandler}/>
         Enable Auto Pause
+      </div>
+      <div className={"flex flex-row items-center gap-3"}>
+        <Toggle isChecked={subtitleMode == SubtitleMode.Karaoke} onChange={subtitleModeHandler}/>
+        Use Karaoke Mode
       </div>
       <div className={"flex w-full justify-around items-center gap-3"}>
         <span>Learning </span>
