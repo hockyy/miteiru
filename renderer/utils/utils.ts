@@ -144,3 +144,8 @@ export const getColorGradient = (timestamp) => {
 
   return `rgb(${red}, ${green}, ${blue})`;
 };
+
+export enum SubtitleMode {
+  Normal,
+  Karaoke
+}

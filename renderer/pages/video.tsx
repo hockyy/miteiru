@@ -1,7 +1,6 @@
 import React from "react";
 import VideoJS from "../components/VideoPlayer/VideoJS";
 import MiteiruDropzone from "../components/VideoPlayer/MiteiruDropzone";
-import {PrimarySubtitle, SecondarySubtitle} from "../components/Subtitle/Subtitle";
 import MeaningBox from "../components/Meaning/MeaningBox";
 import {VideoController} from "../components/VideoPlayer/VideoController";
 import Toast from "../components/VideoPlayer/Toast";
@@ -31,12 +30,18 @@ import useVocabSidebar from "../hooks/useVocabSidebar";
 import VocabSidebar from "../components/VideoPlayer/VocabSidebar";
 import useRubyCopy from "../hooks/useRubyCopy";
 import usePitchValue from "../hooks/usePitchValue";
+import {useSubtitleMode} from "../hooks/useSubtitleMode";
+import {SubtitleDisplay} from "../components/Subtitle/SubtitleDisplay";
 
 function Video() {
   const {
     contentString,
     setExternalContent
   } = useContentString();
+  const {
+    subtitleMode,
+    setSubtitleMode
+  } = useSubtitleMode();
   const {
     pitchValue,
     setPitchValue
@@ -185,24 +190,32 @@ function Video() {
             }
           }} onReady={readyCallback} setCurrentTime={setCurrentTime} pitchValue={pitchValue}/>
           <div>
-            {showPrimarySub && <PrimarySubtitle setMeaning={setMeaning}
-                                                currentTime={currentTime}
-                                                subtitle={primarySub}
-                                                shift={primaryShift}
-                                                subtitleStyling={primaryStyling}
-                                                getLearningStateClass={getLearningStateClass}
-                                                changeLearningState={changeLearningState}
-                                                timeCache={primaryTimeCache}
-                                                setTimeCache={setPrimaryTimeCache}
-                                                setExternalContent={setExternalContent}
-                                                setRubyCopyContent={setRubyCopyContent}/>}
-            {showSecondarySub && <SecondarySubtitle
+            <SubtitleDisplay
+                // Primary subtitle props
+                showPrimarySub={showPrimarySub}
+                setMeaning={setMeaning}
                 currentTime={currentTime}
-                subtitle={secondarySub}
-                shift={secondaryShift}
-                subtitleStyling={secondaryStyling}
-                timeCache={secondaryTimeCache}
-                setTimeCache={setSecondaryTimeCache}/>}
+                primarySub={primarySub}
+                primaryShift={primaryShift}
+                primaryStyling={primaryStyling}
+                getLearningStateClass={getLearningStateClass}
+                changeLearningState={changeLearningState}
+                primaryTimeCache={primaryTimeCache}
+                setPrimaryTimeCache={setPrimaryTimeCache}
+                setExternalContent={setExternalContent}
+                setRubyCopyContent={setRubyCopyContent}
+
+                // Secondary subtitle props
+                showSecondarySub={showSecondarySub}
+                secondarySub={secondarySub}
+                secondaryShift={secondaryShift}
+                secondaryStyling={secondaryStyling}
+                secondaryTimeCache={secondaryTimeCache}
+                setSecondaryTimeCache={setSecondaryTimeCache}
+
+                // Mode
+                subtitleMode={subtitleMode}
+            />
           </div>
           <div className={"flex flex-col justify-end bottom-0 z-[15] fixed"}>
             {player && <VideoController
@@ -232,7 +245,8 @@ function Video() {
                  setAutoPause={setAutoPause}
                  learningPercentage={learningPercentage}
                  setLearningPercentage={setLearningPercentage} lang={lang} toneType={toneType}
-                 setToneType={setToneType}/>
+                 setToneType={setToneType} subtitleMode={subtitleMode}
+                 setSubtitleMode={setSubtitleMode}/>
         <VocabSidebar
             showVocabSidebar={showVocabSidebar}
             setShowVocabSidebar={setShowVocabSidebar}
