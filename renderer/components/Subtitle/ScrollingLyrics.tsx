@@ -124,6 +124,8 @@ export const ScrollingLyrics = ({
           backgroundColor: subtitleStyling.background,
           borderRadius: '16px',
           padding: '24px',
+          fontFamily: subtitleStyling.text.fontFamily,
+          fontWeight: subtitleStyling.text.weight,
           fontSize: subtitleStyling.text.fontSize,
           backdropFilter: 'blur(10px)',
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
@@ -228,7 +230,7 @@ const LyricsLine = ({
 
   // Empty line placeholder
   if (!line.content || (typeof line.content === 'string' && line.content === '')) {
-    return <div style={lineStyle}>&nbsp;</div>;
+    return <div style={lineStyle}>🎶🎶🎵</div>;
   }
 
   // Handle string content
@@ -262,7 +264,7 @@ const LyricsLine = ({
               getLearningStateClass={getLearningStateClass}
               changeLearningState={changeLearningState}
             />
-            {index + 1 < line.content.length && subtitleStyling.showSpace ? " " : ""}
+            {index + 1 < line.content.length && subtitleStyling.showSpace ? " " : " "}
           </React.Fragment>
         );
       })}
