@@ -8,7 +8,6 @@ export interface LrcEntry {
 
 // Add this function to parse LRC format
 export function parseLRC(content: string): Entry[] {
-  console.log(content);
   const lines = content.split('\n');
   const entries: Entry[] = [];
   let id = 0;
