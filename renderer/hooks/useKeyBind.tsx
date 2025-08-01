@@ -23,7 +23,8 @@ export default function useKeyBind(
     reloadLastSecondarySubtitle,
     setShowVocabSidebar,
     rubyContent,
-    contentString
+    contentString,
+    setShowLyricsSearch
 ) {
   const router = useRouter();
   useEffect(() => {
@@ -38,6 +39,8 @@ export default function useKeyBind(
           if (event.shiftKey) {
             await router.push('/learn');
           }
+      } else if (event.code === "KeyM") {
+        setShowLyricsSearch((old) => !old);
       } else if (event.code === "KeyK") {
           if (event.shiftKey) {
             await router.push('/flash');

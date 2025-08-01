@@ -53,6 +53,7 @@
     "kanjidic-wrapper": "^1.0.2",
     "kuromojin": "^3.0.1",
     "level": "^10.0.0",
+    "lucide-react": "^0.536.0",
     "opencc-js": "^1.0.5",
     "patch-package": "^8.0.0",
     "pinyin-pro": "^3.26.0",

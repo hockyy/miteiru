@@ -22,7 +22,8 @@ export const useVideoPlayingToggle = (player, metadata) => {
   return {isPlaying, setIsPlaying, togglePlay};
 }
 
-export const useVideoKeyboardControls = (togglePlay, deltaTime, setPrimaryShift, setSecondaryShift, setInfo, backToHead, setIsPlaying) => {
+export const useVideoKeyboardControls = (togglePlay, deltaTime, setPrimaryShift,
+                                         setSecondaryShift, setInfo, backToHead, setIsPlaying) => {
   useEffect(() => {
     const handleVideoController = (event) => {
       if (event.code === "KeyE") {

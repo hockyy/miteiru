@@ -32,6 +32,7 @@ import useRubyCopy from "../hooks/useRubyCopy";
 import usePitchValue from "../hooks/usePitchValue";
 import {useSubtitleMode} from "../hooks/useSubtitleMode";
 import {SubtitleDisplay} from "../components/Subtitle/SubtitleDisplay";
+import LyricsSearchModal from "../components/Lyrics/LyricsSearchModal";
 
 function Video() {
   const {
@@ -121,7 +122,8 @@ function Video() {
     onLoadFiles,
     onVideoChangeHandler,
     reloadLastPrimarySubtitle,
-    reloadLastSecondarySubtitle
+    reloadLastSecondarySubtitle,
+    loadPath
   } = useLoadFiles(setToastInfo,
       primarySub, setPrimarySub,
       secondarySub, setSecondarySub,
@@ -131,15 +133,12 @@ function Video() {
     showController,
     setShowController,
     showSidebar,
-    setShowSidebar
+    setShowSidebar,
+    showLyricsSearch,
+    setShowLyricsSearch
   } = useMenuDisplay();
 
   const [rubyContent, setRubyCopyContent] = useRubyCopy();
-  useKeyBind(setMeaning, setShowController, setShowSidebar,
-      setPrimarySub, setSecondarySub, primarySub, undo,
-      setShowPrimarySub, setShowSecondarySub, primaryStyling, setPrimaryStyling,
-      openDeepL, openGoogleTranslate, reloadLastPrimarySubtitle, reloadLastSecondarySubtitle,
-      setShowVocabSidebar, rubyContent, contentString);
   const {
     togglePlay,
     isPlaying,
@@ -151,6 +150,11 @@ function Video() {
     backToHead
   } = usePauseAndRepeat(primaryTimeCache, player, currentTime, primaryShift, setIsPlaying, changeTimeTo);
 
+  useKeyBind(setMeaning, setShowController, setShowSidebar,
+      setPrimarySub, setSecondarySub, primarySub, undo,
+      setShowPrimarySub, setShowSecondarySub, primaryStyling, setPrimaryStyling,
+      openDeepL, openGoogleTranslate, reloadLastPrimarySubtitle, reloadLastSecondarySubtitle,
+      setShowVocabSidebar, rubyContent, contentString, setShowLyricsSearch);
   useVideoKeyboardControls(togglePlay, deltaTime, setPrimaryShift, setSecondaryShift,
       setToastInfo, backToHead, setIsPlaying);
   usePlayNextAfterEnd(player, currentTime, onVideoChangeHandler, duration, setEnableSeeker);
@@ -236,6 +240,14 @@ function Video() {
           </div>
           {tokenizerMode !== '' && <MiteiruDropzone onDrop={onLoadFiles} deltaTime={deltaTime}/>}
         </div>
+
+        <LyricsSearchModal
+            isOpen={showLyricsSearch}
+            onClose={() => setShowLyricsSearch(false)}
+            videoSrc={videoSrc}
+            metadata={metadata}
+            onLyricsDownloaded={loadPath}
+        />
         <Sidebar showSidebar={showSidebar} setShowSidebar={setShowSidebar}
                  primaryStyling={primaryStyling}
                  setPrimaryStyling={setPrimaryStyling}
