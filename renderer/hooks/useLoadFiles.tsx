@@ -136,6 +136,14 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     queue.end(currentHash);
   }, [lang, primaryStyling.forceSimplified, queue, resetSub, setFrequencyPrimary, setPrimarySub, setSecondarySub, setToastInfo, tokenizeMiteiru]);
 
+  // Handler for when lyrics are downloaded
+  const loadPath = useCallback((lyricsPath) => {
+    // Auto-load the downloaded lyrics as primary subtitle
+    if (lyricsPath) {
+      onLoadFiles([{path: lyricsPath}]);
+    }
+  },[onLoadFiles]);
+
   const onVideoChangeHandler = useCallback(async (delta: number = 1) => {
     if (!isLocalPath(videoSrc.path)) return;
     if (videoSrc.path) {
@@ -190,7 +198,8 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     videoSrc,
     onVideoChangeHandler,
     reloadLastPrimarySubtitle,
-    reloadLastSecondarySubtitle
+    reloadLastSecondarySubtitle,
+    loadPath
   }
 };
 

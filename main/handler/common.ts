@@ -395,4 +395,67 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
       };
     }
   });
+
+  // Handler to get user data path
+  ipcMain.handle('get-user-data-path', () => {
+    return appDataDirectory;
+  });
+
+  // Handler to join path segments
+  ipcMain.handle('join-path', (event, ...pathSegments) => {
+    return path.join(...pathSegments);
+  });
+
+  // Handler to get directory name from path
+  ipcMain.handle('get-dirname', (event, filePath) => {
+    return path.dirname(filePath);
+  });
+
+  // Handler to get base name from path
+  ipcMain.handle('get-basename', (event, filePath) => {
+    return path.basename(filePath);
+  });
+
+  // Handler to ensure directory exists
+  ipcMain.handle('ensure-dir', async (event, dirPath) => {
+    try {
+      await fsPromises.mkdir(dirPath, {recursive: true});
+      return true;
+    } catch (error) {
+      console.error('Error creating directory:', error);
+      return false;
+    }
+  });
+
+  // Handler to write file
+  ipcMain.handle('write-file', async (event, filePath, content) => {
+    try {
+      await fsPromises.writeFile(filePath, content, 'utf8');
+      return true;
+    } catch (error) {
+      console.error('Error writing file:', error);
+      return false;
+    }
+  });
+
+  // Handler to open path in file explorer
+  ipcMain.handle('open-path', async (event, pathToOpen) => {
+    try {
+      await shell.openPath(pathToOpen);
+      return true;
+    } catch (error) {
+      console.error('Error opening path:', error);
+      return false;
+    }
+  });
+
+  // Handler to check if file exists
+  ipcMain.handle('check-file', async (event, filePath) => {
+    try {
+      await fsPromises.access(filePath);
+      return true;
+    } catch {
+      return false;
+    }
+  });
 }

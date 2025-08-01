@@ -42,6 +42,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
   findPositionDeltaInFolder: (path: string, delta: number = 1) =>
       ipcRenderer.invoke('find-position-delta-in-folder', path, delta),
 
+  // Add these new methods for LRCLIB support
+  getUserDataPath: () => ipcRenderer.invoke('get-user-data-path'),
+  joinPath: (...pathSegments: string[]) => ipcRenderer.invoke('join-path', ...pathSegments),
+  getDirname: (filePath: string) => ipcRenderer.invoke('get-dirname', filePath),
+  getBasename: (filePath: string) => ipcRenderer.invoke('get-basename', filePath),
+  ensureDir: (dirPath: string) => ipcRenderer.invoke('ensure-dir', dirPath),
+  writeFile: (filePath: string, content: string) => ipcRenderer.invoke('write-file', filePath, content),
+  openPath: (pathToOpen: string) => ipcRenderer.invoke('open-path', pathToOpen),
+  checkFile: (filePath: string) => ipcRenderer.invoke('check-file', filePath),
+
   // Update the Gist-related methods to include the token
   createGitHubGist: (filename: string, content: string, description: string, isPublic: boolean, token: string) =>
       ipcRenderer.invoke('createGitHubGist', filename, content, description, isPublic, token),
