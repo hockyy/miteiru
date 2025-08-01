@@ -4,6 +4,7 @@ const useMenuDisplay = () => {
   const [showController, setShowController] = useState(true);
   const [showSidebar, setShowSidebar] = useState(false)
   const [showLyricsSearch, setShowLyricsSearch] = useState(false);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
 
   return {
     showController,
@@ -11,7 +12,9 @@ const useMenuDisplay = () => {
     showSidebar,
     setShowSidebar,
     showLyricsSearch,
-    setShowLyricsSearch
+    setShowLyricsSearch,
+    showCommandPalette,
+    setShowCommandPalette
   }
 };
 
