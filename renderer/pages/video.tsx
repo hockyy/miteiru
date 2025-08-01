@@ -33,6 +33,7 @@ import usePitchValue from "../hooks/usePitchValue";
 import {useSubtitleMode} from "../hooks/useSubtitleMode";
 import {SubtitleDisplay} from "../components/Subtitle/SubtitleDisplay";
 import LyricsSearchModal from "../components/Lyrics/LyricsSearchModal";
+import CommandPalette from "../components/Utils/CommandPallete";
 
 function Video() {
   const {
@@ -135,7 +136,9 @@ function Video() {
     showSidebar,
     setShowSidebar,
     showLyricsSearch,
-    setShowLyricsSearch
+    setShowLyricsSearch,
+    showCommandPalette,
+    setShowCommandPalette
   } = useMenuDisplay();
 
   const [rubyContent, setRubyCopyContent] = useRubyCopy();
@@ -150,7 +153,7 @@ function Video() {
     backToHead
   } = usePauseAndRepeat(primaryTimeCache, player, currentTime, primaryShift, setIsPlaying, changeTimeTo);
 
-  useKeyBind(setMeaning, setShowController, setShowSidebar,
+  const commands = useKeyBind(setMeaning, setShowController, setShowSidebar,
       setPrimarySub, setSecondarySub, primarySub, undo,
       setShowPrimarySub, setShowSecondarySub, primaryStyling, setPrimaryStyling,
       openDeepL, openGoogleTranslate, reloadLastPrimarySubtitle, reloadLastSecondarySubtitle,
@@ -247,6 +250,11 @@ function Video() {
             videoSrc={videoSrc}
             metadata={metadata}
             onLyricsDownloaded={loadPath}
+        />
+        <CommandPalette
+            showCommandPalette={showCommandPalette}
+            setShowCommandPalette={setShowCommandPalette}
+            commands={commands}
         />
         <Sidebar showSidebar={showSidebar} setShowSidebar={setShowSidebar}
                  primaryStyling={primaryStyling}
