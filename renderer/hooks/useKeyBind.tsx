@@ -56,7 +56,7 @@ export default function useKeyBind(
       id: 'go-learn',
       commandName: 'Go to Learn Page',
       currentKey: 'L',
-      modifiers: ['Shift'],
+      modifiers: ['Ctrl', 'Shift'],
       category: 'Navigation',
       handler: async () => {
         await router.push('/learn');
@@ -76,7 +76,7 @@ export default function useKeyBind(
       id: 'go-flash',
       commandName: 'Go to Flashcards',
       currentKey: 'K',
-      modifiers: ['Shift'],
+      modifiers: ['Ctrl', 'Shift'],
       category: 'Navigation',
       handler: async () => {
         await router.push('/flash');
@@ -238,13 +238,13 @@ export default function useKeyBind(
         }
       }
     }
-  ], [
-    router, setMeaning, setShowController, setShowSidebar, setPrimarySub,
-    setSecondarySub, setPrimaryStyling, primarySub.id, setShowPrimarySub,
-    setShowSecondarySub, undo, primaryStyling, openGoogleTranslate, openDeepL,
-    reloadLastSecondarySubtitle, reloadLastPrimarySubtitle, setShowVocabSidebar,
-    rubyContent, contentString, setShowLyricsSearch
-  ]);
+     ], [
+     router, setMeaning, setShowController, setShowSidebar, setPrimarySub,
+     setSecondarySub, setPrimaryStyling, primarySub.id, setShowPrimarySub,
+     setShowSecondarySub, undo, primaryStyling, openGoogleTranslate, openDeepL,
+     reloadLastSecondarySubtitle, reloadLastPrimarySubtitle, setShowVocabSidebar,
+     rubyContent, contentString, setShowLyricsSearch, clearLanguage
+   ]);
 
   useEffect(() => {
     const handleKeyPress = async (event) => {
@@ -252,25 +252,21 @@ export default function useKeyBind(
         return;
       }
 
-      // Find matching command
-      const matchingCommand = commands.find(cmd => {
-        const keyMatch = (cmd.currentKey === 'Escape' && event.code === 'Escape') ||
-            (event.code === `Key${cmd.currentKey}`);
+             // Find matching command
+       const matchingCommand = commands.find(cmd => {
+         const keyMatch = (cmd.currentKey === 'Escape' && event.code === 'Escape') ||
+             (event.code === `Key${cmd.currentKey}`);
 
-        if (!keyMatch) return false;
+         if (!keyMatch) return false;
 
-        const modifiersMatch =
-            cmd.modifiers.includes('Ctrl') === event.ctrlKey &&
-            cmd.modifiers.includes('Shift') === event.shiftKey &&
-            cmd.modifiers.includes('Alt') === event.altKey &&
-            (!cmd.modifiers.length || cmd.modifiers.some(m =>
-                (m === 'Ctrl' && event.ctrlKey) ||
-                (m === 'Shift' && event.shiftKey) ||
-                (m === 'Alt' && event.altKey)
-            ));
+         // Check if all required modifiers match and no extra modifiers are pressed
+         const modifiersMatch = 
+             cmd.modifiers.includes('Ctrl') === event.ctrlKey &&
+             cmd.modifiers.includes('Shift') === event.shiftKey &&
+             cmd.modifiers.includes('Alt') === event.altKey;
 
-        return modifiersMatch || (!cmd.modifiers.length && !event.ctrlKey && !event.shiftKey && !event.altKey);
-      });
+         return modifiersMatch;
+       });
 
       if (matchingCommand) {
         event.preventDefault();

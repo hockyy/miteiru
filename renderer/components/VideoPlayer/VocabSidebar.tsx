@@ -8,7 +8,8 @@ const VocabSidebar = ({
                         setShowVocabSidebar,
                         lang,
                         setMeaning,
-                        tokenizeMiteiru
+                        tokenizeMiteiru,
+                        refreshTrigger
                       }) => {
   const [sortedVocab, setSortedVocab] = useState([]);
   const [hoveredWord, setHoveredWord] = useState(null);
@@ -38,7 +39,7 @@ const VocabSidebar = ({
 
   useEffect(() => {
     loadVocabulary();
-  }, [lang, loadVocabulary]);
+  }, [lang, loadVocabulary, refreshTrigger]);
 
   const findClosestWord = useCallback(() => {
     const now = Date.now();
