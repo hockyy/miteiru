@@ -10,6 +10,7 @@ const useLearningState = (lang: string) => {
   const [analysis, setAnalysis] = useState({});
   const [frequencyPrimary, setFrequencyPrimary] = useState(new Map<string, number>);
   const [learningPercentage, setLearningPercentage] = useStoreData('learningPercentage', 30);
+  const [refreshTrigger, setRefreshTrigger] = useState(0); // Trigger for vocabulary refresh
 
   const getLearningState = useCallback((content: string): number => {
     if (content in cachedLearningState) {
@@ -40,6 +41,10 @@ const useLearningState = (lang: string) => {
         updTime: updTime
       };
       window.ipc.invoke('updateContent', content, lang, newCopy[content]);
+      
+      // Trigger vocabulary refresh
+      setRefreshTrigger(prev => prev + 1);
+      
       return newCopy;
     });
   }, [getLearningState, lang]);
@@ -54,6 +59,10 @@ const useLearningState = (lang: string) => {
         updTime: updTime
       };
       window.ipc.invoke('updateContent', content, lang, newCopy[content]);
+      
+      // Trigger vocabulary refresh
+      setRefreshTrigger(prev => prev + 1);
+      
       return newCopy;
     });
   }, [getLearningState, lang]);
@@ -76,7 +85,8 @@ const useLearningState = (lang: string) => {
     setFrequencyPrimary,
     learningPercentage,
     setLearningPercentage,
-    updateTimeWithSameLevel
+    updateTimeWithSameLevel,
+    refreshTrigger
   };
 }
 

@@ -105,6 +105,7 @@ function Video() {
     learningPercentage,
     setLearningPercentage,
     getLearningState,
+    refreshTrigger,
   } = useLearningState(lang);
   const {
     meaning,
@@ -273,6 +274,7 @@ function Video() {
             lang={lang}
             setMeaning={setMeaning}
             tokenizeMiteiru={tokenizeMiteiru}
+            refreshTrigger={refreshTrigger}
         />
       </React.Fragment>
   );
