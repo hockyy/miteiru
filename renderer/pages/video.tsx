@@ -34,6 +34,8 @@ import {useSubtitleMode} from "../hooks/useSubtitleMode";
 import {SubtitleDisplay} from "../components/Subtitle/SubtitleDisplay";
 import LyricsSearchModal from "../components/Lyrics/LyricsSearchModal";
 import CommandPalette from "../components/Utils/CommandPallete";
+import useWordOfTheDay from "../hooks/useWordOfTheDay";
+import WordOfTheDay from "../components/WordOfTheDay/WordOfTheDay";
 
 function Video() {
   const {
@@ -75,6 +77,14 @@ function Video() {
     showVocabSidebar,
     setShowVocabSidebar,
   } = useVocabSidebar();
+
+  const {
+    dailyWords,
+    isLoading: isDailyWordsLoading,
+    dateString,
+    checkForNewDay,
+    generateDailyWords
+  } = useWordOfTheDay(lang);
 
   const {
     primarySub,
@@ -162,6 +172,49 @@ function Video() {
   useVideoKeyboardControls(togglePlay, deltaTime, setPrimaryShift, setSecondaryShift,
       setToastInfo, backToHead, setIsPlaying);
   usePlayNextAfterEnd(player, currentTime, onVideoChangeHandler, duration, setEnableSeeker);
+
+  // Show Word of the Day when no media is loaded
+  if (!videoSrc.path || videoSrc.path === '') {
+    return (
+      <React.Fragment>
+        <Head>
+          <title>Miteiru - Word of the Day</title>
+        </Head>
+        <div>
+          <Toast info={toastInfo}/>
+          <MeaningBox meaning={meaning} setMeaning={setMeaning} tokenizeMiteiru={tokenizeMiteiru}
+                      lang={lang} changeLearningState={changeLearningState}
+                      getLearningState={getLearningState}/>
+          
+          {!isDailyWordsLoading && (
+            <WordOfTheDay
+              dailyWords={dailyWords}
+              dateString={dateString}
+              lang={lang}
+              setMeaning={setMeaning}
+              tokenizeMiteiru={tokenizeMiteiru}
+              onRefresh={generateDailyWords}
+            />
+          )}
+          
+          {isDailyWordsLoading && (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+              <div className="text-center p-8 bg-white rounded-xl shadow-lg border-2 border-blue-200">
+                <div className="text-6xl mb-4">⏳</div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Loading Word of the Day...</h2>
+                <p className="text-gray-600">{dateString}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Show dropzone for loading media */}
+          {tokenizerMode !== '' && <MiteiruDropzone onDrop={onLoadFiles} deltaTime={deltaTime}/>}
+        </div>
+      </React.Fragment>
+    );
+  }
+
+  // Regular video interface when media is loaded
   return (
       <React.Fragment>
         <Head>
