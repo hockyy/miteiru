@@ -2,6 +2,7 @@
 import {useEffect, useMemo} from 'react';
 import {setGlobalSubtitleId, SubtitleContainer} from "../components/Subtitle/DataStructures";
 import {useRouter} from "next/router";
+import useLanguageManager from "./useLanguageManager";
 
 export default function useKeyBind(
     setMeaning,
@@ -25,6 +26,8 @@ export default function useKeyBind(
     setShowLyricsSearch
 ) {
   const router = useRouter();
+  const { clearLanguage } = useLanguageManager();
+  
 
   // Define all commands with their metadata
   const commands = useMemo(() => [
@@ -45,6 +48,7 @@ export default function useKeyBind(
       modifiers: ['Ctrl'],
       category: 'Navigation',
       handler: async () => {
+        clearLanguage();
         await router.push('/home');
       }
     },
