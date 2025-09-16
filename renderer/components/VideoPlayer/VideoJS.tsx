@@ -16,7 +16,6 @@ export const VideoJS = ({options, onReady, setCurrentTime, pitchValue}) => {
   }, [setCurrentTime])
 
   useEffect(() => {
-    console.log(pitchValue)
     pitchControlRef.current.setPitch(pitchValue);
   }, [pitchValue]);
 
