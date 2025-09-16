@@ -131,6 +131,46 @@ export class Line {
       })
     }
   }
+
+  async fillContentWithLearningVietnamese(frequency) {
+    this.meaning = Array(this.content.length).fill('');
+    for (let i = 0; i < this.content.length; i++) {
+      const word = this.content[i];
+      const target = word.origin;
+      frequency.set(target, (frequency.get(target) ?? 0) + 1);
+      await window.ipc.invoke('queryVietnamese', target, 3).then(val => {
+        let got = 0;
+        for (const entry of val) {
+          if (got) break;
+          try {
+            if (entry.content === target) {
+              got = 1;
+              let cleanedMeaning = entry.meaning;
+              // Clean up the meaning - remove parentheses and extra content
+              cleanedMeaning = cleanedMeaning.replace(/\([^)(]*\)/g, "").trim();
+              cleanedMeaning = cleanedMeaning.replace(/\[[^\]\[]*]/g, "").trim();
+              
+              // Split by common delimiters and take the shortest meaningful part
+              const tmpMeaning = cleanedMeaning.split(/[,;]/);
+              if (tmpMeaning.length > 0) {
+                tmpMeaning.sort((a, b) => a.trim().length - b.trim().length);
+                for (const meaningEl of tmpMeaning) {
+                  const finalMeaning = meaningEl.trim();
+                  if (finalMeaning !== "" && finalMeaning.length <= 15) {
+                    this.meaning[i] = finalMeaning;
+                    break;
+                  }
+                }
+              }
+              break;
+            }
+          } catch (ignored) {
+            console.error(ignored)
+          }
+        }
+      })
+    }
+  }
 }
 
 let globalSubtitleId = "";
@@ -204,16 +244,7 @@ export class SubtitleContainer {
     if (subtitleContainer === null) {
       subtitleContainer = new SubtitleContainer();
     }
-    let ans = 0;
-    entries = entries.filter(entry => entry.text != '');
-    for (let i = 0; i < Math.min(20, entries.length); i++) {
-      if (entries[i].text.match(videoConstants.cjkRegex)) {
-        ans++;
-      }
-    }
-    entries.sort((a, b) => a.from - b.from);
-    subtitleContainer.language = videoConstants.englishLang;
-    if (ans >= 3) subtitleContainer.language = lang;
+    subtitleContainer.language = lang;
     let last = 0;
     for (const {
       from,
@@ -256,6 +287,20 @@ export class SubtitleContainer {
       const line = this.lines[i];
       promises.push(line.fillContentSeparations(tokenizeMiteiru));
       promises.push(line.fillContentWithLearningChinese(this.frequency));
+      this.progress = `${((i + 1) * 100 / this.lines.length).toFixed(2)}%`;
+    }
+    await Promise.all(promises);
+    this.progress = 'done';
+  }
+
+  async adjustVietnamese(tokenizeMiteiru: (string) => Promise<any[]>) {
+    console.log(this.lines);
+    const promises = [];
+    for (let i = 0; i < this.lines.length; i++) {
+      if (globalSubtitleId !== this.id) return;
+      const line = this.lines[i];
+      promises.push(line.fillContentSeparations(tokenizeMiteiru));
+      promises.push(line.fillContentWithLearningVietnamese(this.frequency));
       this.progress = `${((i + 1) * 100 / this.lines.length).toFixed(2)}%`;
     }
     await Promise.all(promises);

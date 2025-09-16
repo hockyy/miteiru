@@ -1,6 +1,7 @@
 import {ipcMain} from "electron";
 import Japanese from "./japanese";
 import Chinese from "./chinese";
+import Vietnamese from "./vietnamese";
 
 export const registerStartupHandlers = (setTokenizer, appDataDirectory) => {
 
@@ -37,6 +38,15 @@ export const registerStartupHandlers = (setTokenizer, appDataDirectory) => {
   ipcMain.handle('loadMecab', async () => {
     setTokenizer('mecab');
     const error = await Japanese.setup(Japanese.getJapaneseSettings(appDataDirectory))
+    return {
+      ok: error ? 0 : 1,
+      message: error ?? 'Setup is ready'
+    }
+  })
+
+  ipcMain.handle('loadVietnamese', async () => {
+    setTokenizer('vietnamese');
+    const error = await Vietnamese.setup(Vietnamese.getVietnameseSettings(appDataDirectory))
     return {
       ok: error ? 0 : 1,
       message: error ?? 'Setup is ready'

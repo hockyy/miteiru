@@ -337,16 +337,40 @@ export const ChineseSentence = ({
   }, [changeLearningState, origin]);
 
   useEffect(() => {
-    setSeparationContent(() => separation.map((val, index) => {
-      return <ruby className={learningClassName}
-                   style={{
-                     rubyPosition: "over",
-                   }} key={index}>
-        {/* @ts-expect-error rb wtf eslint*/}
-        <rb>{val.main}</rb>
-        <rt className={"unselectable"}>{subtitleStyling.showFurigana && learningClassName !== 'state2' && (val.jyutping ?? val.pinyin)}</rt>
-      </ruby>
-    }));
+    // Check if this is Vietnamese (no jyutping/pinyin but has separation)
+    const isVietnamese = separation.length > 0 && 
+                         !separation.some(s => s.jyutping || s.pinyin) &&
+                         separation.some(s => s.meaning !== undefined);
+    
+    setSeparationContent(() => {
+      const elements = [];
+      
+      separation.forEach((val, index) => {
+        // Add the main ruby element
+        elements.push(
+          <ruby className={learningClassName}
+                style={{
+                  rubyPosition: "over",
+                }} key={`word-${index}`}>
+            {/* @ts-expect-error rb wtf eslint*/}
+            <rb>{val.main}</rb>
+            <rt className={"unselectable"}>{subtitleStyling.showFurigana && learningClassName !== 'state2' && (val.jyutping ?? val.pinyin)}</rt>
+          </ruby>
+        );
+        
+        // For Vietnamese, add a space ruby element between components (except after spaces or at the end)
+        if (isVietnamese && index < separation.length - 1) {
+          elements.push(
+            <ruby key={`space-${index}`} style={{ fontSize: '0.8em' }}>
+              {/* @ts-expect-error rb wtf eslint*/}
+              <rb>{' '}</rb>
+            </ruby>
+          );
+        }
+      });
+      
+      return elements;
+    });
   }, [separation, subtitleStyling, learningClassName])
 
   return <StyledChineseSentence

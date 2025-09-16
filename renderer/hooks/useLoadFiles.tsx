@@ -78,7 +78,8 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
         clearInterval(toastSetter);
         if (tmpSub.language === videoConstants.japaneseLang
             || tmpSub.language === videoConstants.cantoneseLang
-            || tmpSub.language === videoConstants.chineseLang) {
+            || tmpSub.language === videoConstants.chineseLang
+            || tmpSub.language === videoConstants.vietnameseLang) {
           setPrimarySub(tmpSub);
           setLastPrimarySubPath([{path: currentPath}]);  // Save the last primary subtitle path
           setGlobalSubtitleId(tmpSub.id);
@@ -90,9 +91,11 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
           message: 'Subtitle loaded',
           update: uuidv4()
         });
+        console.log(tmpSub.language);
         if (tmpSub.language === videoConstants.japaneseLang
             || tmpSub.language === videoConstants.cantoneseLang
-            || tmpSub.language === videoConstants.chineseLang) {
+            || tmpSub.language === videoConstants.chineseLang
+            || tmpSub.language === videoConstants.vietnameseLang) {
           const toastSetter = setInterval(() => {
             setToastInfo({
               message: `${tmpSub.language}: ${tmpSub.progress}`,
@@ -107,6 +110,13 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
           }
           if (tmpSub.language === videoConstants.cantoneseLang || tmpSub.language === videoConstants.chineseLang) {
             tmpSub.adjustChinese(tokenizeMiteiru).then(() => {
+              clearInterval(toastSetter);
+              setFrequencyPrimary(tmpSub.frequency)
+            })
+          }
+          if (tmpSub.language === videoConstants.vietnameseLang) {
+            console.log(tmpSub);
+            tmpSub.adjustVietnamese(tokenizeMiteiru).then(() => {
               clearInterval(toastSetter);
               setFrequencyPrimary(tmpSub.frequency)
             })

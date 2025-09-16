@@ -72,6 +72,10 @@ function Learn() {
         tmpSub.adjustJapanese(tokenizeMiteiru).then(() => {
           setCurrentTime(old => (old ^ 1))
         })
+      } else if (tmpSub.language === videoConstants.vietnameseLang) {
+        tmpSub.adjustVietnamese(tokenizeMiteiru).then(() => {
+          setCurrentTime(old => (old ^ 1))
+        })
       } else {
         tmpSub.adjustChinese(tokenizeMiteiru).then(() => {
           setCurrentTime(old => (old ^ 1))

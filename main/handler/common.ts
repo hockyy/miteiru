@@ -5,6 +5,7 @@ import * as fsPromises from 'node:fs/promises';
 import {access} from 'node:fs/promises';
 import Japanese from "./japanese";
 import Chinese from "./chinese";
+import Vietnamese from "./vietnamese";
 import Store from 'electron-store';
 import path, {basename, dirname, extname, join} from 'path';
 import {parse as parseSRT} from '@plussub/srt-vtt-parser';
@@ -121,7 +122,8 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
     const japSet = Japanese.getJapaneseSettings(appDataDirectory);
     const chinSet = Chinese.getMandarinSettings(appDataDirectory);
     const canSet = Chinese.getCantoneseSettings(appDataDirectory);
-    return `rm -rf "${japSet.dictPath}"; rm -rf "${japSet.charDictPath}"; rm -rf "${canSet.dictPath}", rm -rf "${chinSet.dictPath}"`
+    const vietSet = Vietnamese.getVietnameseSettings(appDataDirectory);
+    return `rm -rf "${japSet.dictPath}"; rm -rf "${japSet.charDictPath}"; rm -rf "${canSet.dictPath}"; rm -rf "${chinSet.dictPath}"; rm -rf "${vietSet.dictPath}"`
   })
 
   ipcMain.handle('getTokenizerMode', async () => {

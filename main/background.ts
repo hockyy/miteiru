@@ -7,6 +7,7 @@ import {registerCommonHandlers} from "./handler/common";
 import {registerStartupHandlers} from "./handler/startup";
 import Japanese from "./handler/japanese";
 import Chinese from "./handler/chinese";
+import Vietnamese from "./handler/vietnamese";
 import Learning from "./handler/learning";
 
 
@@ -43,9 +44,11 @@ if (isProd) {
   registerStartupHandlers(setTokenizer, appDataDirectory);
   Japanese.registerHandlers();
   Chinese.registerHandlers();
+  Vietnamese.registerHandlers();
   Japanese.registerKuromoji();
   Chinese.registerJieba();
   Chinese.registerCantoJieba();
+  Vietnamese.registerVietnamese();
 
   Learning.setup();
   Learning.registerHandler();

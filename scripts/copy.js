@@ -12,7 +12,8 @@ const importantPaths = [
   'images',
   'cantonese',
   'chinese',
-  'hanzi'
+  'hanzi',
+  'vietnamese',
 ];
 
 const compareShallow = async (source, dest) => {
