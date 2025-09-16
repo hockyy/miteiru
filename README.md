@@ -38,16 +38,21 @@ While I strive to maintain a safe and secure application, I cannot be held respo
 <table style="border: none;">
   <tr>
     <td><img src="renderer/public/images/logo.png" alt="Miteiru Logo" /></td>
-    <td> Miteiru is an open source Electron video player to learn Chinese, Japanese, and Cantonese. It has modular main language dictionary and tokenizer (morphological analyzer), heavily based on External software <a href="https://taku910.github.io/mecab/">MeCab</a>, and optinally needs <a href="https://github.com/scriptin/jmdict-simplified">JMDict</a> to give language info box. This software is heavily inspired by <a href="https://ookii-tsuki.github.io/Anisubber/">Anisubber</a>. </td>
+    <td> Miteiru is an open source Electron video player to learn Chinese, Japanese, Cantonese, and Vietnamese. It has modular main language dictionary and tokenizer (morphological analyzer), heavily based on External software <a href="https://taku910.github.io/mecab/">MeCab</a>, and optinally needs <a href="https://github.com/scriptin/jmdict-simplified">JMDict</a> to give language info box. This software is heavily inspired by <a href="https://ookii-tsuki.github.io/Anisubber/">Anisubber</a>. 
+    
+📚 **For detailed language support information, see [Language Documentation](README_LANGUAGES.md)**</td>
   </tr>
 </table>
 
 ## What can 見ている do?
 
+- **Multi-language Support**: Japanese, Chinese (Mandarin/Cantonese), Vietnamese with comprehensive tokenization
 - Cross-platform! Available in Windows, MacOS, GNU/Linux.
 - Supports all videos that your [chromium](https://www.chromium.org/audio-video/) supports! In some
   OS's, it supports **x265**.
 - On-The-Fly Furigana generation! blazing-fast and no severe cache build needed.
+- **Smart Subtitle Language Detection**: Automatically processes subtitles based on filename
+- **Comprehensive Dictionaries**: JMDict, CC-CEDICT, VNEDict, and more
 - Instant definition of any terms that uses LevelDB on first start only!
 - Instant definition of any word in the subtitles.
 - Instant definition on Kanji

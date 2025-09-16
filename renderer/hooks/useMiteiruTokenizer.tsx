@@ -8,7 +8,8 @@ const langMap = {
   "mecab": videoConstants.japaneseLang,
   "kuromoji": videoConstants.japaneseLang,
   "cantonese": videoConstants.cantoneseLang,
-  "jieba": videoConstants.chineseLang
+  "jieba": videoConstants.chineseLang,
+  "vietnamese": videoConstants.vietnameseLang
 }
 
 const parseVerbs = async (res) => {
@@ -157,6 +158,8 @@ const useMiteiruTokenizer = (): {
       res = await parseVerbs(res);
     } else if (tokenizerMode === "jieba") {
       res = await window.ipc.invoke('tokenizeUsingJieba', sentence, toneType);
+    } else if (tokenizerMode === "vietnamese") {
+      res = await window.ipc.invoke('tokenizeUsingVietnamese', sentence);
     }
     return res;
   }, [tokenizerMode, toneType]);

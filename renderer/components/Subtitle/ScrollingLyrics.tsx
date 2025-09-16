@@ -207,12 +207,15 @@ const LyricsLine = ({
         const rubyHtml = val.separation?.map(part => {
           const isChineseSentence = val.jyutping || val.pinyin;
           const isJapaneseSentence = val.hiragana !== undefined;
+          const isVietnameseSentence = val.separation && !val.jyutping && !val.pinyin && !val.hiragana;
 
           let reading;
           if (isChineseSentence) {
             reading = part.jyutping || part.pinyin;
           } else if (isJapaneseSentence) {
             reading = part.hiragana || part.romaji;
+          } else if (isVietnameseSentence) {
+            reading = part.meaning || '';
           } else {
             reading = '';
           }
@@ -248,8 +251,9 @@ const LyricsLine = ({
       {line.content.map((val, index) => {
         const validBasicForm = val.basicForm != '' && val.basicForm != '*';
         const isChineseSentence = val.jyutping || val.pinyin;
+        const isVietnameseSentence = val.separation && !val.jyutping && !val.pinyin && !val.hiragana;
 
-        const SentenceComponent = isChineseSentence ? ChineseSentence : JapaneseSentence;
+        const SentenceComponent = isChineseSentence || isVietnameseSentence ? ChineseSentence : JapaneseSentence;
 
         return (
           <React.Fragment key={index}>

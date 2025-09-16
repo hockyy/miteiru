@@ -60,6 +60,7 @@ export const PrimarySubtitle = ({
       const validBasicForm = val.basicForm != '' && val.basicForm != '*';
       const isChineseSentence = val.jyutping || val.pinyin;
       const isJapaneseSentence = val.hiragana !== undefined;
+      const isVietnameseSentence = val.separation && !val.jyutping && !val.pinyin && !val.hiragana;
 
       // Generate ruby HTML for copying
       const rubyHtml = val.separation.map(part => {
@@ -68,6 +69,8 @@ export const PrimarySubtitle = ({
           reading = part.jyutping || part.pinyin;
         } else if (isJapaneseSentence) {
           reading = part.hiragana || part.romaji;
+        } else if (isVietnameseSentence) {
+          reading = part.meaning || '';
         } else {
           reading = '';
         }
@@ -82,6 +85,18 @@ export const PrimarySubtitle = ({
       return (
           <React.Fragment key={index}>
             {isChineseSentence ? (
+                <ChineseSentence
+                    origin={val.origin}
+                    separation={val.separation}
+                    setMeaning={setMeaning}
+                    extraClass={"subtitle"}
+                    subtitleStyling={subtitleStyling}
+                    basicForm={validBasicForm ? val.basicForm : ''}
+                    wordMeaning={wordMeaning[index]}
+                    getLearningStateClass={getLearningStateClass}
+                    changeLearningState={changeLearningState}
+                />
+            ) : isVietnameseSentence ? (
                 <ChineseSentence
                     origin={val.origin}
                     separation={val.separation}

@@ -16,15 +16,18 @@ export const videoConstants = {
   englishLang: 'en',
   japaneseLang: 'ja',
   chineseLang: 'zh-CN',
+  vietnameseLang: 'vi',
   varLang: {
     "yue": ["zh-HK", "yue"],
     "ja": ["ja"],
-    "zh-CN": ['zh-TW', 'zh-CN']
+    "zh-CN": ['zh-TW', 'zh-CN'],
+    "vi": ["vi"]
   },
   ocrLang: {
     "yue": "chi_tra",
     "ja": "jpn",
     "zh-CN": "chi_tra",
+    "vi": "vie",
   },
   cantoneseToneMap: {
     1: '‾',

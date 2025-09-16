@@ -37,6 +37,13 @@ export const LANGUAGE_MODES: LanguageMode[] = [
     channel: 'loadChinese',
     emoji: '🐉',
     description: '加油! 💥'
+  },
+  {
+    id: 4,
+    name: 'Vietnamese',
+    channel: 'loadVietnamese',
+    emoji: '🇻🇳',
+    description: 'Chúc may mắn! 🌟'
   }
 ];
 
