@@ -81,7 +81,6 @@ class Vietnamese {
    * This implements the longest-match suffix parsing as requested.
    */
   static tokenizeLongestSuffix(sentence: string): VietnameseTokenResult[] {
-    console.log(sentence)
     if (!sentence?.trim()) {
       return [];
     }
@@ -112,7 +111,6 @@ class Vietnamese {
         });
       }
     }
-    console.log(result);
     return result;
   }
 

@@ -124,9 +124,6 @@ const MeaningBox = ({
   }, [meaningIndex, otherMeanings]);
 
   useEffect(() => {
-    console.log(meaning);
-    console.log("here");
-    console.log(meaning.length);
     const fetchCharacterData = async () => {
       if (meaning.length === 1) {
         if (lang === videoConstants.japaneseLang && isKanji(meaning)) {
@@ -146,18 +143,11 @@ const MeaningBox = ({
           });
         }
       } else {
-        console.log("here");
-        console.log(initialCharacterContentState);
         setMeaningCharacter(initialCharacterContentState);
       }
     };
 
     const fetchMeaningData = async () => {
-      console.log("here");
-      console.log(meaning);
-      console.log("here");
-      console.log(meaning.length);
-      console.log(lang)
       let entries = [];
       if (lang === videoConstants.japaneseLang) {
         entries = await window.ipc.invoke('queryJapanese', meaning, 5);
@@ -171,11 +161,8 @@ const MeaningBox = ({
           entry.single = entry.content.split('，').map(text => ({text}));
         });
       } else if (lang === videoConstants.vietnameseLang) {
-        console.log("here")
         entries = await window.ipc.invoke('queryVietnamese', meaning, 5);
-        console.log(entries)
         entries.forEach(entry => {
-          console.log(entry)
           // TODO i feel like single char can be mapped to meaning?
           entry.single = entry.content.split(' ').map(text => ({text}));
         });
@@ -209,10 +196,6 @@ const MeaningBox = ({
       setMeaningContent(initialContentState);
       setMeaningCharacter(initialCharacterContentState);
     } else {
-      console.log("here");
-      console.log(meaning);
-      console.log("here");
-      console.log(meaning.length);
       fetchCharacterData();
       fetchMeaningData();
     }
@@ -220,7 +203,6 @@ const MeaningBox = ({
 
   useEffect(() => {
     const fetchRomajiedData = async () => {
-      console.log("in")
       if (lang === videoConstants.japaneseLang) {
         const data = await Promise.all(
             meaningContent.single.map(async (val) => ({
@@ -230,14 +212,11 @@ const MeaningBox = ({
         );
         setRomajiedData(data);
       } else if (lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang || lang === videoConstants.vietnameseLang) {
-        console.log(meaningContent)
         const usedData = (meaningContent && meaningContent.simplified && meaningContent.simplified.includes(meaning)) ? meaningContent.simplified : meaningContent.content;
-        console.log("used data ", usedData)
         const data = [{
           key: 0,
           romajied: (await tokenizeMiteiru(usedData))
         }];
-        console.log(data)
         setRomajiedData(data);
       }
     };
@@ -246,7 +225,6 @@ const MeaningBox = ({
   }, [lang, meaning, meaningContent, tokenizeMiteiru]);
 
   const renderRomajiedContent = useCallback(() => {
-    console.log("Get data ", romajiedData)
     return romajiedData.map(({
       key,
       romajied
@@ -290,7 +268,6 @@ const MeaningBox = ({
 
   const memoizedMeaningContent = useMemo(() => {
     if (!showMeaning) return <></>
-    console.log("here meaning content ", meaningContent)
     return (
         <MeaningContent meaningContent={meaningContent} lang={lang} tags={tags}/>
     );
@@ -402,7 +379,6 @@ const RomajiedContent = ({
                              subtitleStyling={subtitleStyling}/>
           ))}
           {(lang === videoConstants.chineseLang || lang === videoConstants.cantoneseLang) && romajied.map((val, idx) => {
-            console.log(val.origin)
             return (
                 <HanziSentence key={idx} origin={val.origin}
                                pinyin={(lang === videoConstants.vietnameseLang ? ' ' : (lang === videoConstants.chineseLang ? val.pinyin : val.jyutping)).split(' ')}
@@ -748,7 +724,6 @@ const meaningBoxEntryChinese = (meaningContent) => {
 
 
 const meaningBoxEntryVietnamese = (meaningContent) => {
-  console.log("Meaning content ", meaningContent)
   const info = {
     'Content': meaningContent.content
   };
