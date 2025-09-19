@@ -111,6 +111,7 @@ class Vietnamese {
         });
       }
     }
+    result.reverse();
     return result;
   }
 
