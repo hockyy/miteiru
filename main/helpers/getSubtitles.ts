@@ -23,9 +23,18 @@ function extractCaptionTracks(data: string): any[] {
 }
 
 function findSubtitle(captionTracks: any[], lang: string): any {
+  
+  // First, try to find non-ASR track with exact vssId match
+  const nonAsrTrack = find(captionTracks, track => 
+    track.languageCode === `${lang}` && !track.kind
+  );
+  
+  if (nonAsrTrack) return nonAsrTrack;
+  
+  // Fallback to any track matching the language (including ASR)
   return find(captionTracks, {vssId: `.${lang}`}) ||
-      find(captionTracks, {vssId: `a.${lang}`}) ||
-      find(captionTracks, ({vssId}) => vssId && vssId.match(`.${lang}`));
+         find(captionTracks, {vssId: `a.${lang}`}) ||
+         find(captionTracks, ({vssId}) => vssId && vssId.match(`.${lang}`));
 }
 
 function parseTranscriptLine(line: string): SubtitleEntry {
@@ -66,9 +75,7 @@ export async function getSubtitles({
     if (!subtitle || !subtitle.baseUrl) {
       throw new Error(`Could not find ${lang} captions for ${videoID}`);
     }
-
     const {data: transcript} = await axios.get(subtitle.baseUrl);
-
     return transcript
     .replace('<?xml version="1.0" encoding="utf-8" ?><transcript>', '')
     .replace('</transcript>', '')
