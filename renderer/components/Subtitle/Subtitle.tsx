@@ -57,6 +57,8 @@ export const PrimarySubtitle = ({
     }
     let rubyCopyContent = '';
     const current = content.map((val, index) => {
+      console.log(val);
+      console.log("here");
       const validBasicForm = val.basicForm != '' && val.basicForm != '*';
       const isChineseSentence = val.jyutping || val.pinyin;
       const isJapaneseSentence = val.hiragana !== undefined;
@@ -133,6 +135,7 @@ export const PrimarySubtitle = ({
   const setSubtitle = useCallback((currentAdjustedTime) => {
     try {
       const line = getLineByTime(subtitle, currentAdjustedTime);
+      console.log(line.meaning)
       const primaryContent = line.content;
       setFromContent(primaryContent, line.meaning);
       setTimeCache(line.timePair);

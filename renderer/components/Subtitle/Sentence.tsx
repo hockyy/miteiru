@@ -339,9 +339,10 @@ export const ChineseSentence = ({
   useEffect(() => {
     // Check if this is Vietnamese (no jyutping/pinyin but has separation)
     const isVietnamese = separation.length > 0 && 
-                         !separation.some(s => s.jyutping || s.pinyin) &&
-                         separation.some(s => s.meaning !== undefined);
-    
+                         !separation.some(s => s.jyutping || s.pinyin);
+    console.log(separation);
+    console.log(isVietnamese);
+    console.log(wordMeaning);
     setSeparationContent(() => {
       const elements = [];
       

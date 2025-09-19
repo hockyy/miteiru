@@ -1,10 +1,10 @@
-import {isHiragana, isKatakana, toHiragana} from 'wanakana'
-import {videoConstants} from "../../utils/constants";
-import {v4 as uuidv4} from 'uuid';
-import {Entry} from "@plussub/srt-vtt-parser/dist/src/types";
+import { isHiragana, isKatakana, toHiragana } from 'wanakana'
+import { videoConstants } from "../../utils/constants";
+import { v4 as uuidv4 } from 'uuid';
+import { Entry } from "@plussub/srt-vtt-parser/dist/src/types";
 import * as OpenCC from 'opencc-js';
-import {parse as parseASS} from 'ass-compiler';
-import {parseLRC} from "./LrcParser";
+import { parse as parseASS } from 'ass-compiler';
+import { parseLRC } from "./LrcParser";
 
 function removeTags(text) {
   const regex = /\{\\.+?}/g;
@@ -149,7 +149,7 @@ export class Line {
               // Clean up the meaning - remove parentheses and extra content
               cleanedMeaning = cleanedMeaning.replace(/\([^)(]*\)/g, "").trim();
               cleanedMeaning = cleanedMeaning.replace(/\[[^\]\[]*]/g, "").trim();
-              
+
               // Split by common delimiters and take the shortest meaningful part
               const tmpMeaning = cleanedMeaning.split(/[,;]/);
               if (tmpMeaning.length > 0) {
@@ -220,7 +220,7 @@ export class SubtitleContainer {
       console.log(lang);
       console.log(isSimplified);
       this.createFromArrayEntries(subtitleContainer, entries,
-          isForcedEnglish ? videoConstants.englishLang : lang, isSimplified);
+        isForcedEnglish ? videoConstants.englishLang : lang, isSimplified);
       return subtitleContainer;
     } catch (error) {
       console.error('Error parsing subtitle:', error);
@@ -267,42 +267,37 @@ export class SubtitleContainer {
   }
 
   async adjustJapanese(tokenizeMiteiru: (string) => Promise<any[]>) {
-    const promises = [];
-
-    for (let i = 0; i < this.lines.length; i++) {
+    const promises = this.lines.map(async (line) => {
       if (globalSubtitleId !== this.id) return;
-      const line = this.lines[i];
-      promises.push(line.fillContentSeparations(tokenizeMiteiru));
-      promises.push(line.fillContentWithLearningKotoba(this.frequency));
-      this.progress = `${((i + 1) * 100 / this.lines.length).toFixed(2)}%`;
-    }
+
+      await line.fillContentSeparations(tokenizeMiteiru);
+      line.fillContentWithLearningKotoba(this.frequency);
+    });
+
     await Promise.all(promises);
     this.progress = 'done';
   }
 
   async adjustChinese(tokenizeMiteiru: (string) => Promise<any[]>) {
-    const promises = [];
-    for (let i = 0; i < this.lines.length; i++) {
+    const promises = this.lines.map(async (line) => {
       if (globalSubtitleId !== this.id) return;
-      const line = this.lines[i];
-      promises.push(line.fillContentSeparations(tokenizeMiteiru));
-      promises.push(line.fillContentWithLearningChinese(this.frequency));
-      this.progress = `${((i + 1) * 100 / this.lines.length).toFixed(2)}%`;
-    }
+
+      await line.fillContentSeparations(tokenizeMiteiru);
+      line.fillContentWithLearningChinese(this.frequency);
+    });
+
     await Promise.all(promises);
     this.progress = 'done';
   }
 
   async adjustVietnamese(tokenizeMiteiru: (string) => Promise<any[]>) {
-    console.log(this.lines);
-    const promises = [];
-    for (let i = 0; i < this.lines.length; i++) {
+    const promises = this.lines.map(async (line) => {
       if (globalSubtitleId !== this.id) return;
-      const line = this.lines[i];
-      promises.push(line.fillContentSeparations(tokenizeMiteiru));
-      promises.push(line.fillContentWithLearningVietnamese(this.frequency));
-      this.progress = `${((i + 1) * 100 / this.lines.length).toFixed(2)}%`;
-    }
+
+      await line.fillContentSeparations(tokenizeMiteiru);
+      line.fillContentWithLearningVietnamese(this.frequency);
+    });
+
     await Promise.all(promises);
     this.progress = 'done';
   }

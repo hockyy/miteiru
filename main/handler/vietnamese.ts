@@ -86,49 +86,32 @@ class Vietnamese {
     }
 
     const result: VietnameseTokenResult[] = [];
-    let i = 0;
-    
-    while (i < sentence.length) {
+    const splittedSentence = sentence.split(' ');
+    for(let i = splittedSentence.length - 1; i >= 0; i--) {
+      const rightPointer = i;
       let matched = false;
-      
-      // Try to find the longest match starting from current position
-      for (const term of this.sortedTerms) {
-        if (sentence.slice(i).startsWith(term)) {
-          // Found a match
-          const meaning = this.dictionary.get(term) || '';
-          
-          // For Vietnamese, break compound terms by spaces but keep meaning for all parts
-          const words = term.split(/(\s+)/); // Keep separators
-          const separation = words.filter(word => word.trim().length > 0).map(word => ({
-            main: word,
-            meaning: ""
-          }));
-          
+      for(let j = 0; j < rightPointer; j++) {
+        const current = splittedSentence.slice(j, rightPointer).join(' ');
+        if(this.dictionary.has(current.trim())) {
           result.push({
-            origin: term,
-            meaning: meaning,
-            separation: separation
+            origin: current,
+            meaning: this.dictionary.get(current) || '',
+            separation: splittedSentence.slice(j, rightPointer).map(term => ({ main: term }))
           });
-          i += term.length;
           matched = true;
+          i = j;
           break;
         }
       }
-      
-      if (!matched) {
-        const char = sentence[i];
-        // Skip standalone spaces completely - they'll be preserved within compound words
-        if (char !== ' ') {
-          result.push({
-            origin: char,
-            meaning: '',
-            separation: [{ main: char }]
-          });
-        }
-        i += 1;
+      if(!matched) {
+        result.push({
+          origin: splittedSentence[i],
+          meaning: '',
+          separation: [{ main: splittedSentence[i] }]
+        });
       }
     }
-    
+    console.log(result);
     return result;
   }
 
