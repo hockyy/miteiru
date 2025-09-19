@@ -42,7 +42,7 @@ export const LANGUAGE_MODES: LanguageMode[] = [
     id: 4,
     name: 'Vietnamese',
     channel: 'loadVietnamese',
-    emoji: '🇻🇳',
+    emoji: '🏯',
     description: 'Chúc may mắn! 🌟'
   }
 ];
