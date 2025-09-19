@@ -81,6 +81,7 @@ class Vietnamese {
    * This implements the longest-match suffix parsing as requested.
    */
   static tokenizeLongestSuffix(sentence: string): VietnameseTokenResult[] {
+    console.log(sentence)
     if (!sentence?.trim()) {
       return [];
     }
@@ -90,13 +91,13 @@ class Vietnamese {
     for(let i = splittedSentence.length - 1; i >= 0; i--) {
       const rightPointer = i;
       let matched = false;
-      for(let j = 0; j < rightPointer; j++) {
-        const current = splittedSentence.slice(j, rightPointer).join(' ');
+      for(let j = 0; j <= rightPointer; j++) {
+        const current = splittedSentence.slice(j, rightPointer + 1).join(' ');
         if(this.dictionary.has(current.trim())) {
           result.push({
             origin: current,
             meaning: this.dictionary.get(current) || '',
-            separation: splittedSentence.slice(j, rightPointer).map(term => ({ main: term }))
+            separation: splittedSentence.slice(j, rightPointer + 1).map(term => ({ main: term }))
           });
           matched = true;
           i = j;
