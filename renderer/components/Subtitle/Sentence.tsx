@@ -1,9 +1,9 @@
 import parse from "html-react-parser";
 import styled from "styled-components";
-import {CJKStyling, defaultLearningColorStyling} from "../../utils/CJKStyling";
-import React, {ReactNode, useCallback, useEffect, useState} from "react";
-import {isMixed, toRomaji} from "wanakana"
-import {v4 as uuidv4} from 'uuid';
+import { CJKStyling, defaultLearningColorStyling } from "../../utils/CJKStyling";
+import React, { ReactNode, useCallback, useEffect, useState } from "react";
+import { isMixed, toRomaji } from "wanakana"
+import { v4 as uuidv4 } from 'uuid';
 
 
 const StyledSentence = styled.button<{ subtitleStyling: CJKStyling }>`
@@ -128,20 +128,21 @@ interface SentenceParam {
   basicForm?: string,
   getLearningStateClass?: any,
   changeLearningState?: any,
-  pinyin?: string[]
+  pinyin?: string[],
+  reading?: string[]
 }
 
 export const JapaneseSentence = ({
-                                   origin,
-                                   setMeaning,
-                                   separation,
-                                   extraClass,
-                                   subtitleStyling,
-                                   basicForm = '',
-                                   wordMeaning = '',
-                                   changeLearningState = () => '',
-                                   getLearningStateClass = () => ''
-                                 }: SentenceParam) => {
+  origin,
+  setMeaning,
+  separation,
+  extraClass,
+  subtitleStyling,
+  basicForm = '',
+  wordMeaning = '',
+  changeLearningState = () => '',
+  getLearningStateClass = () => ''
+}: SentenceParam) => {
   const [separationContent, setSeparationContent] = useState([]);
 
   const [learningClassName, setLearningClassName] = useState('');
@@ -170,16 +171,16 @@ export const JapaneseSentence = ({
     setSeparationContent(() => {
       return separation.map((val, index) => {
         const hiragana = (<>
-              <rp>(</rp>
-              <rt>{val.hiragana ?? ''}</rt>
-              <rp>)</rp>
-            </>
+          <rp>(</rp>
+          <rt>{val.hiragana ?? ''}</rt>
+          <rp>)</rp>
+        </>
         )
         const romaji = (<>
-              <rp>(</rp>
-              <rt>{val.romaji != '' ? val.romaji : toRomaji(val.main)}</rt>
-              <rp>)</rp>
-            </>
+          <rp>(</rp>
+          <rt>{val.romaji != '' ? val.romaji : toRomaji(val.main)}</rt>
+          <rp>)</rp>
+        </>
         )
         const showHelp = val.isKanji || val.isMixed || isMixed(origin);
         const showRomaji = (val.isKana || showHelp);
@@ -188,7 +189,7 @@ export const JapaneseSentence = ({
           rubyPosition: "under",
         }} key={index}>
           <ruby className={learningClassName}
-                style={{rubyPosition: "over"}}>
+            style={{ rubyPosition: "over" }}>
             {/* @ts-expect-error rb wtf eslint*/}
             <rb>{val.main}</rb>
             <rt className={"unselectable"}>{subtitleStyling.showFurigana && showFurigana && hiragana}</rt>
@@ -199,12 +200,12 @@ export const JapaneseSentence = ({
     })
   }, [separation, subtitleStyling, learningClassName, origin]);
 
-  
+
   return <StyledSentence
-      subtitleStyling={subtitleStyling}
-      className={extraClass}
-      onClick={handleClick}
-      onContextMenu={handleRightClick}>
+    subtitleStyling={subtitleStyling}
+    className={extraClass}
+    onClick={handleClick}
+    onContextMenu={handleRightClick}>
     <ruby style={{
       rubyPosition: subtitleStyling.positionMeaningTop ? "over" : "under",
       WebkitTextFillColor: wordMeaning ? subtitleStyling.textMeaning.color : '',
@@ -213,8 +214,8 @@ export const JapaneseSentence = ({
     }}>
       {/* @ts-expect-error rb wtf eslint*/}
       <rb>{separationContent}</rb>
-      <rt style={{fontWeight: subtitleStyling.textMeaning.weight}}
-          className={"internalMeaning unselectable"}>{
+      <rt style={{ fontWeight: subtitleStyling.textMeaning.weight }}
+        className={"internalMeaning unselectable"}>{
           subtitleStyling.showMeaning
           && wordMeaning.length <= subtitleStyling.maximalMeaningLengthPerCharacter * origin.length
           && wordMeaning}</rt>
@@ -223,16 +224,16 @@ export const JapaneseSentence = ({
   </StyledSentence>
 }
 
-export const PlainSentence = ({origin}) => {
+export const PlainSentence = ({ origin }) => {
   return <div key={uuidv4()}>{parse(origin)}</div>
 }
 
 export const KanjiSentence = ({
-                                setMeaning,
-                                separation,
-                                extraClass,
-                                subtitleStyling,
-                              }: SentenceParam) => {
+  setMeaning,
+  separation,
+  extraClass,
+  subtitleStyling,
+}: SentenceParam) => {
   const handleChange = useCallback((newWord) => {
     navigator.clipboard.writeText(newWord);
     setMeaning(newWord)
@@ -240,24 +241,24 @@ export const KanjiSentence = ({
   return <>
     {separation.map((val, index) => {
       const hiragana = (<>
-            <rp>(</rp>
-            <rt>{val.hiragana ?? ''}</rt>
-            <rp>)</rp>
-          </>
+        <rp>(</rp>
+        <rt>{val.hiragana ?? ''}</rt>
+        <rp>)</rp>
+      </>
       )
       return <ruby style={{
         rubyPosition: "under",
         WebkitTextFillColor: subtitleStyling.text.color,
       }} key={index}>
-        <ruby style={{rubyPosition: "over"}}>
+        <ruby style={{ rubyPosition: "over" }}>
           {Array.from(val.main).map((char, idx) => {
             return <StyledSentence
-                key={idx}
-                subtitleStyling={subtitleStyling}
-                className={extraClass}
-                onClick={() => {
-                  handleChange(char)
-                }}><>{char as ReactNode}</>
+              key={idx}
+              subtitleStyling={subtitleStyling}
+              className={extraClass}
+              onClick={() => {
+                handleChange(char)
+              }}><>{char as ReactNode}</>
             </StyledSentence>
           })}
           <rt className={"unselectable"}>{hiragana}</rt>
@@ -269,12 +270,12 @@ export const KanjiSentence = ({
 
 
 export const HanziSentence = ({
-                                origin,
-                                setMeaning,
-                                extraClass,
-                                subtitleStyling,
-                                pinyin
-                              }: SentenceParam) => {
+  origin,
+  setMeaning,
+  extraClass,
+  subtitleStyling,
+  pinyin
+}: SentenceParam) => {
   const handleChange = useCallback((newWord) => {
     navigator.clipboard.writeText(newWord);
     setMeaning(newWord)
@@ -285,13 +286,13 @@ export const HanziSentence = ({
         rubyPosition: "under",
         WebkitTextFillColor: subtitleStyling.text.color,
       }} key={index}>
-        <ruby style={{rubyPosition: "over"}}>
+        <ruby style={{ rubyPosition: "over" }}>
           <StyledChineseSentence
-              subtitleStyling={subtitleStyling}
-              className={extraClass}
-              onClick={() => {
-                handleChange(val)
-              }}>
+            subtitleStyling={subtitleStyling}
+            className={extraClass}
+            onClick={() => {
+              handleChange(val)
+            }}>
 
             {/* @ts-expect-error rb wtf eslint*/}
             <rb>{val}</rb>
@@ -305,15 +306,15 @@ export const HanziSentence = ({
 
 
 export const ChineseSentence = ({
-                                  origin,
-                                  setMeaning,
-                                  separation,
-                                  extraClass,
-                                  subtitleStyling,
-                                  wordMeaning = '',
-                                  changeLearningState = () => '',
-                                  getLearningStateClass = () => ''
-                                }: SentenceParam) => {
+  origin,
+  setMeaning,
+  separation,
+  extraClass,
+  subtitleStyling,
+  wordMeaning = '',
+  changeLearningState = () => '',
+  getLearningStateClass = () => ''
+}: SentenceParam) => {
   const handleChange = useCallback((pressedString) => {
     navigator.clipboard.writeText(pressedString);
     setMeaning(pressedString)
@@ -338,27 +339,24 @@ export const ChineseSentence = ({
 
   useEffect(() => {
     // Check if this is Vietnamese (no jyutping/pinyin but has separation)
-    const isVietnamese = separation.length > 0 && 
-                         !separation.some(s => s.jyutping || s.pinyin);
-    console.log(separation);
-    console.log(isVietnamese);
-    console.log(wordMeaning);
+    const isVietnamese = separation.length > 0 &&
+      !separation.some(s => s.jyutping || s.pinyin);
     setSeparationContent(() => {
       const elements = [];
-      
+
       separation.forEach((val, index) => {
         // Add the main ruby element
         elements.push(
           <ruby className={learningClassName}
-                style={{
-                  rubyPosition: "over",
-                }} key={`word-${index}`}>
+            style={{
+              rubyPosition: "over",
+            }} key={`word-${index}`}>
             {/* @ts-expect-error rb wtf eslint*/}
             <rb>{val.main}</rb>
             <rt className={"unselectable"}>{subtitleStyling.showFurigana && learningClassName !== 'state2' && (val.jyutping ?? val.pinyin)}</rt>
           </ruby>
         );
-        
+
         // For Vietnamese, add a space ruby element between components (except after spaces or at the end)
         if (isVietnamese && index < separation.length - 1) {
           elements.push(
@@ -369,16 +367,16 @@ export const ChineseSentence = ({
           );
         }
       });
-      
+
       return elements;
     });
   }, [separation, subtitleStyling, learningClassName])
 
   return <StyledChineseSentence
-      subtitleStyling={subtitleStyling}
-      className={extraClass}
-      onClick={handleClick}
-      onContextMenu={handleRightClick}>
+    subtitleStyling={subtitleStyling}
+    className={extraClass}
+    onClick={handleClick}
+    onContextMenu={handleRightClick}>
     <ruby style={{
       rubyPosition: subtitleStyling.positionMeaningTop ? "over" : "under",
       WebkitTextFillColor: wordMeaning ? subtitleStyling.textMeaning.color : '',
@@ -387,12 +385,50 @@ export const ChineseSentence = ({
     }}>
       {/* @ts-expect-error rb wtf eslint*/}
       <rb>{separationContent}</rb>
-      <rt style={{fontWeight: subtitleStyling.textMeaning.weight}}
-          className={"internalMeaning unselectable"}>{
+      <rt style={{ fontWeight: subtitleStyling.textMeaning.weight }}
+        className={"internalMeaning unselectable"}>{
           (subtitleStyling.showMeaning || learningClassName === 'state0' || learningClassName === 'state3')
           && wordMeaning.length <= subtitleStyling.maximalMeaningLengthPerCharacter * origin.length
           && wordMeaning}</rt>
 
     </ruby>
   </StyledChineseSentence>
+}
+
+
+export const TokenLikeSentence = ({
+  origin,
+  setMeaning,
+  extraClass,
+  subtitleStyling,
+  reading,
+  separation
+}: SentenceParam) => {
+  const handleChange = useCallback((newWord) => {
+    navigator.clipboard.writeText(newWord);
+    setMeaning(newWord)
+  }, [setMeaning]);
+  // Todo: Add space between the ruby between the maps only if index not the last
+  return <>
+    {separation.map((val, index) => {
+      return <ruby style={{
+        rubyPosition: "under",
+        WebkitTextFillColor: subtitleStyling.text.color,
+        marginRight: index === separation.length - 1 ? 0 : '0.25em', // spacing between tokens
+      }} key={index}>
+        <ruby style={{ rubyPosition: "over" }}>
+          <StyledChineseSentence
+            subtitleStyling={subtitleStyling}
+            className={extraClass}
+            onClick={() => {
+              handleChange(val.main)
+            }}>
+            {/* @ts-expect-error rb wtf eslint*/}
+            <rb>{val.main}</rb>
+          </StyledChineseSentence>
+          <rt className={"unselectable"}>{index < (reading ?? '').length ? reading[index] : ''}</rt>
+        </ruby>
+      </ruby>
+    })}
+  </>
 }

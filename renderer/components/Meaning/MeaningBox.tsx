@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useMemo, useState} from "react";
-import {HanziSentence, KanjiSentence} from "../Subtitle/Sentence";
+import {HanziSentence, KanjiSentence, TokenLikeSentence} from "../Subtitle/Sentence";
 import {defaultLearningColorStyling, defaultMeaningBoxStyling} from "../../utils/CJKStyling";
 import {joinString} from "../../utils/utils";
 import {AwesomeButton} from "react-awesome-button";
@@ -124,6 +124,9 @@ const MeaningBox = ({
   }, [meaningIndex, otherMeanings]);
 
   useEffect(() => {
+    console.log(meaning);
+    console.log("here");
+    console.log(meaning.length);
     const fetchCharacterData = async () => {
       if (meaning.length === 1) {
         if (lang === videoConstants.japaneseLang && isKanji(meaning)) {
@@ -143,11 +146,18 @@ const MeaningBox = ({
           });
         }
       } else {
+        console.log("here");
+        console.log(initialCharacterContentState);
         setMeaningCharacter(initialCharacterContentState);
       }
     };
 
     const fetchMeaningData = async () => {
+      console.log("here");
+      console.log(meaning);
+      console.log("here");
+      console.log(meaning.length);
+      console.log(lang)
       let entries = [];
       if (lang === videoConstants.japaneseLang) {
         entries = await window.ipc.invoke('queryJapanese', meaning, 5);
@@ -159,6 +169,15 @@ const MeaningBox = ({
         entries = await window.ipc.invoke('queryChinese', meaning, 5);
         entries.forEach(entry => {
           entry.single = entry.content.split('，').map(text => ({text}));
+        });
+      } else if (lang === videoConstants.vietnameseLang) {
+        console.log("here")
+        entries = await window.ipc.invoke('queryVietnamese', meaning, 5);
+        console.log(entries)
+        entries.forEach(entry => {
+          console.log(entry)
+          // TODO i feel like single char can be mapped to meaning?
+          entry.single = entry.content.split(' ').map(text => ({text}));
         });
       }
       if (entries.length === 0) {
@@ -190,6 +209,10 @@ const MeaningBox = ({
       setMeaningContent(initialContentState);
       setMeaningCharacter(initialCharacterContentState);
     } else {
+      console.log("here");
+      console.log(meaning);
+      console.log("here");
+      console.log(meaning.length);
       fetchCharacterData();
       fetchMeaningData();
     }
@@ -197,6 +220,7 @@ const MeaningBox = ({
 
   useEffect(() => {
     const fetchRomajiedData = async () => {
+      console.log("in")
       if (lang === videoConstants.japaneseLang) {
         const data = await Promise.all(
             meaningContent.single.map(async (val) => ({
@@ -205,12 +229,15 @@ const MeaningBox = ({
             }))
         );
         setRomajiedData(data);
-      } else if (lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang) {
+      } else if (lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang || lang === videoConstants.vietnameseLang) {
+        console.log(meaningContent)
         const usedData = (meaningContent && meaningContent.simplified && meaningContent.simplified.includes(meaning)) ? meaningContent.simplified : meaningContent.content;
+        console.log("used data ", usedData)
         const data = [{
           key: 0,
           romajied: (await tokenizeMiteiru(usedData))
         }];
+        console.log(data)
         setRomajiedData(data);
       }
     };
@@ -218,20 +245,21 @@ const MeaningBox = ({
     if (meaningContent.single.length) fetchRomajiedData();
   }, [lang, meaning, meaningContent, tokenizeMiteiru]);
 
-  const renderRomajiedContent = useCallback(() => (
-      romajiedData.map(({
-                          key,
-                          romajied
-                        }) => (
-          <RomajiedContent
-              key={key}
-              romajied={romajied}
-              lang={lang}
-              setMeaning={setMeaning}
-              subtitleStyling={subtitleStyling}
-          />
-      ))
-  ), [romajiedData, lang, setMeaning, subtitleStyling]);
+  const renderRomajiedContent = useCallback(() => {
+    console.log("Get data ", romajiedData)
+    return romajiedData.map(({
+      key,
+      romajied
+    }) => (
+      <RomajiedContent
+      key={key}
+      romajied={romajied}
+      lang={lang}
+      setMeaning={setMeaning}
+      subtitleStyling={subtitleStyling}
+      />
+    ))
+  }, [romajiedData, lang, setMeaning, subtitleStyling]);
 
   const renderStarButton = useCallback(() => (
       getLearningState && changeLearningState && (
@@ -262,6 +290,7 @@ const MeaningBox = ({
 
   const memoizedMeaningContent = useMemo(() => {
     if (!showMeaning) return <></>
+    console.log("here meaning content ", meaningContent)
     return (
         <MeaningContent meaningContent={meaningContent} lang={lang} tags={tags}/>
     );
@@ -349,6 +378,9 @@ const MeaningContent = ({
   if (lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang) {
     return meaningBoxEntryChinese(meaningContent);
   }
+  if (lang === videoConstants.vietnameseLang) {
+    return meaningBoxEntryVietnamese(meaningContent);
+  }
   return null;
 };
 
@@ -370,10 +402,20 @@ const RomajiedContent = ({
                              subtitleStyling={subtitleStyling}/>
           ))}
           {(lang === videoConstants.chineseLang || lang === videoConstants.cantoneseLang) && romajied.map((val, idx) => {
+            console.log(val.origin)
             return (
-
                 <HanziSentence key={idx} origin={val.origin}
-                               pinyin={(lang === videoConstants.chineseLang ? val.pinyin : val.jyutping).split(' ')}
+                               pinyin={(lang === videoConstants.vietnameseLang ? ' ' : (lang === videoConstants.chineseLang ? val.pinyin : val.jyutping)).split(' ')}
+                               setMeaning={setMeaning}
+                               extraClass="unselectable meaning-kanji text-md"
+                               subtitleStyling={subtitleStyling}/>
+            );
+          })}
+          {(lang === videoConstants.vietnameseLang) && romajied.map((val, idx) => {
+            return (
+                <TokenLikeSentence key={idx} origin={val.origin}
+                               reading={[]}
+                               separation={val.separation}
                                setMeaning={setMeaning}
                                extraClass="unselectable meaning-kanji text-md"
                                subtitleStyling={subtitleStyling}/>
@@ -697,6 +739,36 @@ const meaningBoxEntryChinese = (meaningContent) => {
         <span className={"font-bold text-blue-8 mr-1"}>{1}.</span>
         {
           joinString(meaningContent.meaning)
+        }
+      </div>
+    </div>
+  </div>
+}
+
+
+
+const meaningBoxEntryVietnamese = (meaningContent) => {
+  console.log("Meaning content ", meaningContent)
+  const info = {
+    'Content': meaningContent.content
+  };
+  return <div
+      className={entryClasses + "border-blue-700"}>
+    <div
+        className={"flex flex-wrap container rounded-t-lg bg-blue-200 px-3"}>
+      {Object.entries(info).map((val) => {
+            return !val[1] ? <></> : (<div
+                className={"bg-blue-500 w-fit p-1 rounded-lg px-2 m-3 text-white"}>
+              {!val[0].startsWith('$') && <strong>{val[0]}:</strong>} {val[1]}
+            </div>);
+          }
+      )}
+    </div>
+    <div className={"flex flex-row px-3"}>
+      <div className={'mx-2 mb-3'}>
+        <span className={"font-bold text-blue-8 mr-1"}>{1}.</span>
+        {
+          (meaningContent.meaning)
         }
       </div>
     </div>
