@@ -108,15 +108,12 @@ const useMediaAnalysis = (videoPath: string) => {
   }, [videoPath, analyzeMedia]);
 
   // Handle track selection from modal (now only for subtitles)
-  const handleTrackSelection = useCallback(async (selection: TrackSelection, onSubtitleLoad?: (path: string, type: 'primary' | 'secondary') => void, onVideoWithAudioLoad?: (videoPath: string) => void) => {
-    console.log('[useMediaAnalysis] Track selection received:', selection);
+  const handleTrackSelection = useCallback(async (selection: TrackSelection, onSubtitleLoad?: (path: string, type: 'primary' | 'secondary') => void) => {
+    console.log('[useMediaAnalysis] Subtitle track selection received:', selection);
     setSelectedTracks(selection);
     setShowTrackSelectionModal(false);
 
     try {
-      // This handler now only deals with subtitle tracks
-      // Audio track selection is handled separately via reencoding flow
-      
       // Extract and load selected subtitle tracks
       const promises = [];
       
@@ -162,7 +159,6 @@ const useMediaAnalysis = (videoPath: string) => {
       }
 
       return {
-        audioTrackIndex: selection.audioTrackIndex,
         extractedSubtitles: promises.length > 0 ? await Promise.all(promises) : []
       };
     } catch (error) {

@@ -209,24 +209,27 @@ export class MediaAnalyzer {
     const inputDir = path.dirname(inputPath);
     const inputName = path.basename(inputPath, path.extname(inputPath));
     const selectedTrackInfo = `_audio${audioStreamIndex}`;
-    const outputPath = path.join(inputDir, `${inputName}${selectedTrackInfo}.mp4`);
+    // Use MKV to preserve all subtitle formats and codecs
+    const outputPath = path.join(inputDir, `${inputName}${selectedTrackInfo}.mkv`);
 
     return new Promise((resolve, reject) => {
-      // Create web-compatible video with selected audio track
+      // Create video with selected audio track + all subtitles using MKV container
       const args = [
         '-i', inputPath,
         '-map', '0:v:0', // First video stream
         '-map', `0:${audioStreamIndex}`, // Selected audio stream
+        '-map', '0:s?', // All subtitle streams (? means optional)
         '-c:v', 'copy', // Copy video (fast)
         '-c:a', 'aac', // Convert audio to AAC for web compatibility
+        '-c:s', 'copy', // Copy all subtitle streams as-is
         '-b:a', '128k', // Audio bitrate
-        '-movflags', '+faststart', // Optimize for web streaming
         '-progress', 'pipe:1', // Send progress to stdout
         '-y', // Overwrite output file
         outputPath
       ];
 
       console.log(`[MediaAnalyzer] FFmpeg reencode command: ffmpeg ${args.join(' ')}`);
+      console.log(`[MediaAnalyzer] Output will be saved as: ${outputPath}`);
 
       const ffmpeg = spawn('ffmpeg', args);
       let error = '';

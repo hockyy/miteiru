@@ -8,13 +8,11 @@ interface MediaTrackSelectionModalProps {
   onClose: () => void;
   onConfirm: (selection: TrackSelection) => void;
   fileName: string;
-  audioTracks: MediaTrack[];
   subtitleTracks: MediaTrack[];
   currentAppLanguage: string;
 }
 
 export interface TrackSelection {
-  audioTrackIndex: number;
   primarySubtitleTrackIndex: number | null; // null means no primary subtitle
   secondarySubtitleTrackIndex: number | null; // null means no secondary subtitle
 }
@@ -24,17 +22,9 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
   onClose,
   onConfirm,
   fileName,
-  audioTracks,
   subtitleTracks,
   currentAppLanguage
 }) => {
-  // Initialize with default selections
-  const [selectedAudioTrack, setSelectedAudioTrack] = useState<number>(() => {
-    // Find default audio track or use first one
-    const defaultTrack = audioTracks.find(track => track.default);
-    return defaultTrack ? audioTracks.indexOf(defaultTrack) : 0;
-  });
-  
   const [selectedPrimarySubtitle, setSelectedPrimarySubtitle] = useState<number | null>(null);
   const [selectedSecondarySubtitle, setSelectedSecondarySubtitle] = useState<number | null>(null);
 
@@ -62,14 +52,20 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
 
   const handleConfirm = () => {
     const selection: TrackSelection = {
-      audioTrackIndex: selectedAudioTrack,
       primarySubtitleTrackIndex: selectedPrimarySubtitle,
       secondarySubtitleTrackIndex: selectedSecondarySubtitle
     };
+    
+    console.log('[MediaTrackSelectionModal] User confirmed subtitle selection:', selection);
+    console.log('[MediaTrackSelectionModal] Selected subtitle tracks details:', {
+      primarySub: selectedPrimarySubtitle !== null ? subtitleTracks[selectedPrimarySubtitle] : null,
+      secondarySub: selectedSecondarySubtitle !== null ? subtitleTracks[selectedSecondarySubtitle] : null
+    });
+    
     onConfirm(selection);
   };
 
-  const canConfirm = audioTracks.length > 0;
+  const canConfirm = true;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
@@ -80,8 +76,8 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-700">
           <h2 className="text-xl font-semibold text-white flex items-center gap-2">
-            <FileText className="w-5 h-5" />
-            Select Audio & Subtitle Tracks
+            <Subtitles className="w-5 h-5" />
+            Select Embedded Subtitles
           </h2>
           <button
             onClick={onClose}
@@ -100,44 +96,11 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
               {fileName}
             </div>
             <div className="text-gray-400 text-xs">
-              App language: {getLanguageEmoji(currentAppLanguage)} {currentAppLanguage}
+              App language: {getLanguageEmoji(currentAppLanguage)} {currentAppLanguage} • {subtitleTracks.length} embedded subtitles
             </div>
           </div>
 
-          <div className="space-y-6">
-            {/* Audio Track Selection */}
-            {audioTracks.length > 0 && (
-              <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-                <div className="flex items-center gap-2 mb-4">
-                  <Volume2 className="w-5 h-5 text-blue-400" />
-                  <h3 className="text-white font-medium">Audio Track</h3>
-                  <span className="text-gray-400 text-sm">({audioTracks.length} available)</span>
-                </div>
-                
-                <div className="space-y-2 max-h-32 overflow-y-auto">
-                  {audioTracks.map((track, index) => (
-                    <label key={track.index} className="flex items-center gap-3 p-2 rounded hover:bg-gray-700 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="audioTrack"
-                        checked={selectedAudioTrack === index}
-                        onChange={() => setSelectedAudioTrack(index)}
-                        className="w-4 h-4 text-blue-600 bg-gray-600 border-gray-500"
-                      />
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
-                        {getLanguageEmoji(track.language)}
-                        <span className="text-white text-sm truncate">
-                          {getTrackLabel(track)}
-                        </span>
-                        <span className="text-gray-400 text-xs">
-                          {track.codec.toUpperCase()}
-                        </span>
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
+          <div className="space-y-4">{/* Audio selection removed - handled by separate AudioReencodeModal */}
 
             {/* Primary Subtitle Selection */}
             <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
@@ -236,9 +199,10 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
         {/* Footer */}
         <div className="p-4 border-t border-gray-700 flex justify-between items-center">
           <div className="text-gray-500 text-sm">
-            Selected: Audio #{selectedAudioTrack + 1}
-            {selectedPrimarySubtitle !== null && `, Primary #${selectedPrimarySubtitle + 1}`}
-            {selectedSecondarySubtitle !== null && `, Secondary #${selectedSecondarySubtitle + 1}`}
+            {selectedPrimarySubtitle !== null && `Primary: #${selectedPrimarySubtitle + 1}`}
+            {selectedPrimarySubtitle !== null && selectedSecondarySubtitle !== null && ', '}
+            {selectedSecondarySubtitle !== null && `Secondary: #${selectedSecondarySubtitle + 1}`}
+            {selectedPrimarySubtitle === null && selectedSecondarySubtitle === null && 'No subtitles selected'}
           </div>
           
           <div className="flex gap-3">
@@ -251,8 +215,8 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
               disabled={!canConfirm}
             >
               <div className="flex items-center gap-2">
-                <Play className="w-4 h-4" />
-                Start Playback
+              <Play className="w-4 h-4" />
+              Load Subtitles
               </div>
             </AwesomeButton>
           </div>

@@ -253,7 +253,7 @@ function Video() {
   const handleMediaTrackSelection = useCallback(async (selection) => {
     console.log('[Video Component] Media track selection (subtitles only):', selection);
     try {
-      await handleTrackSelection(selection, handleEmbeddedSubtitleLoad, handleReencodedVideoLoad);
+      await handleTrackSelection(selection, handleEmbeddedSubtitleLoad);
     } catch (error) {
       console.error('[Video Component] Failed to process track selection:', error);
       setToastInfo({
@@ -261,7 +261,7 @@ function Video() {
         update: Math.random().toString()
       });
     }
-  }, [handleTrackSelection, handleEmbeddedSubtitleLoad, handleReencodedVideoLoad, setToastInfo]);
+  }, [handleTrackSelection, handleEmbeddedSubtitleLoad, setToastInfo]);
 
   // Debug: Log media info changes
   useEffect(() => {
@@ -433,7 +433,6 @@ function Video() {
             onClose={handleCloseTrackSelectionModal}
             onConfirm={handleMediaTrackSelection}
             fileName={videoSrc.path.split('/').pop() || videoSrc.path.split('\\').pop() || 'Unknown file'}
-            audioTracks={mediaInfo.audioTracks}
             subtitleTracks={mediaInfo.subtitleTracks}
             currentAppLanguage={currentAppLanguage}
         />
