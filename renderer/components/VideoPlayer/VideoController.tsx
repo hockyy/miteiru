@@ -91,7 +91,6 @@ export const VideoController = ({
             {RepeatSubtitle}
           </button>
           <Speed player={player}/>
-          <Pitch setPitchValue={setPitchValue}/>
           <SettingsController setShowSidebar={setShowSidebar}/>
         </div>
       </div>

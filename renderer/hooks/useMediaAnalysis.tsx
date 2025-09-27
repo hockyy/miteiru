@@ -19,10 +19,8 @@ const useMediaAnalysis = (videoPath: string) => {
   const [selectedTracks, setSelectedTracks] = useState<TrackSelection | null>(null);
 
   const analyzeMedia = useCallback(async (path: string): Promise<void> => {
-    console.log('[useMediaAnalysis] analyzeMedia called with path:', path);
     
     if (!path || path === '') {
-      console.log('[useMediaAnalysis] Empty path, resetting media info');
       setMediaInfo({
         duration: 0,
         audioTracks: [],
@@ -34,14 +32,11 @@ const useMediaAnalysis = (videoPath: string) => {
 
     setIsAnalyzing(true);
     try {
-      console.log('[useMediaAnalysis] Calling electronAPI.analyzeMediaFile');
       const analysis = await window.electronAPI.analyzeMediaFile(path);
-      console.log('[useMediaAnalysis] Analysis result:', analysis);
       setMediaInfo(analysis);
       
       // Show error toast if tools are not available
       if (analysis.error) {
-        console.warn('[useMediaAnalysis] Analysis completed with error:', analysis.error);
       } else {
         // Determine what modal to show based on track availability
         const hasMultipleAudio = analysis.audioTracks.length > 1;
@@ -49,17 +44,13 @@ const useMediaAnalysis = (videoPath: string) => {
         const hasSubtitles = analysis.subtitleTracks.length > 0;
         
         if (hasMultipleAudio) {
-          console.log('[useMediaAnalysis] Multiple audio tracks - showing audio reencode modal');
           setTimeout(() => setShowAudioReencodeModal(true), 100);
         } else if (hasSingleAudio && hasSubtitles) {
-          console.log('[useMediaAnalysis] Single audio + subtitles - showing subtitle selection modal');
           setTimeout(() => setShowTrackSelectionModal(true), 100);
         } else {
-          console.log('[useMediaAnalysis] Simple video - no modals needed');
         }
       }
     } catch (error) {
-      console.error('[useMediaAnalysis] Failed to analyze media file:', error);
       setMediaInfo({
         duration: 0,
         audioTracks: [],
@@ -97,19 +88,15 @@ const useMediaAnalysis = (videoPath: string) => {
 
   // Analyze media when video path changes
   useEffect(() => {
-    console.log('[useMediaAnalysis] useEffect triggered with videoPath:', videoPath);
     if (videoPath && videoPath !== '' && !videoPath.startsWith('http')) {
       // Only analyze local video files, not YouTube URLs
-      console.log('[useMediaAnalysis] Triggering analysis for local file:', videoPath);
       analyzeMedia(videoPath);
     } else {
-      console.log('[useMediaAnalysis] Skipping analysis - empty path or URL:', videoPath);
     }
   }, [videoPath, analyzeMedia]);
 
   // Handle track selection from modal (now only for subtitles)
   const handleTrackSelection = useCallback(async (selection: TrackSelection, onSubtitleLoad?: (path: string, type: 'primary' | 'secondary') => void) => {
-    console.log('[useMediaAnalysis] Subtitle track selection received:', selection);
     setSelectedTracks(selection);
     setShowTrackSelectionModal(false);
 
@@ -140,7 +127,6 @@ const useMediaAnalysis = (videoPath: string) => {
       }
 
       if (promises.length > 0) {
-        console.log('[useMediaAnalysis] Extracting', promises.length, 'subtitle tracks');
         const extractedSubtitles = await Promise.all(promises);
         
         // Store temp files for cleanup
@@ -152,7 +138,6 @@ const useMediaAnalysis = (videoPath: string) => {
         // Load extracted subtitles using the existing subtitle loading mechanism
         if (onSubtitleLoad) {
           for (const subtitle of extractedSubtitles) {
-            console.log(`[useMediaAnalysis] Loading ${subtitle.type} subtitle:`, subtitle.tempPath);
             onSubtitleLoad(subtitle.tempPath, subtitle.type as 'primary' | 'secondary');
           }
         }
@@ -162,7 +147,6 @@ const useMediaAnalysis = (videoPath: string) => {
         extractedSubtitles: promises.length > 0 ? await Promise.all(promises) : []
       };
     } catch (error) {
-      console.error('[useMediaAnalysis] Error in track selection:', error);
       throw error;
     }
   }, [videoPath, mediaInfo]);
@@ -175,8 +159,7 @@ const useMediaAnalysis = (videoPath: string) => {
     setShowAudioReencodeModal(false);
   }, []);
 
-  const handleAudioReencodeConfirm = useCallback(async (selectedAudioTrack: number, onVideoLoad?: (videoPath: string) => void) => {
-    console.log('[useMediaAnalysis] User chose to reencode with audio track:', selectedAudioTrack);
+  const handleAudioReencodeConfirm = useCallback(async (selectedAudioTrack: number, onVideoLoad?: (videoPath: string) => void, convertToX264?: boolean) => {
     setShowAudioReencodeModal(false);
     
     const selectedTrack = mediaInfo.audioTracks[selectedAudioTrack];
@@ -187,7 +170,6 @@ const useMediaAnalysis = (videoPath: string) => {
     try {
       // Set up progress listener
       const progressHandler = (progress: string) => {
-        console.log('[useMediaAnalysis] Reencode progress:', progress);
         setReencodeProgress(progress);
       };
       
@@ -196,13 +178,13 @@ const useMediaAnalysis = (videoPath: string) => {
       // Start reencoding
       const reencodedVideoPath = await window.electronAPI.reencodeVideoWithAudioTrack(
         videoPath,
-        selectedTrack.index
+        selectedTrack.index,
+        convertToX264
       );
       
       // Clean up progress listener
       removeProgressListener();
       
-      console.log('[useMediaAnalysis] Reencoding completed:', reencodedVideoPath);
       setShowReencodeProgress(false);
       setReencodeProgress('');
       
@@ -212,13 +194,11 @@ const useMediaAnalysis = (videoPath: string) => {
         
         // After loading the new video, show subtitle selection if there are embedded subtitles
         if (mediaInfo.subtitleTracks.length > 0) {
-          console.log('[useMediaAnalysis] Showing subtitle selection after reencoding');
           setTimeout(() => setShowTrackSelectionModal(true), 1000);
         }
       }
       
     } catch (error) {
-      console.error('[useMediaAnalysis] Reencoding failed:', error);
       setShowReencodeProgress(false);
       setReencodeProgress('');
       // TODO: Show error toast
@@ -226,12 +206,10 @@ const useMediaAnalysis = (videoPath: string) => {
   }, [videoPath, mediaInfo.audioTracks]);
 
   const handleAudioReencodeSkip = useCallback(() => {
-    console.log('[useMediaAnalysis] User chose to play with default audio');
     setShowAudioReencodeModal(false);
     
     // Check if we should show subtitle selection for the default audio
     if (mediaInfo.subtitleTracks.length > 0) {
-      console.log('[useMediaAnalysis] Showing subtitle selection after skipping audio reencode');
       setTimeout(() => setShowTrackSelectionModal(true), 100);
     }
   }, [mediaInfo.subtitleTracks]);
