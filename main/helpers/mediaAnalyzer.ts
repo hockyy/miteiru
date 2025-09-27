@@ -197,6 +197,80 @@ export class MediaAnalyzer {
   }
 
   /**
+   * Create a version of the video with selected audio track in same folder
+   */
+  static async reencodeVideoWithAudioTrack(
+    inputPath: string,
+    audioStreamIndex: number,
+    onProgress?: (progress: string) => void
+  ): Promise<string> {
+    console.log(`[MediaAnalyzer] Reencoding video with audio track ${audioStreamIndex}`);
+    
+    const inputDir = path.dirname(inputPath);
+    const inputName = path.basename(inputPath, path.extname(inputPath));
+    const selectedTrackInfo = `_audio${audioStreamIndex}`;
+    const outputPath = path.join(inputDir, `${inputName}${selectedTrackInfo}.mp4`);
+
+    return new Promise((resolve, reject) => {
+      // Create web-compatible video with selected audio track
+      const args = [
+        '-i', inputPath,
+        '-map', '0:v:0', // First video stream
+        '-map', `0:${audioStreamIndex}`, // Selected audio stream
+        '-c:v', 'copy', // Copy video (fast)
+        '-c:a', 'aac', // Convert audio to AAC for web compatibility
+        '-b:a', '128k', // Audio bitrate
+        '-movflags', '+faststart', // Optimize for web streaming
+        '-progress', 'pipe:1', // Send progress to stdout
+        '-y', // Overwrite output file
+        outputPath
+      ];
+
+      console.log(`[MediaAnalyzer] FFmpeg reencode command: ffmpeg ${args.join(' ')}`);
+
+      const ffmpeg = spawn('ffmpeg', args);
+      let error = '';
+
+      ffmpeg.stdout.on('data', (data) => {
+        const output = data.toString();
+        // Parse FFmpeg progress output
+        if (output.includes('time=') && onProgress) {
+          const timeMatch = output.match(/time=(\d{2}:\d{2}:\d{2}\.\d{2})/);
+          if (timeMatch) {
+            onProgress(`Converting... ${timeMatch[1]}`);
+          }
+        }
+      });
+
+      ffmpeg.stderr.on('data', (data) => {
+        const stderr = data.toString();
+        console.log(`[MediaAnalyzer] FFmpeg reencode progress:`, stderr.trim());
+        if (stderr.includes('Error') || stderr.includes('Invalid') || stderr.includes('failed')) {
+          error += stderr;
+        }
+      });
+
+      ffmpeg.on('close', (code) => {
+        console.log(`[MediaAnalyzer] FFmpeg reencode finished with code: ${code}`);
+        
+        if (code !== 0) {
+          console.error(`[MediaAnalyzer] FFmpeg reencode error:`, error);
+          reject(new Error(`ffmpeg reencode failed: ${error}`));
+          return;
+        }
+
+        console.log(`[MediaAnalyzer] Video with selected audio created: ${outputPath}`);
+        resolve(outputPath);
+      });
+
+      ffmpeg.on('error', (err) => {
+        console.error(`[MediaAnalyzer] Failed to spawn ffmpeg for reencode:`, err);
+        reject(new Error(`Failed to spawn ffmpeg: ${err.message}`));
+      });
+    });
+  }
+
+  /**
    * Clean up temporary subtitle files
    */
   static async cleanupTempFile(filePath: string): Promise<void> {
