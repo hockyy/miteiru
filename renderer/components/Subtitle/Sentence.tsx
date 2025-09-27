@@ -414,7 +414,7 @@ export const TokenLikeSentence = ({
       return <ruby style={{
         rubyPosition: "under",
         WebkitTextFillColor: subtitleStyling.text.color,
-        marginRight: index === separation.length - 1 ? 0 : '0.25em', // spacing between tokens
+        marginRight: index === separation.length - 1 ? 0 : '0.3em', // spacing between tokens
       }} key={index}>
         <ruby style={{ rubyPosition: "over" }}>
           <StyledChineseSentence
