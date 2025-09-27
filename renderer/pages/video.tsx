@@ -192,21 +192,17 @@ function Video() {
 
   // Handle embedded subtitle loading
   const handleEmbeddedSubtitleLoad = useCallback((filePath: string, type: 'primary' | 'secondary') => {
-    console.log(`[Video Component] Loading ${type} subtitle from:`, filePath);
     // Use the specialized embedded subtitle loader
     loadEmbeddedSubtitle(filePath, type);
   }, [loadEmbeddedSubtitle]);
 
   // Handle audio track selection
   const handleAudioTrackSelect = useCallback((trackIndex: number) => {
-    console.log('[Video Component] Selecting audio track:', trackIndex);
     
     // Store the selection for when player is ready
     const applyAudioTrack = () => {
       if (player && player.audioTracks) {
         const audioTrackList = player.audioTracks();
-        console.log('[Video Component] Available Video.js audio tracks:', audioTrackList.length);
-        console.log('[Video Component] Video.js tracks:', audioTrackList);
         
         // Video.js audio tracks might be in different order than ffprobe
         // For now, try direct mapping but log everything for debugging
@@ -217,9 +213,7 @@ function Video() {
           }
           // Enable selected track
           audioTrackList[trackIndex].enabled = true;
-          console.log(`[Video Component] Enabled Video.js audio track ${trackIndex}`);
         } else {
-          console.warn('[Video Component] Audio track index out of range:', trackIndex, 'of', audioTrackList?.length);
           
           // Fallback: try to find by language if possible
           const selectedTrack = mediaInfo.audioTracks[trackIndex];
@@ -227,14 +221,12 @@ function Video() {
             for (let i = 0; i < audioTrackList.length; i++) {
               if (audioTrackList[i].language === selectedTrack.language) {
                 audioTrackList[i].enabled = true;
-                console.log(`[Video Component] Matched audio track by language: ${selectedTrack.language} -> index ${i}`);
                 break;
               }
             }
           }
         }
       } else {
-        console.warn('[Video Component] Player or audioTracks not available, retrying in 1s...');
         setTimeout(applyAudioTrack, 1000);
       }
     };
@@ -244,18 +236,15 @@ function Video() {
 
   // Handle loading reencoded video with selected audio
   const handleReencodedVideoLoad = useCallback((videoPath: string) => {
-    console.log('[Video Component] Loading reencoded video:', videoPath);
     // Load the reencoded video file
     onLoadFiles([{path: videoPath}]);
   }, [onLoadFiles]);
 
   // Enhanced track selection handler (now subtitle-only)
   const handleMediaTrackSelection = useCallback(async (selection) => {
-    console.log('[Video Component] Media track selection (subtitles only):', selection);
     try {
       await handleTrackSelection(selection, handleEmbeddedSubtitleLoad);
     } catch (error) {
-      console.error('[Video Component] Failed to process track selection:', error);
       setToastInfo({
         message: 'Failed to load selected subtitles',
         update: Math.random().toString()
@@ -263,16 +252,6 @@ function Video() {
     }
   }, [handleTrackSelection, handleEmbeddedSubtitleLoad, setToastInfo]);
 
-  // Debug: Log media info changes
-  useEffect(() => {
-    console.log('[Video Component] mediaInfo changed:', {
-      audioCount: mediaInfo.audioTracks.length,
-      subtitleCount: mediaInfo.subtitleTracks.length,
-      videoPath: videoSrc.path,
-      hasMultipleAudioTracks,
-      hasEmbeddedSubtitles
-    });
-  }, [mediaInfo, videoSrc.path, hasMultipleAudioTracks, hasEmbeddedSubtitles]);
   const {
     autoPause,
     setAutoPause,
@@ -439,10 +418,11 @@ function Video() {
         <AudioReencodeModal
             isOpen={showAudioReencodeModal}
             onClose={handleCloseAudioReencodeModal}
-            onConfirm={(trackIndex) => handleAudioReencodeConfirm(trackIndex, handleReencodedVideoLoad)}
+            onConfirm={(trackIndex, convertToX264) => handleAudioReencodeConfirm(trackIndex, handleReencodedVideoLoad, convertToX264)}
             onSkip={handleAudioReencodeSkip}
             fileName={videoSrc.path.split('/').pop() || videoSrc.path.split('\\').pop() || 'Unknown file'}
             audioTracks={mediaInfo.audioTracks}
+            videoTracks={mediaInfo.videoTracks || []}
             currentAppLanguage={currentAppLanguage}
         />
         <ReencodeProgressModal
