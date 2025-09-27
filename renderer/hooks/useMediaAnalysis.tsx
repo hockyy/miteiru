@@ -42,8 +42,13 @@ const useMediaAnalysis = (videoPath: string) => {
         const hasMultipleAudio = analysis.audioTracks.length > 1;
         const hasSingleAudio = analysis.audioTracks.length === 1;
         const hasSubtitles = analysis.subtitleTracks.length > 0;
+        const hasHEVC = analysis.videoTracks.some(track => 
+          track.codec.toLowerCase().includes('hevc') || 
+          track.codec.toLowerCase().includes('h265') ||
+          track.codec.toLowerCase().includes('h.265')
+        );
         
-        if (hasMultipleAudio) {
+        if (hasMultipleAudio || hasHEVC) {
           setTimeout(() => setShowAudioReencodeModal(true), 100);
         } else if (hasSingleAudio && hasSubtitles) {
           setTimeout(() => setShowTrackSelectionModal(true), 100);
@@ -160,27 +165,37 @@ const useMediaAnalysis = (videoPath: string) => {
   }, []);
 
   const handleAudioReencodeConfirm = useCallback(async (selectedAudioTrack: number, onVideoLoad?: (videoPath: string) => void, convertToX264?: boolean) => {
+    console.log(`[DEBUG Frontend] Starting reencode - Track: ${selectedAudioTrack}, convertToX264: ${convertToX264}`);
     setShowAudioReencodeModal(false);
     
     const selectedTrack = mediaInfo.audioTracks[selectedAudioTrack];
+    console.log(`[DEBUG Frontend] Selected track:`, selectedTrack);
+    console.log(`[DEBUG Frontend] Video path:`, videoPath);
+    console.log(`[DEBUG Frontend] Media duration:`, mediaInfo.duration);
+    
     setSelectedAudioForRencode(selectedTrack);
     setShowReencodeProgress(true);
-    setReencodeProgress('Starting reencoding...');
+    setReencodeProgress(convertToX264 ? 'Starting video conversion...' : 'Starting reencoding...');
     
     try {
       // Set up progress listener
       const progressHandler = (progress: string) => {
+        console.log(`[DEBUG Frontend] Progress update:`, progress);
         setReencodeProgress(progress);
       };
       
       const removeProgressListener = window.ipc.on('reencode-progress', progressHandler);
       
       // Start reencoding
+      console.log(`[DEBUG Frontend] Calling reencodeVideoWithAudioTrack...`);
       const reencodedVideoPath = await window.electronAPI.reencodeVideoWithAudioTrack(
         videoPath,
         selectedTrack.index,
-        convertToX264
+        convertToX264,
+        mediaInfo.duration
       );
+      
+      console.log(`[DEBUG Frontend] Reencode completed:`, reencodedVideoPath);
       
       // Clean up progress listener
       removeProgressListener();
@@ -199,11 +214,12 @@ const useMediaAnalysis = (videoPath: string) => {
       }
       
     } catch (error) {
+      console.error(`[DEBUG Frontend] Reencode error:`, error);
       setShowReencodeProgress(false);
       setReencodeProgress('');
       // TODO: Show error toast
     }
-  }, [videoPath, mediaInfo.audioTracks]);
+  }, [videoPath, mediaInfo.audioTracks, mediaInfo.duration]);
 
   const handleAudioReencodeSkip = useCallback(() => {
     setShowAudioReencodeModal(false);

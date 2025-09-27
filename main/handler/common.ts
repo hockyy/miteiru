@@ -243,8 +243,8 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
     }
   });
 
-  ipcMain.handle('reencode-video-with-audio-track', async (event, inputPath, audioStreamIndex) => {
-    console.log(`[IPC] reencode-video-with-audio-track called: ${inputPath}, audio stream ${audioStreamIndex}`);
+  ipcMain.handle('reencode-video-with-audio-track', async (event, inputPath, audioStreamIndex, convertToX264, totalDuration) => {
+    console.log(`[IPC] reencode-video-with-audio-track called:`, { inputPath, audioStreamIndex, convertToX264, totalDuration });
     try {
       const toolsStatus = await MediaAnalyzer.checkToolsAvailable();
       if (!toolsStatus.ffmpeg) {
@@ -254,8 +254,11 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
       const result = await MediaAnalyzer.reencodeVideoWithAudioTrack(
         inputPath, 
         audioStreamIndex,
+        convertToX264,
+        totalDuration,
         (progress) => {
           // Send progress updates back to renderer
+          console.log(`[IPC] Sending progress to renderer:`, progress);
           event.sender.send('reencode-progress', progress);
         }
       );

@@ -50,14 +50,11 @@ export class MediaAnalyzer {
    * Analyze media file to get track information
    */
   static async analyzeFile(filePath: string): Promise<MediaInfo> {
-    console.log('[MediaAnalyzer] Starting analysis of:', filePath);
     
     // Check if tools are available
     const toolsStatus = await this.checkToolsAvailable();
-    console.log('[MediaAnalyzer] Tools availability:', toolsStatus);
     
     if (!toolsStatus.ffprobe) {
-      console.error('[MediaAnalyzer] FFprobe not available');
       throw new Error(`FFprobe not found. Please install FFmpeg and make sure it's in your PATH.`);
     }
     
@@ -70,7 +67,6 @@ export class MediaAnalyzer {
         filePath
       ];
 
-      console.log('[MediaAnalyzer] FFprobe command:', this.ffprobePath, args.join(' '));
 
       const ffprobe = spawn(this.ffprobePath, args);
       let output = '';
@@ -85,37 +81,19 @@ export class MediaAnalyzer {
       });
 
       ffprobe.on('close', (code) => {
-        console.log('[MediaAnalyzer] FFprobe finished with code:', code);
         
         if (code !== 0) {
-          console.error('[MediaAnalyzer] FFprobe error output:', error);
           reject(new Error(`ffprobe failed: ${error}`));
           return;
         }
 
-        console.log('[MediaAnalyzer] FFprobe raw output length:', output.length);
-        console.log('[MediaAnalyzer] FFprobe raw output (first 500 chars):', output.substring(0, 500));
 
         try {
           const data = JSON.parse(output);
-          console.log('[MediaAnalyzer] Parsed JSON data:', {
-            streamsCount: data.streams?.length || 0,
-            formatDuration: data.format?.duration,
-            streams: data.streams?.map(s => ({
-              index: s.index,
-              codec_type: s.codec_type,
-              codec_name: s.codec_name,
-              language: s.tags?.language,
-              title: s.tags?.title
-            })) || []
-          });
           
           const mediaInfo = this.parseFFprobeOutput(data);
-          console.log('[MediaAnalyzer] Final result:', mediaInfo);
           resolve(mediaInfo);
         } catch (err) {
-          console.error('[MediaAnalyzer] JSON parse error:', err);
-          console.error('[MediaAnalyzer] Raw output that failed to parse:', output);
           reject(new Error(`Failed to parse ffprobe output: ${err.message}`));
         }
       });
@@ -134,7 +112,6 @@ export class MediaAnalyzer {
     streamIndex: number, 
     outputFormat: 'srt' | 'ass' | 'vtt' = 'srt'
   ): Promise<string> {
-    console.log(`[MediaAnalyzer] Extracting subtitle stream ${streamIndex} as ${outputFormat}`);
     
     const tempDir = os.tmpdir();
     const outputPath = path.join(
@@ -152,7 +129,6 @@ export class MediaAnalyzer {
         outputPath
       ];
 
-      console.log(`[MediaAnalyzer] FFmpeg extraction command: ffmpeg ${args.join(' ')}`);
 
       const ffmpeg = spawn('ffmpeg', args);
       let error = '';
@@ -162,20 +138,16 @@ export class MediaAnalyzer {
       });
 
       ffmpeg.on('close', (code) => {
-        console.log(`[MediaAnalyzer] FFmpeg extraction finished with code: ${code}`);
         
         if (code !== 0) {
-          console.error(`[MediaAnalyzer] FFmpeg extraction error:`, error);
           reject(new Error(`ffmpeg subtitle extraction failed: ${error}`));
           return;
         }
 
-        console.log(`[MediaAnalyzer] Subtitle extracted successfully to: ${outputPath}`);
         resolve(outputPath);
       });
 
       ffmpeg.on('error', (err) => {
-        console.error(`[MediaAnalyzer] Failed to spawn ffmpeg:`, err);
         reject(new Error(`Failed to spawn ffmpeg: ${err.message}`));
       });
     });
@@ -202,13 +174,21 @@ export class MediaAnalyzer {
   static async reencodeVideoWithAudioTrack(
     inputPath: string,
     audioStreamIndex: number,
+    convertToX264?: boolean,
+    totalDuration?: number,
     onProgress?: (progress: string) => void
   ): Promise<string> {
-    console.log(`[MediaAnalyzer] Reencoding video with audio track ${audioStreamIndex}`);
+    console.log(`[DEBUG] reencodeVideoWithAudioTrack called with:`, {
+      inputPath,
+      audioStreamIndex,
+      convertToX264,
+      totalDuration,
+      hasProgressCallback: !!onProgress
+    });
     
     const inputDir = path.dirname(inputPath);
     const inputName = path.basename(inputPath, path.extname(inputPath));
-    const selectedTrackInfo = `_audio${audioStreamIndex}`;
+    const selectedTrackInfo = `_audio${audioStreamIndex}${convertToX264 ? '_h264' : ''}`;
     // Use MKV to preserve all subtitle formats and codecs
     const outputPath = path.join(inputDir, `${inputName}${selectedTrackInfo}.mkv`);
 
@@ -219,57 +199,132 @@ export class MediaAnalyzer {
         '-map', '0:v:0', // First video stream
         '-map', `0:${audioStreamIndex}`, // Selected audio stream
         '-map', '0:s?', // All subtitle streams (? means optional)
-        '-c:v', 'copy', // Copy video (fast)
+        '-c:v', convertToX264 ? 'libx264' : 'copy', // Convert to H.264 or copy video
         '-c:a', 'aac', // Convert audio to AAC for web compatibility
         '-c:s', 'copy', // Copy all subtitle streams as-is
         '-b:a', '128k', // Audio bitrate
+        ...(convertToX264 ? ['-preset', 'medium', '-crf', '23'] : []), // H.264 encoding settings
         '-progress', 'pipe:1', // Send progress to stdout
         '-y', // Overwrite output file
         outputPath
       ];
 
-      console.log(`[MediaAnalyzer] FFmpeg reencode command: ffmpeg ${args.join(' ')}`);
-      console.log(`[MediaAnalyzer] Output will be saved as: ${outputPath}`);
+      console.log(`[DEBUG] FFmpeg command: ffmpeg ${args.join(' ')}`);
+      console.log(`[DEBUG] Input path: ${inputPath}`);
+      console.log(`[DEBUG] Output path: ${outputPath}`);
+      console.log(`[DEBUG] Convert to X264: ${convertToX264}`);
+      console.log(`[DEBUG] Total duration: ${totalDuration}s`);
 
       const ffmpeg = spawn('ffmpeg', args);
       let error = '';
 
       ffmpeg.stdout.on('data', (data) => {
         const output = data.toString();
+        console.log(`[DEBUG] FFmpeg stdout:`, output.trim());
+        
         // Parse FFmpeg progress output
-        if (output.includes('time=') && onProgress) {
-          const timeMatch = output.match(/time=(\d{2}:\d{2}:\d{2}\.\d{2})/);
+        if ((output.includes('time=') || output.includes('out_time=')) && onProgress) {
+          console.log(`[DEBUG] onProgress callback exists:`, typeof onProgress);
+          // Handle both formats: time=HH:MM:SS.SS and out_time=HH:MM:SS.SSSSSS
+          const timeMatch = output.match(/(?:out_time|time)=(\d{2}:\d{2}:\d{2}\.\d+)/);
           if (timeMatch) {
-            onProgress(`Converting... ${timeMatch[1]}`);
+            console.log(`[DEBUG] Time match found:`, timeMatch[1]);
+            const action = convertToX264 ? 'Converting to H.264...' : 'Processing...';
+            
+            if (totalDuration && totalDuration > 0) {
+              try {
+                // Convert time string to seconds
+                const timeParts = timeMatch[1].split(':');
+                const currentSeconds = 
+                  parseInt(timeParts[0]) * 3600 + // hours to seconds
+                  parseInt(timeParts[1]) * 60 +   // minutes to seconds
+                  parseFloat(timeParts[2]);       // seconds
+                
+                const percentage = Math.min(100, Math.max(0, Math.round((currentSeconds / totalDuration) * 100)));
+                console.log(`[DEBUG] Progress: ${currentSeconds}s / ${totalDuration}s = ${percentage}%`);
+                const progressMessage = `${action} ${percentage}% (time: ${timeMatch[1]})`;
+                console.log(`[DEBUG] Calling onProgress with:`, progressMessage);
+                onProgress(progressMessage);
+              } catch (err) {
+                console.log(`[DEBUG] Time parsing error:`, err);
+                // Fallback to time display if parsing fails
+                onProgress(`${action} ${timeMatch[1]}`);
+              }
+            } else {
+              console.log(`[DEBUG] No duration available, showing time: ${timeMatch[1]}`);
+              onProgress(`${action} ${timeMatch[1]}`);
+            }
           }
         }
       });
 
       ffmpeg.stderr.on('data', (data) => {
         const stderr = data.toString();
-        console.log(`[MediaAnalyzer] FFmpeg reencode progress:`, stderr.trim());
+        console.log(`[DEBUG] FFmpeg stderr:`, stderr.trim());
+        
+        // Also check stderr for progress (sometimes more reliable)
+        if (stderr.includes('time=') && onProgress) {
+          const timeMatch = stderr.match(/time=(\d{2}:\d{2}:\d{2}\.\d+)/);
+          if (timeMatch) {
+            console.log(`[DEBUG] Time match found in stderr:`, timeMatch[1]);
+            const action = convertToX264 ? 'Converting to H.264...' : 'Processing...';
+            
+            if (totalDuration && totalDuration > 0) {
+              try {
+                // Convert time string to seconds
+                const timeParts = timeMatch[1].split(':');
+                const currentSeconds = 
+                  parseInt(timeParts[0]) * 3600 + // hours to seconds
+                  parseInt(timeParts[1]) * 60 +   // minutes to seconds
+                  parseFloat(timeParts[2]);       // seconds
+                
+                const percentage = Math.min(100, Math.max(0, Math.round((currentSeconds / totalDuration) * 100)));
+                console.log(`[DEBUG] Progress from stderr: ${currentSeconds}s / ${totalDuration}s = ${percentage}%`);
+                const progressMessage = `${action} ${percentage}%`;
+                console.log(`[DEBUG] Calling onProgress with (stderr):`, progressMessage);
+                onProgress(progressMessage);
+              } catch (err) {
+                console.log(`[DEBUG] Time parsing error from stderr:`, err);
+                onProgress(`${action} ${timeMatch[1]}`);
+              }
+            } else {
+              onProgress(`${action} ${timeMatch[1]}`);
+            }
+          }
+        }
+        
         if (stderr.includes('Error') || stderr.includes('Invalid') || stderr.includes('failed')) {
+          console.log(`[DEBUG] Error detected in stderr:`, stderr.trim());
           error += stderr;
         }
       });
 
       ffmpeg.on('close', (code) => {
-        console.log(`[MediaAnalyzer] FFmpeg reencode finished with code: ${code}`);
+        console.log(`[DEBUG] FFmpeg process closed with code: ${code}`);
         
         if (code !== 0) {
-          console.error(`[MediaAnalyzer] FFmpeg reencode error:`, error);
+          console.log(`[DEBUG] FFmpeg failed with error:`, error);
           reject(new Error(`ffmpeg reencode failed: ${error}`));
           return;
         }
 
-        console.log(`[MediaAnalyzer] Video with selected audio created: ${outputPath}`);
+        // Send final completion message
+        if (onProgress) {
+          const action = convertToX264 ? 'Video conversion completed!' : 'Processing completed!';
+          onProgress(action);
+        }
+        
+        console.log(`[DEBUG] FFmpeg completed successfully. Output: ${outputPath}`);
         resolve(outputPath);
       });
 
       ffmpeg.on('error', (err) => {
-        console.error(`[MediaAnalyzer] Failed to spawn ffmpeg for reencode:`, err);
+        console.log(`[DEBUG] FFmpeg spawn error:`, err);
         reject(new Error(`Failed to spawn ffmpeg: ${err.message}`));
       });
+
+      // Add process start debug
+      console.log(`[DEBUG] FFmpeg process started with PID: ${ffmpeg.pid}`);
     });
   }
 
@@ -288,21 +343,12 @@ export class MediaAnalyzer {
     const streams = data.streams || [];
     const format = data.format || {};
 
-    console.log('[MediaAnalyzer] Parsing streams:', streams.length, 'total streams');
 
     const audioTracks: MediaTrack[] = [];
     const subtitleTracks: MediaTrack[] = [];
     const videoTracks: MediaTrack[] = [];
 
     streams.forEach((stream: any, index: number) => {
-      console.log(`[MediaAnalyzer] Processing stream ${index}:`, {
-        index: stream.index,
-        codec_type: stream.codec_type,
-        codec_name: stream.codec_name,
-        language: stream.tags?.language,
-        title: stream.tags?.title,
-        disposition: stream.disposition
-      });
 
       const track: MediaTrack = {
         index: stream.index,
@@ -315,28 +361,24 @@ export class MediaAnalyzer {
 
       switch (stream.codec_type) {
         case 'audio':
-          console.log('[MediaAnalyzer] Adding audio track:', track);
           audioTracks.push({
             ...track,
             type: 'audio'
           });
           break;
         case 'subtitle':
-          console.log('[MediaAnalyzer] Adding subtitle track:', track);
           subtitleTracks.push({
             ...track,
             type: 'subtitle'
           });
           break;
         case 'video':
-          console.log('[MediaAnalyzer] Adding video track:', track);
           videoTracks.push({
             ...track,
             type: 'video'
           });
           break;
         default:
-          console.log('[MediaAnalyzer] Ignoring stream type:', stream.codec_type);
       }
     });
 
@@ -347,12 +389,6 @@ export class MediaAnalyzer {
       videoTracks
     };
 
-    console.log('[MediaAnalyzer] Parse result summary:', {
-      duration: result.duration,
-      audioCount: result.audioTracks.length,
-      subtitleCount: result.subtitleTracks.length,
-      videoCount: result.videoTracks.length
-    });
 
     return result;
   }

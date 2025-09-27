@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Volume2, Zap, Clock, HardDrive, Film } from 'lucide-react';
 import { AwesomeButton } from 'react-awesome-button';
 import { MediaTrack } from '../../types/media';
@@ -32,7 +32,20 @@ const AudioReencodeModal: React.FC<AudioReencodeModalProps> = ({
 
   const [convertToX264, setConvertToX264] = useState<boolean>(false);
 
-  if (!isOpen) return null;
+  // Helper functions (defined before useEffect to avoid initialization errors)
+  const isHEVC = () => {
+    if (!videoTracks || videoTracks.length === 0) return false;
+    return videoTracks.some(track => 
+      track.codec.toLowerCase().includes('hevc') || 
+      track.codec.toLowerCase().includes('h265') ||
+      track.codec.toLowerCase().includes('h.265')
+    );
+  };
+
+  const getPrimaryVideoTrack = () => {
+    if (!videoTracks || videoTracks.length === 0) return null;
+    return videoTracks.find(track => track.default) || videoTracks[0];
+  };
 
   const getTrackLabel = (track: MediaTrack) => {
     const parts = [];
@@ -54,19 +67,14 @@ const AudioReencodeModal: React.FC<AudioReencodeModalProps> = ({
     }
   };
 
-  const isHEVC = () => {
-    if (!videoTracks || videoTracks.length === 0) return false;
-    return videoTracks.some(track => 
-      track.codec.toLowerCase().includes('hevc') || 
-      track.codec.toLowerCase().includes('h265') ||
-      track.codec.toLowerCase().includes('h.265')
-    );
-  };
+  // Auto-suggest x264 conversion when HEVC is detected
+  useEffect(() => {
+    if (isHEVC()) {
+      setConvertToX264(true);
+    }
+  }, [videoTracks]);
 
-  const getPrimaryVideoTrack = () => {
-    if (!videoTracks || videoTracks.length === 0) return null;
-    return videoTracks.find(track => track.default) || videoTracks[0];
-  };
+  if (!isOpen) return null;
 
   const handleRencode = () => {
     onConfirm(selectedAudioTrack, convertToX264);
@@ -105,7 +113,7 @@ const AudioReencodeModal: React.FC<AudioReencodeModalProps> = ({
               {fileName}
             </div>
             <div className="text-gray-400 text-xs space-y-1">
-              <div>Found {audioTracks.length} audio tracks</div>
+              <div>Found {audioTracks.length} audio track{audioTracks.length !== 1 ? 's' : ''}</div>
               {isHEVC() && (
                 <div className="flex items-center justify-center gap-1">
                   <Film className="w-3 h-3 text-orange-400" />
@@ -118,9 +126,13 @@ const AudioReencodeModal: React.FC<AudioReencodeModalProps> = ({
           {/* Explanation */}
           <div className="bg-gray-800 rounded-lg p-4 mb-4 border border-gray-700">
             <div className="text-gray-300 text-sm mb-3">
-              {isHEVC() 
+              {audioTracks.length > 1 && isHEVC() 
                 ? 'This video has multiple audio tracks and uses HEVC codec. You can:'
-                : 'This video has multiple audio tracks. You can:'
+                : audioTracks.length > 1 
+                  ? 'This video has multiple audio tracks. You can:'
+                  : isHEVC() 
+                    ? 'This video uses HEVC codec. You can:'
+                    : 'You can:'
               }
             </div>
             
@@ -129,12 +141,23 @@ const AudioReencodeModal: React.FC<AudioReencodeModalProps> = ({
                 <Zap className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
                 <div>
                   <div className="text-white text-sm font-medium">
-                    {isHEVC() ? 'Reencode Audio & Video' : 'Reencode with Selected Audio'}
+                    {audioTracks.length > 1 && isHEVC() 
+                      ? 'Reencode Audio & Video' 
+                      : audioTracks.length > 1 
+                        ? 'Reencode with Selected Audio'
+                        : isHEVC() 
+                          ? 'Reencode Video Codec'
+                          : 'Reencode with Selected Audio'
+                    }
                   </div>
                   <div className="text-gray-400 text-xs">
-                    {isHEVC() 
-                      ? 'Create a new file with selected audio and convert HEVC to H.264 for better compatibility.'
-                      : 'Create a new file with your preferred audio track. Takes time but gives you full control.'
+                    {audioTracks.length > 1 && isHEVC() 
+                      ? 'Create a new file with selected audio and optionally convert HEVC to H.264 for better compatibility.'
+                      : audioTracks.length > 1 
+                        ? 'Create a new file with your preferred audio track. Takes time but gives you full control.'
+                        : isHEVC() 
+                          ? 'Convert HEVC to H.264 for better device compatibility while keeping the same audio.'
+                          : 'Create a new file with reencoded media.'
                     }
                   </div>
                 </div>
@@ -191,7 +214,12 @@ const AudioReencodeModal: React.FC<AudioReencodeModalProps> = ({
           <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 mb-4">
             <div className="flex items-center gap-2 mb-3">
               <Volume2 className="w-4 h-4 text-blue-400" />
-              <h3 className="text-white font-medium text-sm">Select Audio Track for Reencoding</h3>
+              <h3 className="text-white font-medium text-sm">
+                {audioTracks.length > 1 
+                  ? 'Select Audio Track for Reencoding' 
+                  : 'Audio Track'
+                }
+              </h3>
             </div>
             
             <div className="space-y-2 max-h-32 overflow-y-auto">
@@ -244,8 +272,10 @@ const AudioReencodeModal: React.FC<AudioReencodeModalProps> = ({
             <div className="flex items-center gap-2">
               {isHEVC() && convertToX264 ? <Film className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
               {isHEVC() && convertToX264 
-                ? 'Reencode Audio & Convert to H.264'
-                : 'Reencode with Selected Audio'
+                ? (audioTracks.length > 1 ? 'Reencode Audio & Convert to H.264' : 'Convert to H.264')
+                : audioTracks.length > 1 
+                  ? 'Reencode with Selected Audio'
+                  : 'Reencode Media'
               }
             </div>
           </AwesomeButton>

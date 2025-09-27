@@ -46,8 +46,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   analyzeMediaFile: (filePath: string) => ipcRenderer.invoke('analyze-media-file', filePath),
   extractEmbeddedSubtitle: (inputPath: string, trackIndex: number, outputFormat: string) => 
     ipcRenderer.invoke('extract-embedded-subtitle', inputPath, trackIndex, outputFormat),
-  reencodeVideoWithAudioTrack: (inputPath: string, audioStreamIndex: number) =>
-    ipcRenderer.invoke('reencode-video-with-audio-track', inputPath, audioStreamIndex),
+  reencodeVideoWithAudioTrack: (inputPath: string, audioStreamIndex: number, convertToX264?: boolean, totalDuration?: number) =>
+    ipcRenderer.invoke('reencode-video-with-audio-track', inputPath, audioStreamIndex, convertToX264, totalDuration),
   cleanupTempSubtitle: (filePath: string) => ipcRenderer.invoke('cleanup-temp-subtitle', filePath),
 
   // Add these new methods for LRCLIB support
