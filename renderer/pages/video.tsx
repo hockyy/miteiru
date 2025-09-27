@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useCallback } from "react";
 import VideoJS from "../components/VideoPlayer/VideoJS";
 import MiteiruDropzone from "../components/VideoPlayer/MiteiruDropzone";
 import MeaningBox from "../components/Meaning/MeaningBox";
@@ -34,9 +34,11 @@ import {useSubtitleMode} from "../hooks/useSubtitleMode";
 import {SubtitleDisplay} from "../components/Subtitle/SubtitleDisplay";
 import LyricsSearchModal from "../components/Lyrics/LyricsSearchModal";
 import SubtitleSelectionModal from "../components/Utils/SubtitleSelectionModal";
+import MediaTrackSelectionModal from "../components/Utils/MediaTrackSelectionModal";
 import CommandPalette from "../components/Utils/CommandPallete";
 import useWordOfTheDay from "../hooks/useWordOfTheDay";
 import WordOfTheDay from "../components/WordOfTheDay/WordOfTheDay";
+import useMediaAnalysis from "../hooks/useMediaAnalysis";
 
 function Video() {
   const {
@@ -142,7 +144,8 @@ function Video() {
     currentAppLanguage,
     handleSelectPrimary,
     handleSelectSecondary,
-    handleCloseModal
+    handleCloseModal,
+    loadEmbeddedSubtitle
   } = useLoadFiles(setToastInfo,
       primarySub, setPrimarySub,
       secondarySub, setSecondarySub,
@@ -165,6 +168,92 @@ function Video() {
     isPlaying,
     setIsPlaying
   } = useVideoPlayingToggle(player, metadata);
+
+  const {
+    mediaInfo,
+    isAnalyzing,
+    handleEmbeddedSubtitleSelect,
+    hasEmbeddedSubtitles,
+    hasMultipleAudioTracks,
+    showTrackSelectionModal,
+    handleTrackSelection,
+    handleCloseTrackSelectionModal,
+    selectedTracks
+  } = useMediaAnalysis(videoSrc.path);
+
+  // Handle embedded subtitle loading
+  const handleEmbeddedSubtitleLoad = useCallback((filePath: string, type: 'primary' | 'secondary') => {
+    console.log(`[Video Component] Loading ${type} subtitle from:`, filePath);
+    // Use the specialized embedded subtitle loader
+    loadEmbeddedSubtitle(filePath, type);
+  }, [loadEmbeddedSubtitle]);
+
+  // Handle audio track selection
+  const handleAudioTrackSelect = useCallback((trackIndex: number) => {
+    console.log('[Video Component] Selecting audio track:', trackIndex);
+    
+    // Store the selection for when player is ready
+    const applyAudioTrack = () => {
+      if (player && player.audioTracks) {
+        const audioTrackList = player.audioTracks();
+        console.log('[Video Component] Available Video.js audio tracks:', audioTrackList.length);
+        console.log('[Video Component] Video.js tracks:', audioTrackList);
+        
+        // Video.js audio tracks might be in different order than ffprobe
+        // For now, try direct mapping but log everything for debugging
+        if (audioTrackList && audioTrackList.length > trackIndex) {
+          // Disable all audio tracks
+          for (let i = 0; i < audioTrackList.length; i++) {
+            audioTrackList[i].enabled = false;
+          }
+          // Enable selected track
+          audioTrackList[trackIndex].enabled = true;
+          console.log(`[Video Component] Enabled Video.js audio track ${trackIndex}`);
+        } else {
+          console.warn('[Video Component] Audio track index out of range:', trackIndex, 'of', audioTrackList?.length);
+          
+          // Fallback: try to find by language if possible
+          const selectedTrack = mediaInfo.audioTracks[trackIndex];
+          if (selectedTrack?.language) {
+            for (let i = 0; i < audioTrackList.length; i++) {
+              if (audioTrackList[i].language === selectedTrack.language) {
+                audioTrackList[i].enabled = true;
+                console.log(`[Video Component] Matched audio track by language: ${selectedTrack.language} -> index ${i}`);
+                break;
+              }
+            }
+          }
+        }
+      } else {
+        console.warn('[Video Component] Player or audioTracks not available, retrying in 1s...');
+        setTimeout(applyAudioTrack, 1000);
+      }
+    };
+
+    applyAudioTrack();
+  }, [player, mediaInfo.audioTracks]);
+
+  // Enhanced track selection handler
+  const handleMediaTrackSelection = useCallback(async (selection) => {
+    console.log('[Video Component] Media track selection:', selection);
+    try {
+      await handleTrackSelection(selection, handleEmbeddedSubtitleLoad, handleAudioTrackSelect);
+    } catch (error) {
+      console.error('[Video Component] Failed to process track selection:', error);
+      // TODO: Show error toast
+    }
+  }, [handleTrackSelection, handleEmbeddedSubtitleLoad, handleAudioTrackSelect]);
+
+  // Debug: Log media info changes
+  useEffect(() => {
+    console.log('[Video Component] mediaInfo changed:', {
+      audioCount: mediaInfo.audioTracks.length,
+      subtitleCount: mediaInfo.subtitleTracks.length,
+      videoPath: videoSrc.path,
+      hasMultipleAudioTracks,
+      hasEmbeddedSubtitles
+    });
+  }, [mediaInfo, videoSrc.path, hasMultipleAudioTracks, hasEmbeddedSubtitles]);
   const {
     autoPause,
     setAutoPause,
@@ -318,6 +407,15 @@ function Video() {
             onSelectPrimary={handleSelectPrimary}
             onSelectSecondary={handleSelectSecondary}
             fileName={pendingSubtitlePath.split('/').pop() || pendingSubtitlePath.split('\\').pop() || 'Unknown file'}
+            currentAppLanguage={currentAppLanguage}
+        />
+        <MediaTrackSelectionModal
+            isOpen={showTrackSelectionModal}
+            onClose={handleCloseTrackSelectionModal}
+            onConfirm={handleMediaTrackSelection}
+            fileName={videoSrc.path.split('/').pop() || videoSrc.path.split('\\').pop() || 'Unknown file'}
+            audioTracks={mediaInfo.audioTracks}
+            subtitleTracks={mediaInfo.subtitleTracks}
             currentAppLanguage={currentAppLanguage}
         />
         <CommandPalette

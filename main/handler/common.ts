@@ -1,5 +1,6 @@
 import {dialog, ipcMain, shell} from "electron";
 import {getSubtitles} from "../helpers/getSubtitles";
+import {MediaAnalyzer} from "../helpers/mediaAnalyzer";
 import fs from "node:fs";
 import * as fsPromises from 'node:fs/promises';
 import {access} from 'node:fs/promises';
@@ -197,6 +198,56 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
       }
     } catch (error) {
       throw error;
+    }
+  });
+
+  // Media analysis and embedded content extraction
+  ipcMain.handle('analyze-media-file', async (event, filePath) => {
+    console.log('[IPC] analyze-media-file called with:', filePath);
+    try {
+      const result = await MediaAnalyzer.analyzeFile(filePath);
+      console.log('[IPC] analyze-media-file result:', result);
+      return result;
+    } catch (error) {
+      console.error('[IPC] Media analysis failed:', error);
+      
+      // Return error info with fallback result
+      const fallbackResult = {
+        duration: 0,
+        audioTracks: [],
+        subtitleTracks: [],
+        videoTracks: [],
+        error: error.message,
+        toolsAvailable: false
+      };
+      console.log('[IPC] Returning fallback result:', fallbackResult);
+      return fallbackResult;
+    }
+  });
+
+  ipcMain.handle('extract-embedded-subtitle', async (event, inputPath, streamIndex, outputFormat = 'srt') => {
+    console.log(`[IPC] extract-embedded-subtitle called: ${inputPath}, stream ${streamIndex}, format ${outputFormat}`);
+    try {
+      // Check if FFmpeg is available before attempting extraction
+      const toolsStatus = await MediaAnalyzer.checkToolsAvailable();
+      if (!toolsStatus.ffmpeg) {
+        throw new Error('FFmpeg not found. Please install FFmpeg and make sure it\'s in your PATH.');
+      }
+      
+      const result = await MediaAnalyzer.extractSubtitle(inputPath, streamIndex, outputFormat);
+      console.log(`[IPC] Subtitle extracted successfully:`, result);
+      return result;
+    } catch (error) {
+      console.error('[IPC] Subtitle extraction failed:', error);
+      throw error;
+    }
+  });
+
+  ipcMain.handle('cleanup-temp-subtitle', async (event, filePath) => {
+    try {
+      await MediaAnalyzer.cleanupTempFile(filePath);
+    } catch (error) {
+      console.error('Failed to cleanup temp file:', error);
     }
   });
 

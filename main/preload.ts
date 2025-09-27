@@ -42,6 +42,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   findPositionDeltaInFolder: (path: string, delta: number = 1) =>
       ipcRenderer.invoke('find-position-delta-in-folder', path, delta),
 
+  // Media analysis and embedded content
+  analyzeMediaFile: (filePath: string) => ipcRenderer.invoke('analyze-media-file', filePath),
+  extractEmbeddedSubtitle: (inputPath: string, trackIndex: number, outputFormat: string) => 
+    ipcRenderer.invoke('extract-embedded-subtitle', inputPath, trackIndex, outputFormat),
+  cleanupTempSubtitle: (filePath: string) => ipcRenderer.invoke('cleanup-temp-subtitle', filePath),
+
   // Add these new methods for LRCLIB support
   getUserDataPath: () => ipcRenderer.invoke('get-user-data-path'),
   joinPath: (...pathSegments: string[]) => ipcRenderer.invoke('join-path', ...pathSegments),

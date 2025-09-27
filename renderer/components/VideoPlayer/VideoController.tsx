@@ -85,12 +85,13 @@ export const VideoController = ({
             {StepRight}
           </button>
         </div>
-        <div className={"flex w-1/3 justify-end hidden lg:flex"}>
+        <div className={"flex w-1/3 justify-end hidden lg:flex gap-2"}>
           <button onClick={backToHead}
                   className={"flex flex-row items-center gap-1 animation h-5"}>
             {RepeatSubtitle}
           </button>
           <Speed player={player}/>
+          <Pitch setPitchValue={setPitchValue}/>
           <SettingsController setShowSidebar={setShowSidebar}/>
         </div>
       </div>
