@@ -150,14 +150,27 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
             loadSubtitleAsSecondary(tmpSub, currentPath);
           }
         } else {
-          // For local files, show selection modal
-          setPendingSubtitle(tmpSub);
-          setPendingSubtitlePath(currentPath);
-          setShowSubtitleModal(true);
-          setToastInfo({
-            message: 'Choose subtitle type...',
-            update: uuidv4()
-          });
+          // Check if this is an embedded subtitle file (temporary file)
+          const isEmbeddedSubtitle = currentPath.includes('miteiru_subtitle_');
+          
+          if (isEmbeddedSubtitle) {
+            // For embedded subtitles, load directly based on filename pattern
+            // The type was already determined in the media track selection modal
+            console.log('[useLoadFiles] Loading embedded subtitle directly:', currentPath);
+            
+            // TODO: We need to know the intended type (primary/secondary) from the caller
+            // For now, assume primary - this will be fixed in the next iteration
+            loadSubtitleAsPrimary(tmpSub, currentPath);
+          } else {
+            // For external files, show selection modal
+            setPendingSubtitle(tmpSub);
+            setPendingSubtitlePath(currentPath);
+            setShowSubtitleModal(true);
+            setToastInfo({
+              message: 'Choose subtitle type...',
+              update: uuidv4()
+            });
+          }
         }
       };
 
@@ -285,6 +298,37 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     }
   }, []);
 
+  // Enhanced load for embedded subtitles with type specification
+  const loadEmbeddedSubtitle = useCallback((filePath: string, type: 'primary' | 'secondary') => {
+    console.log(`[useLoadFiles] loadEmbeddedSubtitle called: ${type} from ${filePath}`);
+    
+    // Create a pseudo subtitle object for direct loading
+    const draggedSubtitle = {
+      type: 'text/plain',
+      src: filePath
+    };
+
+    const directLoader = (tmpSub) => {
+      console.log(`[useLoadFiles] Direct loading ${type} subtitle:`, tmpSub);
+      
+      if (type === 'primary') {
+        loadSubtitleAsPrimary(tmpSub, filePath);
+      } else {
+        loadSubtitleAsSecondary(tmpSub, filePath);
+      }
+    };
+
+    SubtitleContainer.create(draggedSubtitle.src, lang, primaryStyling.forceSimplified)
+      .then(directLoader)
+      .catch(error => {
+        console.error(`[useLoadFiles] Failed to load ${type} embedded subtitle:`, error);
+        setToastInfo({
+          message: `Failed to load ${type} subtitle`,
+          update: uuidv4()
+        });
+      });
+  }, [lang, primaryStyling.forceSimplified, loadSubtitleAsPrimary, loadSubtitleAsSecondary, setToastInfo]);
+
   return {
     onLoadFiles,
     videoSrc,
@@ -298,7 +342,9 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     currentAppLanguage: getLanguageDisplayName(lang),
     handleSelectPrimary,
     handleSelectSecondary,
-    handleCloseModal
+    handleCloseModal,
+    // Embedded subtitle loading
+    loadEmbeddedSubtitle
   }
 };
 
