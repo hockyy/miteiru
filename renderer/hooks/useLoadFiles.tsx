@@ -25,6 +25,11 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
 
   const [lastPrimarySubPath, setLastPrimarySubPath] = useState([{path: ''}]);
   const [lastSecondarySubPath, setLastSecondarySubPath] = useState([{path: ''}]);
+  
+  // Subtitle selection modal state
+  const [showSubtitleModal, setShowSubtitleModal] = useState(false);
+  const [pendingSubtitle, setPendingSubtitle] = useState(null);
+  const [pendingSubtitlePath, setPendingSubtitlePath] = useState('');
   const resetSub = useCallback((subSetter) => {
     subSetter(new SubtitleContainer(''));
   }, []);
@@ -76,59 +81,76 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
         console.log(tmpSub);
         if (mustMatch !== null && tmpSub.language !== mustMatch) return;
         clearInterval(toastSetter);
-        if (tmpSub.language === videoConstants.japaneseLang
-            || tmpSub.language === videoConstants.cantoneseLang
-            || tmpSub.language === videoConstants.chineseLang
-            || tmpSub.language === videoConstants.vietnameseLang) {
-          setPrimarySub(tmpSub);
-          setLastPrimarySubPath([{path: currentPath}]);  // Save the last primary subtitle path
-          setGlobalSubtitleId(tmpSub.id);
-        } else {
-          setLastSecondarySubPath([{path: currentPath}]);  // Save the last secondary subtitle path
-          setSecondarySub(tmpSub);
-        }
+        
+        // Store subtitle and path for modal selection
+        setPendingSubtitle(tmpSub);
+        setPendingSubtitlePath(currentPath);
+        setShowSubtitleModal(true);
+        
         setToastInfo({
-          message: 'Subtitle loaded',
+          message: 'Choose subtitle type...',
           update: uuidv4()
         });
-        console.log(tmpSub.language);
-        if (tmpSub.language === videoConstants.japaneseLang
-            || tmpSub.language === videoConstants.cantoneseLang
-            || tmpSub.language === videoConstants.chineseLang
-            || tmpSub.language === videoConstants.vietnameseLang) {
-          const toastSetter = setInterval(() => {
-            setToastInfo({
-              message: `${tmpSub.language}: ${tmpSub.progress}`,
-              update: uuidv4()
-            });
-          }, TOAST_TIMEOUT / 10);
-          if (tmpSub.language === videoConstants.japaneseLang) {
-            tmpSub.adjustJapanese(tokenizeMiteiru).then(() => {
-              clearInterval(toastSetter);
-              setFrequencyPrimary(tmpSub.frequency)
-            })
-          }
-          if (tmpSub.language === videoConstants.cantoneseLang || tmpSub.language === videoConstants.chineseLang) {
-            tmpSub.adjustChinese(tokenizeMiteiru).then(() => {
-              clearInterval(toastSetter);
-              setFrequencyPrimary(tmpSub.frequency)
-            })
-          }
-          if (tmpSub.language === videoConstants.vietnameseLang) {
-            console.log(tmpSub);
-            tmpSub.adjustVietnamese(tokenizeMiteiru).then(() => {
-              clearInterval(toastSetter);
-              setFrequencyPrimary(tmpSub.frequency)
-            })
-          }
-        }
       };
       if (isYoutube(currentPath)) {
+        // For YouTube, still use the old automatic behavior since we can distinguish by language
+        const originalSubLoader = (tmpSub, mustMatch = null) => {
+          console.log(tmpSub);
+          if (mustMatch !== null && tmpSub.language !== mustMatch) return;
+          clearInterval(toastSetter);
+          if (tmpSub.language === videoConstants.japaneseLang
+              || tmpSub.language === videoConstants.cantoneseLang
+              || tmpSub.language === videoConstants.chineseLang
+              || tmpSub.language === videoConstants.vietnameseLang) {
+            setPrimarySub(tmpSub);
+            setLastPrimarySubPath([{path: currentPath}]);
+            setGlobalSubtitleId(tmpSub.id);
+          } else {
+            setLastSecondarySubPath([{path: currentPath}]);
+            setSecondarySub(tmpSub);
+          }
+          setToastInfo({
+            message: 'Subtitle loaded',
+            update: uuidv4()
+          });
+          console.log(tmpSub.language);
+          if (tmpSub.language === videoConstants.japaneseLang
+              || tmpSub.language === videoConstants.cantoneseLang
+              || tmpSub.language === videoConstants.chineseLang
+              || tmpSub.language === videoConstants.vietnameseLang) {
+            const toastSetter = setInterval(() => {
+              setToastInfo({
+                message: `${tmpSub.language}: ${tmpSub.progress}`,
+                update: uuidv4()
+              });
+            }, TOAST_TIMEOUT / 10);
+            if (tmpSub.language === videoConstants.japaneseLang) {
+              tmpSub.adjustJapanese(tokenizeMiteiru).then(() => {
+                clearInterval(toastSetter);
+                setFrequencyPrimary(tmpSub.frequency)
+              })
+            }
+            if (tmpSub.language === videoConstants.cantoneseLang || tmpSub.language === videoConstants.chineseLang) {
+              tmpSub.adjustChinese(tokenizeMiteiru).then(() => {
+                clearInterval(toastSetter);
+                setFrequencyPrimary(tmpSub.frequency)
+              })
+            }
+            if (tmpSub.language === videoConstants.vietnameseLang) {
+              console.log(tmpSub);
+              tmpSub.adjustVietnamese(tokenizeMiteiru).then(() => {
+                clearInterval(toastSetter);
+                setFrequencyPrimary(tmpSub.frequency)
+              })
+            }
+          }
+        };
+        
         window.ipc.invoke("getYoutubeSubtitle", extractVideoId(currentPath), videoConstants.englishLang).then(entries => {
           entries = convertSubtitlesToEntries(entries)
           const tmpSub = SubtitleContainer.createFromArrayEntries(
               null, entries, lang, primaryStyling.forceSimplified)
-          subLoader(tmpSub, videoConstants.englishLang);
+          originalSubLoader(tmpSub, videoConstants.englishLang);
         })
         const langList = videoConstants.varLang[lang] ?? [];
         for (const findLang of langList) {
@@ -136,7 +158,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
             entries = convertSubtitlesToEntries(entries)
             const tmpSub = SubtitleContainer.createFromArrayEntries(
                 null, entries, lang, primaryStyling.forceSimplified);
-            subLoader(tmpSub, lang);
+            originalSubLoader(tmpSub, lang);
           })
         }
       } else {
@@ -203,13 +225,121 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       onLoadFiles(lastSecondarySubPath);
     }
   }, [lastSecondarySubPath, onLoadFiles]);
+
+  // Handler for selecting primary subtitle
+  const handleSelectPrimary = useCallback(() => {
+    if (!pendingSubtitle) return;
+    
+    const tmpSub = pendingSubtitle;
+    const currentPath = pendingSubtitlePath;
+    
+    // Load as primary subtitle
+    setPrimarySub(tmpSub);
+    setLastPrimarySubPath([{path: currentPath}]);
+    setGlobalSubtitleId(tmpSub.id);
+    
+    setToastInfo({
+      message: 'Primary subtitle loaded',
+      update: uuidv4()
+    });
+    
+    // Process the subtitle if it's a learning language
+    if (tmpSub.language === videoConstants.japaneseLang
+        || tmpSub.language === videoConstants.cantoneseLang
+        || tmpSub.language === videoConstants.chineseLang
+        || tmpSub.language === videoConstants.vietnameseLang) {
+      const toastSetter = setInterval(() => {
+        setToastInfo({
+          message: `${tmpSub.language}: ${tmpSub.progress}`,
+          update: uuidv4()
+        });
+      }, TOAST_TIMEOUT / 10);
+      
+      if (tmpSub.language === videoConstants.japaneseLang) {
+        tmpSub.adjustJapanese(tokenizeMiteiru).then(() => {
+          clearInterval(toastSetter);
+          setFrequencyPrimary(tmpSub.frequency)
+        })
+      }
+      if (tmpSub.language === videoConstants.cantoneseLang || tmpSub.language === videoConstants.chineseLang) {
+        tmpSub.adjustChinese(tokenizeMiteiru).then(() => {
+          clearInterval(toastSetter);
+          setFrequencyPrimary(tmpSub.frequency)
+        })
+      }
+      if (tmpSub.language === videoConstants.vietnameseLang) {
+        tmpSub.adjustVietnamese(tokenizeMiteiru).then(() => {
+          clearInterval(toastSetter);
+          setFrequencyPrimary(tmpSub.frequency)
+        })
+      }
+    }
+    
+    // Clean up
+    setShowSubtitleModal(false);
+    setPendingSubtitle(null);
+    setPendingSubtitlePath('');
+  }, [pendingSubtitle, pendingSubtitlePath, setPrimarySub, setToastInfo, tokenizeMiteiru, setFrequencyPrimary]);
+
+  // Handler for selecting secondary subtitle
+  const handleSelectSecondary = useCallback(() => {
+    if (!pendingSubtitle) return;
+    
+    const tmpSub = pendingSubtitle;
+    const currentPath = pendingSubtitlePath;
+    
+    // Load as secondary subtitle
+    setSecondarySub(tmpSub);
+    setLastSecondarySubPath([{path: currentPath}]);
+    
+    setToastInfo({
+      message: 'Secondary subtitle loaded',
+      update: uuidv4()
+    });
+    
+    // Clean up
+    setShowSubtitleModal(false);
+    setPendingSubtitle(null);
+    setPendingSubtitlePath('');
+  }, [pendingSubtitle, pendingSubtitlePath, setSecondarySub, setToastInfo]);
+
+  // Handler for closing the modal
+  const handleCloseModal = useCallback(() => {
+    setShowSubtitleModal(false);
+    setPendingSubtitle(null);
+    setPendingSubtitlePath('');
+    setToastInfo({
+      message: 'Subtitle loading cancelled',
+      update: uuidv4()
+    });
+  }, [setToastInfo]);
+
+  // Get display name for detected language
+  const getLanguageDisplayName = useCallback((langCode) => {
+    switch (langCode) {
+      case videoConstants.japaneseLang: return 'Japanese';
+      case videoConstants.chineseLang: return 'Chinese';
+      case videoConstants.cantoneseLang: return 'Cantonese';
+      case videoConstants.vietnameseLang: return 'Vietnamese';
+      case videoConstants.englishLang: return 'English';
+      default: return langCode;
+    }
+  }, []);
+
   return {
     onLoadFiles,
     videoSrc,
     onVideoChangeHandler,
     reloadLastPrimarySubtitle,
     reloadLastSecondarySubtitle,
-    loadPath
+    loadPath,
+    // Subtitle modal state and handlers
+    showSubtitleModal,
+    pendingSubtitlePath,
+    currentAppLanguage: getLanguageDisplayName(lang),
+    handleSelectPrimary,
+    handleSelectSecondary,
+    handleCloseModal
   }
 };
 

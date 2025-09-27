@@ -33,6 +33,7 @@ import usePitchValue from "../hooks/usePitchValue";
 import {useSubtitleMode} from "../hooks/useSubtitleMode";
 import {SubtitleDisplay} from "../components/Subtitle/SubtitleDisplay";
 import LyricsSearchModal from "../components/Lyrics/LyricsSearchModal";
+import SubtitleSelectionModal from "../components/Utils/SubtitleSelectionModal";
 import CommandPalette from "../components/Utils/CommandPallete";
 import useWordOfTheDay from "../hooks/useWordOfTheDay";
 import WordOfTheDay from "../components/WordOfTheDay/WordOfTheDay";
@@ -135,7 +136,13 @@ function Video() {
     onVideoChangeHandler,
     reloadLastPrimarySubtitle,
     reloadLastSecondarySubtitle,
-    loadPath
+    loadPath,
+    showSubtitleModal,
+    pendingSubtitlePath,
+    currentAppLanguage,
+    handleSelectPrimary,
+    handleSelectSecondary,
+    handleCloseModal
   } = useLoadFiles(setToastInfo,
       primarySub, setPrimarySub,
       secondarySub, setSecondarySub,
@@ -304,6 +311,14 @@ function Video() {
             videoSrc={videoSrc}
             metadata={metadata}
             onLyricsDownloaded={loadPath}
+        />
+        <SubtitleSelectionModal
+            isOpen={showSubtitleModal}
+            onClose={handleCloseModal}
+            onSelectPrimary={handleSelectPrimary}
+            onSelectSecondary={handleSelectSecondary}
+            fileName={pendingSubtitlePath.split('/').pop() || pendingSubtitlePath.split('\\').pop() || 'Unknown file'}
+            currentAppLanguage={currentAppLanguage}
         />
         <CommandPalette
             showCommandPalette={showCommandPalette}

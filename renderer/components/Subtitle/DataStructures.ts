@@ -200,7 +200,6 @@ export class SubtitleContainer {
 
   static async create(filename: string, lang: string, isSimplified: boolean) {
     if (filename === '') return
-    const isForcedEnglish = filename.includes('.en.');
     const subtitleContainer = new SubtitleContainer();
     subtitleContainer.path = filename;
 
@@ -217,10 +216,7 @@ export class SubtitleContainer {
       } else {
         entries = parsedSubtitle.content.entries;
       }
-      console.log(lang);
-      console.log(isSimplified);
-      this.createFromArrayEntries(subtitleContainer, entries,
-        isForcedEnglish ? videoConstants.englishLang : lang, isSimplified);
+      this.createFromArrayEntries(subtitleContainer, entries, lang, isSimplified);
       return subtitleContainer;
     } catch (error) {
       console.error('Error parsing subtitle:', error);
