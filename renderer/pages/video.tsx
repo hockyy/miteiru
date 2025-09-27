@@ -35,6 +35,8 @@ import {SubtitleDisplay} from "../components/Subtitle/SubtitleDisplay";
 import LyricsSearchModal from "../components/Lyrics/LyricsSearchModal";
 import SubtitleSelectionModal from "../components/Utils/SubtitleSelectionModal";
 import MediaTrackSelectionModal from "../components/Utils/MediaTrackSelectionModal";
+import AudioReencodeModal from "../components/Utils/AudioReencodeModal";
+import ReencodeProgressModal from "../components/Utils/ReencodeProgressModal";
 import CommandPalette from "../components/Utils/CommandPallete";
 import useWordOfTheDay from "../hooks/useWordOfTheDay";
 import WordOfTheDay from "../components/WordOfTheDay/WordOfTheDay";
@@ -176,8 +178,15 @@ function Video() {
     hasEmbeddedSubtitles,
     hasMultipleAudioTracks,
     showTrackSelectionModal,
+    showAudioReencodeModal,
+    showReencodeProgress,
+    reencodeProgress,
+    selectedAudioForRencode,
     handleTrackSelection,
     handleCloseTrackSelectionModal,
+    handleCloseAudioReencodeModal,
+    handleAudioReencodeConfirm,
+    handleAudioReencodeSkip,
     selectedTracks
   } = useMediaAnalysis(videoSrc.path);
 
@@ -233,16 +242,26 @@ function Video() {
     applyAudioTrack();
   }, [player, mediaInfo.audioTracks]);
 
-  // Enhanced track selection handler
+  // Handle loading reencoded video with selected audio
+  const handleReencodedVideoLoad = useCallback((videoPath: string) => {
+    console.log('[Video Component] Loading reencoded video:', videoPath);
+    // Load the reencoded video file
+    onLoadFiles([{path: videoPath}]);
+  }, [onLoadFiles]);
+
+  // Enhanced track selection handler (now subtitle-only)
   const handleMediaTrackSelection = useCallback(async (selection) => {
-    console.log('[Video Component] Media track selection:', selection);
+    console.log('[Video Component] Media track selection (subtitles only):', selection);
     try {
-      await handleTrackSelection(selection, handleEmbeddedSubtitleLoad, handleAudioTrackSelect);
+      await handleTrackSelection(selection, handleEmbeddedSubtitleLoad, handleReencodedVideoLoad);
     } catch (error) {
       console.error('[Video Component] Failed to process track selection:', error);
-      // TODO: Show error toast
+      setToastInfo({
+        message: 'Failed to load selected subtitles',
+        update: Math.random().toString()
+      });
     }
-  }, [handleTrackSelection, handleEmbeddedSubtitleLoad, handleAudioTrackSelect]);
+  }, [handleTrackSelection, handleEmbeddedSubtitleLoad, handleReencodedVideoLoad, setToastInfo]);
 
   // Debug: Log media info changes
   useEffect(() => {
@@ -417,6 +436,21 @@ function Video() {
             audioTracks={mediaInfo.audioTracks}
             subtitleTracks={mediaInfo.subtitleTracks}
             currentAppLanguage={currentAppLanguage}
+        />
+        <AudioReencodeModal
+            isOpen={showAudioReencodeModal}
+            onClose={handleCloseAudioReencodeModal}
+            onConfirm={(trackIndex) => handleAudioReencodeConfirm(trackIndex, handleReencodedVideoLoad)}
+            onSkip={handleAudioReencodeSkip}
+            fileName={videoSrc.path.split('/').pop() || videoSrc.path.split('\\').pop() || 'Unknown file'}
+            audioTracks={mediaInfo.audioTracks}
+            currentAppLanguage={currentAppLanguage}
+        />
+        <ReencodeProgressModal
+            isOpen={showReencodeProgress}
+            fileName={videoSrc.path.split('/').pop() || videoSrc.path.split('\\').pop() || 'Unknown file'}
+            selectedAudioTrack={selectedAudioForRencode ? `${selectedAudioForRencode.title || selectedAudioForRencode.language || 'Track'} (${selectedAudioForRencode.codec})` : ''}
+            progress={reencodeProgress}
         />
         <CommandPalette
             showCommandPalette={showCommandPalette}

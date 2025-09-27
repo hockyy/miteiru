@@ -243,6 +243,30 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
     }
   });
 
+  ipcMain.handle('reencode-video-with-audio-track', async (event, inputPath, audioStreamIndex) => {
+    console.log(`[IPC] reencode-video-with-audio-track called: ${inputPath}, audio stream ${audioStreamIndex}`);
+    try {
+      const toolsStatus = await MediaAnalyzer.checkToolsAvailable();
+      if (!toolsStatus.ffmpeg) {
+        throw new Error('FFmpeg not found. Please install FFmpeg and make sure it\'s in your PATH.');
+      }
+      
+      const result = await MediaAnalyzer.reencodeVideoWithAudioTrack(
+        inputPath, 
+        audioStreamIndex,
+        (progress) => {
+          // Send progress updates back to renderer
+          event.sender.send('reencode-progress', progress);
+        }
+      );
+      console.log(`[IPC] Video with audio track reencoded:`, result);
+      return result;
+    } catch (error) {
+      console.error('[IPC] Video audio track reencoding failed:', error);
+      throw error;
+    }
+  });
+
   ipcMain.handle('cleanup-temp-subtitle', async (event, filePath) => {
     try {
       await MediaAnalyzer.cleanupTempFile(filePath);
