@@ -30,6 +30,7 @@ export class MediaAnalyzer {
    * Check if ffprobe/ffmpeg are available
    */
   static async checkToolsAvailable(): Promise<{ ffprobe: boolean; ffmpeg: boolean }> {
+    console.log(`[DEBUG] checkToolsAvailable called`);
     const checkTool = (toolName: string): Promise<boolean> => {
       return new Promise((resolve) => {
         const child = spawn(toolName, ['-version']);

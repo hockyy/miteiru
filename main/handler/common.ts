@@ -16,6 +16,14 @@ import {videoConstants} from "../../renderer/utils/constants";
 import axios from "axios";
 
 const store = new Store();
+
+// Media tools check cache (FFmpeg, FFprobe, yt-dlp)
+let mediaToolsCache = {
+  result: null,
+  timestamp: 0,
+  CACHE_DURATION: 30000 // 30 seconds
+};
+
 const isArrayEndsWithMatcher = (path, arrayMatcher) => {
   for (const videoFormat of arrayMatcher) {
     if (path.endsWith('.' + videoFormat)) {
@@ -536,6 +544,109 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
       return true;
     } catch {
       return false;
+    }
+  });
+
+  // Handler to check media tools availability (ffmpeg/ffprobe/yt-dlp) with caching
+  ipcMain.handle('checkMediaTools', async (event, forceRefresh = false) => {
+    const now = Date.now();
+    
+    // Check if we have a valid cached result (unless force refresh is requested)
+    if (!forceRefresh && mediaToolsCache.result && 
+        (now - mediaToolsCache.timestamp) < mediaToolsCache.CACHE_DURATION) {
+      console.log('[Media Tools Check] Using cached result');
+      return mediaToolsCache.result;
+    }
+    
+    if (forceRefresh) {
+      console.log('[Media Tools Check] Force refresh requested');
+    }
+    
+    console.log('[Media Tools Check] Performing fresh check...');
+    
+    try {
+      // Check FFmpeg tools using existing MediaAnalyzer
+      const ffmpegStatus = await MediaAnalyzer.checkToolsAvailable();
+      
+      // Check yt-dlp availability
+      const checkTool = (toolName: string): Promise<boolean> => {
+        return new Promise((resolve) => {
+          const { spawn } = require('child_process');
+          const child = spawn(toolName, ['--version']);
+          child.on('close', (code) => resolve(code === 0));
+          child.on('error', () => resolve(false));
+        });
+      };
+      
+      const ytDlpAvailable = await checkTool('yt-dlp');
+      
+      const allToolsStatus = {
+        ...ffmpegStatus,
+        ytdlp: ytDlpAvailable
+      };
+      
+      const allAvailable = ffmpegStatus.ffmpeg && ffmpegStatus.ffprobe && ytDlpAvailable;
+      const someAvailable = ffmpegStatus.ffmpeg || ffmpegStatus.ffprobe || ytDlpAvailable;
+      
+      const result = {
+        ok: allAvailable ? 1 : someAvailable ? 0 : 0,
+        message: allAvailable 
+          ? 'All media tools are available (FFmpeg, FFprobe, yt-dlp)'
+          : `Missing tools - FFmpeg: ${ffmpegStatus.ffmpeg ? 'OK' : 'Missing'}, FFprobe: ${ffmpegStatus.ffprobe ? 'OK' : 'Missing'}, yt-dlp: ${ytDlpAvailable ? 'OK' : 'Missing'}`,
+        details: allToolsStatus,
+        cached: false
+      };
+      
+      // Cache the result
+      mediaToolsCache.result = { ...result, cached: true };
+      mediaToolsCache.timestamp = now;
+      
+      console.log('[Media Tools Check] Fresh check completed, result cached');
+      return result;
+      
+    } catch (error) {
+      const errorResult = {
+        ok: 0,
+        message: `Error checking media tools: ${error.message}`,
+        details: { ffmpeg: false, ffprobe: false, ytdlp: false },
+        cached: false
+      };
+      
+      // Cache error result too
+      mediaToolsCache.result = { ...errorResult, cached: true };
+      mediaToolsCache.timestamp = now;
+      
+      return errorResult;
+    }
+  });
+
+  // Backward compatibility handler for old FFmpeg check
+  ipcMain.handle('checkFFmpegTools', async (event, forceRefresh = false) => {
+    console.log('[Backward Compatibility] checkFFmpegTools called, using MediaAnalyzer directly');
+    
+    try {
+      // Check FFmpeg tools using existing MediaAnalyzer
+      const ffmpegStatus = await MediaAnalyzer.checkToolsAvailable();
+      const isAvailable = ffmpegStatus.ffmpeg && ffmpegStatus.ffprobe;
+      
+      const result = {
+        ok: isAvailable ? 1 : 0,
+        message: isAvailable 
+          ? 'FFmpeg and FFprobe are available'
+          : `Missing tools - FFmpeg: ${ffmpegStatus.ffmpeg ? 'OK' : 'Missing'}, FFprobe: ${ffmpegStatus.ffprobe ? 'OK' : 'Missing'}`,
+        details: ffmpegStatus,
+        cached: false
+      };
+      
+      return result;
+      
+    } catch (error) {
+      return {
+        ok: 0,
+        message: `Error checking FFmpeg tools: ${error.message}`,
+        details: { ffmpeg: false, ffprobe: false },
+        cached: false
+      };
     }
   });
 }
