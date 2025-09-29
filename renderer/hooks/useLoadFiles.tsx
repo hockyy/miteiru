@@ -45,14 +45,16 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
   }, []);
 
   const processSubtitleForLearning = useCallback(async (tmpSub) => {
-    const toastSetter = setInterval(() => {
-      setToastInfo({
-        message: `${tmpSub.language}: ${tmpSub.progress}`,
-        update: uuidv4()
-      });
-    }, TOAST_TIMEOUT / 10);
-
+    let toastSetter = null;
+    
     try {
+      toastSetter = setInterval(() => {
+        setToastInfo({
+          message: `${tmpSub.language}: ${tmpSub.progress}`,
+          update: uuidv4()
+        });
+      }, TOAST_TIMEOUT / 10);
+
       if (tmpSub.language === videoConstants.japaneseLang) {
         await tmpSub.adjustJapanese(tokenizeMiteiru);
       } else if (tmpSub.language === videoConstants.cantoneseLang || tmpSub.language === videoConstants.chineseLang) {
@@ -61,11 +63,19 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
         await tmpSub.adjustVietnamese(tokenizeMiteiru);
       }
       
-      clearInterval(toastSetter);
       setFrequencyPrimary(tmpSub.frequency);
     } catch (error) {
-      clearInterval(toastSetter);
       console.error('Error processing subtitle:', error);
+      setToastInfo({
+        message: `Error processing subtitle: ${error.message}`,
+        update: uuidv4()
+      });
+    } finally {
+      // Always clear the interval
+      if (toastSetter) {
+        clearInterval(toastSetter);
+        toastSetter = null;
+      }
     }
   }, [tokenizeMiteiru, setFrequencyPrimary, setToastInfo]);
 
@@ -101,6 +111,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     const currentHash = Symbol();
     await queue.wait(currentHash);
     let currentPath = await acceptedFiles[0].path;
+
     let pathUri;
     if (isLocalPath(currentPath)) {
       currentPath = currentPath.replaceAll('\\', '/')
@@ -128,74 +139,98 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
         message: 'Loading subtitle, please wait!',
         update: uuidv4()
       });
-      const toastSetter = setInterval(() => {
-        setToastInfo({
-          message: 'Still loading subtitle, please wait!',
-          update: uuidv4()
-        });
-      }, TOAST_TIMEOUT);
-      const draggedSubtitle = {
-        type: 'text/plain',
-        src: `${currentPath}`
-      };
-      const handleSubtitleLoaded = (tmpSub, mustMatch = null) => {
-        if (mustMatch !== null && tmpSub.language !== mustMatch) return;
-        clearInterval(toastSetter);
+      
+      let toastSetter = null;
+      
+      try {
+        toastSetter = setInterval(() => {
+          setToastInfo({
+            message: 'Still loading subtitle, please wait!',
+            update: uuidv4()
+          });
+        }, TOAST_TIMEOUT);
+        
+        const draggedSubtitle = {
+          type: 'text/plain',
+          src: `${currentPath}`
+        };
+        
+        const handleSubtitleLoaded = (tmpSub, mustMatch = null) => {
+          if (mustMatch !== null && tmpSub.language !== mustMatch) return;
+          
+          // Clear the interval immediately when subtitle is loaded
+          if (toastSetter) {
+            clearInterval(toastSetter);
+            toastSetter = null;
+          }
+
+          if (isYoutube(currentPath)) {
+            // For YouTube videos, don't auto-load subtitles
+            // The MediaTrackSelectionModal should handle subtitle selection
+            console.log(`[useLoadFiles] YouTube video detected: ${currentPath}`);
+            console.log(`[useLoadFiles] Skipping auto-subtitle loading - user should select via modal`);
+            return;
+          } else {
+            // Check if this is an embedded subtitle file (temporary file)
+            const isEmbeddedSubtitle = currentPath.includes('miteiru_subtitle_') || currentPath.includes('miteiru_youtube_');
+            
+            if (isEmbeddedSubtitle) {
+              // For embedded/downloaded subtitles, load directly
+              console.log('[useLoadFiles] Loading subtitle file directly:', currentPath);
+              
+              // Determine type based on filename or assume primary
+              if (currentPath.includes('secondary') || currentPath.includes('_sec_')) {
+                loadSubtitleAsSecondary(tmpSub, currentPath);
+              } else {
+                loadSubtitleAsPrimary(tmpSub, currentPath);
+              }
+            } else {
+              // For external files, show selection modal
+              setPendingSubtitle(tmpSub);
+              setPendingSubtitlePath(currentPath);
+              setShowSubtitleModal(true);
+              setToastInfo({
+                message: 'Choose subtitle type...',
+                update: uuidv4()
+              });
+            }
+          }
+        };
 
         if (isYoutube(currentPath)) {
-          // For YouTube, auto-assign based on language
-          if (isLearningLanguage(tmpSub.language)) {
-            loadSubtitleAsPrimary(tmpSub, currentPath);
-          } else {
-            loadSubtitleAsSecondary(tmpSub, currentPath);
+          // For YouTube videos, clear toast and skip subtitle loading
+          if (toastSetter) {
+            clearInterval(toastSetter);
+            toastSetter = null;
           }
+          console.log(`[useLoadFiles] YouTube video detected: ${currentPath}`);
+          console.log(`[useLoadFiles] Skipping auto-subtitle loading - user should select via modal`);
         } else {
-          // Check if this is an embedded subtitle file (temporary file)
-          const isEmbeddedSubtitle = currentPath.includes('miteiru_subtitle_');
-          
-          if (isEmbeddedSubtitle) {
-            // For embedded subtitles, load directly based on filename pattern
-            // The type was already determined in the media track selection modal
-            console.log('[useLoadFiles] Loading embedded subtitle directly:', currentPath);
-            
-            // TODO: We need to know the intended type (primary/secondary) from the caller
-            // For now, assume primary - this will be fixed in the next iteration
-            loadSubtitleAsPrimary(tmpSub, currentPath);
-          } else {
-            // For external files, show selection modal
-            setPendingSubtitle(tmpSub);
-            setPendingSubtitlePath(currentPath);
-            setShowSubtitleModal(true);
-            setToastInfo({
-              message: 'Choose subtitle type...',
-              update: uuidv4()
+          SubtitleContainer.create(draggedSubtitle.src, lang, primaryStyling.forceSimplified)
+            .then(handleSubtitleLoaded)
+            .catch(error => {
+              console.error('[useLoadFiles] Failed to load subtitle file:', error);
+              if (toastSetter) {
+                clearInterval(toastSetter);
+                toastSetter = null;
+              }
+              setToastInfo({
+                message: `Failed to load subtitle: ${error.message}`,
+                update: uuidv4()
+              });
             });
-          }
         }
-      };
-
-      if (isYoutube(currentPath)) {
-        const videoId = extractVideoId(currentPath);
-        
-        // Load English subtitle
-        window.ipc.invoke("getYoutubeSubtitle", videoId, videoConstants.englishLang).then(entries => {
-          const tmpSub = SubtitleContainer.createFromArrayEntries(
-            null, convertSubtitlesToEntries(entries), lang, primaryStyling.forceSimplified);
-          handleSubtitleLoaded(tmpSub, videoConstants.englishLang);
+      } catch (error) {
+        // Clean up interval on any error
+        if (toastSetter) {
+          clearInterval(toastSetter);
+          toastSetter = null;
+        }
+        console.error('[useLoadFiles] Error in subtitle loading pipeline:', error);
+        setToastInfo({
+          message: `Error: ${error.message}`,
+          update: uuidv4()
         });
-
-        // Load primary language subtitles
-        const langList = videoConstants.varLang[lang] ?? [];
-        langList.forEach(findLang => {
-          window.ipc.invoke("getYoutubeSubtitle", videoId, findLang).then(entries => {
-            const tmpSub = SubtitleContainer.createFromArrayEntries(
-              null, convertSubtitlesToEntries(entries), lang, primaryStyling.forceSimplified);
-            handleSubtitleLoaded(tmpSub, lang);
-          });
-        });
-      } else {
-        SubtitleContainer.create(draggedSubtitle.src, lang, primaryStyling.forceSimplified)
-          .then(handleSubtitleLoaded);
       }
     }
     queue.end(currentHash);
