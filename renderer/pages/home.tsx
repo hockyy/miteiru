@@ -107,7 +107,7 @@ function Home() {
                 type={"secondary"}
                 disabled={toolsCheckInProgress}
                 onPress={() => checkMediaTools(true)}>
-                {toolsCheckInProgress ? 'Checking...' : 'Check Media Tools'}
+                {toolsCheckInProgress ? 'Checking...' : 'Check Optional Tools'}
               </AwesomeButton>
             </div>
             <div className={'flex flex-row gap-4 text-4xl text-black font-bold'}>
@@ -138,7 +138,8 @@ function Home() {
               </div>
             </ContainerHome></SmoothCollapse>
             <div className={'text-black border-t pt-2'}>
-              <div className={'text-lg font-semibold mb-2'}>🎬 Media Tools Status:</div>
+              <div className={'text-lg font-semibold mb-2'}>🎬 Optional Media Tools:</div>
+              <div className={'text-sm text-gray-600 mb-2'}>These tools enhance video processing but are not required</div>
               <div>{checkSymbol[toolsCheck.ok]}{' '}{toolsCheck.message}</div>
               
               {/* Tool details */}
@@ -157,7 +158,7 @@ function Home() {
                           disabled={isDownloading === toolName}
                           onPress={() => downloadTool(toolName)}
                         >
-                          {isDownloading === toolName ? 'Downloading...' : 'Download'}
+                          {isDownloading === toolName ? 'Opening...' : 'Open Link'}
                         </AwesomeButton>
                       )}
                     </div>
@@ -165,14 +166,14 @@ function Home() {
                 </div>
               )}
               
-              {/* Missing tools download section */}
+              {/* Missing tools info section */}
               {toolsCheck.missingTools && toolsCheck.missingTools.length > 0 && (
-                <div className={'mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded'}>
-                  <div className={'text-sm text-yellow-800 font-medium'}>
-                    📦 Missing Tools: {toolsCheck.missingTools.join(', ')}
+                <div className={'mt-2 p-2 bg-blue-50 border border-blue-200 rounded'}>
+                  <div className={'text-sm text-blue-800 font-medium'}>
+                    💡 Optional Tools Available: {toolsCheck.missingTools.join(', ')}
                   </div>
-                  <div className={'text-xs text-yellow-600 mt-1'}>
-                    Click Download to install tools to Miteiru's folder
+                  <div className={'text-xs text-blue-600 mt-1'}>
+                    These tools can enhance your experience - click Open Link to download if desired
                   </div>
                 </div>
               )}

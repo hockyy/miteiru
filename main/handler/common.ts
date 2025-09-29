@@ -36,17 +36,13 @@ const MEDIA_TOOLS_CONFIG: ToolConfig[] = [
   {
     name: "ffmpeg", 
     check_command: "-version",
-    download_link: process.platform === 'win32' 
-      ? "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip"
-      : "https://ffmpeg.org/download.html",
+    download_link: "https://ffmpeg.org/download.html",
     executable_name: process.platform === 'win32' ? "ffmpeg.exe" : "ffmpeg"
   },
   {
     name: "ffprobe",
     check_command: "-version", 
-    download_link: process.platform === 'win32'
-      ? "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip"
-      : "https://ffmpeg.org/download.html",
+    download_link: "https://ffmpeg.org/download.html",
     executable_name: process.platform === 'win32' ? "ffprobe.exe" : "ffprobe"
   }
 ];
@@ -897,10 +893,10 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
       const result = {
         ok: allAvailable ? 1 : someAvailable ? 0 : 0,
         message: allAvailable 
-          ? `All media tools available: ${availableTools.join(', ')}`
+          ? `All optional tools available: ${availableTools.join(', ')}`
           : missingTools.length === MEDIA_TOOLS_CONFIG.length
-          ? 'No media tools found'
-          : `Available: ${availableTools.join(', ')} | Missing: ${missingTools.join(', ')}`,
+          ? 'No optional tools found (app will work without them)'
+          : `Available: ${availableTools.join(', ')} | Optional: ${missingTools.join(', ')}`,
         details: toolsStatus,
         missingTools,
         availableTools,
@@ -917,7 +913,7 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
     } catch (error) {
       const errorResult = {
         ok: 0,
-        message: `Error checking media tools: ${error.message}`,
+        message: `Error checking optional tools: ${error.message}`,
         details: {},
         missingTools: MEDIA_TOOLS_CONFIG.map(t => t.name),
         availableTools: [],
@@ -932,7 +928,7 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
     }
   });
 
-  // Handler to download a missing tool
+  // Handler to download a missing tool (legacy - frontend now opens links instead)
   ipcMain.handle('downloadTool', async (event, toolName) => {
     console.log(`[IPC] downloadTool called for ${toolName}`);
     

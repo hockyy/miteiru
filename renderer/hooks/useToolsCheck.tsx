@@ -23,13 +23,13 @@ interface MediaToolsCheckResult {
 
 const initialToolsCheck: MediaToolsCheckResult = { 
   ok: 0, 
-  message: '🐸 ゲロゲロ', 
+  message: '🐸 Checking optional tools...', 
   cached: false 
 };
 
 const checkingToolsMessage: MediaToolsCheckResult = {
   ok: 2,
-  message: "checking...",
+  message: "checking optional tools...",
   cached: false
 };
 
@@ -60,40 +60,13 @@ export const useToolsCheck = () => {
       console.error('[Media Tools Check] Error occurred:', error);
       setToolsCheck({
         ok: 0,
-        message: `Error checking media tools: ${error.message}`,
+        message: `Error checking optional tools: ${error.message}`,
         cached: false
       });
     } finally {
       setIsChecking(false);
     }
   }, []); // Remove isChecking from dependencies to prevent infinite loops
-
-  // Download a missing tool
-  const downloadTool = useCallback(async (toolName: string) => {
-    if (isDownloading) {
-      console.log(`[useToolsCheck] Download already in progress for ${isDownloading}`);
-      return { success: false, error: 'Another download is in progress' };
-    }
-
-    setIsDownloading(toolName);
-    
-    try {
-      console.log(`[useToolsCheck] Starting download for ${toolName}`);
-      const result = await window.ipc.invoke('downloadTool', toolName);
-      
-      if (result.success) {
-        // Refresh tools check after successful download
-        await checkMediaTools(true);
-      }
-      
-      return result;
-    } catch (error) {
-      console.error(`[useToolsCheck] Download error for ${toolName}:`, error);
-      return { success: false, error: error.message };
-    } finally {
-      setIsDownloading(null);
-    }
-  }, [isDownloading, checkMediaTools]);
 
   // Get tools configuration
   const getToolsConfig = useCallback(async () => {
@@ -104,6 +77,36 @@ export const useToolsCheck = () => {
       return { tools: [], toolsPath: '' };
     }
   }, []);
+
+  // Open download link for a missing tool
+  const downloadTool = useCallback(async (toolName: string) => {
+    if (isDownloading) {
+      console.log(`[useToolsCheck] Link opening already in progress for ${isDownloading}`);
+      return { success: false, error: 'Another link is being opened' };
+    }
+
+    setIsDownloading(toolName);
+    
+    try {
+      console.log(`[useToolsCheck] Getting download link for ${toolName}`);
+      const config = await getToolsConfig();
+      const tool = config.tools.find(t => t.name === toolName);
+      
+      if (!tool) {
+        return { success: false, error: `Tool configuration not found for ${toolName}` };
+      }
+      
+      console.log(`[useToolsCheck] Opening download link for ${toolName}: ${tool.download_link}`);
+      await window.ipc.invoke('open-external', tool.download_link);
+      
+      return { success: true, message: `Download link opened for ${toolName}` };
+    } catch (error) {
+      console.error(`[useToolsCheck] Error opening link for ${toolName}:`, error);
+      return { success: false, error: error.message };
+    } finally {
+      setIsDownloading(null);
+    }
+  }, [isDownloading, getToolsConfig]);
 
   // Backward compatibility - alias for old FFmpeg check
   const checkFFmpegTools = checkMediaTools;
