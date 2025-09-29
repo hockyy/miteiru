@@ -17,12 +17,93 @@ import axios from "axios";
 
 const store = new Store();
 
-// Media tools check cache (FFmpeg, FFprobe, yt-dlp)
+// Media tools configuration
+interface ToolConfig {
+  name: string;
+  check_command: string;
+  download_link: string;
+  executable_name: string;
+  internal_path?: string;
+}
+
+const MEDIA_TOOLS_CONFIG: ToolConfig[] = [
+  {
+    name: "yt-dlp",
+    check_command: "--version",
+    download_link: "https://github.com/hockyy/miteiru/releases/download/assets/yt-dlp.exe",
+    executable_name: process.platform === 'win32' ? "yt-dlp.exe" : "yt-dlp"
+  },
+  {
+    name: "ffmpeg", 
+    check_command: "-version",
+    download_link: process.platform === 'win32' 
+      ? "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip"
+      : "https://ffmpeg.org/download.html",
+    executable_name: process.platform === 'win32' ? "ffmpeg.exe" : "ffmpeg"
+  },
+  {
+    name: "ffprobe",
+    check_command: "-version", 
+    download_link: process.platform === 'win32'
+      ? "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip"
+      : "https://ffmpeg.org/download.html",
+    executable_name: process.platform === 'win32' ? "ffprobe.exe" : "ffprobe"
+  }
+];
+
+// Media tools check cache
 let mediaToolsCache = {
   result: null,
   timestamp: 0,
   CACHE_DURATION: 30000 // 30 seconds
 };
+
+// Get the miteiru tools directory
+function getMiteiruToolsPath(): string {
+  const os = require('os');
+  const path = require('path');
+  return path.join(os.tmpdir(), 'miteiru_tools');
+}
+
+// Check if tool exists locally (system PATH or miteiru tools folder)
+async function checkToolPath(tool: ToolConfig): Promise<{ available: boolean; path: string | null; isInternal: boolean }> {
+  const { spawn } = require('child_process');
+  const fs = require('fs/promises');
+  const path = require('path');
+  
+  // First check if tool is in miteiru tools folder
+  const miteiruToolsPath = getMiteiruToolsPath();
+  const internalPath = path.join(miteiruToolsPath, tool.executable_name);
+  
+  try {
+    await fs.access(internalPath);
+    // Test if the internal tool works
+    const internalWorks = await new Promise<boolean>((resolve) => {
+      const child = spawn(internalPath, [tool.check_command]);
+      child.on('close', (code) => resolve(code === 0));
+      child.on('error', () => resolve(false));
+    });
+    
+    if (internalWorks) {
+      return { available: true, path: internalPath, isInternal: true };
+    }
+  } catch (error) {
+    // Internal tool not found, continue to system check
+  }
+  
+  // Check if tool is available in system PATH
+  const systemWorks = await new Promise<boolean>((resolve) => {
+    const child = spawn(tool.name, [tool.check_command]);
+    child.on('close', (code) => resolve(code === 0));
+    child.on('error', () => resolve(false));
+  });
+  
+  if (systemWorks) {
+    return { available: true, path: tool.name, isInternal: false };
+  }
+  
+  return { available: false, path: null, isInternal: false };
+}
 
 const isArrayEndsWithMatcher = (path, arrayMatcher) => {
   for (const videoFormat of arrayMatcher) {
@@ -56,9 +137,27 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
     try {
       const { spawn } = require('child_process');
       
+      // Get the best yt-dlp path
+      const os = require('os');
+      const path = require('path');
+      const fs = require('fs/promises');
+      
+      const toolsDir = path.join(os.tmpdir(), 'miteiru_tools');
+      const executableName = process.platform === 'win32' ? 'yt-dlp.exe' : 'yt-dlp';
+      const internalPath = path.join(toolsDir, executableName);
+      
+      let ytDlpPath = 'yt-dlp'; // Default to system
+      try {
+        await fs.access(internalPath);
+        ytDlpPath = internalPath;
+        console.log(`[IPC] Using internal yt-dlp: ${internalPath}`);
+      } catch {
+        console.log(`[IPC] Using system yt-dlp`);
+      }
+
       // Use yt-dlp to list available subtitles
       const ytDlpOutput = await new Promise<string>((resolve, reject) => {
-        const child = spawn('yt-dlp', [
+        const child = spawn(ytDlpPath, [
           '--list-subs',
           '--write-auto-subs',
           `https://youtube.com/watch?v=${videoID}`
@@ -164,6 +263,24 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
       const tempDir = require('os').tmpdir();
       const tempFilePath = require('path').join(tempDir, `miteiru_youtube_${videoID}_${lang}_${Date.now()}.srt`);
       
+      // Get the best yt-dlp path
+      const os = require('os');
+      const path = require('path');
+      const fs = require('fs/promises');
+      
+      const toolsDir = path.join(os.tmpdir(), 'miteiru_tools');
+      const executableName = process.platform === 'win32' ? 'yt-dlp.exe' : 'yt-dlp';
+      const internalPath = path.join(toolsDir, executableName);
+      
+      let ytDlpPath = 'yt-dlp'; // Default to system
+      try {
+        await fs.access(internalPath);
+        ytDlpPath = internalPath;
+        console.log(`[IPC] Using internal yt-dlp: ${internalPath}`);
+      } catch {
+        console.log(`[IPC] Using system yt-dlp`);
+      }
+
       // Use yt-dlp to download subtitle directly to file
       const extractArgs = [
         '--write-subs',
@@ -178,7 +295,7 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
       console.log(`[IPC] Running yt-dlp with args:`, extractArgs);
       
       const ytDlpOutput = await new Promise<string>((resolve, reject) => {
-        const child = spawn('yt-dlp', extractArgs);
+        const child = spawn(ytDlpPath, extractArgs);
         let stdout = '';
         let stderr = '';
         
@@ -204,8 +321,6 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
       });
       
       // Find the actual downloaded file
-      const fs = require('fs/promises');
-      const path = require('path');
       const tempDirPath = path.dirname(tempFilePath);
       const files = await fs.readdir(tempDirPath);
       
@@ -734,7 +849,7 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
     }
   });
 
-  // Handler to check media tools availability (ffmpeg/ffprobe/yt-dlp) with caching
+  // Handler to check media tools availability with new configuration system
   ipcMain.handle('checkMediaTools', async (event, forceRefresh = false) => {
     const now = Date.now();
     
@@ -752,35 +867,43 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
     console.log('[Media Tools Check] Performing fresh check...');
     
     try {
-      // Check FFmpeg tools using existing MediaAnalyzer
-      const ffmpegStatus = await MediaAnalyzer.checkToolsAvailable();
+      const toolsStatus = {};
+      const missingTools = [];
+      const availableTools = [];
       
-      // Check yt-dlp availability
-      const checkTool = (toolName: string): Promise<boolean> => {
-        return new Promise((resolve) => {
-          const { spawn } = require('child_process');
-          const child = spawn(toolName, ['--version']);
-          child.on('close', (code) => resolve(code === 0));
-          child.on('error', () => resolve(false));
-        });
-      };
+      // Check each tool using the new configuration system
+      for (const tool of MEDIA_TOOLS_CONFIG) {
+        const toolCheck = await checkToolPath(tool);
+        
+        toolsStatus[tool.name] = {
+          available: toolCheck.available,
+          path: toolCheck.path,
+          isInternal: toolCheck.isInternal,
+          config: tool
+        };
+        
+        if (toolCheck.available) {
+          availableTools.push(`${tool.name}${toolCheck.isInternal ? ' (internal)' : ''}`);
+        } else {
+          missingTools.push(tool.name);
+        }
+        
+        console.log(`[Media Tools Check] ${tool.name}: ${toolCheck.available ? 'OK' : 'Missing'} ${toolCheck.isInternal ? '(internal)' : '(system)'}`);
+      }
       
-      const ytDlpAvailable = await checkTool('yt-dlp');
-      
-      const allToolsStatus = {
-        ...ffmpegStatus,
-        ytdlp: ytDlpAvailable
-      };
-      
-      const allAvailable = ffmpegStatus.ffmpeg && ffmpegStatus.ffprobe && ytDlpAvailable;
-      const someAvailable = ffmpegStatus.ffmpeg || ffmpegStatus.ffprobe || ytDlpAvailable;
+      const allAvailable = missingTools.length === 0;
+      const someAvailable = availableTools.length > 0;
       
       const result = {
         ok: allAvailable ? 1 : someAvailable ? 0 : 0,
         message: allAvailable 
-          ? 'All media tools are available (FFmpeg, FFprobe, yt-dlp)'
-          : `Missing tools - FFmpeg: ${ffmpegStatus.ffmpeg ? 'OK' : 'Missing'}, FFprobe: ${ffmpegStatus.ffprobe ? 'OK' : 'Missing'}, yt-dlp: ${ytDlpAvailable ? 'OK' : 'Missing'}`,
-        details: allToolsStatus,
+          ? `All media tools available: ${availableTools.join(', ')}`
+          : missingTools.length === MEDIA_TOOLS_CONFIG.length
+          ? 'No media tools found'
+          : `Available: ${availableTools.join(', ')} | Missing: ${missingTools.join(', ')}`,
+        details: toolsStatus,
+        missingTools,
+        availableTools,
         cached: false
       };
       
@@ -795,7 +918,9 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
       const errorResult = {
         ok: 0,
         message: `Error checking media tools: ${error.message}`,
-        details: { ffmpeg: false, ffprobe: false, ytdlp: false },
+        details: {},
+        missingTools: MEDIA_TOOLS_CONFIG.map(t => t.name),
+        availableTools: [],
         cached: false
       };
       
@@ -805,6 +930,85 @@ export const registerCommonHandlers = (getTokenizer, packageJson, appDataDirecto
       
       return errorResult;
     }
+  });
+
+  // Handler to download a missing tool
+  ipcMain.handle('downloadTool', async (event, toolName) => {
+    console.log(`[IPC] downloadTool called for ${toolName}`);
+    
+    const tool = MEDIA_TOOLS_CONFIG.find(t => t.name === toolName);
+    if (!tool) {
+      return { success: false, error: `Unknown tool: ${toolName}` };
+    }
+    
+    try {
+      const axios = require('axios');
+      const fs = require('fs/promises');
+      const path = require('path');
+      
+      // Ensure miteiru tools directory exists
+      const toolsDir = getMiteiruToolsPath();
+      await fs.mkdir(toolsDir, { recursive: true });
+      
+      const downloadPath = path.join(toolsDir, tool.executable_name);
+      
+      console.log(`[IPC] Downloading ${tool.name} from ${tool.download_link}`);
+      console.log(`[IPC] Download path: ${downloadPath}`);
+      
+      // Download the tool
+      const response = await axios.get(tool.download_link, {
+        responseType: 'stream',
+        timeout: 60000 // 60 second timeout
+      });
+      
+      const fileStream = require('fs').createWriteStream(downloadPath);
+      response.data.pipe(fileStream);
+      
+      return new Promise((resolve) => {
+        fileStream.on('finish', async () => {
+          try {
+            // Make executable on Unix systems
+            if (process.platform !== 'win32') {
+              await fs.chmod(downloadPath, 0o755);
+            }
+            
+            console.log(`[IPC] Successfully downloaded ${tool.name} to ${downloadPath}`);
+            resolve({ 
+              success: true, 
+              path: downloadPath,
+              message: `${tool.name} downloaded successfully`
+            });
+          } catch (error) {
+            resolve({ 
+              success: false, 
+              error: `Failed to set permissions: ${error.message}` 
+            });
+          }
+        });
+        
+        fileStream.on('error', (error) => {
+          resolve({ 
+            success: false, 
+            error: `Download failed: ${error.message}` 
+          });
+        });
+      });
+      
+    } catch (error) {
+      console.error(`[IPC] Error downloading ${tool.name}:`, error);
+      return { 
+        success: false, 
+        error: error.message || 'Download failed' 
+      };
+    }
+  });
+
+  // Handler to get tools configuration
+  ipcMain.handle('getToolsConfig', async () => {
+    return {
+      tools: MEDIA_TOOLS_CONFIG,
+      toolsPath: getMiteiruToolsPath()
+    };
   });
 
   // Backward compatibility handler for old FFmpeg check
