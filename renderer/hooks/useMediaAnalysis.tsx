@@ -91,14 +91,31 @@ const useMediaAnalysis = (videoPath: string) => {
     }
   }, []);
 
+  // Check if path is YouTube URL
+  const isYoutubeUrl = useCallback((path: string): boolean => {
+    return path.includes('youtube.com') || path.includes('youtu.be');
+  }, []);
+
   // Analyze media when video path changes
   useEffect(() => {
-    if (videoPath && videoPath !== '' && !videoPath.startsWith('http')) {
-      // Only analyze local video files, not YouTube URLs
-      analyzeMedia(videoPath);
-    } else {
+    if (videoPath && videoPath !== '') {
+      if (!videoPath.startsWith('http')) {
+        // Analyze local video files
+        analyzeMedia(videoPath);
+      } else if (isYoutubeUrl(videoPath)) {
+        // For YouTube videos, show track selection modal immediately
+        // Set empty media info but trigger modal
+        setMediaInfo({
+          duration: 0,
+          audioTracks: [],
+          subtitleTracks: [], // Will be populated by YouTube subtitles in modal
+          videoTracks: []
+        });
+        console.log('[useMediaAnalysis] YouTube video detected, showing subtitle selection modal');
+        setTimeout(() => setShowTrackSelectionModal(true), 100);
+      }
     }
-  }, [videoPath, analyzeMedia]);
+  }, [videoPath, analyzeMedia, isYoutubeUrl]);
 
   // Handle track selection from modal (now only for subtitles)
   const handleTrackSelection = useCallback(async (selection: TrackSelection, onSubtitleLoad?: (path: string, type: 'primary' | 'secondary') => void) => {

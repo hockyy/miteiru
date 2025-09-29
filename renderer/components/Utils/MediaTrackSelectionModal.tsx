@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { X, FileText, Volume2, Subtitles, Play } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, FileText, Volume2, Subtitles, Play, Download, RefreshCw } from 'lucide-react';
 import { AwesomeButton } from 'react-awesome-button';
 import { MediaTrack } from '../../types/media';
+import { useYoutubeSubtitles, YoutubeSubtitleOption } from '../../hooks/useYoutubeSubtitles';
 
 interface MediaTrackSelectionModalProps {
   isOpen: boolean;
@@ -10,11 +11,15 @@ interface MediaTrackSelectionModalProps {
   fileName: string;
   subtitleTracks: MediaTrack[];
   currentAppLanguage: string;
+  videoUrl?: string; // YouTube URL for fetching online subtitles
 }
 
 export interface TrackSelection {
   primarySubtitleTrackIndex: number | null; // null means no primary subtitle
   secondarySubtitleTrackIndex: number | null; // null means no secondary subtitle
+  primarySubtitleType: 'embedded' | 'youtube' | null; // null when no primary subtitle
+  secondarySubtitleType: 'embedded' | 'youtube' | null; // null when no secondary subtitle
+  youtubeSubtitleLanguage?: string; // Language code for YouTube subtitles
 }
 
 const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
@@ -23,10 +28,37 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
   onConfirm,
   fileName,
   subtitleTracks,
-  currentAppLanguage
+  currentAppLanguage,
+  videoUrl
 }) => {
   const [selectedPrimarySubtitle, setSelectedPrimarySubtitle] = useState<number | null>(null);
   const [selectedSecondarySubtitle, setSelectedSecondarySubtitle] = useState<number | null>(null);
+  const [selectedPrimaryType, setSelectedPrimaryType] = useState<'embedded' | 'youtube' | null>(null);
+  const [selectedSecondaryType, setSelectedSecondaryType] = useState<'embedded' | 'youtube' | null>(null);
+  
+  // Use YouTube subtitles hook
+  const { 
+    subtitles: youtubeSubtitles, 
+    isLoading: isLoadingYoutube, 
+    error: youtubeError,
+    isYoutubeUrl,
+    fetchAvailableSubtitles,
+    clearSubtitles 
+  } = useYoutubeSubtitles();
+
+  const isYouTubeUrl = videoUrl && isYoutubeUrl(videoUrl);
+
+  // Fetch YouTube subtitles when modal opens for YouTube videos
+  useEffect(() => {
+    if (!isOpen) {
+      clearSubtitles();
+      return;
+    }
+    
+    if (isYouTubeUrl && videoUrl) {
+      fetchAvailableSubtitles(videoUrl);
+    }
+  }, [isOpen, isYouTubeUrl, videoUrl, fetchAvailableSubtitles, clearSubtitles]);
 
   if (!isOpen) return null;
 
@@ -50,16 +82,37 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
     }
   };
 
+  const handlePrimarySubtitleChange = (index: number | null, type: 'embedded' | 'youtube' | null) => {
+    setSelectedPrimarySubtitle(index);
+    setSelectedPrimaryType(type);
+  };
+
+  const handleSecondarySubtitleChange = (index: number | null, type: 'embedded' | 'youtube' | null) => {
+    setSelectedSecondarySubtitle(index);
+    setSelectedSecondaryType(type);
+  };
+
   const handleConfirm = () => {
     const selection: TrackSelection = {
       primarySubtitleTrackIndex: selectedPrimarySubtitle,
-      secondarySubtitleTrackIndex: selectedSecondarySubtitle
+      secondarySubtitleTrackIndex: selectedSecondarySubtitle,
+      primarySubtitleType: selectedPrimaryType,
+      secondarySubtitleType: selectedSecondaryType,
+      youtubeSubtitleLanguage: selectedPrimaryType === 'youtube' && selectedPrimarySubtitle !== null 
+        ? youtubeSubtitles[selectedPrimarySubtitle]?.language 
+        : selectedSecondaryType === 'youtube' && selectedSecondarySubtitle !== null
+        ? youtubeSubtitles[selectedSecondarySubtitle]?.language
+        : undefined
     };
     
     console.log('[MediaTrackSelectionModal] User confirmed subtitle selection:', selection);
     console.log('[MediaTrackSelectionModal] Selected subtitle tracks details:', {
-      primarySub: selectedPrimarySubtitle !== null ? subtitleTracks[selectedPrimarySubtitle] : null,
-      secondarySub: selectedSecondarySubtitle !== null ? subtitleTracks[selectedSecondarySubtitle] : null
+      primarySub: selectedPrimarySubtitle !== null 
+        ? (selectedPrimaryType === 'embedded' ? subtitleTracks[selectedPrimarySubtitle] : youtubeSubtitles[selectedPrimarySubtitle])
+        : null,
+      secondarySub: selectedSecondarySubtitle !== null 
+        ? (selectedSecondaryType === 'embedded' ? subtitleTracks[selectedSecondarySubtitle] : youtubeSubtitles[selectedSecondarySubtitle])
+        : null
     });
     
     onConfirm(selection);
@@ -96,7 +149,23 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
               {fileName}
             </div>
             <div className="text-gray-400 text-xs">
-              App language: {getLanguageEmoji(currentAppLanguage)} {currentAppLanguage} • {subtitleTracks.length} embedded subtitles
+              App language: {getLanguageEmoji(currentAppLanguage)} {currentAppLanguage} • 
+              {subtitleTracks.length} embedded subtitles
+              {isYouTubeUrl && (
+                <>
+                  {' • '}
+                  {isLoadingYoutube ? (
+                    <span className="inline-flex items-center gap-1">
+                      <RefreshCw className="w-3 h-3 animate-spin" />
+                      Loading YouTube subtitles...
+                    </span>
+                  ) : youtubeError ? (
+                    <span className="text-red-400">YouTube subtitles failed</span>
+                  ) : (
+                    `${youtubeSubtitles.length} YouTube subtitles`
+                  )}
+                </>
+              )}
             </div>
           </div>
 
@@ -112,39 +181,95 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
                 </span>
               </div>
               
-              <div className="space-y-2 max-h-32 overflow-y-auto">
+              <div className="space-y-2 max-h-48 overflow-y-auto">
                 {/* None option */}
                 <label className="flex items-center gap-3 p-2 rounded hover:bg-gray-700 cursor-pointer">
                   <input
                     type="radio"
                     name="primarySubtitle"
                     checked={selectedPrimarySubtitle === null}
-                    onChange={() => setSelectedPrimarySubtitle(null)}
+                    onChange={() => handlePrimarySubtitleChange(null, null)}
                     className="w-4 h-4 text-green-600 bg-gray-600 border-gray-500"
                   />
                   <span className="text-gray-300 text-sm">None</span>
                 </label>
                 
-                {subtitleTracks.map((track, index) => (
-                  <label key={`primary-${track.index}`} className="flex items-center gap-3 p-2 rounded hover:bg-gray-700 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="primarySubtitle"
-                      checked={selectedPrimarySubtitle === index}
-                      onChange={() => setSelectedPrimarySubtitle(index)}
-                      className="w-4 h-4 text-green-600 bg-gray-600 border-gray-500"
-                    />
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      {getLanguageEmoji(track.language)}
-                      <span className="text-white text-sm truncate">
-                        {getTrackLabel(track)}
-                      </span>
-                      <span className="text-gray-400 text-xs">
-                        {track.codec.toUpperCase()}
-                      </span>
+                {/* Embedded Subtitles */}
+                {subtitleTracks.length > 0 && (
+                  <>
+                    <div className="text-gray-400 text-xs font-medium px-2 py-1">
+                      📁 Embedded Subtitles
                     </div>
-                  </label>
-                ))}
+                    {subtitleTracks.map((track, index) => (
+                      <label key={`primary-embedded-${track.index}`} className="flex items-center gap-3 p-2 rounded hover:bg-gray-700 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="primarySubtitle"
+                          checked={selectedPrimarySubtitle === index && selectedPrimaryType === 'embedded'}
+                          onChange={() => handlePrimarySubtitleChange(index, 'embedded')}
+                          className="w-4 h-4 text-green-600 bg-gray-600 border-gray-500"
+                        />
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          {getLanguageEmoji(track.language)}
+                          <span className="text-white text-sm truncate">
+                            {getTrackLabel(track)}
+                          </span>
+                          <span className="text-gray-400 text-xs">
+                            {track.codec.toUpperCase()}
+                          </span>
+                        </div>
+                      </label>
+                    ))}
+                  </>
+                )}
+                
+                {/* YouTube Subtitles */}
+                {isYouTubeUrl && youtubeSubtitles.length > 0 && (
+                  <>
+                    <div className="text-gray-400 text-xs font-medium px-2 py-1 flex items-center gap-1">
+                      <Download className="w-3 h-3" />
+                      YouTube Subtitles
+                    </div>
+                    {youtubeSubtitles.map((subtitle, index) => (
+                      <label key={`primary-youtube-${index}`} className="flex items-center gap-3 p-2 rounded hover:bg-gray-700 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="primarySubtitle"
+                          checked={selectedPrimarySubtitle === index && selectedPrimaryType === 'youtube'}
+                          onChange={() => handlePrimarySubtitleChange(index, 'youtube')}
+                          className="w-4 h-4 text-green-600 bg-gray-600 border-gray-500"
+                        />
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          {getLanguageEmoji(subtitle.language)}
+                          <span className="text-white text-sm truncate">
+                            {subtitle.name}
+                            {subtitle.isAutoGenerated && (
+                              <span className="text-yellow-400 text-xs ml-1">[Auto]</span>
+                            )}
+                          </span>
+                          <span className="text-blue-400 text-xs">
+                            ONLINE
+                          </span>
+                        </div>
+                      </label>
+                    ))}
+                  </>
+                )}
+                
+                {/* Loading state for YouTube */}
+                {isYouTubeUrl && isLoadingYoutube && (
+                  <div className="flex items-center justify-center p-4 text-gray-400">
+                    <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+                    <span className="text-sm">Loading YouTube subtitles...</span>
+                  </div>
+                )}
+                
+                {/* Error state for YouTube */}
+                {isYouTubeUrl && youtubeError && (
+                  <div className="text-center p-4 text-red-400 text-sm">
+                    {youtubeError}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -158,39 +283,80 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
                 </span>
               </div>
               
-              <div className="space-y-2 max-h-32 overflow-y-auto">
+              <div className="space-y-2 max-h-48 overflow-y-auto">
                 {/* None option */}
                 <label className="flex items-center gap-3 p-2 rounded hover:bg-gray-700 cursor-pointer">
                   <input
                     type="radio"
                     name="secondarySubtitle"
                     checked={selectedSecondarySubtitle === null}
-                    onChange={() => setSelectedSecondarySubtitle(null)}
+                    onChange={() => handleSecondarySubtitleChange(null, null)}
                     className="w-4 h-4 text-yellow-600 bg-gray-600 border-gray-500"
                   />
                   <span className="text-gray-300 text-sm">None</span>
                 </label>
                 
-                {subtitleTracks.map((track, index) => (
-                  <label key={`secondary-${track.index}`} className="flex items-center gap-3 p-2 rounded hover:bg-gray-700 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="secondarySubtitle"
-                      checked={selectedSecondarySubtitle === index}
-                      onChange={() => setSelectedSecondarySubtitle(index)}
-                      className="w-4 h-4 text-yellow-600 bg-gray-600 border-gray-500"
-                    />
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      {getLanguageEmoji(track.language)}
-                      <span className="text-white text-sm truncate">
-                        {getTrackLabel(track)}
-                      </span>
-                      <span className="text-gray-400 text-xs">
-                        {track.codec.toUpperCase()}
-                      </span>
+                {/* Embedded Subtitles */}
+                {subtitleTracks.length > 0 && (
+                  <>
+                    <div className="text-gray-400 text-xs font-medium px-2 py-1">
+                      📁 Embedded Subtitles
                     </div>
-                  </label>
-                ))}
+                    {subtitleTracks.map((track, index) => (
+                      <label key={`secondary-embedded-${track.index}`} className="flex items-center gap-3 p-2 rounded hover:bg-gray-700 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="secondarySubtitle"
+                          checked={selectedSecondarySubtitle === index && selectedSecondaryType === 'embedded'}
+                          onChange={() => handleSecondarySubtitleChange(index, 'embedded')}
+                          className="w-4 h-4 text-yellow-600 bg-gray-600 border-gray-500"
+                        />
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          {getLanguageEmoji(track.language)}
+                          <span className="text-white text-sm truncate">
+                            {getTrackLabel(track)}
+                          </span>
+                          <span className="text-gray-400 text-xs">
+                            {track.codec.toUpperCase()}
+                          </span>
+                        </div>
+                      </label>
+                    ))}
+                  </>
+                )}
+                
+                {/* YouTube Subtitles */}
+                {isYouTubeUrl && youtubeSubtitles.length > 0 && (
+                  <>
+                    <div className="text-gray-400 text-xs font-medium px-2 py-1 flex items-center gap-1">
+                      <Download className="w-3 h-3" />
+                      YouTube Subtitles
+                    </div>
+                    {youtubeSubtitles.map((subtitle, index) => (
+                      <label key={`secondary-youtube-${index}`} className="flex items-center gap-3 p-2 rounded hover:bg-gray-700 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="secondarySubtitle"
+                          checked={selectedSecondarySubtitle === index && selectedSecondaryType === 'youtube'}
+                          onChange={() => handleSecondarySubtitleChange(index, 'youtube')}
+                          className="w-4 h-4 text-yellow-600 bg-gray-600 border-gray-500"
+                        />
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          {getLanguageEmoji(subtitle.language)}
+                          <span className="text-white text-sm truncate">
+                            {subtitle.name}
+                            {subtitle.isAutoGenerated && (
+                              <span className="text-yellow-400 text-xs ml-1">[Auto]</span>
+                            )}
+                          </span>
+                          <span className="text-blue-400 text-xs">
+                            ONLINE
+                          </span>
+                        </div>
+                      </label>
+                    ))}
+                  </>
+                )}
               </div>
             </div>
           </div>
