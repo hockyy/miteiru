@@ -21,9 +21,35 @@ interface MediaInfo {
 
 export class MediaAnalyzer {
   private static ffprobePath: string = 'ffprobe'; // Default, can be configured
+  private static ffmpegPath: string = 'ffmpeg'; // Default, can be configured
 
   static setFFprobePath(path: string) {
     this.ffprobePath = path;
+  }
+
+  static setFFmpegPath(path: string) {
+    this.ffmpegPath = path;
+  }
+
+  // Get the best available tool path (internal or system)
+  static async getToolPath(toolName: string): Promise<string> {
+    const os = require('os');
+    const path = require('path');
+    const fs = require('fs/promises');
+    
+    // Check internal path first
+    const toolsDir = path.join(os.tmpdir(), 'miteiru_tools');
+    const executableName = process.platform === 'win32' ? `${toolName}.exe` : toolName;
+    const internalPath = path.join(toolsDir, executableName);
+    
+    try {
+      await fs.access(internalPath);
+      console.log(`[MediaAnalyzer] Using internal ${toolName}: ${internalPath}`);
+      return internalPath;
+    } catch {
+      console.log(`[MediaAnalyzer] Using system ${toolName}`);
+      return toolName; // Fall back to system PATH
+    }
   }
 
   /**

@@ -15,7 +15,7 @@ const checkSymbol = ['❓', '✅', '🙃']
 
 function Home() {
   const { miteiruVersion } = useMiteiruVersion();
-  const { toolsCheck, isChecking: toolsCheckInProgress, checkMediaTools } = useToolsCheck();
+  const { toolsCheck, isChecking: toolsCheckInProgress, isDownloading, checkMediaTools, downloadTool } = useToolsCheck();
   const { 
     check, 
     tokenizerMode, 
@@ -139,12 +139,46 @@ function Home() {
             </ContainerHome></SmoothCollapse>
             <div className={'text-black border-t pt-2'}>
               <div className={'text-lg font-semibold mb-2'}>🎬 Media Tools Status:</div>
+              <div>{checkSymbol[toolsCheck.ok]}{' '}{toolsCheck.message}</div>
+              
+              {/* Tool details */}
               {toolsCheck.details && (
-                <div className={'text-sm text-gray-600 mt-1'}>
-                  FFmpeg: {toolsCheck.details.ffmpeg ? '✅' : '❌'} | 
-                  FFprobe: {toolsCheck.details.ffprobe ? '✅' : '❌'} | 
-                  yt-dlp: {toolsCheck.details.ytdlp ? '✅' : '❌'}
+                <div className={'mt-2 space-y-1'}>
+                  {Object.entries(toolsCheck.details).map(([toolName, status]: [string, any]) => (
+                    <div key={toolName} className={'flex items-center justify-between text-sm'}>
+                      <span className={'text-gray-600'}>
+                        {status.available ? '✅' : '❌'} {toolName}
+                        {status.isInternal && ' (internal)'}
+                      </span>
+                      {!status.available && (
+                        <AwesomeButton
+                          type="link"
+                          size="small"
+                          disabled={isDownloading === toolName}
+                          onPress={() => downloadTool(toolName)}
+                        >
+                          {isDownloading === toolName ? 'Downloading...' : 'Download'}
+                        </AwesomeButton>
+                      )}
+                    </div>
+                  ))}
                 </div>
+              )}
+              
+              {/* Missing tools download section */}
+              {toolsCheck.missingTools && toolsCheck.missingTools.length > 0 && (
+                <div className={'mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded'}>
+                  <div className={'text-sm text-yellow-800 font-medium'}>
+                    📦 Missing Tools: {toolsCheck.missingTools.join(', ')}
+                  </div>
+                  <div className={'text-xs text-yellow-600 mt-1'}>
+                    Click Download to install tools to Miteiru's folder
+                  </div>
+                </div>
+              )}
+              
+              {toolsCheck.cached && !toolsCheckInProgress && (
+                <div className={'text-sm text-gray-500 mt-1'}>📋 Cached result (click button to refresh)</div>
               )}
             </div>
             <AwesomeButton 

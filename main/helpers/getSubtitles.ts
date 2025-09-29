@@ -13,10 +13,32 @@ interface SubtitleEntry {
 // Cache to prevent duplicate requests for the same video
 const activeRequests = new Map<string, Promise<SubtitleEntry[]>>();
 
+// Get the best available yt-dlp path (internal or system)
+async function getYtDlpPath(): Promise<string> {
+  const os = require('os');
+  const path = require('path');
+  const fs = require('fs/promises');
+  
+  // Check internal path first
+  const toolsDir = path.join(os.tmpdir(), 'miteiru_tools');
+  const executableName = process.platform === 'win32' ? 'yt-dlp.exe' : 'yt-dlp';
+  const internalPath = path.join(toolsDir, executableName);
+  
+  try {
+    await fs.access(internalPath);
+    console.log(`[getSubtitles] Using internal yt-dlp: ${internalPath}`);
+    return internalPath;
+  } catch {
+    console.log(`[getSubtitles] Using system yt-dlp`);
+    return 'yt-dlp'; // Fall back to system PATH
+  }
+}
+
 // Check if yt-dlp is available
 async function checkYtDlpAvailable(): Promise<boolean> {
+  const ytDlpPath = await getYtDlpPath();
   return new Promise((resolve) => {
-    const child = spawn('yt-dlp', ['--version']);
+    const child = spawn(ytDlpPath, ['--version']);
     child.on('close', (code) => resolve(code === 0));
     child.on('error', () => resolve(false));
   });
@@ -166,9 +188,11 @@ function findBestLanguageMatch(requestedLang: string, availableLanguages: string
 }
 
 // Execute yt-dlp command and return result
-function runYtDlp(args: string[]): Promise<string> {
+async function runYtDlp(args: string[]): Promise<string> {
+  const ytDlpPath = await getYtDlpPath();
+  
   return new Promise((resolve, reject) => {
-    const child = spawn('yt-dlp', args);
+    const child = spawn(ytDlpPath, args);
     let stdout = '';
     let stderr = '';
     
