@@ -3,99 +3,73 @@ import Head from 'next/head';
 import { ContainerHome } from "../components/VideoPlayer/ContainerHome";
 import { KeyboardHelp } from "../components/VideoPlayer/KeyboardHelp";
 import useMiteiruVersion from "../hooks/useMiteiruVersion";
+import { useToolsCheck } from "../hooks/useToolsCheck";
+import { useLanguageLoader } from "../hooks/useLanguageLoader";
+import { useCacheManager } from "../hooks/useCacheManager";
 import 'react-awesome-button/dist/styles.css';
 import { AwesomeButton } from "react-awesome-button";
-import { useRouter } from "next/router";
 import SmoothCollapse from "react-smooth-collapse";
-import useLanguageManager from "../hooks/useLanguageManager";
-import { useStoreData } from "../hooks/useStoreData";
 import Toggle from "../components/VideoPlayer/Toggle";
 
 const checkSymbol = ['❓', '✅', '🙃']
-const initialCheck = { ok: 0, message: '🐸 ゲロゲロ' }
-const mecabDefaultDirectory = {
-  'darwin': '/opt/homebrew/bin/mecab',
-  'linux': '/usr/bin/mecab',
-  'win32': 'C:\\Program Files (x86)\\MeCab\\bin\\mecab.exe'
-}
-const checkingMessage = {
-  ok: 2,
-  message: "checking..."
-}
 
 function Home() {
-  const router = useRouter();
-  const [mecab, setMecab] = useState(mecabDefaultDirectory[process.platform] ?? mecabDefaultDirectory['linux']);
-  const [check, setCheck] = useState(initialCheck);
-  const [tokenizerMode, setTokenizerMode] = useState(0);
-  const [isAutoLoading, setIsAutoLoading] = useState(true);
-  const [showManualSelection, setShowManualSelection] = useState(false);
+  const { miteiruVersion } = useMiteiruVersion();
+  const { toolsCheck, isChecking: toolsCheckInProgress, checkMediaTools } = useToolsCheck();
+  const { 
+    check, 
+    tokenizerMode, 
+    setTokenizerMode,
+    isAutoLoading,
+    isLoadingLanguage,
+    autoLoadEnabled,
+    setAutoLoadEnabled,
+    languageModes,
+    ableToProceedToVideo,
+    handleLanguageButtonClick,
+    performAutoLoad
+  } = useLanguageLoader();
+  const { mecab, setMecab, isRemovingCache, handleSelectMecabPath, handleRemoveCache } = useCacheManager();
 
-  const {
-    hasLastLanguage,
-    getLastLanguage,
-    setLanguage,
-    clearLanguage,
-    languageModes
-  } = useLanguageManager();
+  // Cache state management
+  const [cacheCheck, setCacheCheck] = useState({ ok: 0, message: '🐸 ゲロゲロ' });
 
-  const [autoLoadEnabled, setAutoLoadEnabled] = useStoreData('app.autoLoadLastLanguage', true);
-
-  const loadLanguage = useCallback(async (modeId: number) => {
-    const mode = languageModes.find(m => m.id === modeId);
-    if (!mode) return;
-
-    setCheck(checkingMessage);
-    const res = await window.ipc.invoke(mode.channel);
-    setCheck(res);
-
-    if (res.ok === 1) {
-      setLanguage(modeId); // Save the successful language selection
-      await router.push('/video');
-    }
-  }, [languageModes, setLanguage, router]);
-
-  // Auto-load last language on startup
+  // Auto-load last language on startup and check media tools
   useEffect(() => {
+    let mounted = true; // Prevent state updates if component unmounts
+    
     const autoLoad = async () => {
-      if (autoLoadEnabled && hasLastLanguage()) {
-        const lastLanguage = getLastLanguage();
-        if (lastLanguage) {
-          setTokenizerMode(lastLanguage.id);
-          await loadLanguage(lastLanguage.id);
-        }
-      }
-      setIsAutoLoading(false);
+      if (!mounted) return;
+      
+      // Check media tools availability on startup
+      await checkMediaTools();
+      
+      if (!mounted) return;
+      
+      // Perform language auto-loading
+      await performAutoLoad();
     };
 
     autoLoad();
-  }, [autoLoadEnabled, hasLastLanguage, getLastLanguage, loadLanguage]);
+    
+    return () => {
+      mounted = false;
+    };
+  }, []); // Empty dependency array - only run once on mount
 
-  const handleClick = useCallback(async () => {
-    await loadLanguage(tokenizerMode);
-  }, [loadLanguage, tokenizerMode]);
-
-  const handleSelectMecabPath = useCallback(() => {
-    window.ipc.invoke('pickFile', ['*']).then((val) => {
-      if (!val.canceled) setMecab(val.filePaths[0]);
-    });
-  }, []);
-  const handleRemoveCache = useCallback(() => {
-    setCheck({
+  // Handle cache removal with state updates
+  const handleRemoveCacheWithState = useCallback(async () => {
+    setCacheCheck({
       ok: 2,
       message: 'Removing Caches '
     });
-    window.ipc.invoke('removeDictCache').then((result) => {
-      setCheck({
-        ok: 0,
-        message: result
-      });
-    });
-  }, []);
-  const { miteiruVersion } = useMiteiruVersion();
-  const ableToProceedToVideo = (check.ok !== 2);
-  const setAutoLoadEnabledHandler = useCallback((val) => {
-    setAutoLoadEnabled(val)
+    
+    const result = await handleRemoveCache();
+    setCacheCheck(result);
+  }, [handleRemoveCache]);
+
+  const setAutoLoadEnabledHandler = useCallback((val: boolean) => {
+    setAutoLoadEnabled(val);
   }, [setAutoLoadEnabled]);
   if (isAutoLoading) {
     return (
@@ -122,11 +96,20 @@ function Home() {
         <div
           className={"flex flex-col h-fit items-center bg-blue-50 gap-4 w-full md:w-4/5 p-5 border rounded-lg border-blue-800 border-2"}>
           <>
-            <AwesomeButton
-              type={"danger"}
-              onPress={handleRemoveCache}>
-              Remove Dict Caches
-            </AwesomeButton>
+            <div className={'flex flex-row gap-4'}>
+              <AwesomeButton
+                type={"danger"}
+                disabled={isRemovingCache}
+                onPress={handleRemoveCacheWithState}>
+                {isRemovingCache ? 'Removing...' : 'Remove Dict Caches'}
+              </AwesomeButton>
+              <AwesomeButton
+                type={"secondary"}
+                disabled={toolsCheckInProgress}
+                onPress={() => checkMediaTools(true)}>
+                {toolsCheckInProgress ? 'Checking...' : 'Check Media Tools'}
+              </AwesomeButton>
+            </div>
             <div className={'flex flex-row gap-4 text-4xl text-black font-bold'}>
               <div onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 setTokenizerMode(parseInt(e.target.value, 10))
@@ -154,15 +137,27 @@ function Home() {
                   }}></input>
               </div>
             </ContainerHome></SmoothCollapse>
-            <div className={'text-black'}>
-              {checkSymbol[check.ok]}{' '}{check.message}
+            <div className={'text-black border-t pt-2'}>
+              <div className={'text-lg font-semibold mb-2'}>🎬 Media Tools Status:</div>
+              {toolsCheck.details && (
+                <div className={'text-sm text-gray-600 mt-1'}>
+                  FFmpeg: {toolsCheck.details.ffmpeg ? '✅' : '❌'} | 
+                  FFprobe: {toolsCheck.details.ffprobe ? '✅' : '❌'} | 
+                  yt-dlp: {toolsCheck.details.ytdlp ? '✅' : '❌'}
+                </div>
+              )}
             </div>
-            <AwesomeButton type={'primary'} onPress={handleClick}
+            <AwesomeButton 
+              type={'primary'} 
+              onPress={handleLanguageButtonClick}
               className={ableToProceedToVideo ? '' : 'buttonDisabled'}
-              disabled={!ableToProceedToVideo}>
-              {languageModes.find(m => m.id === tokenizerMode)?.description &&
+              disabled={!ableToProceedToVideo || isLoadingLanguage}>
+              {isLoadingLanguage ? (
+                <div className={'text-xl'}>Loading...</div>
+              ) : (
+                languageModes.find(m => m.id === tokenizerMode)?.description &&
                 <div className={'text-xl'}>{languageModes.find(m => m.id === tokenizerMode)?.description}</div>
-              }
+              )}
             </AwesomeButton>
             <div className={'flex flex-row gap-4 items-center'}>
               <Toggle isChecked={autoLoadEnabled} onChange={setAutoLoadEnabledHandler} />
