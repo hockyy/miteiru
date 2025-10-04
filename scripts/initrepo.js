@@ -1,7 +1,6 @@
 const fs = require('fs');
 const extract = require('extract-zip');
 const path = require("path");
-const https = require('https');
 const axios = require("axios");
 
 const sourceDir = path.join(__dirname, '../archived');
@@ -19,7 +18,7 @@ if (!fs.existsSync(sourceDir)) {
   fs.mkdirSync(sourceDir, {recursive: true});
 }
 const downloadFile = async () => {
-  console.log('Downloading file...');
+  console.log('Downloading assets...');
 
   // Delete the file if it exists (in case it's a broken download)
   if (fs.existsSync(source)) {
@@ -52,29 +51,33 @@ const downloadFile = async () => {
   });
 };
 
-const extractFile = () => {
-  extract(source, {dir: target})
-  .then(() => {
+const extractFile = async () => {
+  try {
+    console.log('Extracting assets...');
+
+    await extract(source, {dir: target});
     console.log('Extraction completed!');
-  })
-  .catch((err) => {
+  } catch (err) {
     if (err.code === 'ENOENT') {
       console.log('File not found, downloading...');
-      downloadFile();
+      await downloadFile();
+      await extractFile();
     } else {
       console.log('Extraction failed!', err);
       fs.rmSync(source);
       console.log('Emptying archived/');
+      console.log('Try to run the script again');
     }
-    console.log('Try to run the script again');
-  });
+  }
 };
 
 // Check if the zip file exists, and start the download if not
-fs.access(source, fs.constants.F_OK, (err) => {
+fs.access(source, fs.constants.F_OK, async (err) => {
   if (err) {
-    downloadFile();
+    console.log("Assets not found, proceeding with download.");
+    await downloadFile();
   } else {
-    extractFile();
+    console.log("Assets already exist, skipping download.");
   }
+  await extractFile();
 });
