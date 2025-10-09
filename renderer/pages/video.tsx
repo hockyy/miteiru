@@ -363,6 +363,13 @@ function Video() {
       setToastInfo, backToHead, setIsPlaying);
   usePlayNextAfterEnd(player, currentTime, onVideoChangeHandler, duration, setEnableSeeker);
 
+  // Pause player when subtitle selector modal opens
+  useEffect(() => {
+    if (showTrackSelectionModal) {
+      setIsPlaying(0);
+    }
+  }, [showTrackSelectionModal, setIsPlaying]);
+
   // Show Word of the Day when no media is loaded
   if (!videoSrc.path || videoSrc.path === '') {
     return (
