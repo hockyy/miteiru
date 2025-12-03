@@ -11,6 +11,8 @@ import MakeMeAHanziDisplay from "./MakeMeAHanziDisplay";
 import {FaStar, FaVolumeUp} from 'react-icons/fa';
 import useSpeech from "../../hooks/useSpeech";
 import {useStoreData} from "../../hooks/useStoreData";
+import {useUserNotes} from "../../hooks/useUserNotes";
+import {UserNotesSection} from "./UserNotesSection";
 
 const OutlinedStar = ({
                         color,
@@ -69,6 +71,8 @@ const MeaningBox = ({
   const [meaningIndex, setMeaningIndex] = useState(0);
   const [tags, setTags] = useState({});
   const [romajiedData, setRomajiedData] = useState([]);
+  const [rubyHtmlContent, setRubyHtmlContent] = useState('');
+  const [isGeneratingNote, setIsGeneratingNote] = useState(false);
 
   const {
     speak,
@@ -77,6 +81,14 @@ const MeaningBox = ({
     supported
   } = useSpeech();
   const [selectedVoice,] = useStoreData('tts.option.voice', '');
+  const [openRouterApiKey] = useStoreData('openrouter.apiKey', '');
+  const [openRouterModel] = useStoreData('openrouter.model', 'anthropic/claude-3.5-sonnet');
+  
+  const {
+    getUserNote,
+    setUserNote,
+    deleteUserNote,
+  } = useUserNotes();
   const handleSpeak = useCallback(() => {
     if (speaking) {
       stop();
@@ -87,6 +99,35 @@ const MeaningBox = ({
       });
     }
   }, [speaking, stop, speak, meaning, lang, selectedVoice]);
+
+  // Handle keyboard shortcuts for copying (only when meaning box is open)
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Don't trigger shortcuts when typing in input/textarea
+      const target = event.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+        return;
+      }
+
+      // W - Copy plain word (no modifiers)
+      if (event.code === 'KeyW' && !event.ctrlKey && !event.shiftKey && !event.altKey) {
+        event.preventDefault();
+        navigator.clipboard.writeText(meaning);
+      }
+      // Shift+W - Copy word with ruby
+      else if (event.code === 'KeyW' && event.shiftKey && !event.ctrlKey && !event.altKey) {
+        event.preventDefault();
+        if (rubyHtmlContent) {
+          navigator.clipboard.writeText(rubyHtmlContent);
+        }
+      }
+    };
+
+    if (meaningContent.single.length > 0) {
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [meaning, rubyHtmlContent, meaningContent.single.length]);
 
 
   const renderSpeakButton = useCallback(() => (
@@ -104,6 +145,112 @@ const MeaningBox = ({
   }, [changeLearningState, meaning]);
 
   const handleBGClick = useCallback(() => setMeaning(''), [setMeaning]);
+
+  // Navigate to related term handler
+  const handleNavigateToTerm = useCallback((term: string) => {
+    setMeaning(term);
+  }, [setMeaning]);
+
+  // User notes handlers
+  const handleSaveUserNote = useCallback(async (entry) => {
+    try {
+      await setUserNote(meaning, entry);
+    } catch (error) {
+      console.error('Failed to save user note:', error);
+      alert('Failed to save note. The note has been removed. Please try again.');
+    }
+  }, [meaning, setUserNote]);
+
+  const handleDeleteUserNote = useCallback(async () => {
+    try {
+      await deleteUserNote(meaning);
+    } catch (error) {
+      console.error('Failed to delete user note:', error);
+      alert('Failed to delete note. Please try again.');
+    }
+  }, [meaning, deleteUserNote]);
+
+  const handleAIGenerateNote = useCallback(async () => {
+    if (!openRouterApiKey) {
+      alert('Please set your OpenRouter API key in settings (Ctrl+X)');
+      return;
+    }
+
+    setIsGeneratingNote(true);
+    try {
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${openRouterApiKey}`,
+          'HTTP-Referer': 'https://github.com/hockyy/miteiru',
+          'X-Title': 'Miteiru'
+        },
+        body: JSON.stringify({
+          model: openRouterModel,
+          messages: [
+            {
+              role: 'system',
+              content: `You are a language learning assistant. Generate helpful study notes for vocabulary terms.
+Create a JSON response with:
+1. "usageNote": A brief, practical note about how to use this word (2-3 sentences) in English
+2. "examples": An array of 3-5 example sentences using this word in context - MUST be in the SAME LANGUAGE as the input word
+3. "relatedTerms": An array of 3-5 related words or phrases - MUST be in the SAME LANGUAGE as the input word, NO English translations or romanization (similar words, opposites, commonly paired words, etc.)
+
+IMPORTANT: 
+- For "examples" and "relatedTerms", MUST be in the SAME LANGUAGE as the input word
+- NO English translations, NO romanization (no pinyin, hiragana reading, etc.)
+- If the input is Japanese kanji, output Japanese kanji
+- If the input is Chinese hanzi, output Chinese hanzi
+- Keep everything in the native script
+
+Be concise, clear, and educational. Focus on practical usage.`
+            },
+            {
+              role: 'user',
+              content: `Generate study notes for the word: "${meaning}"`
+            }
+          ]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content || '';
+      
+      // Try to parse JSON from the response
+      let noteData;
+      try {
+        // Extract JSON if wrapped in markdown code blocks
+        const jsonMatch = content.match(/```json\n?([\s\S]*?)\n?```/) || content.match(/\{[\s\S]*\}/);
+        const jsonStr = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : content;
+        noteData = JSON.parse(jsonStr);
+      } catch (e) {
+        // If not JSON, create a structured response from the text
+        noteData = {
+          usageNote: content,
+          examples: [],
+          relatedTerms: []
+        };
+      }
+
+      // Save the generated note
+      await setUserNote(meaning, {
+        usageNote: noteData.usageNote || '',
+        examples: Array.isArray(noteData.examples) ? noteData.examples : [],
+        relatedTerms: Array.isArray(noteData.relatedTerms) ? noteData.relatedTerms : []
+      });
+
+    } catch (error) {
+      console.error('AI note generation failed:', error);
+      alert(`Failed to generate note: ${error.message}`);
+    } finally {
+      setIsGeneratingNote(false);
+    }
+  }, [meaning, openRouterApiKey, openRouterModel, setUserNote]);
 
   const handlePrevious = useCallback(() => {
     if (meaningIndex > 0) {
@@ -224,6 +371,45 @@ const MeaningBox = ({
     if (meaningContent.single.length) fetchRomajiedData();
   }, [lang, meaning, meaningContent, tokenizeMiteiru]);
 
+  // Generate ruby HTML for copying
+  useEffect(() => {
+    if (romajiedData.length === 0) {
+      setRubyHtmlContent('');
+      return;
+    }
+
+    let rubyHtml = '';
+    romajiedData.forEach(({ romajied }) => {
+      if (Array.isArray(romajied)) {
+        romajied.forEach((token, tokenIndex) => {
+          // Identify the language type at token level
+          const isChineseSentence = token.jyutping || token.pinyin;
+          const isJapaneseSentence = token.hiragana !== undefined;
+          const isVietnameseSentence = token.separation && !token.jyutping && !token.pinyin && !token.hiragana;
+
+          if (token.separation) {
+            // Process separated content (Japanese/Chinese/Vietnamese)
+            token.separation.forEach((part) => {
+              let reading = '';
+              if (isChineseSentence) {
+                reading = part.jyutping || part.pinyin || '';
+              } else if (isJapaneseSentence) {
+                reading = part.hiragana || part.romaji || '';
+              } else if (isVietnameseSentence) {
+                reading = part.meaning || '';
+              }
+              rubyHtml += `<ruby>${part.main}<rt>${reading}</rt></ruby>`;
+            });
+          } else {
+            // Fallback for non-separated content
+            rubyHtml += token.origin || token;
+          }
+        });
+      }
+    });
+    setRubyHtmlContent(rubyHtml);
+  }, [romajiedData]);
+
   const renderRomajiedContent = useCallback(() => {
     return romajiedData.map(({
       key,
@@ -307,10 +493,23 @@ const MeaningBox = ({
             <div className="bg-blue-50 border border-blue-300 rounded-md p-3 mb-4 text-sm">
               <div className="font-semibold mb-1 text-blue-900">Keyboard Shortcuts:</div>
               <div className="flex flex-col gap-1 text-blue-700">
-                <div><kbd className="px-2 py-1 bg-white border border-blue-300 rounded">Ctrl+C</kbd> - Copy current word</div>
-                <div><kbd className="px-2 py-1 bg-white border border-blue-300 rounded">Ctrl+G</kbd> - Copy word with reading (ruby styled)</div>
+                <div><kbd className="px-2 py-1 bg-white border border-blue-300 rounded">W</kbd> - Copy current word: <span className="font-mono text-purple-700">{meaning}</span></div>
+                <div><kbd className="px-2 py-1 bg-white border border-blue-300 rounded">Shift+W</kbd> - Copy word with reading (ruby HTML format)</div>
+                <div className="text-xs text-blue-600 mt-1">💡 Tip: <kbd className="px-2 py-1 bg-white border border-blue-300 rounded">Ctrl+G</kbd> copies the full sentence with ruby</div>
               </div>
             </div>
+            
+            {/* User Notes Section */}
+            <UserNotesSection
+              term={meaning}
+              userNote={getUserNote(meaning)}
+              onSave={handleSaveUserNote}
+              onDelete={handleDeleteUserNote}
+              onAIGenerate={handleAIGenerateNote}
+              isGenerating={isGeneratingNote}
+              onNavigateToTerm={handleNavigateToTerm}
+            />
+            
             {memoizedCharacterContent}
             {memoizedMeaningContent}
           </div>
