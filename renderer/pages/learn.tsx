@@ -61,6 +61,7 @@ function Learn() {
   const {
     getLearningStateClass,
     changeLearningState,
+    getLearningState,
   } = useLearningState(lang);
 
   const {
@@ -234,8 +235,14 @@ Keep your analysis clear, educational, and focused on helping language learners 
         </Head>
         <div
             className={"flex flex-col justify-center items-center bg-white min-h-screen w-[100vw]"}>
-          <MeaningBox lang={lang} meaning={meaning} setMeaning={setMeaning}
-                      tokenizeMiteiru={tokenizeMiteiru}/>
+          <MeaningBox 
+                      lang={lang} 
+                      meaning={meaning} 
+                      setMeaning={setMeaning}
+                      tokenizeMiteiru={tokenizeMiteiru}
+                      changeLearningState={changeLearningState}
+                      getLearningState={getLearningState}
+          />
           <div
               className={"flex flex-col min-h-screen w-full items-center bg-blue-50 p-5 border rounded-lg border-blue-800"}>
             <ContainerHome>
