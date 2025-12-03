@@ -303,6 +303,14 @@ const MeaningBox = ({
             </div>
           </div>
           <div className="rounded-b-lg text-blue-800 text-lg p-2">
+            {/* Copy Shortcuts Hint */}
+            <div className="bg-blue-50 border border-blue-300 rounded-md p-3 mb-4 text-sm">
+              <div className="font-semibold mb-1 text-blue-900">Keyboard Shortcuts:</div>
+              <div className="flex flex-col gap-1 text-blue-700">
+                <div><kbd className="px-2 py-1 bg-white border border-blue-300 rounded">Ctrl+C</kbd> - Copy current word</div>
+                <div><kbd className="px-2 py-1 bg-white border border-blue-300 rounded">Ctrl+G</kbd> - Copy word with reading (ruby styled)</div>
+              </div>
+            </div>
             {memoizedCharacterContent}
             {memoizedMeaningContent}
           </div>
