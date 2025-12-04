@@ -26,6 +26,7 @@ import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { streamText } from 'ai';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import {ImageOCR} from "../components/Utils/ImageOCR";
 
 function Learn() {
   const {
@@ -46,6 +47,78 @@ function Learn() {
   const handleSentenceClick = useCallback((sentence: string) => {
     setDirectInput(sentence);
   }, [setDirectInput]);
+
+  // New function to split text into sentences
+  const splitIntoSentences = useCallback((text: string) => {
+    return text.split(/[\n\t]+/).filter(sentence => sentence.trim() !== '');
+  }, []);
+
+  const handleOCRTextExtracted = useCallback((text: string) => {
+    setSentenceInput(text);
+    setSentences(splitIntoSentences(text));
+  }, [splitIntoSentences]);
+
+  // Column width state
+  const [leftColumnWidth, setLeftColumnWidth] = useStoreData('learn.layout.leftColumnWidth', 35);
+  const [middleColumnWidth, setMiddleColumnWidth] = useStoreData('learn.layout.middleColumnWidth', 45);
+  const rightColumnWidth = 100 - leftColumnWidth - middleColumnWidth;
+
+  const [isDraggingLeft, setIsDraggingLeft] = useState(false);
+  const [isDraggingRight, setIsDraggingRight] = useState(false);
+
+  // Handle left divider drag
+  const handleLeftDividerMouseDown = useCallback(() => {
+    setIsDraggingLeft(true);
+  }, []);
+
+  // Handle right divider drag
+  const handleRightDividerMouseDown = useCallback(() => {
+    setIsDraggingRight(true);
+  }, []);
+
+  // Handle mouse move for resizing
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (isDraggingLeft) {
+      const containerWidth = window.innerWidth;
+      const newLeftWidth = (e.clientX / containerWidth) * 100;
+      
+      // Constrain between 20% and 60%
+      if (newLeftWidth >= 20 && newLeftWidth <= 60 && (100 - newLeftWidth - middleColumnWidth) >= 15) {
+        setLeftColumnWidth(newLeftWidth);
+      }
+    } else if (isDraggingRight) {
+      const containerWidth = window.innerWidth;
+      const newMiddleWidth = ((e.clientX - (leftColumnWidth / 100 * containerWidth)) / containerWidth) * 100;
+      
+      // Constrain middle column between 30% and 70%, right column minimum 15%
+      if (newMiddleWidth >= 30 && newMiddleWidth <= 70 && (100 - leftColumnWidth - newMiddleWidth) >= 15) {
+        setMiddleColumnWidth(newMiddleWidth);
+      }
+    }
+  }, [isDraggingLeft, isDraggingRight, leftColumnWidth, middleColumnWidth, setLeftColumnWidth, setMiddleColumnWidth]);
+
+  // Handle mouse up to stop dragging
+  const handleMouseUp = useCallback(() => {
+    setIsDraggingLeft(false);
+    setIsDraggingRight(false);
+  }, []);
+
+  // Add/remove mouse event listeners
+  useEffect(() => {
+    if (isDraggingLeft || isDraggingRight) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+      
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      };
+    }
+  }, [isDraggingLeft, isDraggingRight, handleMouseMove, handleMouseUp]);
 
   const [selectedVoice, setSelectedVoice] = useStoreData('tts.option.voice','');
   const [openRouterApiKey] = useStoreData('openrouter.apiKey', '');
@@ -127,12 +200,6 @@ function Learn() {
   const toggleAutoTranslate = () => {
     setIsAutoTranslating(prev => !prev);
   };
-
-  // New function to split text into sentences
-  const splitIntoSentences = useCallback((text: string) => {
-    return text.split(/[\n\t]+/).filter(sentence => sentence.trim() !== '');
-  }, []);
-
 
   const {
     speak,
@@ -243,80 +310,97 @@ Keep your analysis clear, educational, and focused on helping language learners 
                       changeLearningState={changeLearningState}
                       getLearningState={getLearningState}
           />
-          <div
-              className={"flex flex-col min-h-screen w-full items-center bg-blue-50 p-5 border rounded-lg border-blue-800"}>
-            <ContainerHome>
-              <div className="flex-grow overflow-y-auto w-full">
-                <div className="container mx-auto px-4 py-8 max-w-6xl">
-                  <div className={"flex flex-col items-center justify-start gap-6"}>
-                    
-                    {/* Text Input Section */}
-                    <div className="w-full max-w-4xl">
-                      <h3 className="text-black font-bold text-lg mb-3">Enter Text (one sentence per line)</h3>
-                      <textarea
-                          className={"text-black w-full p-4 border-2 border-blue-400 rounded-lg min-h-[200px] max-h-[400px] overflow-y-auto resize-y focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors"}
-                          value={sentenceInput}
-                          onChange={val => {
-                            setSentenceInput(val.target.value)
-                            setSentences(splitIntoSentences(val.target.value))
-                          }}
-                          placeholder="Enter your text here. Each line will be treated as a separate sentence."
+          {/* 3-Column Layout */}
+          <div className="flex h-screen w-full relative">
+            {/* Left Column - Image OCR */}
+            <div 
+              className="bg-gradient-to-br from-purple-50 to-pink-50 overflow-y-auto"
+              style={{ width: `${leftColumnWidth}%` }}
+            >
+              <div className="image-ocr-left h-full">
+                <ImageOCR onTextExtracted={handleOCRTextExtracted} targetLanguage={lang} />
+              </div>
+            </div>
+
+            {/* Left Divider */}
+            <div
+              className="w-1 bg-blue-400 hover:bg-blue-600 cursor-col-resize transition-colors flex-shrink-0 relative group"
+              onMouseDown={handleLeftDividerMouseDown}
+            >
+              <div className="absolute inset-0 w-4 -mx-1.5" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="bg-blue-600 text-white px-1 py-2 rounded text-xs whitespace-nowrap">
+                  ⇄
+                </div>
+              </div>
+            </div>
+
+            {/* Middle Column - Main Content */}
+            <div 
+              className="flex flex-col overflow-y-auto bg-blue-50"
+              style={{ width: `${middleColumnWidth}%` }}
+            >
+              <div className="flex-1 p-6 space-y-6">
+                {/* Text Input Section */}
+                <div>
+                  <h3 className="text-black font-bold text-lg mb-3">Enter Text (one sentence per line)</h3>
+                  <textarea
+                      className={"text-black w-full p-4 border-2 border-blue-400 rounded-lg min-h-[150px] resize-y focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors"}
+                      value={sentenceInput}
+                      onChange={val => {
+                        setSentenceInput(val.target.value)
+                        setSentences(splitIntoSentences(val.target.value))
+                      }}
+                      placeholder="Enter your text here. Each line will be treated as a separate sentence."
+                  />
+                </div>
+
+                {/* Current Sentence Display */}
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-400 rounded-lg p-6 shadow-md">
+                  <h3 className="text-black font-bold text-lg mb-4 text-center">Current Sentence</h3>
+                  <div className="relative flex justify-center items-center min-h-[80px]">
+                    <style dangerouslySetInnerHTML={{__html: `
+                      .learn-subtitle-container > div {
+                        position: relative !important;
+                        width: 100% !important;
+                        top: auto !important;
+                        bottom: auto !important;
+                      }
+                    `}} />
+                    <div className="learn-subtitle-container w-full">
+                      <PrimarySubtitle
+                          setMeaning={setMeaning}
+                          currentTime={currentTime}
+                          subtitle={primarySub}
+                          shift={0}
+                          subtitleStyling={primaryStyling}
+                          getLearningStateClass={getLearningStateClass}
+                          changeLearningState={changeLearningState}
+                          setRubyCopyContent={setRubyCopyContent}
                       />
                     </div>
+                  </div>
+                </div>
 
-                    {/* Sentence List Section */}
-                    {sentences.length > 1 && (
-                      <div className="w-full max-w-4xl bg-white border-2 border-blue-300 rounded-lg p-4 shadow-sm">
-                        <SentenceList sentences={sentences} onSentenceClick={handleSentenceClick}/>
-                      </div>
-                    )}
+                {/* Voice Selection */}
+                <div>
+                  <label className="text-black font-semibold mb-2 block">Voice Selection</label>
+                  <select
+                      value={selectedVoice}
+                      onChange={(e) => setSelectedVoice(e.target.value)}
+                      className="text-black p-3 border-2 border-blue-400 rounded-lg w-full focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors cursor-pointer"
+                  >
+                    <option value="">Default Voice</option>
+                    {filteredVoices.map((voice) => (
+                        <option key={voice.name} value={voice.name}>
+                          {`${voice.name} (${voice.lang})`}
+                        </option>
+                    ))}
+                  </select>
+                </div>
 
-                    {/* Current Sentence Display */}
-                    <div className="w-full max-w-4xl bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-400 rounded-lg p-6 shadow-md">
-                      <h3 className="text-black font-bold text-lg mb-4 text-center">Current Sentence</h3>
-                      <div className="relative flex justify-center items-center min-h-[80px]">
-                        <style dangerouslySetInnerHTML={{__html: `
-                          .learn-subtitle-container > div {
-                            position: relative !important;
-                            width: 100% !important;
-                            top: auto !important;
-                            bottom: auto !important;
-                          }
-                        `}} />
-                        <div className="learn-subtitle-container w-full">
-                          <PrimarySubtitle
-                              setMeaning={setMeaning}
-                              currentTime={currentTime}
-                              subtitle={primarySub}
-                              shift={0}
-                              subtitleStyling={primaryStyling}
-                              getLearningStateClass={getLearningStateClass}
-                              changeLearningState={changeLearningState}
-                              setRubyCopyContent={setRubyCopyContent}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Voice Selection */}
-                    <div className="w-full max-w-4xl">
-                      <label className="text-black font-semibold mb-2 block">Voice Selection</label>
-                      <select
-                          value={selectedVoice}
-                          onChange={(e) => setSelectedVoice(e.target.value)}
-                          className="text-black p-3 border-2 border-blue-400 rounded-lg w-full focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors cursor-pointer"
-                      >
-                        <option value="">Default Voice</option>
-                        {filteredVoices.map((voice) => (
-                            <option key={voice.name} value={voice.name}>
-                              {`${voice.name} (${voice.lang})`}
-                            </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex flex-wrap gap-3 justify-center w-full max-w-4xl items-center">
+                {/* Action Buttons */}
+                <div className="flex flex-wrap gap-3 justify-center items-center">
                       <AwesomeButton type={'primary'} onPress={openDeepL}>
                         Translate with DeepL
                       </AwesomeButton>
@@ -346,16 +430,16 @@ Keep your analysis clear, educational, and focused on helping language learners 
                       </AwesomeButton>
                     </div>
 
-                    {/* Translation Display */}
-                    {translation && (
-                      <div className="w-full max-w-4xl">
-                        <TranslationDisplay translation={translation}/>
-                      </div>
-                    )}
+                {/* Translation Display */}
+                {translation && (
+                  <div>
+                    <TranslationDisplay translation={translation}/>
+                  </div>
+                )}
 
-                    {/* AI Analysis Display */}
-                    {aiAnalysis && (
-                      <div className="w-full max-w-4xl">
+                {/* AI Analysis Display */}
+                {aiAnalysis && (
+                  <div>
                         <style dangerouslySetInnerHTML={{__html: `
                           .ai-markdown h1 { font-size: 1.5em; font-weight: bold; margin: 1em 0 0.5em 0; color: #6b21a8; }
                           .ai-markdown h2 { font-size: 1.3em; font-weight: bold; margin: 0.8em 0 0.4em 0; color: #7c3aed; }
@@ -390,25 +474,62 @@ Keep your analysis clear, educational, and focused on helping language learners 
                               {aiAnalysis}
                             </ReactMarkdown>
                           </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Navigation */}
-                    <div className="w-full max-w-4xl flex justify-center mt-4">
-                      <AwesomeButton
-                          type={'secondary'}
-                          onPress={async () => {
-                            await router.push('/video')
-                          }}
-                      >
-                        Back to Video
-                      </AwesomeButton>
                     </div>
                   </div>
+                )}
+
+                {/* Navigation */}
+                <div className="flex justify-center mt-4">
+                  <AwesomeButton
+                      type={'secondary'}
+                      onPress={async () => {
+                        await router.push('/video')
+                      }}
+                  >
+                    Back to Video
+                  </AwesomeButton>
                 </div>
               </div>
-            </ContainerHome>
+            </div>
+
+            {/* Right Divider */}
+            <div
+              className="w-1 bg-blue-400 hover:bg-blue-600 cursor-col-resize transition-colors flex-shrink-0 relative group"
+              onMouseDown={handleRightDividerMouseDown}
+            >
+              <div className="absolute inset-0 w-4 -mx-1.5" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="bg-blue-600 text-white px-1 py-2 rounded text-xs whitespace-nowrap">
+                  ⇄
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column - Sentence List */}
+            <div 
+              className="flex flex-col bg-white overflow-y-auto"
+              style={{ width: `${rightColumnWidth}%` }}
+            >
+              <div className="p-4 border-b-2 border-blue-400 bg-blue-100">
+                <h3 className="text-black font-bold text-lg">Sentences</h3>
+                {sentences.length > 0 && (
+                  <p className="text-sm text-blue-600 mt-1">{sentences.length} sentence{sentences.length !== 1 ? 's' : ''}</p>
+                )}
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                {sentences.length > 1 ? (
+                  <div className="p-4">
+                    <SentenceList sentences={sentences} onSentenceClick={handleSentenceClick}/>
+                  </div>
+                ) : (
+                  <div className="p-8 text-center text-gray-400">
+                    <div className="text-4xl mb-2">📝</div>
+                    <div className="text-sm">No sentences yet</div>
+                    <div className="text-xs mt-1">Enter text with multiple lines</div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
           <LearningSidebar
               showSidebar={showSidebar}
