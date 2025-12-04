@@ -462,10 +462,10 @@ Be concise, clear, and educational. Focus on practical usage.`
   if (meaningContent.single.length === 0) return null;
 
   return (
-      <div onClick={handleBGClick} className="z-[18] fixed bg-blue-200/20 w-[100vw] h-[100vh]">
+      <div onClick={handleBGClick} className="z-[18] fixed inset-0 bg-blue-200/20 w-[100vw] h-[100vh] flex items-center justify-center">
         <div
             onClick={(e) => e.stopPropagation()}
-            className="overflow-auto border-2 border-blue-700 inset-x-0 mx-auto mt-10 bg-blue-100 z-[101] fixed rounded-lg w-[80vw] h-[80vh]"
+            className="overflow-auto border-2 border-blue-700 bg-blue-100 z-[101] rounded-lg w-[80vw] h-[80vh] max-w-[1200px] max-h-[90vh]"
         >
           <div className={'flex flex-col'}>
             {memoizedCustomComponent}
