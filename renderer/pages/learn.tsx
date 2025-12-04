@@ -278,22 +278,31 @@ function Learn() {
       
       const model = openrouter(openRouterModel);
       
+      // Get language name for better context
+      const languageNames = {
+        'ja': 'Japanese',
+        'zh': 'Chinese',
+        'yue': 'Cantonese',
+        'vi': 'Vietnamese'
+      };
+      const languageName = languageNames[lang] || lang;
+      
       const result = await streamText({
         model,
         messages: [
           {
             role: 'system',
-            content: `You are a language learning assistant. Analyze the given sentence in detail. Provide:
-1. Grammar breakdown: Identify key grammatical structures and explain their usage
+            content: `You are a ${languageName} language learning assistant. Analyze the given ${languageName} sentence in detail. Provide:
+1. Grammar breakdown: Identify key grammatical structures and explain their usage in ${languageName}
 2. Vocabulary analysis: Explain important words and their meanings in context
-3. Cultural notes: If relevant, mention any cultural aspects
-4. Learning tips: Suggest similar patterns or phrases to study
+3. Cultural notes: If relevant, mention any cultural aspects specific to ${languageName}-speaking regions
+4. Learning tips: Suggest similar patterns or phrases to study in ${languageName}
 
-Keep your analysis clear, educational, and focused on helping language learners understand the sentence deeply.`
+Keep your analysis clear, educational, and focused on helping learners understand the ${languageName} sentence deeply.`
           },
           {
             role: 'user',
-            content: `Please analyze this sentence in detail: "${directInput}"`
+            content: `Please analyze this ${languageName} sentence in detail: "${directInput}"`
           }
         ]
       });
@@ -311,7 +320,7 @@ Keep your analysis clear, educational, and focused on helping language learners 
     } finally {
       setIsAnalyzing(false);
     }
-  }, [directInput, openRouterApiKey, openRouterModel]);
+  }, [directInput, openRouterApiKey, openRouterModel, lang]);
 
   return (
       <React.Fragment>

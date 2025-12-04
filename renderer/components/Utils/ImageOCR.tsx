@@ -307,7 +307,10 @@ export const ImageOCR: React.FC<ImageOCRProps> = ({ onTextExtracted, targetLangu
     processImage();
   }, [processImage]);
 
-  const handleBlockClick = useCallback((index: number, text: string) => {
+  const handleBlockClick = useCallback((index: number, text: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
     setSelectedBlockIndex(index);
     onTextExtracted(text);
     console.log(`Selected ${viewLevel} ${index + 1}:`, text);
@@ -337,15 +340,26 @@ export const ImageOCR: React.FC<ImageOCRProps> = ({ onTextExtracted, targetLangu
   }, [imageDimensions, originalDimensions]);
 
   const handleImageMouseDown = useCallback((e: React.MouseEvent) => {
-    // Only start dragging if clicking on the image itself, not on bounding boxes
-    if (e.target === imageRef.current) {
+    // Only start dragging if NOT clicking on a bounding box
+    const target = e.target as HTMLElement;
+    const isBoundingBox = target.classList?.contains('bounding-box');
+    
+    if (!isBoundingBox) {
+      // If Ctrl is pressed, extract full text instead of dragging
+      if (e.ctrlKey && ocrResult) {
+        onTextExtracted(ocrResult);
+        setSelectedBlockIndex(null);
+        console.log('Full text extracted via Ctrl+Click');
+        return;
+      }
+      
       setIsDraggingImage(true);
       setDragStart({
         x: e.clientX - imagePosition.x,
         y: e.clientY - imagePosition.y
       });
     }
-  }, [imagePosition]);
+  }, [imagePosition, ocrResult, onTextExtracted]);
 
   const handleImageMouseMove = useCallback((e: React.MouseEvent) => {
     if (isDraggingImage) {
@@ -562,7 +576,7 @@ export const ImageOCR: React.FC<ImageOCRProps> = ({ onTextExtracted, targetLangu
               )}
             </div>
             <div className="text-sm text-purple-600 mb-2">
-              💡 Click on any box to extract its text • Drag to pan • Scroll to zoom
+              💡 Click on any box to extract its text • Ctrl+Click image for full text • Drag to pan • Scroll to zoom
             </div>
             <div 
               ref={imageContainerRef}
@@ -572,9 +586,10 @@ export const ImageOCR: React.FC<ImageOCRProps> = ({ onTextExtracted, targetLangu
               onMouseMove={handleImageMouseMove}
               onMouseUp={handleImageMouseUp}
               onMouseLeave={handleImageMouseUp}
+              title="Ctrl+Click to extract full text"
             >
               <div 
-                className="relative inline-block"
+                className="relative inline-block image-wrapper"
                 style={{
                   position: 'relative',
                   left: `${imagePosition.x}px`,
@@ -616,8 +631,8 @@ export const ImageOCR: React.FC<ImageOCRProps> = ({ onTextExtracted, targetLangu
                       return (
                         <div
                           key={index}
-                          onClick={() => handleBlockClick(index, block.text)}
-                          className={`absolute border-2 transition-all cursor-pointer pointer-events-auto ${
+                          onClick={(e) => handleBlockClick(index, block.text, e)}
+                          className={`bounding-box absolute border-2 transition-all cursor-pointer pointer-events-auto ${
                             isSelected 
                               ? 'bg-yellow-400/30 border-yellow-500 border-4' 
                               : 'bg-purple-400/10 border-purple-500 hover:bg-purple-400/20 hover:border-purple-600'
