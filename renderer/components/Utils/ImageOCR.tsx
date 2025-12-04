@@ -29,11 +29,15 @@ export const ImageOCR: React.FC<ImageOCRProps> = ({ onTextExtracted, targetLangu
   const [viewLevel, setViewLevel] = useState<ViewLevel>('paragraph');
   const [showBoundingBoxes, setShowBoundingBoxes] = useState(true);
   const [selectedBlockIndex, setSelectedBlockIndex] = useState<number | null>(null);
-  const [isCtrlPressed, setIsCtrlPressed] = useState(false);
+  const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
+  const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
+  const [isDraggingImage, setIsDraggingImage] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [originalDimensions, setOriginalDimensions] = useState({ width: 0, height: 0 });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
   const [googleApiKey] = useStoreData('google.vision.apiKey', '');
 
   // Debug: Log when API key changes
@@ -291,6 +295,9 @@ export const ImageOCR: React.FC<ImageOCRProps> = ({ onTextExtracted, targetLangu
     setParagraphs([]);
     setSentences([]);
     setSelectedBlockIndex(null);
+    setImageDimensions({ width: 0, height: 0 });
+    setOriginalDimensions({ width: 0, height: 0 });
+    setImagePosition({ x: 0, y: 0 });
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -300,142 +307,117 @@ export const ImageOCR: React.FC<ImageOCRProps> = ({ onTextExtracted, targetLangu
     processImage();
   }, [processImage]);
 
-  const drawBoundingBoxes = useCallback(() => {
-    const canvas = canvasRef.current;
-    const image = imageRef.current;
-    
-    const currentBlocks = viewLevel === 'paragraph' ? paragraphs : sentences;
-    
-    if (!canvas || !image || !showBoundingBoxes || currentBlocks.length === 0) {
-      return;
-    }
+  const handleBlockClick = useCallback((index: number, text: string) => {
+    setSelectedBlockIndex(index);
+    onTextExtracted(text);
+    console.log(`Selected ${viewLevel} ${index + 1}:`, text);
+  }, [viewLevel, onTextExtracted]);
 
-    // Set canvas size to match image display size
-    const rect = image.getBoundingClientRect();
-    canvas.width = image.naturalWidth;
-    canvas.height = image.naturalHeight;
-    canvas.style.width = `${rect.width}px`;
-    canvas.style.height = `${rect.height}px`;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Draw each bounding box
-    currentBlocks.forEach((block, index) => {
-      const vertices = block.boundingBox.vertices;
+  const handleImageLoad = useCallback(() => {
+    if (imageRef.current) {
+      const naturalWidth = imageRef.current.naturalWidth;
+      const naturalHeight = imageRef.current.naturalHeight;
       
-      if (vertices && vertices.length >= 4) {
-        const isSelected = selectedBlockIndex === index;
-        
-        ctx.beginPath();
-        ctx.moveTo(vertices[0].x, vertices[0].y);
-        
-        for (let i = 1; i < vertices.length; i++) {
-          ctx.lineTo(vertices[i].x, vertices[i].y);
-        }
-        
-        ctx.closePath();
-        
-        // Draw semi-transparent fill (highlight selected)
-        ctx.fillStyle = isSelected 
-          ? `rgba(234, 179, 8, 0.3)` // yellow for selected
-          : `rgba(147, 51, 234, 0.1)`; // purple with transparency
-        ctx.fill();
-        
-        // Draw border
-        ctx.strokeStyle = isSelected ? '#eab308' : '#9333ea'; // yellow if selected, purple otherwise
-        ctx.lineWidth = isSelected ? 4 : 3;
-        ctx.stroke();
-        
-        // Draw label
-        ctx.fillStyle = isSelected ? '#eab308' : '#9333ea';
-        ctx.font = 'bold 24px Arial';
-        const label = viewLevel === 'paragraph' ? `P${index + 1}` : `S${index + 1}`;
-        ctx.fillText(label, vertices[0].x + 5, vertices[0].y + 25);
-      }
-    });
-  }, [paragraphs, sentences, viewLevel, showBoundingBoxes, selectedBlockIndex]);
-
-  // Check if a point is inside a polygon
-  const isPointInPolygon = (point: { x: number; y: number }, vertices: Array<{ x: number; y: number }>) => {
-    let inside = false;
-    for (let i = 0, j = vertices.length - 1; i < vertices.length; j = i++) {
-      const xi = vertices[i].x, yi = vertices[i].y;
-      const xj = vertices[j].x, yj = vertices[j].y;
+      // Calculate initial display size (max 400px height while maintaining aspect ratio)
+      const maxHeight = 400;
+      const aspectRatio = naturalWidth / naturalHeight;
       
-      const intersect = ((yi > point.y) !== (yj > point.y))
-          && (point.x < (xj - xi) * (point.y - yi) / (yj - yi) + xi);
-      if (intersect) inside = !inside;
+      let initialHeight = Math.min(naturalHeight, maxHeight);
+      let initialWidth = initialHeight * aspectRatio;
+      
+      setOriginalDimensions({ width: initialWidth, height: initialHeight });
+      setImageDimensions({ width: initialWidth, height: initialHeight });
+      setImagePosition({ x: 0, y: 0 });
     }
-    return inside;
-  };
-
-  const handleCanvasClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
-    // Only process click if Ctrl is pressed
-    if (!isCtrlPressed) return;
-    
-    const canvas = canvasRef.current;
-    const image = imageRef.current;
-    
-    if (!canvas || !image) return;
-    
-    const currentBlocks = viewLevel === 'paragraph' ? paragraphs : sentences;
-    if (currentBlocks.length === 0) return;
-    
-    // Get click coordinates relative to canvas
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const x = (e.clientX - rect.left) * scaleX;
-    const y = (e.clientY - rect.top) * scaleY;
-    
-    // Find which polygon was clicked
-    for (let i = currentBlocks.length - 1; i >= 0; i--) {
-      const block = currentBlocks[i];
-      if (isPointInPolygon({ x, y }, block.boundingBox.vertices)) {
-        setSelectedBlockIndex(i);
-        onTextExtracted(block.text);
-        console.log(`Selected ${viewLevel} ${i + 1}:`, block.text);
-        drawBoundingBoxes();
-        break;
-      }
-    }
-  }, [viewLevel, paragraphs, sentences, onTextExtracted, drawBoundingBoxes, isCtrlPressed]);
-
-  // Draw bounding boxes when image loads or paragraphs change
-  React.useEffect(() => {
-    if (imageRef.current && imageRef.current.complete) {
-      drawBoundingBoxes();
-    }
-  }, [paragraphs, sentences, viewLevel, showBoundingBoxes, selectedBlockIndex, drawBoundingBoxes]);
-
-  // Add keyboard listeners for Ctrl key
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey || e.metaKey) {
-        setIsCtrlPressed(true);
-      }
-    };
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-      if (!e.ctrlKey && !e.metaKey) {
-        setIsCtrlPressed(false);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-    window.addEventListener('blur', () => setIsCtrlPressed(false));
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-      window.removeEventListener('blur', () => setIsCtrlPressed(false));
-    };
   }, []);
+
+  const getImageScale = useCallback(() => {
+    if (originalDimensions.width === 0) return 1;
+    return imageDimensions.width / originalDimensions.width;
+  }, [imageDimensions, originalDimensions]);
+
+  const handleImageMouseDown = useCallback((e: React.MouseEvent) => {
+    // Only start dragging if clicking on the image itself, not on bounding boxes
+    if (e.target === imageRef.current) {
+      setIsDraggingImage(true);
+      setDragStart({
+        x: e.clientX - imagePosition.x,
+        y: e.clientY - imagePosition.y
+      });
+    }
+  }, [imagePosition]);
+
+  const handleImageMouseMove = useCallback((e: React.MouseEvent) => {
+    if (isDraggingImage) {
+      setImagePosition({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
+    }
+  }, [isDraggingImage, dragStart]);
+
+  const handleImageMouseUp = useCallback(() => {
+    setIsDraggingImage(false);
+  }, []);
+
+  const handleZoomIn = useCallback(() => {
+    setImageDimensions(prev => {
+      const newWidth = Math.min(prev.width * 1.25, originalDimensions.width * 4);
+      const aspectRatio = originalDimensions.width / originalDimensions.height;
+      return {
+        width: newWidth,
+        height: newWidth / aspectRatio
+      };
+    });
+  }, [originalDimensions]);
+
+  const handleZoomOut = useCallback(() => {
+    setImageDimensions(prev => {
+      const newWidth = Math.max(prev.width * 0.8, originalDimensions.width * 0.5);
+      const aspectRatio = originalDimensions.width / originalDimensions.height;
+      return {
+        width: newWidth,
+        height: newWidth / aspectRatio
+      };
+    });
+  }, [originalDimensions]);
+
+  const handleResetTransform = useCallback(() => {
+    setImageDimensions(originalDimensions);
+    setImagePosition({ x: 0, y: 0 });
+  }, [originalDimensions]);
+
+  const handleWheel = useCallback((e: WheelEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    setImageDimensions(prev => {
+      const newWidth = Math.max(
+        originalDimensions.width * 0.5,
+        Math.min(prev.width * delta, originalDimensions.width * 4)
+      );
+      const aspectRatio = originalDimensions.width / originalDimensions.height;
+      return {
+        width: newWidth,
+        height: newWidth / aspectRatio
+      };
+    });
+  }, [originalDimensions]);
+
+  // Use native event listener to ensure preventDefault works
+  React.useEffect(() => {
+    const container = imageContainerRef.current;
+    if (!container) return;
+
+    const wheelHandler = (e: WheelEvent) => {
+      handleWheel(e);
+    };
+
+    container.addEventListener('wheel', wheelHandler, { passive: false });
+    return () => {
+      container.removeEventListener('wheel', wheelHandler);
+    };
+  }, [handleWheel]);
 
   return (
     <div className="w-full max-w-4xl bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-400 rounded-lg p-6 shadow-md">
@@ -497,6 +479,35 @@ export const ImageOCR: React.FC<ImageOCRProps> = ({ onTextExtracted, targetLangu
             >
               🔍 Process Image
             </AwesomeButton>
+            
+            {/* Zoom Controls */}
+            <div className="flex gap-2 items-center bg-white px-3 py-2 rounded-lg border-2 border-purple-300">
+              <button
+                onClick={handleZoomOut}
+                className="px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors"
+                title="Zoom Out"
+              >
+                🔍−
+              </button>
+              <span className="text-purple-700 font-semibold min-w-[60px] text-center">
+                {Math.round(getImageScale() * 100)}%
+              </span>
+              <button
+                onClick={handleZoomIn}
+                className="px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors"
+                title="Zoom In"
+              >
+                🔍+
+              </button>
+              <button
+                onClick={handleResetTransform}
+                className="px-3 py-1 bg-purple-300 text-purple-900 rounded hover:bg-purple-400 transition-colors ml-2"
+                title="Reset View"
+              >
+                ⟲
+              </button>
+            </div>
+
             {paragraphs.length > 0 && (
               <>
                 <button
@@ -551,22 +562,79 @@ export const ImageOCR: React.FC<ImageOCRProps> = ({ onTextExtracted, targetLangu
               )}
             </div>
             <div className="text-sm text-purple-600 mb-2">
-              💡 Click on any box to extract its text
+              💡 Click on any box to extract its text • Drag to pan • Scroll to zoom
             </div>
-            <div className="relative inline-block">
-              <img
-                ref={imageRef}
-                src={previewUrl}
-                alt="OCR Preview"
-                className="max-w-full max-h-[400px] mx-auto object-contain rounded"
-                onLoad={drawBoundingBoxes}
-              />
-              <canvas
-                ref={canvasRef}
-                onClick={handleCanvasClick}
-                className="absolute top-0 left-0 cursor-pointer"
-                style={{ display: showBoundingBoxes && paragraphs.length > 0 ? 'block' : 'none' }}
-              />
+            <div 
+              ref={imageContainerRef}
+              className="relative overflow-hidden border border-purple-200 rounded"
+              style={{ maxHeight: '600px', cursor: isDraggingImage ? 'grabbing' : 'grab' }}
+              onMouseDown={handleImageMouseDown}
+              onMouseMove={handleImageMouseMove}
+              onMouseUp={handleImageMouseUp}
+              onMouseLeave={handleImageMouseUp}
+            >
+              <div 
+                className="relative inline-block"
+                style={{
+                  position: 'relative',
+                  left: `${imagePosition.x}px`,
+                  top: `${imagePosition.y}px`,
+                }}
+              >
+                <img
+                  ref={imageRef}
+                  src={previewUrl}
+                  alt="OCR Preview"
+                  onLoad={handleImageLoad}
+                  className="rounded select-none"
+                  draggable={false}
+                  style={{
+                    width: imageDimensions.width > 0 ? `${imageDimensions.width}px` : 'auto',
+                    height: imageDimensions.height > 0 ? `${imageDimensions.height}px` : 'auto',
+                    maxHeight: imageDimensions.height === 0 ? '400px' : 'none',
+                  }}
+                />
+                {/* Simple Box Overlays */}
+                {showBoundingBoxes && paragraphs.length > 0 && imageRef.current && imageDimensions.width > 0 && (
+                  <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+                    {(viewLevel === 'paragraph' ? paragraphs : sentences).map((block, index) => {
+                      const image = imageRef.current;
+                      if (!image) return null;
+                      
+                      // Calculate scale based on current displayed size vs natural size
+                      const scaleX = imageDimensions.width / image.naturalWidth;
+                      const scaleY = imageDimensions.height / image.naturalHeight;
+                      
+                      const vertices = block.boundingBox.vertices;
+                      const minX = Math.min(...vertices.map(v => v.x)) * scaleX;
+                      const minY = Math.min(...vertices.map(v => v.y)) * scaleY;
+                      const maxX = Math.max(...vertices.map(v => v.x)) * scaleX;
+                      const maxY = Math.max(...vertices.map(v => v.y)) * scaleY;
+                      
+                      const isSelected = selectedBlockIndex === index;
+                      
+                      return (
+                        <div
+                          key={index}
+                          onClick={() => handleBlockClick(index, block.text)}
+                          className={`absolute border-2 transition-all cursor-pointer pointer-events-auto ${
+                            isSelected 
+                              ? 'bg-yellow-400/30 border-yellow-500 border-4' 
+                              : 'bg-purple-400/10 border-purple-500 hover:bg-purple-400/20 hover:border-purple-600'
+                          }`}
+                          style={{
+                            left: `${minX}px`,
+                            top: `${minY}px`,
+                            width: `${maxX - minX}px`,
+                            height: `${maxY - minY}px`,
+                          }}
+                          title={`Click to extract ${viewLevel} #${index + 1}`}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

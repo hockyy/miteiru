@@ -176,6 +176,15 @@ const MeaningBox = ({
       return;
     }
 
+    // Map lang constants to readable language names
+    const languageMap = {
+      [videoConstants.japaneseLang]: 'Japanese',
+      [videoConstants.chineseLang]: 'Chinese (Simplified)',
+      [videoConstants.cantoneseLang]: 'Cantonese',
+      [videoConstants.vietnameseLang]: 'Vietnamese'
+    };
+    const languageName = languageMap[lang] || 'the target language';
+
     setIsGeneratingNote(true);
     try {
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -191,24 +200,25 @@ const MeaningBox = ({
           messages: [
             {
               role: 'system',
-              content: `You are a language learning assistant. Generate helpful study notes for vocabulary terms.
+              content: `You are a language learning assistant. Generate helpful study notes for ${languageName} vocabulary terms.
 Create a JSON response with:
 1. "usageNote": A brief, practical note about how to use this word (2-3 sentences) in English
-2. "examples": An array of 3-5 example sentences using this word in context - MUST be in the SAME LANGUAGE as the input word
-3. "relatedTerms": An array of 3-5 related words or phrases - MUST be in the SAME LANGUAGE as the input word, NO English translations or romanization (similar words, opposites, commonly paired words, etc.)
+2. "examples": An array of 3-5 example sentences using this word in context - MUST be in ${languageName}
+3. "relatedTerms": An array of 3-5 related words or phrases - MUST be in ${languageName}, NO English translations or romanization (similar words, opposites, commonly paired words, etc.)
 
 IMPORTANT: 
-- For "examples" and "relatedTerms", MUST be in the SAME LANGUAGE as the input word
+- For "examples" and "relatedTerms", MUST be in ${languageName}
 - NO English translations, NO romanization (no pinyin, hiragana reading, etc.)
-- If the input is Japanese kanji, output Japanese kanji
-- If the input is Chinese hanzi, output Chinese hanzi
 - Keep everything in the native script
+${lang === videoConstants.japaneseLang ? '- Output Japanese kanji and kana as appropriate' : ''}
+${lang === videoConstants.chineseLang ? '- Output Chinese hanzi (simplified characters)' : ''}
+${lang === videoConstants.cantoneseLang ? '- Output Chinese hanzi (traditional characters typically used in Cantonese)' : ''}
 
 Be concise, clear, and educational. Focus on practical usage.`
             },
             {
               role: 'user',
-              content: `Generate study notes for the word: "${meaning}"`
+              content: `Generate study notes for the ${languageName} word: "${meaning}"`
             }
           ]
         })
@@ -250,7 +260,7 @@ Be concise, clear, and educational. Focus on practical usage.`
     } finally {
       setIsGeneratingNote(false);
     }
-  }, [meaning, openRouterApiKey, openRouterModel, setUserNote]);
+  }, [meaning, lang, openRouterApiKey, openRouterModel, setUserNote]);
 
   const handlePrevious = useCallback(() => {
     if (meaningIndex > 0) {
