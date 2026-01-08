@@ -1,5 +1,4 @@
 {
-  "homepage": "https://miteiru.hocky.id",
   "linux": {
     "icon": "resources/icon.icns",
     "target": ["deb", "AppImage"],

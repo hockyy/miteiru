@@ -5,6 +5,7 @@
   "version": "5.14.0",
   "author": "Hocky Yudhiono <hocky.yudhiono@gmail.com>",
   "main": "app/background.js",
+  "homepage": "https://miteiru.hocky.id",
   "build": {
     "appId": "id.hocky.miteiru",
     "artifactName": "miteiru-${version}-${os}-${arch}.${ext}",
@@ -22,12 +23,13 @@
     "script:initrepo": "node scripts/initrepo.js",
     "script:saverepo": "node scripts/saverepo.js",
     "script:wanikani": "node scripts/scrapeWanikaniKanji.js",
-    "dev": "nextron",
+    "dev": "nextron --electron-options='--no-sandbox'",
     "build": "nextron build",
     "build:nsis": "nextron build --config=buildConfig/nsis.config.json",
     "build:portable": "nextron build --config=buildConfig/portable.config.json",
     "build:linux20": "nextron build --config=buildConfig/linux20.config.json",
     "build:linux22": "nextron build --config=buildConfig/linux22.config.json",
+    "build:linux24": "nextron build --config=buildConfig/linux24.config.json",
     "postinstall": "electron-builder install-app-deps && patch-package"
   },
   "dependencies": {
