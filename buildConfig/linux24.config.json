@@ -2,6 +2,6 @@
   "linux": {
     "icon": "resources/icon.icns",
     "target": ["deb", "AppImage"],
-    "artifactName": "miteiru-${version}-${os}-22.04-${arch}.${ext}"
+    "artifactName": "miteiru-${version}-${os}-24.04-${arch}.${ext}"
   }
 }
