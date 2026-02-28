@@ -13,6 +13,7 @@ import useSpeech from "../../hooks/useSpeech";
 import {useStoreData} from "../../hooks/useStoreData";
 import {useUserNotes} from "../../hooks/useUserNotes";
 import {UserNotesSection} from "./UserNotesSection";
+import {TermImagesSection} from "./TermImagesSection";
 
 const OutlinedStar = ({
                         color,
@@ -519,7 +520,15 @@ Be concise, clear, and educational. Focus on practical usage.`
               isGenerating={isGeneratingNote}
               onNavigateToTerm={handleNavigateToTerm}
             />
-            
+
+            {/* Term Images Section */}
+            <TermImagesSection
+              term={meaning}
+              lang={lang}
+              romajiedData={romajiedData}
+              meaningContent={meaningContent}
+            />
+
             {memoizedCharacterContent}
             {memoizedMeaningContent}
           </div>

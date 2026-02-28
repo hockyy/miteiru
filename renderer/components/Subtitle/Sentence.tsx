@@ -118,6 +118,12 @@ const StyledChineseSentence = styled.button<{ subtitleStyling: CJKStyling }>`
 
 `
 
+const getTextShadowFromStroke = (strokeWidth: string, color: string) => {
+  const sw = parseFloat(strokeWidth) || 0.22;
+  const scale = Math.max(0.5, sw / 0.22);
+  return `0 ${scale}px ${2 * scale}px ${color}, 0 0 ${4 * scale}px ${color}, 0 ${2 * scale}px ${4 * scale}px ${color}`;
+};
+
 interface SentenceParam {
   origin: string,
   setMeaning: any,
@@ -211,6 +217,7 @@ export const JapaneseSentence = ({
       WebkitTextFillColor: wordMeaning ? subtitleStyling.textMeaning.color : '',
       WebkitTextStrokeColor: subtitleStyling.stroke.color,
       WebkitTextStrokeWidth: subtitleStyling.stroke.width,
+      textShadow: getTextShadowFromStroke(subtitleStyling.stroke.width, subtitleStyling.stroke.color),
     }}>
       {/* @ts-expect-error rb wtf eslint*/}
       <rb>{separationContent}</rb>
@@ -382,6 +389,7 @@ export const ChineseSentence = ({
       WebkitTextFillColor: wordMeaning ? subtitleStyling.textMeaning.color : '',
       WebkitTextStrokeColor: subtitleStyling.stroke.color,
       WebkitTextStrokeWidth: subtitleStyling.stroke.width,
+      textShadow: getTextShadowFromStroke(subtitleStyling.stroke.width, subtitleStyling.stroke.color),
     }}>
       {/* @ts-expect-error rb wtf eslint*/}
       <rb>{separationContent}</rb>
