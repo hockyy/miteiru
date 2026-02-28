@@ -2,7 +2,7 @@
   "private": true,
   "name": "miteiru",
   "description": "Miteiru",
-  "version": "5.14.0",
+  "version": "5.15.0",
   "author": "Hocky Yudhiono <hocky.yudhiono@gmail.com>",
   "main": "app/background.js",
   "homepage": "https://miteiru.hocky.id",
