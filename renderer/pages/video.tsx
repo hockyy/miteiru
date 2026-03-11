@@ -541,6 +541,7 @@ function Video() {
             commands={commands}
         />
         <Sidebar showSidebar={showSidebar} setShowSidebar={setShowSidebar}
+                 primarySub={primarySub}
                  primaryStyling={primaryStyling}
                  setPrimaryStyling={setPrimaryStyling}
                  secondaryStyling={secondaryStyling}
