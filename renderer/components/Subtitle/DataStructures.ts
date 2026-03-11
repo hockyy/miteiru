@@ -1,4 +1,4 @@
-import { isHiragana, isKatakana, toHiragana } from 'wanakana'
+import { isHiragana, isKatakana, toHiragana, toRomaji } from 'wanakana'
 import { videoConstants } from "../../utils/constants";
 import { v4 as uuidv4 } from 'uuid';
 import { Entry } from "@plussub/srt-vtt-parser/dist/src/types";
@@ -27,6 +27,103 @@ function preProcess(text, accentChanger = noChanger) {
   const removedTag = removeTags(text);
   return accentChanger(removedTag);
 }
+
+interface HufWord {
+  content?: string;
+}
+
+interface HufSentence {
+  id?: string;
+  startMs?: number;
+  endMs?: number;
+  words?: HufWord[];
+}
+
+interface HufDocument {
+  format?: string;
+  version?: string;
+  syncMs?: number;
+  singer?: string | string[];
+  sentences?: HufSentence[];
+  contents?: HufSentence[];
+}
+
+const appendHufWords = (words: HufWord[] = []): string => {
+  return words.map((word) => (typeof word?.content === 'string' ? word.content : '')).join('');
+};
+
+const parseHufToEntries = (content: string): Entry[] => {
+  let parsed: HufDocument;
+  try {
+    parsed = JSON.parse(content);
+  } catch (error) {
+    throw new Error('Invalid HUF JSON content');
+  }
+
+  if (parsed?.format !== 'holokara-unified-format') {
+    throw new Error('Invalid HUF format');
+  }
+
+  const rawSentences = Array.isArray(parsed.sentences)
+    ? parsed.sentences
+    : (Array.isArray(parsed.contents) ? parsed.contents : []);
+  const syncMs = Number.isFinite(parsed.syncMs) ? Number(parsed.syncMs) : 0;
+
+  return rawSentences
+  .map((sentence, index) => {
+    const from = Number(sentence?.startMs);
+    const to = Number(sentence?.endMs);
+    if (!Number.isFinite(from) || !Number.isFinite(to)) return null;
+
+    return {
+      id: sentence?.id ?? `sentence-${(index + 1).toString().padStart(3, '0')}`,
+      from: Math.trunc(from + syncMs),
+      to: Math.trunc(to + syncMs),
+      text: appendHufWords(sentence?.words)
+    } as Entry;
+  })
+  .filter((entry): entry is Entry => entry !== null);
+};
+
+const getRomajiFromSeparation = (separation: any): string => {
+  if (!Array.isArray(separation)) return '';
+
+  const directRomaji = separation
+  .map((part) => (typeof part?.romaji === 'string' ? part.romaji : ''))
+  .join('');
+  if (directRomaji !== '') return directRomaji;
+
+  const joinedHiragana = separation
+  .map((part) => (typeof part?.hiragana === 'string' ? part.hiragana : ''))
+  .join('');
+  if (joinedHiragana !== '') return toRomaji(joinedHiragana);
+
+  return '';
+};
+
+const buildRubyMapFromToken = (token: any): Record<string, string> => {
+  const rubyMap: Record<string, string> = {};
+  const hiragana = typeof token?.hiragana === 'string' ? token.hiragana : '';
+  const romaji =
+    (typeof token?.romaji === 'string' ? token.romaji : '') ||
+    getRomajiFromSeparation(token?.separation) ||
+    (hiragana ? toRomaji(hiragana) : '');
+  const candidates: Array<[string, string]> = [
+    ['hiragana', hiragana],
+    ['romaji', romaji],
+    ['pinyin', token?.pinyin],
+    ['jyutping', token?.jyutping],
+    ['meaning', token?.meaning]
+  ];
+
+  for (const [key, value] of candidates) {
+    if (typeof value === 'string' && value !== '') {
+      rubyMap[key] = value;
+    }
+  }
+
+  return rubyMap;
+};
 
 export class Line {
   timeStart: number;
@@ -213,6 +310,8 @@ export class SubtitleContainer {
       } else if (parsedSubtitle.type === 'lrc' || filename.toLowerCase().endsWith('.lrc')) {
         // Handle LRC format
         entries = parseLRC(parsedSubtitle.content);
+      } else if (parsedSubtitle.type === 'huf') {
+        entries = parseHufToEntries(parsedSubtitle.content);
       } else {
         entries = parsedSubtitle.content.entries;
       }
@@ -260,6 +359,52 @@ export class SubtitleContainer {
       last = Math.max(last, realTo + videoConstants.subtitleFramerate + 1);
     }
     return subtitleContainer;
+  }
+
+  toHuf(singer: string | string[] = [], version: string = '0.1.0', syncMs: number = 0) {
+    const normalizedSingers = Array.isArray(singer)
+      ? singer.filter((item) => typeof item === 'string' && item.trim() !== '')
+      : (typeof singer === 'string' && singer.trim() !== '' ? [singer] : []);
+
+    const sentences = this.lines.map((line, lineIndex) => {
+      const words = Array.isArray(line.content)
+        ? line.content.map((token, tokenIndex) => {
+          const rubyMap = buildRubyMapFromToken(token);
+          const word = {
+            intId: tokenIndex + 1,
+            content: token?.origin ?? token?.main ?? '',
+            startMs: line.timeStart
+          } as any;
+          if (Object.keys(rubyMap).length > 0) {
+            word.rubyMap = rubyMap;
+          }
+          return word;
+        })
+        : [{
+          intId: 1,
+          content: typeof line.content === 'string' ? line.content : '',
+          startMs: line.timeStart
+        }];
+
+      return {
+        id: `sentence-${(lineIndex + 1).toString().padStart(3, '0')}`,
+        startMs: line.timeStart,
+        endMs: line.timeEnd,
+        words
+      };
+    });
+
+    return {
+      format: 'holokara-unified-format',
+      version,
+      syncMs,
+      singer: normalizedSingers,
+      sentences
+    };
+  }
+
+  toHufString(singer: string | string[] = [], version: string = '0.1.0', syncMs: number = 0) {
+    return JSON.stringify(this.toHuf(singer, version, syncMs), null, 2);
   }
 
   async adjustJapanese(tokenizeMiteiru: (string) => Promise<any[]>) {

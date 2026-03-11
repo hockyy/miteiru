@@ -379,6 +379,7 @@ export const StylingBox = ({
 export const Sidebar = ({
                           showSidebar,
                           setShowSidebar,
+                          primarySub,
                           primaryStyling,
                           setPrimaryStyling,
                           secondaryStyling,
@@ -405,6 +406,20 @@ export const Sidebar = ({
   const subtitleModeHandler = useCallback((val) => {
     setSubtitleMode(val ? SubtitleMode.Karaoke : SubtitleMode.Normal);
   }, [setSubtitleMode])
+  const exportHufHandler = useCallback(() => {
+    if (!primarySub || !primarySub.lines || primarySub.lines.length === 0) {
+      alert('No primary subtitle loaded to export.');
+      return;
+    }
+
+    try {
+      const hufContent = primarySub.toHufString();
+      window.ipc.invoke("saveFile", ["huf", "json"], hufContent);
+    } catch (error) {
+      console.error('Failed to export HUF:', error);
+      alert(`Failed to export HUF: ${error.message || 'Unknown error'}`);
+    }
+  }, [primarySub]);
   return <div style={{
     transition: "all 0.3s ease-out",
     transform: `translate(${!showSidebar ? "30vw" : "0"}, 0`
@@ -449,6 +464,10 @@ export const Sidebar = ({
             onChange={learningPercentageHandler}
         /></span>
       </div>
+      <AwesomeButton
+            type={"secondary"}
+            className={"w-full"}
+            onPress={exportHufHandler}>Export Primary as HUF</AwesomeButton>
     </div>
 
     <hr className={"w-full h-1 m-5"}/>
