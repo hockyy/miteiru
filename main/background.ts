@@ -1,4 +1,4 @@
-import {app, protocol} from 'electron';
+import {app, protocol, session} from 'electron';
 import serve from 'electron-serve';
 import {createWindow} from './helpers';
 import fs from "node:fs";
@@ -13,6 +13,30 @@ import Learning from "./handler/learning";
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
 
+function registerYouTubeHeaderWorkaround() {
+  const youtubeRequestUrls = [
+    "*://youtube.com/*",
+    "*://*.youtube.com/*",
+    "*://*.youtube-nocookie.com/*",
+    "*://*.googlevideo.com/*",
+    "*://*.ytimg.com/*"
+  ];
+
+  session.defaultSession.webRequest.onBeforeSendHeaders({urls: youtubeRequestUrls}, (details, callback) => {
+    const requestHeaders = details.requestHeaders || {};
+
+    // YouTube error 153 can happen when embedded requests have no Referer/Origin.
+    if (!requestHeaders.Referer && !requestHeaders.referer) {
+      requestHeaders.Referer = "https://www.youtube.com/";
+    }
+    if (!requestHeaders.Origin && !requestHeaders.origin) {
+      requestHeaders.Origin = "https://www.youtube.com";
+    }
+
+    callback({requestHeaders});
+  });
+}
+
 if (isProd) {
   serve({directory: 'app'});
 } else {
@@ -21,6 +45,7 @@ if (isProd) {
 
 (async () => {
   await app.whenReady();
+  registerYouTubeHeaderWorkaround();
   const appDataDirectory = app.getPath('userData');
   let tokenizerCommand = 'mecab'
   const packageJsonPath = path.join(app.getAppPath(), 'package.json');

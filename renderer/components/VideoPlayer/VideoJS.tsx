@@ -10,6 +10,7 @@ export const VideoJS = ({options, onReady, setCurrentTime, pitchValue}) => {
   const videoRef = useRef(null);
   const playerRef = useRef(null);
   const pitchControlRef = useRef<PitchControl>(new PitchControl());
+  const youtubeObserverRef = useRef<MutationObserver | null>(null);
 
   const handle = useCallback(() => {
     setCurrentTime(playerRef.current.currentTime())
@@ -27,7 +28,23 @@ export const VideoJS = ({options, onReady, setCurrentTime, pitchValue}) => {
       videoRef.current.appendChild(videoElement);
 
       const player = playerRef.current = videojs(videoElement, options, () => {
+        const applyYouTubeIframeAttributes = () => {
+          const iframe = player.el()?.querySelector("iframe");
+          if (iframe) {
+            iframe.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+          }
+        };
+
         onReady && onReady(player);
+        applyYouTubeIframeAttributes();
+
+        youtubeObserverRef.current = new MutationObserver(() => {
+          applyYouTubeIframeAttributes();
+        });
+        youtubeObserverRef.current.observe(player.el(), {
+          childList: true,
+          subtree: true
+        });
 
         // Initialize pitch control when player is ready
         const videoEl = player.el().querySelector('video');
@@ -51,6 +68,10 @@ export const VideoJS = ({options, onReady, setCurrentTime, pitchValue}) => {
 
   useEffect(() => {
     return () => {
+      if (youtubeObserverRef.current) {
+        youtubeObserverRef.current.disconnect();
+        youtubeObserverRef.current = null;
+      }
       pitchControlRef.current.destroy();
     };
   }, []);
