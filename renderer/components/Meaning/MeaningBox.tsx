@@ -8,6 +8,7 @@ import KanjiVGDisplay from "./KanjiVGDisplay";
 import WanikaniRadicalDisplay from "./WanikaniRadicalDisplay";
 import {videoConstants} from "../../utils/constants";
 import MakeMeAHanziDisplay from "./MakeMeAHanziDisplay";
+import HanziStrokeStepsRow from "./HanziStrokeStepsRow";
 import {FaStar, FaVolumeUp} from 'react-icons/fa';
 import useSpeech from "../../hooks/useSpeech";
 import {useStoreData} from "../../hooks/useStoreData";
@@ -838,6 +839,7 @@ const HanziBoxEntry = ({
     <div className={'flex flex-row'}>
       <MakeMeAHanziDisplay character={meaningHanzi.literal}/>
       <div className={'flex flex-col gap-2 m-3'}>
+        <HanziStrokeStepsRow character={meaningHanzi.literal} />
         <div className={'text-5xl flex flex-row gap-5'}>
 
           {meaningHanzi.decomposition && Array.from(meaningHanzi.decomposition).map((value: string, index) => {
