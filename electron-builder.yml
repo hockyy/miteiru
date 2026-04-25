@@ -9,4 +9,10 @@ files:
     filter:
       - package.json
       - app
+win:
+  extraResources:
+    - from: resources/live-captions
+      to: live-captions
+      filter:
+        - MiteiruLiveCaptionsBridge.exe
 publish: null

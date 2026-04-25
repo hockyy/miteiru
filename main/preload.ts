@@ -68,6 +68,33 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.invoke('loadGitHubGists', username, token, perPage, page),
   getGitHubGistContent: (gistId: string, token: string) =>
       ipcRenderer.invoke('getGitHubGistContent', gistId, token),
+
+  liveCaptions: {
+    isSupported: () => ipcRenderer.invoke('live-captions:is-supported'),
+    getState: () => ipcRenderer.invoke('live-captions:get-state'),
+    start: () => ipcRenderer.invoke('live-captions:start'),
+    stop: () => ipcRenderer.invoke('live-captions:stop'),
+    onCaption: (callback: (caption: string) => void) => {
+      const subscription = (_event: IpcRendererEvent, caption: string) => callback(caption);
+      ipcRenderer.on('live-captions:caption', subscription);
+      return () => ipcRenderer.removeListener('live-captions:caption', subscription);
+    },
+    onState: (callback: (state: unknown) => void) => {
+      const subscription = (_event: IpcRendererEvent, state: unknown) => callback(state);
+      ipcRenderer.on('live-captions:state', subscription);
+      return () => ipcRenderer.removeListener('live-captions:state', subscription);
+    },
+    onError: (callback: (error: string) => void) => {
+      const subscription = (_event: IpcRendererEvent, error: string) => callback(error);
+      ipcRenderer.on('live-captions:error', subscription);
+      return () => ipcRenderer.removeListener('live-captions:error', subscription);
+    },
+    onDebug: (callback: (message: string) => void) => {
+      const subscription = (_event: IpcRendererEvent, message: string) => callback(message);
+      ipcRenderer.on('live-captions:debug', subscription);
+      return () => ipcRenderer.removeListener('live-captions:debug', subscription);
+    }
+  },
 });
 
 contextBridge.exposeInMainWorld('shunou', {
