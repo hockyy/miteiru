@@ -5,6 +5,7 @@ import { Entry } from "@plussub/srt-vtt-parser/dist/src/types";
 import * as OpenCC from 'opencc-js';
 import { parse as parseASS } from 'ass-compiler';
 import { parseLRC } from "./LrcParser";
+import {fillSubtitleWithLearningContent, TokenizeMiteiru} from "./subtitleLanguageSupport";
 
 function removeTags(text) {
   const regex = /\{\\.+?}/g;
@@ -56,7 +57,7 @@ const parseHufToEntries = (content: string): Entry[] => {
   let parsed: HufDocument;
   try {
     parsed = JSON.parse(content);
-  } catch (error) {
+  } catch {
     throw new Error('Invalid HUF JSON content');
   }
 
@@ -142,7 +143,7 @@ export class Line {
     }
   }
 
-  async fillContentSeparations(tokenizeMiteiru: (string) => Promise<any[]>) {
+  async fillContentSeparations(tokenizeMiteiru: TokenizeMiteiru) {
     this.content = await tokenizeMiteiru((this.content as string).replace(/\n/g, " "));
   }
 
@@ -407,36 +408,40 @@ export class SubtitleContainer {
     return JSON.stringify(this.toHuf(singer, version, syncMs), null, 2);
   }
 
-  async adjustJapanese(tokenizeMiteiru: (string) => Promise<any[]>) {
+  async adjustForLearning(tokenizeMiteiru: TokenizeMiteiru) {
+    await fillSubtitleWithLearningContent(this, tokenizeMiteiru, () => globalSubtitleId === this.id);
+  }
+
+  async adjustJapanese(tokenizeMiteiru: TokenizeMiteiru) {
     const promises = this.lines.map(async (line) => {
       if (globalSubtitleId !== this.id) return;
 
       await line.fillContentSeparations(tokenizeMiteiru);
-      line.fillContentWithLearningKotoba(this.frequency);
+      await line.fillContentWithLearningKotoba(this.frequency);
     });
 
     await Promise.all(promises);
     this.progress = 'done';
   }
 
-  async adjustChinese(tokenizeMiteiru: (string) => Promise<any[]>) {
+  async adjustChinese(tokenizeMiteiru: TokenizeMiteiru) {
     const promises = this.lines.map(async (line) => {
       if (globalSubtitleId !== this.id) return;
 
       await line.fillContentSeparations(tokenizeMiteiru);
-      line.fillContentWithLearningChinese(this.frequency);
+      await line.fillContentWithLearningChinese(this.frequency);
     });
 
     await Promise.all(promises);
     this.progress = 'done';
   }
 
-  async adjustVietnamese(tokenizeMiteiru: (string) => Promise<any[]>) {
+  async adjustVietnamese(tokenizeMiteiru: TokenizeMiteiru) {
     const promises = this.lines.map(async (line) => {
       if (globalSubtitleId !== this.id) return;
 
       await line.fillContentSeparations(tokenizeMiteiru);
-      line.fillContentWithLearningVietnamese(this.frequency);
+      await line.fillContentWithLearningVietnamese(this.frequency);
     });
 
     await Promise.all(promises);

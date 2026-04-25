@@ -7,10 +7,11 @@ import {
 import {SubtitlePreprocessOptions} from "../types/subtitlePreprocess";
 import {v4 as uuidv4} from 'uuid';
 import {TOAST_TIMEOUT} from "../components/VideoPlayer/Toast";
-import {extractVideoId, isLocalPath, isSubtitle, isVideo, isYoutube} from "../utils/utils";
+import {isLocalPath, isSubtitle, isVideo, isYoutube} from "../utils/utils";
 import {findPositionDeltaInFolder} from "../utils/folderUtils";
 import {useAsyncAwaitQueue} from "./useAsyncAwaitQueue";
 import {videoConstants} from "../utils/constants";
+import {isLearningSubtitleLanguage} from "../components/Subtitle/subtitleLanguageSupport";
 
 const DEFAULT_SUBTITLE_PREPROCESS_OPTIONS: SubtitlePreprocessOptions = {
   titleCaseAllCaps: true
@@ -40,14 +41,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     subSetter(new SubtitleContainer(''));
   }, []);
 
-  const isLearningLanguage = useCallback((language) => {
-    return [
-      videoConstants.japaneseLang,
-      videoConstants.cantoneseLang, 
-      videoConstants.chineseLang,
-      videoConstants.vietnameseLang
-    ].includes(language);
-  }, []);
+  const isLearningLanguage = useCallback(isLearningSubtitleLanguage, []);
 
   const createSubtitleContainer = useCallback(async (filePath: string, preprocessOptions: SubtitlePreprocessOptions = DEFAULT_SUBTITLE_PREPROCESS_OPTIONS) => {
     const subtitlePath = preprocessOptions.titleCaseAllCaps
@@ -69,13 +63,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
         });
       }, TOAST_TIMEOUT / 10);
 
-      if (tmpSub.language === videoConstants.japaneseLang) {
-        await tmpSub.adjustJapanese(tokenizeMiteiru);
-      } else if (tmpSub.language === videoConstants.cantoneseLang || tmpSub.language === videoConstants.chineseLang) {
-        await tmpSub.adjustChinese(tokenizeMiteiru);
-      } else if (tmpSub.language === videoConstants.vietnameseLang) {
-        await tmpSub.adjustVietnamese(tokenizeMiteiru);
-      }
+      await tmpSub.adjustForLearning(tokenizeMiteiru);
       
       setFrequencyPrimary(tmpSub.frequency);
     } catch (error) {
@@ -248,7 +236,16 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       }
     }
     queue.end(currentHash);
-  }, [queue, resetSub, createSubtitleContainer, loadSubtitleAsPrimary, loadSubtitleAsSecondary, setToastInfo]);
+  }, [
+    queue,
+    resetSub,
+    createSubtitleContainer,
+    loadSubtitleAsPrimary,
+    loadSubtitleAsSecondary,
+    setPrimarySub,
+    setSecondarySub,
+    setToastInfo
+  ]);
 
   // Handler for when lyrics are downloaded
   const loadPath = useCallback((lyricsPath) => {

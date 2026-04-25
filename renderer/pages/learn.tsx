@@ -1,6 +1,5 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import Head from "next/head";
-import {ContainerHome} from "../components/VideoPlayer/ContainerHome";
 import {PrimarySubtitle} from "../components/Subtitle/Subtitle";
 import {setGlobalSubtitleId, SubtitleContainer} from "../components/Subtitle/DataStructures";
 import {defaultLearningStyling} from "../utils/CJKStyling";
@@ -14,6 +13,7 @@ import {useStoreData} from "../hooks/useStoreData";
 import useLearningKeyBind from "../hooks/useLearningKeyBind";
 import 'react-awesome-button/dist/styles.css';
 import {videoConstants} from "../utils/constants";
+import {isLearningSubtitleLanguage} from "../components/Subtitle/subtitleLanguageSupport";
 import useLearningState from "../hooks/useLearningState";
 import useTranslationLinks from "../hooks/useTranslationLinks";
 import useGoogleTranslator from "../hooks/useGoogleTranslator";
@@ -169,16 +169,8 @@ function Learn() {
       const tmpSub = (new SubtitleContainer(directInput, lang))
       setPrimarySub(tmpSub)
       setGlobalSubtitleId(tmpSub.id);
-      if (tmpSub.language === videoConstants.japaneseLang) {
-        tmpSub.adjustJapanese(tokenizeMiteiru).then(() => {
-          setCurrentTime(old => (old ^ 1))
-        })
-      } else if (tmpSub.language === videoConstants.vietnameseLang) {
-        tmpSub.adjustVietnamese(tokenizeMiteiru).then(() => {
-          setCurrentTime(old => (old ^ 1))
-        })
-      } else {
-        tmpSub.adjustChinese(tokenizeMiteiru).then(() => {
+      if (isLearningSubtitleLanguage(tmpSub.language)) {
+        tmpSub.adjustForLearning(tokenizeMiteiru).then(() => {
           setCurrentTime(old => (old ^ 1))
         })
       }

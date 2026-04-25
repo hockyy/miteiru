@@ -4,6 +4,7 @@ import {ChineseSentence, JapaneseSentence, PlainSentence} from "./Sentence";
 import {CJKStyling, defaultSecondarySubtitleStyling} from "../../utils/CJKStyling";
 import {adjustTimeWithShift} from "../../utils/utils";
 import useSubtitleContainerStyle from "../../hooks/useSubtitleContainerStyle";
+import {getSubtitleTokenPresentation} from "./subtitleLanguageSupport";
 
 
 export const PrimarySubtitle = ({
@@ -58,22 +59,11 @@ export const PrimarySubtitle = ({
     let rubyCopyContent = '';
     const current = content.map((val, index) => {
       const validBasicForm = val.basicForm != '' && val.basicForm != '*';
-      const isChineseSentence = val.jyutping || val.pinyin;
-      const isJapaneseSentence = val.hiragana !== undefined;
-      const isVietnameseSentence = val.separation && !val.jyutping && !val.pinyin && !val.hiragana;
+      const presentation = getSubtitleTokenPresentation(val);
 
       // Generate ruby HTML for copying
       const rubyHtml = val.separation.map(part => {
-        let reading;
-        if (isChineseSentence) {
-          reading = part.jyutping || part.pinyin;
-        } else if (isJapaneseSentence) {
-          reading = part.hiragana || part.romaji;
-        } else if (isVietnameseSentence) {
-          reading = part.meaning || '';
-        } else {
-          reading = '';
-        }
+        const reading = presentation.getRubyReading(part);
         return `<ruby>${part.main}<rt>${reading || ''}</rt></ruby>`;
       }).join('');
       rubyCopyContent += rubyHtml;
@@ -84,19 +74,7 @@ export const PrimarySubtitle = ({
 
       return (
           <React.Fragment key={index}>
-            {isChineseSentence ? (
-                <ChineseSentence
-                    origin={val.origin}
-                    separation={val.separation}
-                    setMeaning={setMeaning}
-                    extraClass={"subtitle"}
-                    subtitleStyling={subtitleStyling}
-                    basicForm={validBasicForm ? val.basicForm : ''}
-                    wordMeaning={wordMeaning[index]}
-                    getLearningStateClass={getLearningStateClass}
-                    changeLearningState={changeLearningState}
-                />
-            ) : isVietnameseSentence ? (
+            {presentation.sentenceKind === "chinese" ? (
                 <ChineseSentence
                     origin={val.origin}
                     separation={val.separation}
