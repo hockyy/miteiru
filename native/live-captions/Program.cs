@@ -8,14 +8,10 @@ internal static class Program
 {
     private const string ProcessName = "LiveCaptions";
     private const string CaptionAutomationId = "CaptionsTextBlock";
-    private const int MaxCaptionChars = 120;
+    private const int MaxCaptionChars = 70;
+    private const int CaptionCharsToKeepAfterOverflow = 10;
+    private const int MaxCaptionWords = 12;
     private static AutomationElement? captionsTextBlock;
-    private static readonly char[] SentenceBreaks =
-    [
-        '.', '!', '?', ',', ';', ':',
-        '。', '！', '？', '，', '、', '；', '：',
-        '\n'
-    ];
 
     public static int Main()
     {
@@ -116,6 +112,7 @@ internal static class Program
     private static void StreamCaptions(AutomationElement window, CancellationToken cancellationToken)
     {
         var lastText = string.Empty;
+        var windowStart = 0;
         var hasSkippedInitialCaption = false;
         var missingCaptionElementCount = 0;
         WriteMessage("debug", "Starting caption polling loop.");
@@ -125,13 +122,27 @@ internal static class Program
             string text;
             try
             {
-                text = ExtractLatestCaption(GetCaptions(window));
+                var rollingBuffer = NormalizeLiveCaptionsBuffer(GetCaptions(window));
+                if (!hasSkippedInitialCaption)
+                {
+                    hasSkippedInitialCaption = true;
+                    if (!string.IsNullOrWhiteSpace(rollingBuffer))
+                    {
+                        WriteMessage("debug", $"Skipped initial cached Live Captions text ({rollingBuffer.Length} chars).");
+                        continue;
+                    }
+                }
+
+                text = ExtractCaptionWindow(rollingBuffer, ref windowStart);
             }
             catch (ElementNotAvailableException)
             {
                 WriteMessage("debug", "Live Captions automation element disappeared. Relaunching.");
                 captionsTextBlock = null;
                 window = LaunchLiveCaptions();
+                windowStart = 0;
+                lastText = string.Empty;
+                hasSkippedInitialCaption = false;
                 WriteMessage("state", "restarted");
                 Thread.Sleep(200);
                 continue;
@@ -140,15 +151,6 @@ internal static class Program
             if (!string.Equals(text, lastText, StringComparison.Ordinal))
             {
                 lastText = text;
-                if (!hasSkippedInitialCaption)
-                {
-                    hasSkippedInitialCaption = true;
-                    if (!string.IsNullOrWhiteSpace(text))
-                    {
-                        WriteMessage("debug", $"Skipped initial cached Live Captions text ({text.Length} chars).");
-                        continue;
-                    }
-                }
                 WriteCaption(text);
             }
             else if (captionsTextBlock == null)
@@ -172,14 +174,14 @@ internal static class Program
         return captionsTextBlock?.Current.Name ?? string.Empty;
     }
 
-    private static string ExtractLatestCaption(string rawText)
+    private static string NormalizeLiveCaptionsBuffer(string rawText)
     {
         if (string.IsNullOrWhiteSpace(rawText))
         {
             return string.Empty;
         }
 
-        var lines = rawText
+        var rollingBuffer = rawText
             .Replace("\r\n", "\n")
             .Replace('\r', '\n')
             .Split('\n')
@@ -187,27 +189,45 @@ internal static class Program
             .Where(line => !string.IsNullOrWhiteSpace(line))
             .ToArray();
 
-        var candidate = lines.Length == 0
-            ? rawText.Trim()
-            : string.Join(" ", lines.Skip(Math.Max(0, lines.Length - 2)));
+        return NormalizeSpaces(string.Join(" ", rollingBuffer));
+    }
 
-        candidate = string.Join(" ", candidate.Split(
+    private static string NormalizeSpaces(string text)
+    {
+        return string.Join(" ", text.Split(
             [' ', '\t', '\n', '\r'],
             StringSplitOptions.RemoveEmptyEntries));
+    }
 
-        if (candidate.Length <= MaxCaptionChars)
+    private static string ExtractCaptionWindow(string rollingBuffer, ref int windowStart)
+    {
+        if (string.IsNullOrWhiteSpace(rollingBuffer))
         {
-            return candidate;
+            windowStart = 0;
+            return string.Empty;
         }
 
-        var searchStart = Math.Max(0, candidate.Length - MaxCaptionChars);
-        var breakIndex = candidate.LastIndexOfAny(SentenceBreaks, candidate.Length - 1, candidate.Length - searchStart);
-        if (breakIndex >= searchStart && breakIndex + 1 < candidate.Length)
+        windowStart = Math.Clamp(windowStart, 0, rollingBuffer.Length);
+
+        if (rollingBuffer.Length - windowStart > MaxCaptionChars)
         {
-            return candidate[(breakIndex + 1)..].Trim();
+            windowStart = Math.Max(0, rollingBuffer.Length - CaptionCharsToKeepAfterOverflow);
         }
 
-        return candidate[^MaxCaptionChars..].Trim();
+        var window = rollingBuffer[windowStart..].TrimStart();
+
+        var words = window.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (words.Length > MaxCaptionWords)
+        {
+            window = string.Join(" ", words.Skip(words.Length - MaxCaptionWords));
+        }
+
+        if (window.Length > MaxCaptionChars)
+        {
+            window = window[^MaxCaptionChars..].TrimStart();
+        }
+
+        return window;
     }
 
     private static AutomationElement? FindWindowByProcessId(int processId)
