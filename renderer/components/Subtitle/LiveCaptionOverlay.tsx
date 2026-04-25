@@ -1,8 +1,7 @@
-import React, {useEffect, useState} from "react";
+import React, {memo} from "react";
 import {CJKStyling} from "../../utils/CJKStyling";
-import {videoConstants} from "../../utils/constants";
-import {Line, SubtitleContainer} from "./DataStructures";
 import {PrimarySubtitle} from "./Subtitle";
+import {useLiveCaptionSubtitle} from "./useLiveCaptionSubtitle";
 
 interface LiveCaptionOverlayProps {
   caption: string;
@@ -16,7 +15,7 @@ interface LiveCaptionOverlayProps {
   setRubyCopyContent: any;
 }
 
-export const LiveCaptionOverlay = ({
+export const LiveCaptionOverlay = memo(({
   caption,
   subtitleStyling,
   lang,
@@ -27,63 +26,13 @@ export const LiveCaptionOverlay = ({
   setExternalContent,
   setRubyCopyContent
 }: LiveCaptionOverlayProps) => {
-  const displayText = caption;
-  const [liveSubtitle, setLiveSubtitle] = useState(() => new SubtitleContainer(""));
-  const [liveTimeCache, setLiveTimeCache] = useState<number[]>([]);
+  const {
+    liveSubtitle,
+    liveTimeCache,
+    setLiveTimeCache
+  } = useLiveCaptionSubtitle(caption, lang, tokenizeMiteiru);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    const processCaption = async () => {
-      if (!displayText) {
-        setLiveSubtitle(new SubtitleContainer(""));
-        setLiveTimeCache([]);
-        return;
-      }
-
-      const subtitle = new SubtitleContainer("", lang);
-      const line = new Line(0, 1000000, displayText);
-
-      if (![
-        videoConstants.japaneseLang,
-        videoConstants.chineseLang,
-        videoConstants.cantoneseLang,
-        videoConstants.vietnameseLang
-      ].includes(lang)) {
-        subtitle.lines.push(line);
-      } else {
-        await line.fillContentSeparations(tokenizeMiteiru);
-
-        const frequency = new Map<string, number>();
-        if (lang === videoConstants.japaneseLang) {
-          await line.fillContentWithLearningKotoba(frequency);
-        } else if (lang === videoConstants.chineseLang || lang === videoConstants.cantoneseLang) {
-          await line.fillContentWithLearningChinese(frequency);
-        } else if (lang === videoConstants.vietnameseLang) {
-          await line.fillContentWithLearningVietnamese(frequency);
-        }
-
-        subtitle.lines.push(line);
-      }
-
-      if (cancelled) return;
-      setLiveSubtitle(subtitle);
-      setLiveTimeCache([]);
-    };
-
-    processCaption().catch((error) => {
-      console.error("[LiveCaptionOverlay] Failed to process live caption:", error);
-      if (cancelled) return;
-      setLiveSubtitle(new SubtitleContainer(displayText, lang));
-      setLiveTimeCache([]);
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [displayText, lang, tokenizeMiteiru]);
-
-  if (!displayText || liveSubtitle.lines.length === 0) return null;
+  if (!caption || liveSubtitle.lines.length === 0) return null;
 
   return (
     <PrimarySubtitle
@@ -100,4 +49,6 @@ export const LiveCaptionOverlay = ({
       setRubyCopyContent={setRubyCopyContent}
     />
   );
-};
+});
+
+LiveCaptionOverlay.displayName = "LiveCaptionOverlay";

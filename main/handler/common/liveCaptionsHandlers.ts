@@ -2,8 +2,7 @@ import {app, BrowserWindow, ipcMain} from "electron";
 import {ChildProcessWithoutNullStreams, spawn} from "child_process";
 import path from "path";
 import fs from "fs";
-
-type LiveCaptionsState = "unsupported" | "stopped" | "starting" | "running" | "error";
+import type {LiveCaptionsApiState, LiveCaptionsState} from "../../../renderer/types/liveCaptions";
 
 interface LiveCaptionsBridgeMessage {
   type?: "caption" | "state" | "error" | "debug";
@@ -58,7 +57,7 @@ const clearStartupWatchdog = () => {
   startupWatchdog = null;
 };
 
-const getState = () => ({
+const getState = (): LiveCaptionsApiState => ({
   supported: process.platform === "win32",
   state,
   running: bridgeProcess !== null,
@@ -80,10 +79,11 @@ const getBridgeCandidates = () => {
 };
 
 const getBridgePath = () => {
-  const bridgePath = getBridgeCandidates().find((candidate) => fs.existsSync(candidate));
+  const candidates = getBridgeCandidates();
+  const bridgePath = candidates.find((candidate) => fs.existsSync(candidate));
 
   if (!bridgePath) {
-    addDebugMessage(`Helper not found. Checked: ${getBridgeCandidates().join(" | ")}`);
+    addDebugMessage(`Helper not found. Checked: ${candidates.join(" | ")}`);
     throw new Error("Live Captions helper is not built. Run npm run build:live-captions first.");
   }
 
@@ -106,7 +106,6 @@ const handleBridgeLine = (line: string) => {
     latestCaption = message.text ?? "";
     latestError = "";
     if (state !== "running") setState("running");
-    if (latestCaption) addDebugMessage(`Caption update (${latestCaption.length} chars)`);
     sendToRenderers("live-captions:caption", latestCaption);
     return;
   }
@@ -133,6 +132,69 @@ const handleBridgeLine = (line: string) => {
   }
 };
 
+const createBridgeProcess = (bridgePath: string) => spawn(bridgePath, [], {
+  windowsHide: true
+});
+
+const armStartupWatchdog = () => {
+  startupWatchdog = setTimeout(() => {
+    if (state !== "starting" || !bridgeProcess) return;
+
+    addDebugMessage("Startup timed out before helper reported ready.");
+    const processToStop = bridgeProcess;
+    bridgeProcess = null;
+    processToStop.kill();
+    setError(
+      "Live Captions helper started but never became ready. Open Windows Live Captions once with Win+Ctrl+L, finish its setup, then try again."
+    );
+  }, 15000);
+};
+
+const wireBridgeStreams = (processToWire: ChildProcessWithoutNullStreams) => {
+  let stdoutBuffer = "";
+  let stderrBuffer = "";
+
+  processToWire.stdout.setEncoding("utf8");
+  processToWire.stdout.on("data", (chunk: string) => {
+    stdoutBuffer += chunk;
+    const lines = stdoutBuffer.split(/\r?\n/);
+    stdoutBuffer = lines.pop() ?? "";
+    lines.forEach(handleBridgeLine);
+  });
+
+  processToWire.stderr.setEncoding("utf8");
+  processToWire.stderr.on("data", (chunk: string) => {
+    addDebugMessage(`Helper stderr: ${chunk.trim()}`);
+    stderrBuffer += chunk;
+  });
+
+  processToWire.on("error", (error) => {
+    if (bridgeProcess !== processToWire) return;
+    bridgeProcess = null;
+    clearStartupWatchdog();
+    addDebugMessage(`Helper spawn error: ${error.message}`);
+    setError(error.message);
+  });
+
+  processToWire.on("close", (code) => {
+    const wasCurrentProcess = bridgeProcess === processToWire;
+    if (wasCurrentProcess) {
+      bridgeProcess = null;
+      clearStartupWatchdog();
+    }
+
+    addDebugMessage(`Helper closed with code ${code}`);
+    if (!wasCurrentProcess) return;
+
+    if (code === 0 || state === "stopped") {
+      setState("stopped");
+      return;
+    }
+
+    setError(stderrBuffer.trim() || `Live Captions helper exited with code ${code}.`);
+  });
+};
+
 const startBridge = () => {
   if (process.platform !== "win32") {
     addDebugMessage("Start ignored: Live Captions is Windows-only.");
@@ -151,58 +213,9 @@ const startBridge = () => {
   setState("starting");
   addDebugMessage("Starting Live Captions helper process...");
 
-  bridgeProcess = spawn(bridgePath, [], {
-    windowsHide: true
-  });
-
-  startupWatchdog = setTimeout(() => {
-    if (state !== "starting" || !bridgeProcess) return;
-
-    addDebugMessage("Startup timed out before helper reported ready.");
-    const processToStop = bridgeProcess;
-    bridgeProcess = null;
-    processToStop.kill();
-    setError(
-      "Live Captions helper started but never became ready. Open Windows Live Captions once with Win+Ctrl+L, finish its setup, then try again."
-    );
-  }, 15000);
-
-  let stdoutBuffer = "";
-  let stderrBuffer = "";
-
-  bridgeProcess.stdout.setEncoding("utf8");
-  bridgeProcess.stdout.on("data", (chunk: string) => {
-    addDebugMessage(`Helper stdout chunk (${chunk.length} chars)`);
-    stdoutBuffer += chunk;
-    const lines = stdoutBuffer.split(/\r?\n/);
-    stdoutBuffer = lines.pop() ?? "";
-    lines.forEach(handleBridgeLine);
-  });
-
-  bridgeProcess.stderr.setEncoding("utf8");
-  bridgeProcess.stderr.on("data", (chunk: string) => {
-    addDebugMessage(`Helper stderr: ${chunk.trim()}`);
-    stderrBuffer += chunk;
-  });
-
-  bridgeProcess.on("error", (error) => {
-    bridgeProcess = null;
-    clearStartupWatchdog();
-    addDebugMessage(`Helper spawn error: ${error.message}`);
-    setError(error.message);
-  });
-
-  bridgeProcess.on("close", (code) => {
-    bridgeProcess = null;
-    clearStartupWatchdog();
-    addDebugMessage(`Helper closed with code ${code}`);
-    if (code === 0 || state === "stopped") {
-      setState("stopped");
-      return;
-    }
-
-    setError(stderrBuffer.trim() || `Live Captions helper exited with code ${code}.`);
-  });
+  bridgeProcess = createBridgeProcess(bridgePath);
+  armStartupWatchdog();
+  wireBridgeStreams(bridgeProcess);
 
   return getState();
 };

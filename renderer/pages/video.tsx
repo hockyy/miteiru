@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from "react";
+import React, {useCallback, useEffect, useMemo} from "react";
 import VideoJS from "../components/VideoPlayer/VideoJS";
 import MiteiruDropzone from "../components/VideoPlayer/MiteiruDropzone";
 import MeaningBox from "../components/Meaning/MeaningBox";
@@ -190,6 +190,36 @@ function Video() {
     handleAudioReencodeSkip
   } = useMediaAnalysis(videoSrc.path);
   const liveCaptions = useLiveCaptions();
+  const visibleLiveCaption = liveCaptions.caption.trim();
+  const showPrimarySubtitle = useMemo(
+      () => showPrimarySub && visibleLiveCaption.length === 0,
+      [showPrimarySub, visibleLiveCaption]
+  );
+  const videoOptions = useMemo(() => ({
+    techOrder: ["html5", "youtube"],
+    sources: [videoSrc],
+    youtube: {
+      customVars: {
+        cc_load_policy: 0,
+        autoplay: 1,
+        loop: 0,
+        disablekb: 1,
+        controls: 0,
+        playsinline: 1,
+        rel: 0,
+        modestbranding: 1
+      }
+    },
+    responsive: true,
+    playbackRates: [0.5, 1, 1.5, 2],
+    controlBar: {
+      liveDisplay: false,
+      pictureInPictureToggle: false,
+      remainingTimeDisplay: true,
+      playbackRateMenuButton: false,
+      durationDisplay: true
+    }
+  }), [videoSrc]);
 
   // Handle embedded subtitle loading
   const handleEmbeddedSubtitleLoad = useCallback((filePath: string, type: 'primary' | 'secondary', preprocessOptions?: SubtitlePreprocessOptions) => {
@@ -385,35 +415,11 @@ function Video() {
           <MeaningBox meaning={meaning} setMeaning={setMeaning} tokenizeMiteiru={tokenizeMiteiru}
                       lang={lang} changeLearningState={changeLearningState}
                       getLearningState={getLearningState}/>
-          <VideoJS options={{
-            techOrder: ["html5", "youtube"],
-            sources: [videoSrc],
-            youtube: {
-              customVars: {
-                cc_load_policy: 0,
-                autoplay: 1,
-                loop: 0,
-                disablekb: 1,
-                controls: 0,
-                playsinline: 1,
-                rel: 0,
-                modestbranding: 1
-              }
-            },
-            responsive: true,
-            playbackRates: [0.5, 1, 1.5, 2],
-            controlBar: {
-              liveDisplay: false,
-              pictureInPictureToggle: false,
-              remainingTimeDisplay: true,
-              playbackRateMenuButton: false,
-              durationDisplay: true
-            }
-          }} onReady={readyCallback} setCurrentTime={setCurrentTime} pitchValue={pitchValue}/>
+          <VideoJS options={videoOptions} onReady={readyCallback} setCurrentTime={setCurrentTime} pitchValue={pitchValue}/>
           <div>
             <SubtitleDisplay
                 // Primary subtitle props
-                showPrimarySub={showPrimarySub && !liveCaptions.caption}
+                showPrimarySub={showPrimarySubtitle}
                 setMeaning={setMeaning}
                 currentTime={currentTime}
                 primarySub={primarySub}
