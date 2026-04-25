@@ -107,8 +107,8 @@ export function registerMediaHandlers() {
     }
   });
 
-  ipcMain.handle("reencode-video-with-audio-track", async (event, inputPath, audioStreamIndex, convertToX264, totalDuration) => {
-    console.log("[IPC] reencode-video-with-audio-track called:", {inputPath, audioStreamIndex, convertToX264, totalDuration});
+  ipcMain.handle("reencode-video-with-audio-track", async (event, inputPath, audioStreamIndex, convertToX264, convertAudioToAac, totalDuration) => {
+    console.log("[IPC] reencode-video-with-audio-track called:", {inputPath, audioStreamIndex, convertToX264, convertAudioToAac, totalDuration});
     try {
       const toolsStatus = await MediaAnalyzer.checkToolsAvailable();
       if (!toolsStatus.ffmpeg) {
@@ -119,16 +119,17 @@ export function registerMediaHandlers() {
         inputPath,
         audioStreamIndex,
         convertToX264,
+        convertAudioToAac,
         totalDuration,
         (progress) => {
           console.log("[IPC] Sending progress to renderer:", progress);
           event.sender.send("reencode-progress", progress);
         }
       );
-      console.log("[IPC] Video with audio track reencoded:", result);
+      console.log("[IPC] Video with selected audio processed:", result);
       return result;
     } catch (error) {
-      console.error("[IPC] Video audio track reencoding failed:", error);
+      console.error("[IPC] Video audio track processing failed:", error);
       throw error;
     }
   });

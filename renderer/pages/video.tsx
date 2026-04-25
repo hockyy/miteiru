@@ -234,9 +234,9 @@ function Video() {
     applyAudioTrack();
   }, [player, mediaInfo.audioTracks]);
 
-  // Handle loading reencoded video with selected audio
+  // Handle loading processed video with selected audio
   const handleReencodedVideoLoad = useCallback((videoPath: string) => {
-    // Load the reencoded video file
+    // Load the processed video file
     onLoadFiles([{path: videoPath}]);
   }, [onLoadFiles]);
 
@@ -522,7 +522,7 @@ function Video() {
         <AudioReencodeModal
             isOpen={showAudioReencodeModal}
             onClose={handleCloseAudioReencodeModal}
-            onConfirm={(trackIndex, convertToX264) => handleAudioReencodeConfirm(trackIndex, handleReencodedVideoLoad, convertToX264)}
+            onConfirm={(trackIndex, convertToX264, convertAudioToAac) => handleAudioReencodeConfirm(trackIndex, handleReencodedVideoLoad, convertToX264, convertAudioToAac)}
             onSkip={handleAudioReencodeSkip}
             fileName={videoSrc.path.split('/').pop() || videoSrc.path.split('\\').pop() || 'Unknown file'}
             audioTracks={mediaInfo.audioTracks}

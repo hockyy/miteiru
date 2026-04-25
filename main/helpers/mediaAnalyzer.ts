@@ -196,12 +196,14 @@ export class MediaAnalyzer {
   }
 
   /**
-   * Create a version of the video with selected audio track in same folder
+   * Create a version of the video with selected audio track in same folder.
+   * By default this is a fast remux: copy the selected streams into a new MKV.
    */
   static async reencodeVideoWithAudioTrack(
     inputPath: string,
     audioStreamIndex: number,
     convertToX264?: boolean,
+    convertAudioToAac?: boolean,
     totalDuration?: number,
     onProgress?: (progress: string) => void
   ): Promise<string> {
@@ -209,27 +211,29 @@ export class MediaAnalyzer {
       inputPath,
       audioStreamIndex,
       convertToX264,
+      convertAudioToAac,
       totalDuration,
       hasProgressCallback: !!onProgress
     });
     
     const inputDir = path.dirname(inputPath);
     const inputName = path.basename(inputPath, path.extname(inputPath));
-    const selectedTrackInfo = `_audio${audioStreamIndex}${convertToX264 ? '_h264' : ''}`;
+    const selectedTrackInfo = `_audio${audioStreamIndex}${convertAudioToAac ? '_aac' : ''}${convertToX264 ? '_h264' : '_remux'}`;
     // Use MKV to preserve all subtitle formats and codecs
     const outputPath = path.join(inputDir, `${inputName}${selectedTrackInfo}.mkv`);
 
     return new Promise((resolve, reject) => {
-      // Create video with selected audio track + all subtitles using MKV container
+      // Create video with selected audio track + all subtitles using MKV container.
+      // Keep audio/video as stream copies unless the user explicitly asks for conversion.
       const args = [
         '-i', inputPath,
         '-map', '0:v:0', // First video stream
         '-map', `0:${audioStreamIndex}`, // Selected audio stream
         '-map', '0:s?', // All subtitle streams (? means optional)
         '-c:v', convertToX264 ? 'libx264' : 'copy', // Convert to H.264 or copy video
-        '-c:a', 'aac', // Convert audio to AAC for web compatibility
+        '-c:a', convertAudioToAac ? 'aac' : 'copy', // Convert selected audio only when requested
         '-c:s', 'copy', // Copy all subtitle streams as-is
-        '-b:a', '128k', // Audio bitrate
+        ...(convertAudioToAac ? ['-b:a', '128k'] : []), // Audio encoding settings
         ...(convertToX264 ? ['-preset', 'medium', '-crf', '23'] : []), // H.264 encoding settings
         '-progress', 'pipe:1', // Send progress to stdout
         '-y', // Overwrite output file
@@ -240,6 +244,7 @@ export class MediaAnalyzer {
       console.log(`[DEBUG] Input path: ${inputPath}`);
       console.log(`[DEBUG] Output path: ${outputPath}`);
       console.log(`[DEBUG] Convert to X264: ${convertToX264}`);
+      console.log(`[DEBUG] Convert audio to AAC: ${convertAudioToAac}`);
       console.log(`[DEBUG] Total duration: ${totalDuration}s`);
 
       const ffmpeg = spawn('ffmpeg', args);
@@ -256,7 +261,11 @@ export class MediaAnalyzer {
           const timeMatch = output.match(/(?:out_time|time)=(\d{2}:\d{2}:\d{2}\.\d+)/);
           if (timeMatch) {
             console.log(`[DEBUG] Time match found:`, timeMatch[1]);
-            const action = convertToX264 ? 'Converting to H.264...' : 'Processing...';
+            const action = convertToX264
+              ? 'Converting to H.264...'
+              : convertAudioToAac
+                ? 'Reencoding selected audio...'
+                : 'Remuxing selected audio...';
             
             if (totalDuration && totalDuration > 0) {
               try {
@@ -294,7 +303,11 @@ export class MediaAnalyzer {
           const timeMatch = stderr.match(/time=(\d{2}:\d{2}:\d{2}\.\d+)/);
           if (timeMatch) {
             console.log(`[DEBUG] Time match found in stderr:`, timeMatch[1]);
-            const action = convertToX264 ? 'Converting to H.264...' : 'Processing...';
+            const action = convertToX264
+              ? 'Converting to H.264...'
+              : convertAudioToAac
+                ? 'Reencoding selected audio...'
+                : 'Remuxing selected audio...';
             
             if (totalDuration && totalDuration > 0) {
               try {
@@ -331,13 +344,17 @@ export class MediaAnalyzer {
         
         if (code !== 0) {
           console.log(`[DEBUG] FFmpeg failed with error:`, error);
-          reject(new Error(`ffmpeg reencode failed: ${error}`));
+          reject(new Error(`ffmpeg media processing failed: ${error}`));
           return;
         }
 
         // Send final completion message
         if (onProgress) {
-          const action = convertToX264 ? 'Video conversion completed!' : 'Processing completed!';
+          const action = convertToX264
+            ? 'Video conversion completed!'
+            : convertAudioToAac
+              ? 'Audio conversion completed!'
+              : 'Fast remux completed!';
           onProgress(action);
         }
         
