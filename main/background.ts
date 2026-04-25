@@ -1,5 +1,4 @@
 import {app, protocol, session} from 'electron';
-import serve from 'electron-serve';
 import {createWindow} from './helpers';
 import fs from "node:fs";
 import path from "path";
@@ -12,6 +11,9 @@ import Learning from "./handler/learning";
 
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
+const loadElectronServe = () => {
+  return Function("specifier", "return import(specifier)")("electron-serve") as Promise<typeof import("electron-serve")>;
+};
 
 function registerYouTubeHeaderWorkaround() {
   const youtubeRequestUrls = [
@@ -37,13 +39,18 @@ function registerYouTubeHeaderWorkaround() {
   });
 }
 
-if (isProd) {
-  serve({directory: 'app'});
-} else {
+const serveReady = isProd
+  ? loadElectronServe().then(({default: serve}) => {
+    serve({directory: 'app', hostname: '.'});
+  })
+  : Promise.resolve();
+
+if (!isProd) {
   app.setPath('userData', `${app.getPath('userData')} (development)`);
 }
 
 (async () => {
+  await serveReady;
   await app.whenReady();
   registerYouTubeHeaderWorkaround();
   const appDataDirectory = app.getPath('userData');
@@ -56,7 +63,7 @@ if (isProd) {
   }
   const getTokenizer = () => tokenizerCommand;
 
-  const mainWindow = createWindow('main', {
+  const mainWindow = await createWindow('main', {
     width: 1000,
     height: 600,
     webPreferences: {
