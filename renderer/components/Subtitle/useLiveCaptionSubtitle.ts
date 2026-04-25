@@ -1,46 +1,20 @@
 import {useEffect, useState} from "react";
-import {videoConstants} from "../../utils/constants";
 import {Line, SubtitleContainer} from "./DataStructures";
+import {fillLineWithLearningContent, isLearningSubtitleLanguage, TokenizeMiteiru} from "./subtitleLanguageSupport";
 
 const liveCaptionStartTime = 0;
 const liveCaptionEndTime = 1000000;
 
-const languagesWithLearningContent = new Set([
-  videoConstants.japaneseLang,
-  videoConstants.chineseLang,
-  videoConstants.cantoneseLang,
-  videoConstants.vietnameseLang
-]);
-
-const fillLearningContent = async (line: Line, lang: string) => {
-  const frequency = new Map<string, number>();
-
-  if (lang === videoConstants.japaneseLang) {
-    await line.fillContentWithLearningKotoba(frequency);
-    return;
-  }
-
-  if (lang === videoConstants.chineseLang || lang === videoConstants.cantoneseLang) {
-    await line.fillContentWithLearningChinese(frequency);
-    return;
-  }
-
-  if (lang === videoConstants.vietnameseLang) {
-    await line.fillContentWithLearningVietnamese(frequency);
-  }
-};
-
 const buildLiveCaptionSubtitle = async (
   caption: string,
   lang: string,
-  tokenizeMiteiru: (text: string) => Promise<any[]>
+  tokenizeMiteiru: TokenizeMiteiru
 ) => {
   const subtitle = new SubtitleContainer("", lang);
   const line = new Line(liveCaptionStartTime, liveCaptionEndTime, caption);
 
-  if (languagesWithLearningContent.has(lang)) {
-    await line.fillContentSeparations(tokenizeMiteiru);
-    await fillLearningContent(line, lang);
+  if (isLearningSubtitleLanguage(lang)) {
+    await fillLineWithLearningContent(line, lang, tokenizeMiteiru, subtitle.frequency);
   }
 
   subtitle.lines.push(line);
@@ -50,7 +24,7 @@ const buildLiveCaptionSubtitle = async (
 export const useLiveCaptionSubtitle = (
   caption: string,
   lang: string,
-  tokenizeMiteiru: (text: string) => Promise<any[]>
+  tokenizeMiteiru: TokenizeMiteiru
 ) => {
   const [liveSubtitle, setLiveSubtitle] = useState(() => new SubtitleContainer(""));
   const [liveTimeCache, setLiveTimeCache] = useState<number[]>([]);
