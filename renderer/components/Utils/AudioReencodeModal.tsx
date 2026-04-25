@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X, Volume2, Zap, Clock, HardDrive, Film } from 'lucide-react';
+import { Volume2, Zap, Clock, HardDrive, Film } from 'lucide-react';
 import { AwesomeButton } from 'react-awesome-button';
 import { MediaTrack } from '../../types/media';
+import {getLanguageEmoji, getTrackLabel} from "../../utils/mediaUtils";
+import {ModalShell} from "./ModalShell";
 
 interface AudioReencodeModalProps {
   isOpen: boolean;
@@ -48,26 +50,6 @@ const AudioReencodeModal: React.FC<AudioReencodeModalProps> = ({
     return videoTracks.find(track => track.default) || videoTracks[0];
   };
 
-  const getTrackLabel = (track: MediaTrack) => {
-    const parts = [];
-    if (track.title) parts.push(track.title);
-    if (track.language) parts.push(`(${track.language.toUpperCase()})`);
-    if (parts.length === 0) parts.push(`Track ${track.index + 1}`);
-    if (track.default) parts.push('[Default]');
-    return parts.join(' ');
-  };
-
-  const getLanguageEmoji = (lang: string) => {
-    switch (lang?.toLowerCase()) {
-      case 'jpn': case 'ja': return '🇯🇵';
-      case 'chi': case 'zh-cn': case 'zh': return '🇨🇳';
-      case 'yue': case 'zh-hk': return '🇭🇰';
-      case 'eng': case 'en': return '🇺🇸';
-      case 'vi': case 'vie': return '🇻🇳';
-      default: return '🌐';
-    }
-  };
-
   // Reset selections when a new file is analyzed. Keep H.264 conversion opt-in.
   useEffect(() => {
     const defaultTrack = audioTracks.find(track => track.default);
@@ -87,27 +69,37 @@ const AudioReencodeModal: React.FC<AudioReencodeModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div
-        className="bg-gray-900 rounded-lg shadow-xl w-full max-w-lg flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-700">
-          <h2 className="text-xl font-semibold text-white flex items-center gap-2">
-            {isHEVC() ? <Film className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-            {isHEVC() ? 'Media Processing Options' : 'Multiple Audio Tracks Detected'}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white transition-colors p-1"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+    <ModalShell
+      title={isHEVC() ? 'Media Processing Options' : 'Multiple Audio Tracks Detected'}
+      icon={isHEVC() ? <Film className="w-5 h-5 text-orange-300" /> : <Volume2 className="w-5 h-5 text-blue-300" />}
+      onClose={onClose}
+      maxWidthClassName="max-w-lg"
+      minSizeClassName="min-h-0 min-w-[min(92vw,24rem)]"
+      footer={(
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
+          <AwesomeButton type="secondary" onPress={handlePlayDefault}>
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              Play with Default Audio
+            </div>
+          </AwesomeButton>
 
-        {/* Content */}
-        <div className="p-4">
+          <AwesomeButton type="primary" onPress={handleRencode}>
+            <div className="flex items-center gap-2">
+              {isHEVC() && convertToX264 ? <Film className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
+              {isHEVC() && convertToX264
+                ? (convertAudioToAac ? 'Convert Audio & Video' : audioTracks.length > 1 ? 'Remux Audio & Convert to H.264' : 'Convert Video to H.264')
+                : convertAudioToAac
+                  ? 'Remux with AAC Audio'
+                : audioTracks.length > 1
+                  ? 'Fast Remux with Selected Audio'
+                  : 'Fast Remux Media'
+              }
+            </div>
+          </AwesomeButton>
+        </div>
+      )}
+    >
           {/* File Info */}
           <div className="text-center mb-4">
             <div className="text-gray-300 text-sm mb-1">Video file:</div>
@@ -115,6 +107,7 @@ const AudioReencodeModal: React.FC<AudioReencodeModalProps> = ({
               {fileName}
             </div>
             <div className="text-gray-400 text-xs space-y-1">
+              <div>App language: {getLanguageEmoji(currentAppLanguage)} {currentAppLanguage}</div>
               <div>Found {audioTracks.length} audio track{audioTracks.length !== 1 ? 's' : ''}</div>
               {isHEVC() && (
                 <div className="flex items-center justify-center gap-1">
@@ -281,33 +274,7 @@ const AudioReencodeModal: React.FC<AudioReencodeModalProps> = ({
               }
             </div>
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="p-4 border-t border-gray-700 flex justify-between">
-          <AwesomeButton type="secondary" onPress={handlePlayDefault}>
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4" />
-              Play with Default Audio
-            </div>
-          </AwesomeButton>
-          
-          <AwesomeButton type="primary" onPress={handleRencode}>
-            <div className="flex items-center gap-2">
-              {isHEVC() && convertToX264 ? <Film className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
-              {isHEVC() && convertToX264 
-                ? (convertAudioToAac ? 'Convert Audio & Video' : audioTracks.length > 1 ? 'Remux Audio & Convert to H.264' : 'Convert Video to H.264')
-                : convertAudioToAac
-                  ? 'Remux with AAC Audio'
-                : audioTracks.length > 1 
-                  ? 'Fast Remux with Selected Audio'
-                  : 'Fast Remux Media'
-              }
-            </div>
-          </AwesomeButton>
-        </div>
-      </div>
-    </div>
+    </ModalShell>
   );
 };
 

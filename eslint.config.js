@@ -15,7 +15,7 @@ module.exports = [
     ]
   },
   {
-    files: ["**/*.{js,jsx,ts,tsx}"],
+    files: ["**/*.{ts,tsx}"],
     languageOptions: {
       parser: typescriptParser,
       ecmaVersion: 2018,
@@ -31,6 +31,26 @@ module.exports = [
       "react-hooks": reactHooksPlugin,
       "@typescript-eslint": typescriptPlugin
     },
+    rules: {
+      ...typescriptPlugin.configs.recommended.rules,
+      "@typescript-eslint/no-explicit-any": "off"
+    }
+  },
+  {
+    files: ["**/*.{jsx,tsx}"],
+    languageOptions: {
+      ecmaVersion: 2018,
+      sourceType: "module",
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true
+        }
+      }
+    },
+    plugins: {
+      react: reactPlugin,
+      "react-hooks": reactHooksPlugin
+    },
     settings: {
       react: {
         version: "detect"
@@ -38,9 +58,7 @@ module.exports = [
     },
     rules: {
       ...reactPlugin.configs.recommended.rules,
-      ...typescriptPlugin.configs.recommended.rules,
       ...reactHooksPlugin.configs.recommended.rules,
-      "@typescript-eslint/no-explicit-any": "off",
       "react/prop-types": "off",
       "react/react-in-jsx-scope": "off",
       "react-hooks/exhaustive-deps": "warn"

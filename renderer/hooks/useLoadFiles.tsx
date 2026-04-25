@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useState} from 'react';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 import {
   Line,
   setGlobalSubtitleId,
@@ -10,8 +10,14 @@ import {TOAST_TIMEOUT} from "../components/VideoPlayer/Toast";
 import {isLocalPath, isSubtitle, isVideo, isYoutube} from "../utils/utils";
 import {findPositionDeltaInFolder} from "../utils/folderUtils";
 import {useAsyncAwaitQueue} from "./useAsyncAwaitQueue";
-import {videoConstants} from "../utils/constants";
 import {isLearningSubtitleLanguage} from "../components/Subtitle/subtitleLanguageSupport";
+import {
+  buildVideoSource,
+  getEmbeddedSubtitleTarget,
+  getLanguageDisplayName,
+  isEmbeddedSubtitlePath,
+  normalizeDroppedPath
+} from "../utils/mediaUtils";
 
 const DEFAULT_SUBTITLE_PREPROCESS_OPTIONS: SubtitlePreprocessOptions = {
   titleCaseAllCaps: true
@@ -41,6 +47,13 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     subSetter(new SubtitleContainer(''));
   }, []);
 
+  const showToast = useCallback((message: string) => {
+    setToastInfo({
+      message,
+      update: uuidv4()
+    });
+  }, [setToastInfo]);
+
   const isLearningLanguage = useCallback(isLearningSubtitleLanguage, []);
 
   const createSubtitleContainer = useCallback(async (filePath: string, preprocessOptions: SubtitlePreprocessOptions = DEFAULT_SUBTITLE_PREPROCESS_OPTIONS) => {
@@ -57,10 +70,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     
     try {
       toastSetter = setInterval(() => {
-        setToastInfo({
-          message: `${tmpSub.language}: ${tmpSub.progress}`,
-          update: uuidv4()
-        });
+        showToast(`${tmpSub.language}: ${tmpSub.progress}`);
       }, TOAST_TIMEOUT / 10);
 
       await tmpSub.adjustForLearning(tokenizeMiteiru);
@@ -68,10 +78,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       setFrequencyPrimary(tmpSub.frequency);
     } catch (error) {
       console.error('Error processing subtitle:', error);
-      setToastInfo({
-        message: `Error processing subtitle: ${error.message}`,
-        update: uuidv4()
-      });
+      showToast(`Error processing subtitle: ${error.message}`);
     } finally {
       // Always clear the interval
       if (toastSetter) {
@@ -79,173 +86,109 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
         toastSetter = null;
       }
     }
-  }, [tokenizeMiteiru, setFrequencyPrimary, setToastInfo]);
+  }, [tokenizeMiteiru, setFrequencyPrimary, showToast]);
 
   const loadSubtitleAsPrimary = useCallback((tmpSub, currentPath) => {
     setPrimarySub(tmpSub);
     setLastPrimarySubPath([{path: currentPath}]);
     setGlobalSubtitleId(tmpSub.id);
     
-    setToastInfo({
-      message: 'Primary subtitle loaded',
-      update: uuidv4()
-    });
+    showToast('Primary subtitle loaded');
 
     if (isLearningLanguage(tmpSub.language)) {
       processSubtitleForLearning(tmpSub);
     }
-  }, [setPrimarySub, setToastInfo, isLearningLanguage, processSubtitleForLearning]);
+  }, [setPrimarySub, showToast, isLearningLanguage, processSubtitleForLearning]);
 
   const loadSubtitleAsSecondary = useCallback((tmpSub, currentPath) => {
     setSecondarySub(tmpSub);
     setLastSecondarySubPath([{path: currentPath}]);
     
-    setToastInfo({
-      message: 'Secondary subtitle loaded',
-      update: uuidv4()
-    });
-  }, [setSecondarySub, setToastInfo]);
+    showToast('Secondary subtitle loaded');
+  }, [setSecondarySub, showToast]);
 
   useEffect(() => {
     Line.removeHearingImpairedFlag = primaryStyling.removeHearingImpaired
-  }, [primaryStyling])
+  }, [primaryStyling.removeHearingImpaired])
+
+  const loadVideoFile = useCallback((currentPath: string, pathUri: string) => {
+    setVideoSrc(buildVideoSource(currentPath, pathUri));
+    resetSub(setPrimarySub);
+    resetSub(setSecondarySub);
+  }, [resetSub, setPrimarySub, setSecondarySub]);
+
+  const routeLoadedSubtitle = useCallback((tmpSub, loadedPath: string, currentPath: string) => {
+    if (isYoutube(currentPath)) {
+      console.log(`[useLoadFiles] YouTube video detected: ${currentPath}`);
+      console.log('[useLoadFiles] Skipping auto-subtitle loading - user should select via modal');
+      return;
+    }
+
+    if (isEmbeddedSubtitlePath(currentPath)) {
+      console.log('[useLoadFiles] Loading subtitle file directly:', loadedPath);
+      const target = getEmbeddedSubtitleTarget(currentPath);
+      if (target === 'secondary') {
+        loadSubtitleAsSecondary(tmpSub, loadedPath);
+      } else {
+        loadSubtitleAsPrimary(tmpSub, loadedPath);
+      }
+      return;
+    }
+
+    setPendingSubtitle(tmpSub);
+    setPendingSubtitlePath(currentPath);
+    setShowSubtitleModal(true);
+    showToast('Choose subtitle type...');
+  }, [loadSubtitleAsPrimary, loadSubtitleAsSecondary, showToast]);
+
+  const loadSubtitleFile = useCallback(async (currentPath: string) => {
+    if (isYoutube(currentPath)) {
+      console.log(`[useLoadFiles] YouTube video detected: ${currentPath}`);
+      console.log('[useLoadFiles] Skipping auto-subtitle loading - user should select via modal');
+      return;
+    }
+
+    showToast('Loading subtitle, please wait!');
+    let toastSetter = null;
+
+    try {
+      toastSetter = setInterval(() => {
+        showToast('Still loading subtitle, please wait!');
+      }, TOAST_TIMEOUT);
+
+      const {tmpSub, subtitlePath} = await createSubtitleContainer(currentPath);
+      routeLoadedSubtitle(tmpSub, subtitlePath, currentPath);
+    } catch (error) {
+      console.error('[useLoadFiles] Failed to load subtitle file:', error);
+      showToast(`Failed to load subtitle: ${error.message}`);
+    } finally {
+      if (toastSetter) clearInterval(toastSetter);
+    }
+  }, [createSubtitleContainer, routeLoadedSubtitle, showToast]);
+
   const onLoadFiles = useCallback(async (acceptedFiles) => {
     const currentHash = Symbol();
     await queue.wait(currentHash);
-    let currentPath = await acceptedFiles[0].path;
 
-    let pathUri;
-    if (isLocalPath(currentPath)) {
-      currentPath = currentPath.replaceAll('\\', '/')
-      pathUri = currentPath;
-      if (process.platform === 'win32' && !pathUri.startsWith('/')) {
-        pathUri = '/' + currentPath;
+    try {
+      const droppedPath = await acceptedFiles[0]?.path;
+      if (!droppedPath) return;
+
+      const {currentPath, pathUri} = normalizeDroppedPath(droppedPath);
+      if (isVideo(currentPath) || isYoutube(currentPath)) {
+        loadVideoFile(currentPath, pathUri);
       }
-    }
-    if (isVideo(currentPath) || isYoutube(currentPath)) {
-      const draggedVideo = isYoutube(currentPath) ? {
-        type: 'video/youtube',
-        src: currentPath,
-        path: currentPath
-      } : {
-        type: 'video/webm',
-        src: `miteiru://${pathUri}`,
-        path: pathUri
-      };
-      setVideoSrc(draggedVideo);
-      resetSub(setPrimarySub)
-      resetSub(setSecondarySub)
-    }
-    if (isSubtitle(currentPath) || isYoutube(currentPath)) {
-      setToastInfo({
-        message: 'Loading subtitle, please wait!',
-        update: uuidv4()
-      });
-      
-      let toastSetter = null;
-      
-      try {
-        toastSetter = setInterval(() => {
-          setToastInfo({
-            message: 'Still loading subtitle, please wait!',
-            update: uuidv4()
-          });
-        }, TOAST_TIMEOUT);
-        
-        const draggedSubtitle = {
-          type: 'text/plain',
-          src: `${currentPath}`
-        };
-        
-        const handleSubtitleLoaded = (tmpSub, loadedPath, mustMatch = null) => {
-          if (mustMatch !== null && tmpSub.language !== mustMatch) return;
-          
-          // Clear the interval immediately when subtitle is loaded
-          if (toastSetter) {
-            clearInterval(toastSetter);
-            toastSetter = null;
-          }
 
-          if (isYoutube(currentPath)) {
-            // For YouTube videos, don't auto-load subtitles
-            // The MediaTrackSelectionModal should handle subtitle selection
-            console.log(`[useLoadFiles] YouTube video detected: ${currentPath}`);
-            console.log(`[useLoadFiles] Skipping auto-subtitle loading - user should select via modal`);
-            return;
-          } else {
-            // Check if this is an embedded subtitle file (temporary file)
-            const isEmbeddedSubtitle = currentPath.includes('miteiru_subtitle_') || currentPath.includes('miteiru_youtube_');
-            
-            if (isEmbeddedSubtitle) {
-              // For embedded/downloaded subtitles, load directly
-              console.log('[useLoadFiles] Loading subtitle file directly:', loadedPath);
-              
-              // Determine type based on filename or assume primary
-              if (currentPath.includes('secondary') || currentPath.includes('_sec_')) {
-                loadSubtitleAsSecondary(tmpSub, loadedPath);
-              } else {
-                loadSubtitleAsPrimary(tmpSub, loadedPath);
-              }
-            } else {
-              // For external files, show selection modal
-              setPendingSubtitle(tmpSub);
-              setPendingSubtitlePath(currentPath);
-              setShowSubtitleModal(true);
-              setToastInfo({
-                message: 'Choose subtitle type...',
-                update: uuidv4()
-              });
-            }
-          }
-        };
-
-        if (isYoutube(currentPath)) {
-          // For YouTube videos, clear toast and skip subtitle loading
-          if (toastSetter) {
-            clearInterval(toastSetter);
-            toastSetter = null;
-          }
-          console.log(`[useLoadFiles] YouTube video detected: ${currentPath}`);
-          console.log(`[useLoadFiles] Skipping auto-subtitle loading - user should select via modal`);
-        } else {
-          createSubtitleContainer(draggedSubtitle.src)
-            .then(({tmpSub, subtitlePath}) => handleSubtitleLoaded(tmpSub, subtitlePath))
-            .catch(error => {
-              console.error('[useLoadFiles] Failed to load subtitle file:', error);
-              if (toastSetter) {
-                clearInterval(toastSetter);
-                toastSetter = null;
-              }
-              setToastInfo({
-                message: `Failed to load subtitle: ${error.message}`,
-                update: uuidv4()
-              });
-            });
-        }
-      } catch (error) {
-        // Clean up interval on any error
-        if (toastSetter) {
-          clearInterval(toastSetter);
-          toastSetter = null;
-        }
-        console.error('[useLoadFiles] Error in subtitle loading pipeline:', error);
-        setToastInfo({
-          message: `Error: ${error.message}`,
-          update: uuidv4()
-        });
+      if (isSubtitle(currentPath) || isYoutube(currentPath)) {
+        await loadSubtitleFile(currentPath);
       }
+    } catch (error) {
+      console.error('[useLoadFiles] Error in file loading pipeline:', error);
+      showToast(`Error: ${error.message}`);
+    } finally {
+      queue.end(currentHash);
     }
-    queue.end(currentHash);
-  }, [
-    queue,
-    resetSub,
-    createSubtitleContainer,
-    loadSubtitleAsPrimary,
-    loadSubtitleAsSecondary,
-    setPrimarySub,
-    setSecondarySub,
-    setToastInfo
-  ]);
+  }, [queue, loadVideoFile, loadSubtitleFile, showToast]);
 
   // Handler for when lyrics are downloaded
   const loadPath = useCallback((lyricsPath) => {
@@ -313,94 +256,65 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     setSubtitlePreprocessOptions(DEFAULT_SUBTITLE_PREPROCESS_OPTIONS);
   }, []);
 
-  const handleSelectPrimary = useCallback(async () => {
+  const loadPendingSubtitleAs = useCallback(async (target: 'primary' | 'secondary') => {
     if (!pendingSubtitle) return;
     try {
       if (subtitlePreprocessOptions.titleCaseAllCaps) {
         const {tmpSub, subtitlePath} = await createSubtitleContainer(pendingSubtitlePath, subtitlePreprocessOptions);
-        loadSubtitleAsPrimary(tmpSub, subtitlePath);
+        if (target === 'primary') loadSubtitleAsPrimary(tmpSub, subtitlePath);
+        else loadSubtitleAsSecondary(tmpSub, subtitlePath);
       } else {
-        loadSubtitleAsPrimary(pendingSubtitle, pendingSubtitlePath);
+        if (target === 'primary') loadSubtitleAsPrimary(pendingSubtitle, pendingSubtitlePath);
+        else loadSubtitleAsSecondary(pendingSubtitle, pendingSubtitlePath);
       }
       cleanupModal();
     } catch (error) {
       console.error('[useLoadFiles] Failed to preprocess subtitle:', error);
-      setToastInfo({
-        message: `Failed to preprocess subtitle: ${error.message}`,
-        update: uuidv4()
-      });
+      showToast(`Failed to preprocess subtitle: ${error.message}`);
     }
-  }, [pendingSubtitle, pendingSubtitlePath, subtitlePreprocessOptions, createSubtitleContainer, loadSubtitleAsPrimary, cleanupModal, setToastInfo]);
+  }, [
+    pendingSubtitle,
+    pendingSubtitlePath,
+    subtitlePreprocessOptions,
+    createSubtitleContainer,
+    loadSubtitleAsPrimary,
+    loadSubtitleAsSecondary,
+    cleanupModal,
+    showToast
+  ]);
+
+  const handleSelectPrimary = useCallback(async () => {
+    await loadPendingSubtitleAs('primary');
+  }, [loadPendingSubtitleAs]);
 
   const handleSelectSecondary = useCallback(async () => {
-    if (!pendingSubtitle) return;
-    try {
-      if (subtitlePreprocessOptions.titleCaseAllCaps) {
-        const {tmpSub, subtitlePath} = await createSubtitleContainer(pendingSubtitlePath, subtitlePreprocessOptions);
-        loadSubtitleAsSecondary(tmpSub, subtitlePath);
-      } else {
-        loadSubtitleAsSecondary(pendingSubtitle, pendingSubtitlePath);
-      }
-      cleanupModal();
-    } catch (error) {
-      console.error('[useLoadFiles] Failed to preprocess subtitle:', error);
-      setToastInfo({
-        message: `Failed to preprocess subtitle: ${error.message}`,
-        update: uuidv4()
-      });
-    }
-  }, [pendingSubtitle, pendingSubtitlePath, subtitlePreprocessOptions, createSubtitleContainer, loadSubtitleAsSecondary, cleanupModal, setToastInfo]);
+    await loadPendingSubtitleAs('secondary');
+  }, [loadPendingSubtitleAs]);
 
   const handleCloseModal = useCallback(() => {
     cleanupModal();
-    setToastInfo({
-      message: 'Subtitle loading cancelled',
-      update: uuidv4()
-    });
-  }, [cleanupModal, setToastInfo]);
+    showToast('Subtitle loading cancelled');
+  }, [cleanupModal, showToast]);
 
-  // Get display name for detected language
-  const getLanguageDisplayName = useCallback((langCode) => {
-    switch (langCode) {
-      case videoConstants.japaneseLang: return 'Japanese';
-      case videoConstants.chineseLang: return 'Chinese';
-      case videoConstants.cantoneseLang: return 'Cantonese';
-      case videoConstants.vietnameseLang: return 'Vietnamese';
-      case videoConstants.englishLang: return 'English';
-      default: return langCode;
-    }
-  }, []);
+  const currentAppLanguage = useMemo(() => getLanguageDisplayName(lang), [lang]);
 
   // Enhanced load for embedded subtitles with type specification
-  const loadEmbeddedSubtitle = useCallback((filePath: string, type: 'primary' | 'secondary', preprocessOptions: SubtitlePreprocessOptions = DEFAULT_SUBTITLE_PREPROCESS_OPTIONS) => {
+  const loadEmbeddedSubtitle = useCallback(async (filePath: string, type: 'primary' | 'secondary', preprocessOptions: SubtitlePreprocessOptions = DEFAULT_SUBTITLE_PREPROCESS_OPTIONS) => {
     console.log(`[useLoadFiles] loadEmbeddedSubtitle called: ${type} from ${filePath}`);
-    
-    // Create a pseudo subtitle object for direct loading
-    const draggedSubtitle = {
-      type: 'text/plain',
-      src: filePath
-    };
 
-    const directLoader = (tmpSub, loadedPath = filePath) => {
+    try {
+      const {tmpSub, subtitlePath} = await createSubtitleContainer(filePath, preprocessOptions);
       console.log(`[useLoadFiles] Direct loading ${type} subtitle:`, tmpSub);
-      
       if (type === 'primary') {
-        loadSubtitleAsPrimary(tmpSub, loadedPath);
+        loadSubtitleAsPrimary(tmpSub, subtitlePath);
       } else {
-        loadSubtitleAsSecondary(tmpSub, loadedPath);
+        loadSubtitleAsSecondary(tmpSub, subtitlePath);
       }
-    };
-
-    createSubtitleContainer(draggedSubtitle.src, preprocessOptions)
-      .then(({tmpSub, subtitlePath}) => directLoader(tmpSub, subtitlePath))
-      .catch(error => {
-        console.error(`[useLoadFiles] Failed to load ${type} embedded subtitle:`, error);
-        setToastInfo({
-          message: `Failed to load ${type} subtitle`,
-          update: uuidv4()
-        });
-      });
-  }, [createSubtitleContainer, loadSubtitleAsPrimary, loadSubtitleAsSecondary, setToastInfo]);
+    } catch (error) {
+      console.error(`[useLoadFiles] Failed to load ${type} embedded subtitle:`, error);
+      showToast(`Failed to load ${type} subtitle`);
+    }
+  }, [createSubtitleContainer, loadSubtitleAsPrimary, loadSubtitleAsSecondary, showToast]);
 
   return {
     onLoadFiles,
@@ -412,7 +326,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     // Subtitle modal state and handlers
     showSubtitleModal,
     pendingSubtitlePath,
-    currentAppLanguage: getLanguageDisplayName(lang),
+    currentAppLanguage,
     subtitlePreprocessOptions,
     setSubtitlePreprocessOptions,
     handleSelectPrimary,

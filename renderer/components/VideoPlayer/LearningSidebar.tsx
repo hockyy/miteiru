@@ -1,8 +1,8 @@
-import {ArrowLeft} from "./Icons";
 import React, {useState} from "react";
 import {defaultLearningStyling} from "../../utils/CJKStyling";
 import {StylingBox} from "./Sidebar";
 import {useStoreData} from "../../hooks/useStoreData";
+import {SidebarSection, SidebarShell} from "./SidebarShell";
 
 export const LearningSidebar = ({
                                   showSidebar,
@@ -17,27 +17,14 @@ export const LearningSidebar = ({
   const [showApiKey, setShowApiKey] = useState(false);
   const [showGoogleApiKey, setShowGoogleApiKey] = useState(false);
 
-  return <div style={{
-    transition: "all 0.3s ease-out",
-    transform: `translate(${!showSidebar ? "30vw" : "0"}, 0`
-  }}
-              className={"overflow-y-scroll overflow-x-clip flex flex-col content-center items-center p-3 z-[19] fixed right-0 top-0 h-screen w-[30vw] bg-gray-700/70"}>
-
-    <button className={"self-start p-2"} onClick={() => {
-      setShowSidebar(old => !old)
-    }
-    }>
-      <div className={"animation h-5"}>
-        {ArrowLeft}
-      </div>
-    </button>
-    <div className={"font-bold unselectable text-3xl m-4"}>
-      Settings
-    </div>
-
+  return <SidebarShell
+      showSidebar={showSidebar}
+      setShowSidebar={setShowSidebar}
+      title="Learning Settings"
+      subtitle="AI providers, OCR, and study subtitle styling"
+  >
     {/* OpenRouter Settings */}
-    <div className={"w-full mx-5 px-3 flex flex-col content-start gap-3 unselectable mb-5"}>
-      <div className={"font-bold text-xl mb-2"}>OpenRouter AI Settings</div>
+    <SidebarSection title="OpenRouter AI">
       <div className="flex flex-col gap-2">
         <label className="text-sm">Model</label>
         <input
@@ -66,13 +53,10 @@ export const LearningSidebar = ({
           </button>
         </div>
       </div>
-    </div>
-
-    <hr className={"w-full h-1 m-5"}/>
+    </SidebarSection>
 
     {/* Google Vision Settings */}
-    <div className={"w-full mx-5 px-3 flex flex-col content-start gap-3 unselectable mb-5"}>
-      <div className={"font-bold text-xl mb-2"}>Google Cloud Vision OCR</div>
+    <SidebarSection title="Google Cloud Vision OCR">
       <div className="flex flex-col gap-2">
         <label className="text-sm">API Key</label>
         <div className="flex flex-row gap-2 items-center">
@@ -94,11 +78,11 @@ export const LearningSidebar = ({
           For image OCR feature. Get your key at <span className="text-blue-300">console.cloud.google.com</span>
         </div>
       </div>
-    </div>
+    </SidebarSection>
 
-    <hr className={"w-full h-1 m-5"}/>
+    <SidebarSection title="Learning Subtitle">
     <StylingBox subtitleStyling={primaryStyling} setSubtitleStyling={setPrimaryStyling}
                 subtitleName={"CJK"} defaultStyling={defaultLearningStyling} lang={lang}/>
-    <hr className={"w-full h-1 m-5"}/>
-  </div>
+    </SidebarSection>
+  </SidebarShell>
 }

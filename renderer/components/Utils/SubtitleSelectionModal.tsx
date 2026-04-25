@@ -1,7 +1,9 @@
 import React from 'react';
-import { X, FileText, Globe } from 'lucide-react';
+import { FileText, Globe } from 'lucide-react';
 import { AwesomeButton } from 'react-awesome-button';
 import { SubtitlePreprocessOptions } from '../../types/subtitlePreprocess';
+import {getLanguageEmoji} from "../../utils/mediaUtils";
+import {ModalShell} from "./ModalShell";
 
 interface SubtitleSelectionModalProps {
   isOpen: boolean;
@@ -26,39 +28,14 @@ const SubtitleSelectionModal: React.FC<SubtitleSelectionModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const getLanguageEmoji = (lang: string) => {
-    switch (lang) {
-      case 'Japanese': return '🇯🇵';
-      case 'Chinese': return '🇨🇳';
-      case 'Cantonese': return '🇭🇰';
-      case 'Vietnamese': return '🇻🇳';
-      case 'English': return '✨';
-      default: return '🌐';
-    }
-  };
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div
-        className="bg-gray-900 rounded-lg shadow-xl w-full max-w-sm max-h-[85vh] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-3 border-b border-gray-700">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-            <FileText className="w-4 h-4" />
-            Choose Subtitle Type
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white transition-colors p-1"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="p-4 flex-1">
+    <ModalShell
+      title="Choose Subtitle Type"
+      icon={<FileText className="h-4 w-4 text-blue-300" />}
+      onClose={onClose}
+      maxWidthClassName="max-w-lg"
+      minSizeClassName="min-h-[420px] min-w-[min(92vw,24rem)]"
+    >
           <div className="text-center mb-4">
             <div className="text-gray-300 text-sm mb-1">Loading:</div>
             <div className="text-white font-medium text-base break-words mb-2">
@@ -92,7 +69,7 @@ const SubtitleSelectionModal: React.FC<SubtitleSelectionModalProps> = ({
 
           <div className="space-y-3">
             {/* Primary Subtitle Option */}
-            <div className="bg-gray-800 rounded-md p-3 border border-gray-700">
+            <div className="rounded-xl border border-blue-300/20 bg-blue-950/25 p-3 shadow-lg shadow-black/20">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-blue-400">📚</span>
                 <h3 className="text-white font-medium text-sm">Primary</h3>
@@ -110,7 +87,7 @@ const SubtitleSelectionModal: React.FC<SubtitleSelectionModalProps> = ({
             </div>
 
             {/* Secondary Subtitle Option */}
-            <div className="bg-gray-800 rounded-md p-3 border border-gray-700">
+            <div className="rounded-xl border border-emerald-300/20 bg-emerald-950/20 p-3 shadow-lg shadow-black/20">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-green-400">🇺🇸</span>
                 <h3 className="text-white font-medium text-sm">Secondary</h3>
@@ -127,9 +104,7 @@ const SubtitleSelectionModal: React.FC<SubtitleSelectionModalProps> = ({
               </AwesomeButton>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
+    </ModalShell>
   );
 };
 

@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { X, FileText, Volume2, Subtitles, Play, Download, RefreshCw } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Subtitles, Play, Download, RefreshCw } from 'lucide-react';
 import { AwesomeButton } from 'react-awesome-button';
 import { MediaTrack } from '../../types/media';
-import { useYoutubeSubtitles, YoutubeSubtitleOption } from '../../hooks/useYoutubeSubtitles';
+import { useYoutubeSubtitles } from '../../hooks/useYoutubeSubtitles';
 import { SubtitlePreprocessOptions } from '../../types/subtitlePreprocess';
+import {getLanguageEmoji, getTrackLabel} from "../../utils/mediaUtils";
+import {ModalShell} from "./ModalShell";
 
 interface MediaTrackSelectionModalProps {
   isOpen: boolean;
@@ -52,7 +54,7 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
     clearSubtitles 
   } = useYoutubeSubtitles();
 
-  const isYouTubeUrl = videoUrl && isYoutubeUrl(videoUrl);
+  const isYouTubeUrl = Boolean(videoUrl && isYoutubeUrl(videoUrl));
 
   // Fetch YouTube subtitles when modal opens for YouTube videos
   useEffect(() => {
@@ -69,39 +71,17 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
     }
   }, [isOpen, isYouTubeUrl, videoUrl, fetchAvailableSubtitles, clearSubtitles]);
 
-  if (!isOpen) return null;
-
-  const getTrackLabel = (track: MediaTrack) => {
-    const parts = [];
-    if (track.title) parts.push(track.title);
-    if (track.language) parts.push(`(${track.language.toUpperCase()})`);
-    if (parts.length === 0) parts.push(`Track ${track.index + 1}`);
-    if (track.default) parts.push('[Default]');
-    return parts.join(' ');
-  };
-
-  const getLanguageEmoji = (lang: string) => {
-    switch (lang?.toLowerCase()) {
-      case 'jpn': case 'ja': return '🇯🇵';
-      case 'chi': case 'zh-cn': case 'zh': return '🇨🇳';
-      case 'yue': case 'zh-hk': return '🇭🇰';
-      case 'eng': case 'en': return '🇺🇸';
-      case 'vi': case 'vie': return '🇻🇳';
-      default: return '🌐';
-    }
-  };
-
-  const handlePrimarySubtitleChange = (index: number | null, type: 'embedded' | 'youtube' | null) => {
+  const handlePrimarySubtitleChange = useCallback((index: number | null, type: 'embedded' | 'youtube' | null) => {
     setSelectedPrimarySubtitle(index);
     setSelectedPrimaryType(type);
-  };
+  }, []);
 
-  const handleSecondarySubtitleChange = (index: number | null, type: 'embedded' | 'youtube' | null) => {
+  const handleSecondarySubtitleChange = useCallback((index: number | null, type: 'embedded' | 'youtube' | null) => {
     setSelectedSecondarySubtitle(index);
     setSelectedSecondaryType(type);
-  };
+  }, []);
 
-  const handleConfirm = () => {
+  const handleConfirm = useCallback(() => {
     const selection: TrackSelection = {
       primarySubtitleTrackIndex: selectedPrimarySubtitle,
       secondarySubtitleTrackIndex: selectedSecondarySubtitle,
@@ -127,32 +107,52 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
     });
     
     onConfirm(selection);
-  };
+  }, [
+    onConfirm,
+    preprocessOptions,
+    selectedPrimarySubtitle,
+    selectedPrimaryType,
+    selectedSecondarySubtitle,
+    selectedSecondaryType,
+    subtitleTracks,
+    youtubeSubtitles
+  ]);
 
-  const canConfirm = true;
+  const footerSummary = useMemo(() => {
+    if (selectedPrimarySubtitle === null && selectedSecondarySubtitle === null) return 'No subtitles selected';
+    return [
+      selectedPrimarySubtitle !== null ? `Primary: #${selectedPrimarySubtitle + 1}` : null,
+      selectedSecondarySubtitle !== null ? `Secondary: #${selectedSecondarySubtitle + 1}` : null
+    ].filter(Boolean).join(', ');
+  }, [selectedPrimarySubtitle, selectedSecondarySubtitle]);
+
+  if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div
-        className="bg-gray-900 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-700">
-          <h2 className="text-xl font-semibold text-white flex items-center gap-2">
-            <Subtitles className="w-5 h-5" />
-            Select Embedded Subtitles
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-white transition-colors p-1"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+    <ModalShell
+      title="Select Subtitles"
+      icon={<Subtitles className="h-5 w-5 text-green-300" />}
+      onClose={onClose}
+      maxWidthClassName="max-w-3xl"
+      minSizeClassName="min-h-[560px] min-w-[min(94vw,36rem)]"
+      footer={(
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-sm text-white/55">{footerSummary}</div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex gap-3">
+            <AwesomeButton type="secondary" onPress={onClose}>
+              Cancel
+            </AwesomeButton>
+            <AwesomeButton type="primary" onPress={handleConfirm}>
+              <div className="flex items-center gap-2">
+                <Play className="w-4 h-4" />
+                Load Subtitles
+              </div>
+            </AwesomeButton>
+          </div>
+        </div>
+      )}
+    >
           {/* File Info */}
           <div className="text-center mb-6">
             <div className="text-gray-300 text-sm mb-1">Loading media file:</div>
@@ -391,35 +391,7 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="p-4 border-t border-gray-700 flex justify-between items-center">
-          <div className="text-gray-500 text-sm">
-            {selectedPrimarySubtitle !== null && `Primary: #${selectedPrimarySubtitle + 1}`}
-            {selectedPrimarySubtitle !== null && selectedSecondarySubtitle !== null && ', '}
-            {selectedSecondarySubtitle !== null && `Secondary: #${selectedSecondarySubtitle + 1}`}
-            {selectedPrimarySubtitle === null && selectedSecondarySubtitle === null && 'No subtitles selected'}
-          </div>
-          
-          <div className="flex gap-3">
-            <AwesomeButton type="secondary" onPress={onClose}>
-              Cancel
-            </AwesomeButton>
-            <AwesomeButton 
-              type="primary" 
-              onPress={handleConfirm}
-              disabled={!canConfirm}
-            >
-              <div className="flex items-center gap-2">
-              <Play className="w-4 h-4" />
-              Load Subtitles
-              </div>
-            </AwesomeButton>
-          </div>
-        </div>
-      </div>
-    </div>
+    </ModalShell>
   );
 };
 

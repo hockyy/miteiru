@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import {getYoutubeVideoId} from "../utils/mediaUtils";
 
 export interface YoutubeSubtitleOption {
   language: string;
@@ -19,24 +20,10 @@ export const useYoutubeSubtitles = () => {
     error: null
   });
 
-  // Extract YouTube video ID from URL
-  const getYoutubeVideoId = useCallback((url: string): string | null => {
-    const patterns = [
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
-      /^([a-zA-Z0-9_-]{11})$/ // Direct video ID
-    ];
-    
-    for (const pattern of patterns) {
-      const match = url.match(pattern);
-      if (match) return match[1];
-    }
-    return null;
-  }, []);
-
   // Check if URL is a YouTube URL
   const isYoutubeUrl = useCallback((url: string): boolean => {
     return getYoutubeVideoId(url) !== null;
-  }, [getYoutubeVideoId]);
+  }, []);
 
   // Fetch available YouTube subtitles for a video
   const fetchAvailableSubtitles = useCallback(async (videoUrl: string) => {
@@ -80,7 +67,7 @@ export const useYoutubeSubtitles = () => {
         isLoading: false 
       }));
     }
-  }, [getYoutubeVideoId]);
+  }, []);
 
   // Fetch specific subtitle content
   const fetchSubtitleContent = useCallback(async (videoUrl: string, language: string) => {
@@ -106,7 +93,7 @@ export const useYoutubeSubtitles = () => {
       console.error(`[useYoutubeSubtitles] Error fetching ${language} subtitle content:`, error);
       throw error;
     }
-  }, [getYoutubeVideoId]);
+  }, []);
 
   // Clear current state
   const clearSubtitles = useCallback(() => {

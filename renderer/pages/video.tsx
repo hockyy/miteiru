@@ -44,7 +44,8 @@ import useMediaAnalysis from "../hooks/useMediaAnalysis";
 import useLiveCaptions from "../hooks/useLiveCaptions";
 import {LiveCaptionOverlay} from "../components/Subtitle/LiveCaptionOverlay";
 import {LiveCaptionControl} from "../components/Subtitle/LiveCaptionControl";
-import {SubtitlePreprocessOptions} from "../types/subtitlePreprocess";
+import {useMediaTrackSubtitleSelection} from "../hooks/useMediaTrackSubtitleSelection";
+import {getFileNameFromPath} from "../utils/mediaUtils";
 
 function Video() {
   const {
@@ -221,125 +222,40 @@ function Video() {
     }
   }), [videoSrc]);
 
-  // Handle embedded subtitle loading
-  const handleEmbeddedSubtitleLoad = useCallback((filePath: string, type: 'primary' | 'secondary', preprocessOptions?: SubtitlePreprocessOptions) => {
-    // Use the specialized embedded subtitle loader
-    loadEmbeddedSubtitle(filePath, type, preprocessOptions);
-  }, [loadEmbeddedSubtitle]);
-
   // Handle loading processed video with selected audio
   const handleReencodedVideoLoad = useCallback((videoPath: string) => {
     // Load the processed video file
     onLoadFiles([{path: videoPath}]);
   }, [onLoadFiles]);
 
-  // Enhanced track selection handler (now subtitle-only)
-  const handleMediaTrackSelection = useCallback(async (selection) => {
-    console.log('[Video] Handling media track selection:', selection);
-    
-    // Close the modal immediately when user confirms
-    handleCloseTrackSelectionModal();
-    
-    try {
-      // Handle YouTube subtitles differently from embedded subtitles
-      if (selection.primarySubtitleType === 'youtube' || selection.secondarySubtitleType === 'youtube') {
-        const videoId = videoSrc.path.includes('youtube.com') || videoSrc.path.includes('youtu.be') 
-          ? videoSrc.path.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)?.[1]
-          : null;
-          
-        if (!videoId) {
-          throw new Error('Invalid YouTube URL');
-        }
-        
-        // Download and load YouTube subtitles
-        const downloadPromises = [];
-        
-        if (selection.primarySubtitleType === 'youtube' && selection.primaryYoutubeSubtitleLanguage) {
-          console.log(`[Video] Downloading YouTube primary subtitle: ${selection.primaryYoutubeSubtitleLanguage}`);
-          
-          setToastInfo({
-            message: `Downloading primary YouTube subtitle (${selection.primaryYoutubeSubtitleLanguage})...`,
-            update: Math.random().toString()
-          });
-          
-          const primaryPromise = window.ipc.invoke("downloadYoutubeSubtitle", videoId, selection.primaryYoutubeSubtitleLanguage)
-            .then(result => {
-              if (result.success && result.filePath) {
-                console.log(`[Video] Primary subtitle downloaded to: ${result.filePath}`);
-                handleEmbeddedSubtitleLoad(result.filePath, 'primary', selection.preprocessOptions);
-                setToastInfo({
-                  message: `Primary YouTube subtitle loaded (${selection.primaryYoutubeSubtitleLanguage})`,
-                  update: Math.random().toString()
-                });
-              } else {
-                throw new Error(result.error || 'Download failed');
-              }
-            })
-            .catch(error => {
-              console.error('Failed to download YouTube primary subtitle:', error);
-              setToastInfo({
-                message: `Failed to load primary YouTube subtitle: ${error.message}`,
-                update: Math.random().toString()
-              });
-            });
-          
-          downloadPromises.push(primaryPromise);
-        }
-        
-        if (selection.secondarySubtitleType === 'youtube' && selection.secondaryYoutubeSubtitleLanguage) {
-          console.log(`[Video] Downloading YouTube secondary subtitle: ${selection.secondaryYoutubeSubtitleLanguage}`);
-          
-          setToastInfo({
-            message: `Downloading secondary YouTube subtitle (${selection.secondaryYoutubeSubtitleLanguage})...`,
-            update: Math.random().toString()
-          });
-          
-          const secondaryPromise = window.ipc.invoke("downloadYoutubeSubtitle", videoId, selection.secondaryYoutubeSubtitleLanguage)
-            .then(result => {
-              if (result.success && result.filePath) {
-                console.log(`[Video] Secondary subtitle downloaded to: ${result.filePath}`);
-                handleEmbeddedSubtitleLoad(result.filePath, 'secondary', selection.preprocessOptions);
-                setToastInfo({
-                  message: `Secondary YouTube subtitle loaded (${selection.secondaryYoutubeSubtitleLanguage})`,
-                  update: Math.random().toString()
-                });
-              } else {
-                throw new Error(result.error || 'Download failed');
-              }
-            })
-            .catch(error => {
-              console.error('Failed to download YouTube secondary subtitle:', error);
-              setToastInfo({
-                message: `Failed to load secondary YouTube subtitle: ${error.message}`,
-                update: Math.random().toString()
-              });
-            });
-          
-          downloadPromises.push(secondaryPromise);
-        }
-      }
-      
-      // Handle embedded subtitles (existing logic)
-      if (selection.primarySubtitleType === 'embedded' || selection.secondarySubtitleType === 'embedded') {
-        await handleTrackSelection(selection, handleEmbeddedSubtitleLoad);
-      }
-      
-      // Show success message if no subtitles were selected
-      if (!selection.primarySubtitleType && !selection.secondarySubtitleType) {
-        setToastInfo({
-          message: 'No subtitles selected',
-          update: Math.random().toString()
-        });
-      }
-      
-    } catch (error) {
-      console.error('Error handling media track selection:', error);
-      setToastInfo({
-        message: `Failed to load selected tracks: ${error.message}`,
-        update: Math.random().toString()
-      });
-    }
-  }, [handleTrackSelection, handleEmbeddedSubtitleLoad, setToastInfo, videoSrc.path, handleCloseTrackSelectionModal]);
+  const handleMediaTrackSelection = useMediaTrackSubtitleSelection({
+    videoPath: videoSrc.path,
+    handleTrackSelection,
+    handleCloseTrackSelectionModal,
+    loadEmbeddedSubtitle,
+    setToastInfo
+  });
+  const pendingSubtitleFileName = useMemo(
+      () => getFileNameFromPath(pendingSubtitlePath),
+      [pendingSubtitlePath]
+  );
+  const mediaFileName = useMemo(
+      () => getFileNameFromPath(videoSrc.path),
+      [videoSrc.path]
+  );
+  const mediaVideoUrl = useMemo(
+      () => videoSrc.path.startsWith('http') ? videoSrc.path : undefined,
+      [videoSrc.path]
+  );
+  const selectedAudioTrackLabel = useMemo(
+      () => selectedAudioForRencode
+        ? `${selectedAudioForRencode.title || selectedAudioForRencode.language || 'Track'} (${selectedAudioForRencode.codec})`
+        : '',
+      [selectedAudioForRencode]
+  );
+  const handleAudioReencodeModalConfirm = useCallback((trackIndex, convertToX264, convertAudioToAac) => {
+    handleAudioReencodeConfirm(trackIndex, handleReencodedVideoLoad, convertToX264, convertAudioToAac);
+  }, [handleAudioReencodeConfirm, handleReencodedVideoLoad]);
 
   const {
     autoPause,
@@ -498,7 +414,7 @@ function Video() {
             onClose={handleCloseModal}
             onSelectPrimary={handleSelectPrimary}
             onSelectSecondary={handleSelectSecondary}
-            fileName={pendingSubtitlePath.split('/').pop() || pendingSubtitlePath.split('\\').pop() || 'Unknown file'}
+            fileName={pendingSubtitleFileName}
             currentAppLanguage={currentAppLanguage}
             preprocessOptions={subtitlePreprocessOptions}
             onPreprocessOptionsChange={setSubtitlePreprocessOptions}
@@ -507,25 +423,25 @@ function Video() {
             isOpen={showTrackSelectionModal}
             onClose={handleCloseTrackSelectionModal}
             onConfirm={handleMediaTrackSelection}
-            fileName={videoSrc.path.split('/').pop() || videoSrc.path.split('\\').pop() || 'Unknown file'}
+            fileName={mediaFileName}
             subtitleTracks={mediaInfo.subtitleTracks}
             currentAppLanguage={currentAppLanguage}
-            videoUrl={videoSrc.path.startsWith('http') ? videoSrc.path : undefined}
+            videoUrl={mediaVideoUrl}
         />
         <AudioReencodeModal
             isOpen={showAudioReencodeModal}
             onClose={handleCloseAudioReencodeModal}
-            onConfirm={(trackIndex, convertToX264, convertAudioToAac) => handleAudioReencodeConfirm(trackIndex, handleReencodedVideoLoad, convertToX264, convertAudioToAac)}
+            onConfirm={handleAudioReencodeModalConfirm}
             onSkip={handleAudioReencodeSkip}
-            fileName={videoSrc.path.split('/').pop() || videoSrc.path.split('\\').pop() || 'Unknown file'}
+            fileName={mediaFileName}
             audioTracks={mediaInfo.audioTracks}
             videoTracks={mediaInfo.videoTracks || []}
             currentAppLanguage={currentAppLanguage}
         />
         <ReencodeProgressModal
             isOpen={showReencodeProgress}
-            fileName={videoSrc.path.split('/').pop() || videoSrc.path.split('\\').pop() || 'Unknown file'}
-            selectedAudioTrack={selectedAudioForRencode ? `${selectedAudioForRencode.title || selectedAudioForRencode.language || 'Track'} (${selectedAudioForRencode.codec})` : ''}
+            fileName={mediaFileName}
+            selectedAudioTrack={selectedAudioTrackLabel}
             progress={reencodeProgress}
         />
         <CommandPalette
