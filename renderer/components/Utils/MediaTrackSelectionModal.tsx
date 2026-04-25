@@ -3,6 +3,7 @@ import { X, FileText, Volume2, Subtitles, Play, Download, RefreshCw } from 'luci
 import { AwesomeButton } from 'react-awesome-button';
 import { MediaTrack } from '../../types/media';
 import { useYoutubeSubtitles, YoutubeSubtitleOption } from '../../hooks/useYoutubeSubtitles';
+import { SubtitlePreprocessOptions } from '../../types/subtitlePreprocess';
 
 interface MediaTrackSelectionModalProps {
   isOpen: boolean;
@@ -19,7 +20,9 @@ export interface TrackSelection {
   secondarySubtitleTrackIndex: number | null; // null means no secondary subtitle
   primarySubtitleType: 'embedded' | 'youtube' | null; // null when no primary subtitle
   secondarySubtitleType: 'embedded' | 'youtube' | null; // null when no secondary subtitle
-  youtubeSubtitleLanguage?: string; // Language code for YouTube subtitles
+  primaryYoutubeSubtitleLanguage?: string;
+  secondaryYoutubeSubtitleLanguage?: string;
+  preprocessOptions?: SubtitlePreprocessOptions;
 }
 
 const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
@@ -35,6 +38,9 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
   const [selectedSecondarySubtitle, setSelectedSecondarySubtitle] = useState<number | null>(null);
   const [selectedPrimaryType, setSelectedPrimaryType] = useState<'embedded' | 'youtube' | null>(null);
   const [selectedSecondaryType, setSelectedSecondaryType] = useState<'embedded' | 'youtube' | null>(null);
+  const [preprocessOptions, setPreprocessOptions] = useState<SubtitlePreprocessOptions>({
+    titleCaseAllCaps: false
+  });
   
   // Use YouTube subtitles hook
   const { 
@@ -52,6 +58,9 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
   useEffect(() => {
     if (!isOpen) {
       clearSubtitles();
+      setPreprocessOptions({
+        titleCaseAllCaps: false
+      });
       return;
     }
     
@@ -98,11 +107,13 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
       secondarySubtitleTrackIndex: selectedSecondarySubtitle,
       primarySubtitleType: selectedPrimaryType,
       secondarySubtitleType: selectedSecondaryType,
-      youtubeSubtitleLanguage: selectedPrimaryType === 'youtube' && selectedPrimarySubtitle !== null 
-        ? youtubeSubtitles[selectedPrimarySubtitle]?.language 
-        : selectedSecondaryType === 'youtube' && selectedSecondarySubtitle !== null
+      primaryYoutubeSubtitleLanguage: selectedPrimaryType === 'youtube' && selectedPrimarySubtitle !== null
+        ? youtubeSubtitles[selectedPrimarySubtitle]?.language
+        : undefined,
+      secondaryYoutubeSubtitleLanguage: selectedSecondaryType === 'youtube' && selectedSecondarySubtitle !== null
         ? youtubeSubtitles[selectedSecondarySubtitle]?.language
-        : undefined
+        : undefined,
+      preprocessOptions
     };
     
     console.log('[MediaTrackSelectionModal] User confirmed subtitle selection:', selection);
@@ -167,6 +178,26 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
                 </>
               )}
             </div>
+          </div>
+
+          <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 mb-4">
+            <div className="text-gray-300 text-sm font-medium mb-2">
+              Preprocessor
+            </div>
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={!!preprocessOptions.titleCaseAllCaps}
+                onChange={(event) => setPreprocessOptions({
+                  ...preprocessOptions,
+                  titleCaseAllCaps: event.target.checked
+                })}
+                className="mt-0.5 w-4 h-4 text-blue-600 bg-gray-600 border-gray-500 rounded"
+              />
+              <span className="text-gray-300 text-sm">
+                Fix all-caps subtitles to sentence case
+              </span>
+            </label>
           </div>
 
           <div className="space-y-4">{/* Audio selection removed - handled by separate AudioReencodeModal */}

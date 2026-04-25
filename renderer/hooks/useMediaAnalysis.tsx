@@ -118,7 +118,7 @@ const useMediaAnalysis = (videoPath: string) => {
   }, [videoPath, analyzeMedia, isYoutubeUrl]);
 
   // Handle track selection from modal (now only for subtitles)
-  const handleTrackSelection = useCallback(async (selection: TrackSelection, onSubtitleLoad?: (path: string, type: 'primary' | 'secondary') => void) => {
+  const handleTrackSelection = useCallback(async (selection: TrackSelection, onSubtitleLoad?: (path: string, type: 'primary' | 'secondary', preprocessOptions?: TrackSelection['preprocessOptions']) => void) => {
     setSelectedTracks(selection);
     setShowTrackSelectionModal(false);
 
@@ -126,7 +126,7 @@ const useMediaAnalysis = (videoPath: string) => {
       // Extract and load selected subtitle tracks
       const promises = [];
       
-      if (selection.primarySubtitleTrackIndex !== null && mediaInfo.subtitleTracks[selection.primarySubtitleTrackIndex]) {
+      if (selection.primarySubtitleType === 'embedded' && selection.primarySubtitleTrackIndex !== null && mediaInfo.subtitleTracks[selection.primarySubtitleTrackIndex]) {
         const track = mediaInfo.subtitleTracks[selection.primarySubtitleTrackIndex];
         promises.push(
           window.electronAPI.extractEmbeddedSubtitle(
@@ -137,7 +137,7 @@ const useMediaAnalysis = (videoPath: string) => {
         );
       }
 
-      if (selection.secondarySubtitleTrackIndex !== null && mediaInfo.subtitleTracks[selection.secondarySubtitleTrackIndex]) {
+      if (selection.secondarySubtitleType === 'embedded' && selection.secondarySubtitleTrackIndex !== null && mediaInfo.subtitleTracks[selection.secondarySubtitleTrackIndex]) {
         const track = mediaInfo.subtitleTracks[selection.secondarySubtitleTrackIndex];
         promises.push(
           window.electronAPI.extractEmbeddedSubtitle(
@@ -160,7 +160,7 @@ const useMediaAnalysis = (videoPath: string) => {
         // Load extracted subtitles using the existing subtitle loading mechanism
         if (onSubtitleLoad) {
           for (const subtitle of extractedSubtitles) {
-            onSubtitleLoad(subtitle.tempPath, subtitle.type as 'primary' | 'secondary');
+            onSubtitleLoad(subtitle.tempPath, subtitle.type as 'primary' | 'secondary', selection.preprocessOptions);
           }
         }
       }

@@ -147,6 +147,8 @@ function Video() {
     handleSelectPrimary,
     handleSelectSecondary,
     handleCloseModal,
+    subtitlePreprocessOptions,
+    setSubtitlePreprocessOptions,
     loadEmbeddedSubtitle
   } = useLoadFiles(setToastInfo,
       primarySub, setPrimarySub,
@@ -191,9 +193,9 @@ function Video() {
   } = useMediaAnalysis(videoSrc.path);
 
   // Handle embedded subtitle loading
-  const handleEmbeddedSubtitleLoad = useCallback((filePath: string, type: 'primary' | 'secondary') => {
+  const handleEmbeddedSubtitleLoad = useCallback((filePath: string, type: 'primary' | 'secondary', preprocessOptions = {}) => {
     // Use the specialized embedded subtitle loader
-    loadEmbeddedSubtitle(filePath, type);
+    loadEmbeddedSubtitle(filePath, type, preprocessOptions);
   }, [loadEmbeddedSubtitle]);
 
   // Handle audio track selection
@@ -261,21 +263,21 @@ function Video() {
         // Download and load YouTube subtitles
         const downloadPromises = [];
         
-        if (selection.primarySubtitleType === 'youtube' && selection.youtubeSubtitleLanguage) {
-          console.log(`[Video] Downloading YouTube primary subtitle: ${selection.youtubeSubtitleLanguage}`);
+        if (selection.primarySubtitleType === 'youtube' && selection.primaryYoutubeSubtitleLanguage) {
+          console.log(`[Video] Downloading YouTube primary subtitle: ${selection.primaryYoutubeSubtitleLanguage}`);
           
           setToastInfo({
-            message: `Downloading primary YouTube subtitle (${selection.youtubeSubtitleLanguage})...`,
+            message: `Downloading primary YouTube subtitle (${selection.primaryYoutubeSubtitleLanguage})...`,
             update: Math.random().toString()
           });
           
-          const primaryPromise = window.ipc.invoke("downloadYoutubeSubtitle", videoId, selection.youtubeSubtitleLanguage)
+          const primaryPromise = window.ipc.invoke("downloadYoutubeSubtitle", videoId, selection.primaryYoutubeSubtitleLanguage)
             .then(result => {
               if (result.success && result.filePath) {
                 console.log(`[Video] Primary subtitle downloaded to: ${result.filePath}`);
-                onLoadFiles([{path: result.filePath}]);
+                handleEmbeddedSubtitleLoad(result.filePath, 'primary', selection.preprocessOptions);
                 setToastInfo({
-                  message: `Primary YouTube subtitle loaded (${selection.youtubeSubtitleLanguage})`,
+                  message: `Primary YouTube subtitle loaded (${selection.primaryYoutubeSubtitleLanguage})`,
                   update: Math.random().toString()
                 });
               } else {
@@ -293,21 +295,21 @@ function Video() {
           downloadPromises.push(primaryPromise);
         }
         
-        if (selection.secondarySubtitleType === 'youtube' && selection.youtubeSubtitleLanguage) {
-          console.log(`[Video] Downloading YouTube secondary subtitle: ${selection.youtubeSubtitleLanguage}`);
+        if (selection.secondarySubtitleType === 'youtube' && selection.secondaryYoutubeSubtitleLanguage) {
+          console.log(`[Video] Downloading YouTube secondary subtitle: ${selection.secondaryYoutubeSubtitleLanguage}`);
           
           setToastInfo({
-            message: `Downloading secondary YouTube subtitle (${selection.youtubeSubtitleLanguage})...`,
+            message: `Downloading secondary YouTube subtitle (${selection.secondaryYoutubeSubtitleLanguage})...`,
             update: Math.random().toString()
           });
           
-          const secondaryPromise = window.ipc.invoke("downloadYoutubeSubtitle", videoId, selection.youtubeSubtitleLanguage)
+          const secondaryPromise = window.ipc.invoke("downloadYoutubeSubtitle", videoId, selection.secondaryYoutubeSubtitleLanguage)
             .then(result => {
               if (result.success && result.filePath) {
                 console.log(`[Video] Secondary subtitle downloaded to: ${result.filePath}`);
-                onLoadFiles([{path: result.filePath}]);
+                handleEmbeddedSubtitleLoad(result.filePath, 'secondary', selection.preprocessOptions);
                 setToastInfo({
-                  message: `Secondary YouTube subtitle loaded (${selection.youtubeSubtitleLanguage})`,
+                  message: `Secondary YouTube subtitle loaded (${selection.secondaryYoutubeSubtitleLanguage})`,
                   update: Math.random().toString()
                 });
               } else {
@@ -346,7 +348,7 @@ function Video() {
         update: Math.random().toString()
       });
     }
-  }, [handleTrackSelection, handleEmbeddedSubtitleLoad, setToastInfo, videoSrc.path, onLoadFiles, handleCloseTrackSelectionModal]);
+  }, [handleTrackSelection, handleEmbeddedSubtitleLoad, setToastInfo, videoSrc.path, handleCloseTrackSelectionModal]);
 
   const {
     autoPause,
@@ -363,12 +365,12 @@ function Video() {
       setToastInfo, backToHead, setIsPlaying);
   usePlayNextAfterEnd(player, currentTime, onVideoChangeHandler, duration, setEnableSeeker);
 
-  // Pause player when subtitle selector modal opens
+  // Pause player when media selection modals open
   useEffect(() => {
-    if (showTrackSelectionModal) {
+    if (showTrackSelectionModal || showAudioReencodeModal) {
       setIsPlaying(0);
     }
-  }, [showTrackSelectionModal, setIsPlaying]);
+  }, [showTrackSelectionModal, showAudioReencodeModal, setIsPlaying]);
 
   // Show Word of the Day when no media is loaded
   if (!videoSrc.path || videoSrc.path === '') {
@@ -509,6 +511,8 @@ function Video() {
             onSelectSecondary={handleSelectSecondary}
             fileName={pendingSubtitlePath.split('/').pop() || pendingSubtitlePath.split('\\').pop() || 'Unknown file'}
             currentAppLanguage={currentAppLanguage}
+            preprocessOptions={subtitlePreprocessOptions}
+            onPreprocessOptionsChange={setSubtitlePreprocessOptions}
         />
         <MediaTrackSelectionModal
             isOpen={showTrackSelectionModal}
