@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, FileText, Globe } from 'lucide-react';
 import { AwesomeButton } from 'react-awesome-button';
+import { SubtitlePreprocessOptions } from '../../types/subtitlePreprocess';
 
 interface SubtitleSelectionModalProps {
   isOpen: boolean;
@@ -9,6 +10,8 @@ interface SubtitleSelectionModalProps {
   onSelectSecondary: () => void;
   fileName: string;
   currentAppLanguage: string;
+  preprocessOptions: SubtitlePreprocessOptions;
+  onPreprocessOptionsChange: (options: SubtitlePreprocessOptions) => void;
 }
 
 const SubtitleSelectionModal: React.FC<SubtitleSelectionModalProps> = ({
@@ -17,7 +20,9 @@ const SubtitleSelectionModal: React.FC<SubtitleSelectionModalProps> = ({
   onSelectPrimary,
   onSelectSecondary,
   fileName,
-  currentAppLanguage
+  currentAppLanguage,
+  preprocessOptions,
+  onPreprocessOptionsChange
 }) => {
   if (!isOpen) return null;
 
@@ -63,6 +68,26 @@ const SubtitleSelectionModal: React.FC<SubtitleSelectionModalProps> = ({
               <Globe className="w-3 h-3" />
               App language: {getLanguageEmoji(currentAppLanguage)} {currentAppLanguage}
             </div>
+          </div>
+
+          <div className="bg-gray-800 rounded-md p-3 border border-gray-700 mb-3">
+            <div className="text-gray-300 text-xs font-medium mb-2">
+              Preprocessor
+            </div>
+            <label className="flex items-start gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={!!preprocessOptions.titleCaseAllCaps}
+                onChange={(event) => onPreprocessOptionsChange({
+                  ...preprocessOptions,
+                  titleCaseAllCaps: event.target.checked
+                })}
+                className="mt-0.5 w-4 h-4 text-blue-600 bg-gray-600 border-gray-500 rounded"
+              />
+              <span className="text-gray-300 text-xs">
+                Fix all-caps subtitles to sentence case
+              </span>
+            </label>
           </div>
 
           <div className="space-y-3">

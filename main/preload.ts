@@ -39,6 +39,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     writeFile: (filename: string, data: string) => ipcRenderer.invoke('fs-writeFile', filename, data),
   },
   parseSubtitle: (filename: string) => ipcRenderer.invoke('parse-subtitle', filename),
+  preprocessSubtitleCapitalization: (filename: string) => ipcRenderer.invoke('preprocess-subtitle-capitalization', filename),
   findPositionDeltaInFolder: (path: string, delta: number = 1) =>
       ipcRenderer.invoke('find-position-delta-in-folder', path, delta),
 

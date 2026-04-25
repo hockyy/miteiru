@@ -1,16 +1,20 @@
 import {useCallback, useEffect, useState} from 'react';
 import {
-  convertSubtitlesToEntries,
   Line,
   setGlobalSubtitleId,
   SubtitleContainer
 } from "../components/Subtitle/DataStructures";
+import {SubtitlePreprocessOptions} from "../types/subtitlePreprocess";
 import {v4 as uuidv4} from 'uuid';
 import {TOAST_TIMEOUT} from "../components/VideoPlayer/Toast";
 import {extractVideoId, isLocalPath, isSubtitle, isVideo, isYoutube} from "../utils/utils";
 import {findPositionDeltaInFolder} from "../utils/folderUtils";
 import {useAsyncAwaitQueue} from "./useAsyncAwaitQueue";
 import {videoConstants} from "../utils/constants";
+
+const DEFAULT_SUBTITLE_PREPROCESS_OPTIONS: SubtitlePreprocessOptions = {
+  titleCaseAllCaps: false
+};
 
 const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
                       secondarySub, setSecondarySub,
@@ -30,6 +34,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
   const [showSubtitleModal, setShowSubtitleModal] = useState(false);
   const [pendingSubtitle, setPendingSubtitle] = useState(null);
   const [pendingSubtitlePath, setPendingSubtitlePath] = useState('');
+  const [subtitlePreprocessOptions, setSubtitlePreprocessOptions] = useState<SubtitlePreprocessOptions>(DEFAULT_SUBTITLE_PREPROCESS_OPTIONS);
   // Helper functions
   const resetSub = useCallback((subSetter) => {
     subSetter(new SubtitleContainer(''));
@@ -43,6 +48,15 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       videoConstants.vietnameseLang
     ].includes(language);
   }, []);
+
+  const createSubtitleContainer = useCallback(async (filePath: string, preprocessOptions: SubtitlePreprocessOptions = DEFAULT_SUBTITLE_PREPROCESS_OPTIONS) => {
+    const subtitlePath = preprocessOptions.titleCaseAllCaps
+      ? await window.electronAPI.preprocessSubtitleCapitalization(filePath)
+      : filePath;
+
+    const tmpSub = await SubtitleContainer.create(subtitlePath, lang, primaryStyling.forceSimplified);
+    return {tmpSub, subtitlePath};
+  }, [lang, primaryStyling.forceSimplified]);
 
   const processSubtitleForLearning = useCallback(async (tmpSub) => {
     let toastSetter = null;
@@ -107,7 +121,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
   useEffect(() => {
     Line.removeHearingImpairedFlag = primaryStyling.removeHearingImpaired
   }, [primaryStyling])
-  const onLoadFiles = useCallback(async acceptedFiles => {
+  const onLoadFiles = useCallback(async (acceptedFiles) => {
     const currentHash = Symbol();
     await queue.wait(currentHash);
     let currentPath = await acceptedFiles[0].path;
@@ -155,7 +169,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
           src: `${currentPath}`
         };
         
-        const handleSubtitleLoaded = (tmpSub, mustMatch = null) => {
+        const handleSubtitleLoaded = (tmpSub, loadedPath, mustMatch = null) => {
           if (mustMatch !== null && tmpSub.language !== mustMatch) return;
           
           // Clear the interval immediately when subtitle is loaded
@@ -176,13 +190,13 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
             
             if (isEmbeddedSubtitle) {
               // For embedded/downloaded subtitles, load directly
-              console.log('[useLoadFiles] Loading subtitle file directly:', currentPath);
+              console.log('[useLoadFiles] Loading subtitle file directly:', loadedPath);
               
               // Determine type based on filename or assume primary
               if (currentPath.includes('secondary') || currentPath.includes('_sec_')) {
-                loadSubtitleAsSecondary(tmpSub, currentPath);
+                loadSubtitleAsSecondary(tmpSub, loadedPath);
               } else {
-                loadSubtitleAsPrimary(tmpSub, currentPath);
+                loadSubtitleAsPrimary(tmpSub, loadedPath);
               }
             } else {
               // For external files, show selection modal
@@ -206,8 +220,8 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
           console.log(`[useLoadFiles] YouTube video detected: ${currentPath}`);
           console.log(`[useLoadFiles] Skipping auto-subtitle loading - user should select via modal`);
         } else {
-          SubtitleContainer.create(draggedSubtitle.src, lang, primaryStyling.forceSimplified)
-            .then(handleSubtitleLoaded)
+          createSubtitleContainer(draggedSubtitle.src)
+            .then(({tmpSub, subtitlePath}) => handleSubtitleLoaded(tmpSub, subtitlePath))
             .catch(error => {
               console.error('[useLoadFiles] Failed to load subtitle file:', error);
               if (toastSetter) {
@@ -234,7 +248,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       }
     }
     queue.end(currentHash);
-  }, [lang, primaryStyling.forceSimplified, queue, resetSub, isLearningLanguage, loadSubtitleAsPrimary, loadSubtitleAsSecondary, setToastInfo]);
+  }, [queue, resetSub, createSubtitleContainer, loadSubtitleAsPrimary, loadSubtitleAsSecondary, setToastInfo]);
 
   // Handler for when lyrics are downloaded
   const loadPath = useCallback((lyricsPath) => {
@@ -299,19 +313,46 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     setShowSubtitleModal(false);
     setPendingSubtitle(null);
     setPendingSubtitlePath('');
+    setSubtitlePreprocessOptions(DEFAULT_SUBTITLE_PREPROCESS_OPTIONS);
   }, []);
 
-  const handleSelectPrimary = useCallback(() => {
+  const handleSelectPrimary = useCallback(async () => {
     if (!pendingSubtitle) return;
-    loadSubtitleAsPrimary(pendingSubtitle, pendingSubtitlePath);
-    cleanupModal();
-  }, [pendingSubtitle, pendingSubtitlePath, loadSubtitleAsPrimary, cleanupModal]);
+    try {
+      if (subtitlePreprocessOptions.titleCaseAllCaps) {
+        const {tmpSub, subtitlePath} = await createSubtitleContainer(pendingSubtitlePath, subtitlePreprocessOptions);
+        loadSubtitleAsPrimary(tmpSub, subtitlePath);
+      } else {
+        loadSubtitleAsPrimary(pendingSubtitle, pendingSubtitlePath);
+      }
+      cleanupModal();
+    } catch (error) {
+      console.error('[useLoadFiles] Failed to preprocess subtitle:', error);
+      setToastInfo({
+        message: `Failed to preprocess subtitle: ${error.message}`,
+        update: uuidv4()
+      });
+    }
+  }, [pendingSubtitle, pendingSubtitlePath, subtitlePreprocessOptions, createSubtitleContainer, loadSubtitleAsPrimary, cleanupModal, setToastInfo]);
 
-  const handleSelectSecondary = useCallback(() => {
+  const handleSelectSecondary = useCallback(async () => {
     if (!pendingSubtitle) return;
-    loadSubtitleAsSecondary(pendingSubtitle, pendingSubtitlePath);
-    cleanupModal();
-  }, [pendingSubtitle, pendingSubtitlePath, loadSubtitleAsSecondary, cleanupModal]);
+    try {
+      if (subtitlePreprocessOptions.titleCaseAllCaps) {
+        const {tmpSub, subtitlePath} = await createSubtitleContainer(pendingSubtitlePath, subtitlePreprocessOptions);
+        loadSubtitleAsSecondary(tmpSub, subtitlePath);
+      } else {
+        loadSubtitleAsSecondary(pendingSubtitle, pendingSubtitlePath);
+      }
+      cleanupModal();
+    } catch (error) {
+      console.error('[useLoadFiles] Failed to preprocess subtitle:', error);
+      setToastInfo({
+        message: `Failed to preprocess subtitle: ${error.message}`,
+        update: uuidv4()
+      });
+    }
+  }, [pendingSubtitle, pendingSubtitlePath, subtitlePreprocessOptions, createSubtitleContainer, loadSubtitleAsSecondary, cleanupModal, setToastInfo]);
 
   const handleCloseModal = useCallback(() => {
     cleanupModal();
@@ -334,7 +375,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
   }, []);
 
   // Enhanced load for embedded subtitles with type specification
-  const loadEmbeddedSubtitle = useCallback((filePath: string, type: 'primary' | 'secondary') => {
+  const loadEmbeddedSubtitle = useCallback((filePath: string, type: 'primary' | 'secondary', preprocessOptions: SubtitlePreprocessOptions = {}) => {
     console.log(`[useLoadFiles] loadEmbeddedSubtitle called: ${type} from ${filePath}`);
     
     // Create a pseudo subtitle object for direct loading
@@ -343,18 +384,18 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       src: filePath
     };
 
-    const directLoader = (tmpSub) => {
+    const directLoader = (tmpSub, loadedPath = filePath) => {
       console.log(`[useLoadFiles] Direct loading ${type} subtitle:`, tmpSub);
       
       if (type === 'primary') {
-        loadSubtitleAsPrimary(tmpSub, filePath);
+        loadSubtitleAsPrimary(tmpSub, loadedPath);
       } else {
-        loadSubtitleAsSecondary(tmpSub, filePath);
+        loadSubtitleAsSecondary(tmpSub, loadedPath);
       }
     };
 
-    SubtitleContainer.create(draggedSubtitle.src, lang, primaryStyling.forceSimplified)
-      .then(directLoader)
+    createSubtitleContainer(draggedSubtitle.src, preprocessOptions)
+      .then(({tmpSub, subtitlePath}) => directLoader(tmpSub, subtitlePath))
       .catch(error => {
         console.error(`[useLoadFiles] Failed to load ${type} embedded subtitle:`, error);
         setToastInfo({
@@ -362,7 +403,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
           update: uuidv4()
         });
       });
-  }, [lang, primaryStyling.forceSimplified, loadSubtitleAsPrimary, loadSubtitleAsSecondary, setToastInfo]);
+  }, [createSubtitleContainer, loadSubtitleAsPrimary, loadSubtitleAsSecondary, setToastInfo]);
 
   return {
     onLoadFiles,
@@ -375,6 +416,8 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     showSubtitleModal,
     pendingSubtitlePath,
     currentAppLanguage: getLanguageDisplayName(lang),
+    subtitlePreprocessOptions,
+    setSubtitlePreprocessOptions,
     handleSelectPrimary,
     handleSelectSecondary,
     handleCloseModal,
