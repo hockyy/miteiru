@@ -1,10 +1,11 @@
-import React from "react";
+import React, {memo, useCallback, useMemo} from "react";
+import {liveCaptionRefreshIntervals, LiveCaptionsState} from "../../types/liveCaptions";
 
 interface LiveCaptionControlProps {
   supported: boolean;
   running: boolean;
   starting: boolean;
-  state: string;
+  state: LiveCaptionsState;
   error?: string;
   debugMessages: string[];
   refreshIntervalMs: number;
@@ -12,7 +13,7 @@ interface LiveCaptionControlProps {
   onToggle: () => void;
 }
 
-export const LiveCaptionControl = ({
+export const LiveCaptionControl = memo(({
   supported,
   running,
   starting,
@@ -23,19 +24,53 @@ export const LiveCaptionControl = ({
   onRefreshIntervalChange,
   onToggle
 }: LiveCaptionControlProps) => {
-  if (!supported) return null;
-
-  const statusText = error
+  const statusText = useMemo(() => error
     ? "Live Captions error"
     : starting
       ? "Starting captions"
       : running
         ? "Live Captions on"
-        : "Live Captions off";
-  const debugText = debugMessages.join("\n");
-  const copyDebugLog = async () => {
-    await navigator.clipboard.writeText(debugText || "No debug messages yet.");
-  };
+        : "Live Captions off", [error, running, starting]);
+
+  const buttonClassName = useMemo(() => [
+    "rounded-full border border-white/20 px-3 py-2 text-xs font-bold text-white shadow-lg transition-all",
+    "bg-black/45 hover:bg-black/75 focus:outline-none focus:ring-2 focus:ring-white/70 disabled:opacity-60",
+    running ? "ring-1 ring-green-300" : "",
+    error ? "ring-1 ring-red-300" : ""
+  ].join(" "), [error, running]);
+
+  const statusClassName = useMemo(
+    () => running ? "text-green-300" : error ? "text-red-300" : "text-white/60",
+    [error, running]
+  );
+
+  const debugText = useMemo(() => debugMessages.join("\n"), [debugMessages]);
+
+  const copyDebugLog = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(debugText || "No debug messages yet.");
+    } catch (error) {
+      console.error("[LiveCaptionControl] Failed to copy debug log:", error);
+    }
+  }, [debugText]);
+
+  const refreshIntervalButtons = useMemo(() => liveCaptionRefreshIntervals.map((interval) => (
+    <button
+      key={interval}
+      type="button"
+      onClick={() => onRefreshIntervalChange(interval)}
+      className={[
+        "rounded-lg px-2 py-1 text-[11px] font-bold transition-colors",
+        refreshIntervalMs === interval
+          ? "bg-white text-black"
+          : "bg-white/10 text-white/80 hover:bg-white/20"
+      ].join(" ")}
+    >
+      {interval < 1000 ? `${interval}ms` : "1s"}
+    </button>
+  )), [onRefreshIntervalChange, refreshIntervalMs]);
+
+  if (!supported) return null;
 
   return (
     <div className="group fixed bottom-20 right-4 z-20 pb-2 text-left">
@@ -43,12 +78,7 @@ export const LiveCaptionControl = ({
         type="button"
         onClick={onToggle}
         disabled={starting}
-        className={[
-          "rounded-full border border-white/20 px-3 py-2 text-xs font-bold text-white shadow-lg transition-all",
-          "bg-black/45 hover:bg-black/75 focus:outline-none focus:ring-2 focus:ring-white/70 disabled:opacity-60",
-          running ? "ring-1 ring-green-300" : "",
-          error ? "ring-1 ring-red-300" : ""
-        ].join(" ")}
+        className={buttonClassName}
         title={statusText}
       >
         {running ? "CC Live On" : starting ? "CC..." : "CC Live"}
@@ -68,7 +98,7 @@ export const LiveCaptionControl = ({
             >
               Copy log
             </button>
-            <div className={running ? "text-green-300" : error ? "text-red-300" : "text-white/60"}>
+            <div className={statusClassName}>
               {running ? "●" : error ? "!" : "○"}
             </div>
           </div>
@@ -85,21 +115,7 @@ export const LiveCaptionControl = ({
             Subtitle refresh
           </label>
           <div className="mt-2 grid grid-cols-4 gap-1">
-            {[100, 250, 500, 1000].map((interval) => (
-              <button
-                key={interval}
-                type="button"
-                onClick={() => onRefreshIntervalChange(interval)}
-                className={[
-                  "rounded-lg px-2 py-1 text-[11px] font-bold transition-colors",
-                  refreshIntervalMs === interval
-                    ? "bg-white text-black"
-                    : "bg-white/10 text-white/80 hover:bg-white/20"
-                ].join(" ")}
-              >
-                {interval < 1000 ? `${interval}ms` : "1s"}
-              </button>
-            ))}
+            {refreshIntervalButtons}
           </div>
         </div>
 
@@ -115,4 +131,6 @@ export const LiveCaptionControl = ({
       </div>
     </div>
   );
-};
+});
+
+LiveCaptionControl.displayName = "LiveCaptionControl";

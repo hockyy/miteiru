@@ -1,15 +1,11 @@
-import {useCallback, useEffect, useRef, useState} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {
+  defaultLiveCaptionRefreshIntervalMs,
+  LiveCaptionsApiState,
+  maxLiveCaptionDebugMessages
+} from "../types/liveCaptions";
 
-type LiveCaptionsState = "unsupported" | "stopped" | "starting" | "running" | "error";
-
-interface LiveCaptionsApiState {
-  supported: boolean;
-  state: LiveCaptionsState;
-  running: boolean;
-  latestCaption: string;
-  latestError: string;
-  debugMessages?: string[];
-}
+const trimDebugMessages = (messages: string[]) => messages.slice(-maxLiveCaptionDebugMessages);
 
 const initialState: LiveCaptionsApiState = {
   supported: false,
@@ -19,44 +15,83 @@ const initialState: LiveCaptionsApiState = {
   latestError: ""
 };
 
+const getErrorMessage = (error: unknown) => error instanceof Error ? error.message : String(error);
+
 const useLiveCaptions = () => {
   const [liveCaptionsState, setLiveCaptionsState] = useState<LiveCaptionsApiState>(initialState);
   const [caption, setCaption] = useState("");
   const [error, setError] = useState("");
   const [debugMessages, setDebugMessages] = useState<string[]>([]);
-  const [refreshIntervalMs, setRefreshIntervalMs] = useState(250);
+  const [refreshIntervalMs, setRefreshIntervalMs] = useState(defaultLiveCaptionRefreshIntervalMs);
   const latestCaptionRef = useRef("");
+  const visibleCaptionRef = useRef("");
+  const refreshIntervalRef = useRef(defaultLiveCaptionRefreshIntervalMs);
   const lastCaptionFlushRef = useRef(0);
   const captionFlushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const replaceDebugMessages = useCallback((messages: string[] = []) => {
+    setDebugMessages(trimDebugMessages(messages));
+  }, []);
+
   const addDebugMessage = useCallback((message: string) => {
     const timestamp = new Date().toLocaleTimeString();
-    setDebugMessages((current) => [...current.slice(-19), `[${timestamp}] ${message}`]);
+    setDebugMessages((current) => trimDebugMessages([...current, `[${timestamp}] ${message}`]));
+  }, []);
+
+  const clearCaptionTimer = useCallback(() => {
+    if (!captionFlushTimerRef.current) return;
+    clearTimeout(captionFlushTimerRef.current);
+    captionFlushTimerRef.current = null;
   }, []);
 
   const flushCaption = useCallback(() => {
     lastCaptionFlushRef.current = Date.now();
-    setCaption(latestCaptionRef.current);
+    visibleCaptionRef.current = latestCaptionRef.current;
+    setCaption(visibleCaptionRef.current);
     captionFlushTimerRef.current = null;
   }, []);
 
-  const queueCaption = useCallback((nextCaption: string) => {
+  const queueCaptionUpdate = useCallback((nextCaption: string) => {
     latestCaptionRef.current = nextCaption;
     const elapsed = Date.now() - lastCaptionFlushRef.current;
+    const refreshMs = refreshIntervalRef.current;
 
-    if (elapsed >= refreshIntervalMs) {
-      if (captionFlushTimerRef.current) {
-        clearTimeout(captionFlushTimerRef.current);
-        captionFlushTimerRef.current = null;
-      }
+    if (elapsed >= refreshMs) {
+      clearCaptionTimer();
       flushCaption();
       return;
     }
 
     if (!captionFlushTimerRef.current) {
-      captionFlushTimerRef.current = setTimeout(flushCaption, refreshIntervalMs - elapsed);
+      captionFlushTimerRef.current = setTimeout(flushCaption, refreshMs - elapsed);
     }
-  }, [flushCaption, refreshIntervalMs]);
+  }, [clearCaptionTimer, flushCaption]);
+
+  const applyApiState = useCallback((state: LiveCaptionsApiState, options?: { flushCaption?: boolean }) => {
+    setLiveCaptionsState(state);
+    setError(state.latestError ?? "");
+    if (state.debugMessages) replaceDebugMessages(state.debugMessages);
+
+    const nextCaption = state.latestCaption ?? "";
+    if (options?.flushCaption) {
+      clearCaptionTimer();
+      latestCaptionRef.current = nextCaption;
+      visibleCaptionRef.current = nextCaption;
+      setCaption(nextCaption);
+      return;
+    }
+
+    queueCaptionUpdate(nextCaption);
+  }, [clearCaptionTimer, queueCaptionUpdate, replaceDebugMessages]);
+
+  useEffect(() => {
+    refreshIntervalRef.current = refreshIntervalMs;
+
+    if (captionFlushTimerRef.current && latestCaptionRef.current !== visibleCaptionRef.current) {
+      clearCaptionTimer();
+      queueCaptionUpdate(latestCaptionRef.current);
+    }
+  }, [clearCaptionTimer, queueCaptionUpdate, refreshIntervalMs]);
 
   useEffect(() => {
     let mounted = true;
@@ -65,35 +100,28 @@ const useLiveCaptions = () => {
     window.electronAPI.liveCaptions.getState()
     .then((state) => {
       if (!mounted) return;
-      setLiveCaptionsState(state);
-      latestCaptionRef.current = state.latestCaption ?? "";
-      setCaption(latestCaptionRef.current);
-      setError(state.latestError ?? "");
-      setDebugMessages(state.debugMessages ?? []);
+      applyApiState(state, {flushCaption: true});
       addDebugMessage(`Initial state: ${state.state}`);
     })
     .catch((err) => {
       if (!mounted) return;
-      setError(err.message);
-      addDebugMessage(`Failed to read state: ${err.message}`);
+      const message = getErrorMessage(err);
+      setError(message);
+      addDebugMessage(`Failed to read state: ${message}`);
     });
 
     const removeCaptionListener = window.electronAPI.liveCaptions.onCaption((nextCaption) => {
-      queueCaption(nextCaption);
-      if (nextCaption) addDebugMessage(`Caption received (${nextCaption.length} chars)`);
+      queueCaptionUpdate(nextCaption);
     });
     const removeStateListener = window.electronAPI.liveCaptions.onState((state) => {
-      setLiveCaptionsState(state);
-      queueCaption(state.latestCaption ?? "");
-      setError(state.latestError ?? "");
-      if (state.debugMessages) setDebugMessages(state.debugMessages);
+      applyApiState(state);
     });
     const removeErrorListener = window.electronAPI.liveCaptions.onError((nextError) => {
       setError(nextError);
       addDebugMessage(`Error event: ${nextError}`);
     });
     const removeDebugListener = window.electronAPI.liveCaptions.onDebug((message) => {
-      setDebugMessages((current) => [...current.slice(-19), message]);
+      setDebugMessages((current) => trimDebugMessages([...current, message]));
     });
 
     return () => {
@@ -102,40 +130,35 @@ const useLiveCaptions = () => {
       removeStateListener();
       removeErrorListener();
       removeDebugListener();
-      if (captionFlushTimerRef.current) clearTimeout(captionFlushTimerRef.current);
+      clearCaptionTimer();
     };
-  }, [addDebugMessage, queueCaption]);
+  }, [addDebugMessage, applyApiState, clearCaptionTimer, queueCaptionUpdate]);
 
   const start = useCallback(async () => {
     addDebugMessage("Start requested from video page.");
     try {
       const state = await window.electronAPI.liveCaptions.start();
-      setLiveCaptionsState(state);
-      queueCaption(state.latestCaption ?? "");
-      setError(state.latestError ?? "");
-      if (state.debugMessages) setDebugMessages(state.debugMessages);
+      applyApiState(state);
       addDebugMessage(`Start returned state: ${state.state}`);
     } catch (err) {
-      setError(err.message);
-      addDebugMessage(`Start failed: ${err.message}`);
+      const message = getErrorMessage(err);
+      setError(message);
+      addDebugMessage(`Start failed: ${message}`);
     }
-  }, [addDebugMessage, queueCaption]);
+  }, [addDebugMessage, applyApiState]);
 
   const stop = useCallback(async () => {
     addDebugMessage("Stop requested from video page.");
     try {
       const state = await window.electronAPI.liveCaptions.stop();
-      setLiveCaptionsState(state);
-      latestCaptionRef.current = "";
-      setCaption("");
-      setError(state.latestError ?? "");
-      if (state.debugMessages) setDebugMessages(state.debugMessages);
+      applyApiState({...state, latestCaption: ""}, {flushCaption: true});
       addDebugMessage(`Stop returned state: ${state.state}`);
     } catch (err) {
-      setError(err.message);
-      addDebugMessage(`Stop failed: ${err.message}`);
+      const message = getErrorMessage(err);
+      setError(message);
+      addDebugMessage(`Stop failed: ${message}`);
     }
-  }, [addDebugMessage]);
+  }, [addDebugMessage, applyApiState]);
 
   const toggle = useCallback(async () => {
     if (liveCaptionsState.running || liveCaptionsState.state === "starting") {
@@ -145,7 +168,7 @@ const useLiveCaptions = () => {
     }
   }, [liveCaptionsState.running, liveCaptionsState.state, start, stop]);
 
-  return {
+  return useMemo(() => ({
     supported: liveCaptionsState.supported,
     state: liveCaptionsState.state,
     running: liveCaptionsState.running,
@@ -155,10 +178,17 @@ const useLiveCaptions = () => {
     debugMessages,
     refreshIntervalMs,
     setRefreshIntervalMs,
-    start,
-    stop,
     toggle
-  };
+  }), [
+    caption,
+    debugMessages,
+    error,
+    liveCaptionsState.running,
+    liveCaptionsState.state,
+    liveCaptionsState.supported,
+    refreshIntervalMs,
+    toggle
+  ]);
 };
 
 export default useLiveCaptions;

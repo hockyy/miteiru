@@ -1,5 +1,6 @@
 import {contextBridge, ipcRenderer, IpcRendererEvent} from 'electron'
 import {webUtils} from "electron";
+import type {LiveCaptionsApiState} from "../renderer/types/liveCaptions";
 
 const handler = {
   send(channel: string, value: unknown) {
@@ -18,6 +19,12 @@ const handler = {
     return ipcRenderer.invoke(channel, ...args)
   }
 }
+
+const subscribe = <T>(channel: string, callback: (payload: T) => void) => {
+  const subscription = (_event: IpcRendererEvent, payload: T) => callback(payload);
+  ipcRenderer.on(channel, subscription);
+  return () => ipcRenderer.removeListener(channel, subscription);
+};
 
 contextBridge.exposeInMainWorld('electronStore', {
   get: (key, defaultValue) => ipcRenderer.invoke('electron-store-get', key, defaultValue),
@@ -74,26 +81,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getState: () => ipcRenderer.invoke('live-captions:get-state'),
     start: () => ipcRenderer.invoke('live-captions:start'),
     stop: () => ipcRenderer.invoke('live-captions:stop'),
-    onCaption: (callback: (caption: string) => void) => {
-      const subscription = (_event: IpcRendererEvent, caption: string) => callback(caption);
-      ipcRenderer.on('live-captions:caption', subscription);
-      return () => ipcRenderer.removeListener('live-captions:caption', subscription);
-    },
-    onState: (callback: (state: unknown) => void) => {
-      const subscription = (_event: IpcRendererEvent, state: unknown) => callback(state);
-      ipcRenderer.on('live-captions:state', subscription);
-      return () => ipcRenderer.removeListener('live-captions:state', subscription);
-    },
-    onError: (callback: (error: string) => void) => {
-      const subscription = (_event: IpcRendererEvent, error: string) => callback(error);
-      ipcRenderer.on('live-captions:error', subscription);
-      return () => ipcRenderer.removeListener('live-captions:error', subscription);
-    },
-    onDebug: (callback: (message: string) => void) => {
-      const subscription = (_event: IpcRendererEvent, message: string) => callback(message);
-      ipcRenderer.on('live-captions:debug', subscription);
-      return () => ipcRenderer.removeListener('live-captions:debug', subscription);
-    }
+    onCaption: (callback: (caption: string) => void) => subscribe('live-captions:caption', callback),
+    onState: (callback: (state: LiveCaptionsApiState) => void) => subscribe('live-captions:state', callback),
+    onError: (callback: (error: string) => void) => subscribe('live-captions:error', callback),
+    onDebug: (callback: (message: string) => void) => subscribe('live-captions:debug', callback)
   },
 });
 

@@ -1,15 +1,5 @@
 import {IpcHandler} from '../main/preload'
-
-type LiveCaptionsState = "unsupported" | "stopped" | "starting" | "running" | "error";
-
-interface LiveCaptionsApiState {
-  supported: boolean;
-  state: LiveCaptionsState;
-  running: boolean;
-  latestCaption: string;
-  latestError: string;
-  debugMessages?: string[];
-}
+import type {LiveCaptionsApiState} from "./types/liveCaptions";
 
 interface ElectronApi {
   liveCaptions: {
