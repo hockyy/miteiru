@@ -1,0 +1,13 @@
+{
+  "id": "japanese",
+  "version": "1.0.0",
+  "kind": "language",
+  "description": "Japanese dictionaries for JMDict, KanjiDic, Kuromoji, and MeCab-backed learning.",
+  "unpackRoot": "language-assets/japanese",
+  "dependencies": [
+    "han-character-core"
+  ],
+  "files": [
+    "dict/"
+  ]
+}

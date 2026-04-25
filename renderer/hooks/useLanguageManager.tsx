@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { useStoreData } from './useStoreData';
+import {languageModes} from "../languages/manifest";
 
 export interface LanguageMode {
   id: number;
@@ -9,43 +10,19 @@ export interface LanguageMode {
   description: string;
 }
 
-export const LANGUAGE_MODES: LanguageMode[] = [
-  {
-    id: 0,
-    name: 'Kuromoji - Japanese',
-    channel: 'loadKuromoji',
-    emoji: '🐣',
-    description: 'うん、ちょっと見てるだけ 😏'
-  },
-  {
-    id: 1,
-    name: 'Mecab - Japanese',
-    channel: 'loadMecab',
-    emoji: '👹',
-    description: '準備OK、船長！🫡'
-  },
-  {
-    id: 2,
-    name: 'Jieba - Cantonese',
-    channel: 'loadCantonese',
-    emoji: '🥘',
-    description: '準備好啦，行啊'
-  },
-  {
-    id: 3,
-    name: 'Jieba - Chinese',
-    channel: 'loadChinese',
-    emoji: '🐉',
-    description: '加油! 💥'
-  },
-  {
-    id: 4,
-    name: 'Vietnamese',
-    channel: 'loadVietnamese',
-    emoji: '🏯',
-    description: 'Chúc may mắn! 🌟'
-  }
-];
+export const LANGUAGE_MODES: LanguageMode[] = languageModes.map(({
+  id,
+  name,
+  channel,
+  emoji,
+  description
+}) => ({
+  id,
+  name,
+  channel,
+  emoji,
+  description
+}));
 
 const useLanguageManager = () => {
   const [lastLanguageMode, setLastLanguageMode] = useStoreData('app.lastLanguageMode', null);

@@ -4,12 +4,15 @@ const path = require('path');
 const sourceDir = path.join(__dirname, '../renderer', 'public');
 const destDir = path.join(__dirname, '../app');
 
-// List of important directories or files to check
+// List of important directories or files to check.
+// Language dictionaries now live under language-assets/<plugin-id>/.
+// The legacy directories are kept here so existing local asset checkouts still copy.
 const importantPaths = [
+  'images',
+  'language-assets',
   'dict',
   'kanji',
   'wanikani',
-  'images',
   'cantonese',
   'chinese',
   'hanzi',

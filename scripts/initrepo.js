@@ -2,6 +2,7 @@ const fs = require('fs');
 const extract = require('extract-zip');
 const path = require("path");
 const axios = require("axios");
+const {migrateLanguageAssets} = require("./languageAssetLayout");
 
 const sourceDir = path.join(__dirname, '../archived');
 const source = path.join(sourceDir, 'public.zip');
@@ -56,6 +57,7 @@ const extractFile = async () => {
     console.log('Extracting assets...');
 
     await extract(source, {dir: target});
+    migrateLanguageAssets(target);
     console.log('Extraction completed!');
   } catch (err) {
     if (err.code === 'ENOENT') {

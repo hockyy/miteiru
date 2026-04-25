@@ -1,0 +1,10 @@
+{
+  "id": "vietnamese",
+  "version": "1.0.0",
+  "kind": "language",
+  "description": "Vietnamese dictionary assets.",
+  "unpackRoot": "language-assets/vietnamese",
+  "files": [
+    "vietnamese/"
+  ]
+}

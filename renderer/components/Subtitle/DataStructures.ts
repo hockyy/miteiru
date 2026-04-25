@@ -6,6 +6,7 @@ import * as OpenCC from 'opencc-js';
 import { parse as parseASS } from 'ass-compiler';
 import { parseLRC } from "./LrcParser";
 import {fillSubtitleWithLearningContent, TokenizeMiteiru} from "./subtitleLanguageSupport";
+import {languageCodes} from "../../languages/manifest";
 
 function removeTags(text) {
   const regex = /\{\\.+?}/g;
@@ -286,7 +287,7 @@ export class SubtitleContainer {
 
   frequency: Map<string, number>;
 
-  constructor(content: string = '', language: string = videoConstants.japaneseLang) {
+  constructor(content: string = '', language: string = languageCodes.japanese) {
     this.frequency = new Map();
     this.id = uuidv4();
     this.lines = []
@@ -352,7 +353,7 @@ export class SubtitleContainer {
       const realTo = to + videoConstants.subtitleFramerate * videoConstants.subtitleEndPlusMultiplier;
       if (realFrom > realTo) continue;
       let changeAccent = noChanger;
-      if (lang === videoConstants.chineseLang) {
+      if (lang === languageCodes.mandarin) {
         if (isSimplified) changeAccent = toSimplified;
         else changeAccent = toTraditional;
       }

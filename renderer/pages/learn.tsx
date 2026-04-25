@@ -12,7 +12,6 @@ import {LearningSidebar} from "../components/VideoPlayer/LearningSidebar";
 import {useStoreData} from "../hooks/useStoreData";
 import useLearningKeyBind from "../hooks/useLearningKeyBind";
 import 'react-awesome-button/dist/styles.css';
-import {videoConstants} from "../utils/constants";
 import {isLearningSubtitleLanguage} from "../components/Subtitle/subtitleLanguageSupport";
 import useLearningState from "../hooks/useLearningState";
 import useTranslationLinks from "../hooks/useTranslationLinks";
@@ -27,6 +26,7 @@ import { streamText } from 'ai';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {ImageOCR} from "../components/Utils/ImageOCR";
+import {speechLanguageCodes} from "../languages/manifest";
 
 function Learn() {
   const {
@@ -220,7 +220,7 @@ function Learn() {
 
   // Function to get supported language codes
   const getSupportedLangCodes = useCallback(() => {
-    return Object.values(videoConstants.varLang).flat();
+    return Object.values(speechLanguageCodes).flat();
   }, []);
   // Filter voices based on supported languages
   const filteredVoices = useMemo(() => {

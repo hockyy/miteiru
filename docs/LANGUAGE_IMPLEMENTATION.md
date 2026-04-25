@@ -11,6 +11,18 @@ Miteiru supports multiple languages for subtitle tokenization and dictionary loo
 3. **Subtitle Processing** - Language-specific subtitle rendering
 4. **Dictionary Data** - Language-specific dictionaries and resources
 
+Language assets are organized as plugin-owned folders under `renderer/public/language-assets/`.
+The app currently consumes unpacked folders, and each plugin folder includes an `asset-manifest.json`
+so the same layout can later be packed as downloadable `assets.zip` archives.
+
+Current asset ownership:
+
+- `han-character-core/` owns shared Han-character resources such as `kanji/`, `hanzi/`, and `wanikani/`.
+- `japanese/` owns Japanese dictionaries under `dict/`.
+- `mandarin/` owns Mandarin assets under `chinese/`.
+- `cantonese/` owns Cantonese assets under `cantonese/`.
+- `vietnamese/` owns Vietnamese assets under `vietnamese/`.
+
 ## Existing Language Implementations
 
 ### Japanese (Kuromoji & MeCab)

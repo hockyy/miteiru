@@ -1,0 +1,13 @@
+{
+  "id": "mandarin",
+  "version": "1.0.0",
+  "kind": "language",
+  "description": "Mandarin Chinese dictionary and Jieba segmentation assets.",
+  "unpackRoot": "language-assets/mandarin",
+  "dependencies": [
+    "han-character-core"
+  ],
+  "files": [
+    "chinese/"
+  ]
+}
