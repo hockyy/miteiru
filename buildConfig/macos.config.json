@@ -1,0 +1,7 @@
+{
+  "mac": {
+    "icon": "resources/icon.icns",
+    "target": ["pkg"],
+    "artifactName": "miteiru-${version}-${os}-${arch}.${ext}"
+  }
+}

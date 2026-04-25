@@ -152,19 +152,43 @@ whisper video.wav
 
 ## For Developer: (Own Build) Installation Guide
 
-You can run the followings on the cloned repository: (don't forget to download the LFS files as
-well)
+You can run the followings on the cloned repository. `script:initrepo` downloads the language asset
+packages from the [assets release](https://github.com/hockyy/miteiru/releases/tag/assets) and
+extracts them into `renderer/public/language-assets`.
 
 ```bash
 npm install
 npm run script:initrepo
 npm run dev # This to run dev
-npm run build:nsis # This to build for Windows
-npm run build:portable # This to build for Windows Portable
+npm run build:nsis # This to build for Windows with Live Captions helper
+npm run build:portable # This to build for Windows Portable with Live Captions helper
 npm run build:linux20 # This to build for Linux 20.04
 npm run build:linux22 # This to build for Linux 22.04
-npm run build # this is for mac
+npm run build:linux24 # This to build for Linux 24.04
+npm run build:macos # This to build for macOS
 ```
+
+### Language Assets
+
+Language dictionaries and shared Han-character resources live under `renderer/public/language-assets`.
+If you need to download, package, or restore them manually:
+
+```bash
+npm run script:download-language-assets
+npm run script:pack-language-assets
+npm run script:unpack-language-assets
+```
+
+You can target specific plugins by passing ids after `--`:
+
+```bash
+npm run script:download-language-assets -- mandarin han-character-core
+npm run script:unpack-language-assets -- vietnamese
+```
+
+Set `MITEIRU_FORCE_ASSET_DOWNLOAD=1` to redownload existing zip files.
+The pack command creates one `<plugin-id>-assets.zip` per language/resource plugin under `archived/language-assets/`.
+The unpack command restores those archives back into `renderer/public/language-assets/<plugin-id>/`.
 
 ## Mecab and Custom Dictionary Setup (Optional)
 

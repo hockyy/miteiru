@@ -22,10 +22,9 @@ const getPluginDirectories = () => {
 
 const packPluginAssets = (pluginDirectory) => {
   const pluginId = path.basename(pluginDirectory);
-  const targetDirectory = path.join(archiveRoot, pluginId);
-  const targetZip = path.join(targetDirectory, 'assets.zip');
+  const targetZip = path.join(archiveRoot, `${pluginId}-assets.zip`);
 
-  ensureDirectory(targetDirectory);
+  ensureDirectory(archiveRoot);
 
   const output = fs.createWriteStream(targetZip);
   const archive = archiver('zip', {
