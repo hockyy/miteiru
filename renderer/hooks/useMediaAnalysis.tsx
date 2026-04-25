@@ -181,8 +181,8 @@ const useMediaAnalysis = (videoPath: string) => {
     setShowAudioReencodeModal(false);
   }, []);
 
-  const handleAudioReencodeConfirm = useCallback(async (selectedAudioTrack: number, onVideoLoad?: (videoPath: string) => void, convertToX264?: boolean) => {
-    console.log(`[DEBUG Frontend] Starting reencode - Track: ${selectedAudioTrack}, convertToX264: ${convertToX264}`);
+  const handleAudioReencodeConfirm = useCallback(async (selectedAudioTrack: number, onVideoLoad?: (videoPath: string) => void, convertToX264?: boolean, convertAudioToAac?: boolean) => {
+    console.log(`[DEBUG Frontend] Starting media processing - Track: ${selectedAudioTrack}, convertToX264: ${convertToX264}, convertAudioToAac: ${convertAudioToAac}`);
     setShowAudioReencodeModal(false);
     
     const selectedTrack = mediaInfo.audioTracks[selectedAudioTrack];
@@ -192,7 +192,7 @@ const useMediaAnalysis = (videoPath: string) => {
     
     setSelectedAudioForRencode(selectedTrack);
     setShowReencodeProgress(true);
-    setReencodeProgress(convertToX264 ? 'Starting video conversion...' : 'Starting reencoding...');
+    setReencodeProgress(convertToX264 ? 'Starting video conversion...' : convertAudioToAac ? 'Starting audio conversion...' : 'Starting fast remux...');
     
     try {
       // Set up progress listener
@@ -203,16 +203,17 @@ const useMediaAnalysis = (videoPath: string) => {
       
       const removeProgressListener = window.ipc.on('reencode-progress', progressHandler);
       
-      // Start reencoding
+      // Start media processing
       console.log(`[DEBUG Frontend] Calling reencodeVideoWithAudioTrack...`);
       const reencodedVideoPath = await window.electronAPI.reencodeVideoWithAudioTrack(
         videoPath,
         selectedTrack.index,
         convertToX264,
+        convertAudioToAac,
         mediaInfo.duration
       );
       
-      console.log(`[DEBUG Frontend] Reencode completed:`, reencodedVideoPath);
+      console.log(`[DEBUG Frontend] Media processing completed:`, reencodedVideoPath);
       
       // Clean up progress listener
       removeProgressListener();
@@ -220,7 +221,7 @@ const useMediaAnalysis = (videoPath: string) => {
       setShowReencodeProgress(false);
       setReencodeProgress('');
       
-      // Load the reencoded video
+      // Load the processed video
       if (onVideoLoad) {
         onVideoLoad(reencodedVideoPath);
         
@@ -231,7 +232,7 @@ const useMediaAnalysis = (videoPath: string) => {
       }
       
     } catch (error) {
-      console.error(`[DEBUG Frontend] Reencode error:`, error);
+      console.error(`[DEBUG Frontend] Media processing error:`, error);
       setShowReencodeProgress(false);
       setReencodeProgress('');
       // TODO: Show error toast

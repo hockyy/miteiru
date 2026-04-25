@@ -26,7 +26,7 @@ const ReencodeProgressModal: React.FC<ReencodeProgressModalProps> = ({
         <div className="flex items-center gap-2 p-4 border-b border-gray-700">
           <Zap className="w-5 h-5 text-yellow-400" />
           <h2 className="text-xl font-semibold text-white">
-            Reencoding Video
+            Processing Media
           </h2>
         </div>
 
@@ -61,7 +61,7 @@ const ReencodeProgressModal: React.FC<ReencodeProgressModalProps> = ({
               </div>
               
               <div className="text-gray-400 text-xs">
-                This may take several minutes depending on video length.
+                Fast remuxing usually finishes quickly. Video conversion may take several minutes.
                 The new file will be saved in the same folder as the original.
               </div>
             </div>
@@ -70,7 +70,7 @@ const ReencodeProgressModal: React.FC<ReencodeProgressModalProps> = ({
           {/* Warning */}
           <div className="mt-4 text-center">
             <div className="text-yellow-200 text-xs bg-yellow-900/30 border border-yellow-600/50 rounded p-2">
-              ⚠️ Please don't close the app during reencoding
+              Please don't close the app during media processing
             </div>
           </div>
         </div>
