@@ -1,5 +1,5 @@
 // Add this interface for LRC entries
-import {Entry} from "@plussub/srt-vtt-parser/dist/src/types";
+import type { Entry } from "@plussub/srt-vtt-parser/dist/types";
 
 export interface LrcEntry {
   time: number;

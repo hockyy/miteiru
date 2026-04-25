@@ -2,10 +2,22 @@ import {ipcMain} from "electron";
 import * as fsPromises from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
-import {parse as parseSRT} from "@plussub/srt-vtt-parser";
 import languageEncoding from "detect-file-encoding-and-language";
 import iconv from "iconv-lite";
 import {MediaAnalyzer} from "../../helpers/mediaAnalyzer";
+
+type SrtParserModule = typeof import("@plussub/srt-vtt-parser");
+let srtParserPromise: Promise<SrtParserModule> | undefined;
+
+const loadSrtParser = () => {
+  srtParserPromise ??= Function("specifier", "return import(specifier)")("@plussub/srt-vtt-parser") as Promise<SrtParserModule>;
+  return srtParserPromise;
+};
+
+const parseSRT = async (text: string) => {
+  const {parse} = await loadSrtParser();
+  return parse(text);
+};
 
 interface SubtitleEntry {
   id?: string;
@@ -163,7 +175,7 @@ const parseAssToEntries = (content: string): SubtitleEntry[] => {
   return entries;
 };
 
-const getSubtitleEntries = (filename: string, text: string): SubtitleEntry[] => {
+const getSubtitleEntries = async (filename: string, text: string): Promise<SubtitleEntry[]> => {
   const lowerFilename = filename.toLowerCase();
 
   if (lowerFilename.endsWith(".ass")) {
@@ -188,7 +200,7 @@ const getSubtitleEntries = (filename: string, text: string): SubtitleEntry[] => 
     return parseHufToEntries(text);
   }
 
-  return parseSRT(text).entries;
+  return (await parseSRT(text)).entries;
 };
 
 const normalizeCapitalization = (text: string) => {
@@ -275,7 +287,7 @@ export function registerMediaHandlers() {
       } else {
         return {
           type: "srt",
-          content: parseSRT(text)
+          content: await parseSRT(text)
         };
       }
     } catch (error) {
@@ -288,7 +300,7 @@ export function registerMediaHandlers() {
       const buffer = await fsPromises.readFile(filename);
       const currentData = await languageEncoding(buffer);
       const text = iconv.decode(buffer, currentData.encoding);
-      const entries = getSubtitleEntries(filename, text);
+      const entries = await getSubtitleEntries(filename, text);
       const safeBaseName = path.basename(filename, path.extname(filename)).replace(/[^a-zA-Z0-9._-]/g, "_");
       const outputPath = path.join(os.tmpdir(), `miteiru_normalized_${safeBaseName}_${Date.now()}.srt`);
 
