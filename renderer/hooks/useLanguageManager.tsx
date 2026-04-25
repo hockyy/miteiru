@@ -29,7 +29,7 @@ export const LANGUAGE_MODES: LanguageMode[] = [
     name: 'Jieba - Cantonese',
     channel: 'loadCantonese',
     emoji: '🥘',
-    description: "Let's go!🫡"
+    description: '準備好啦，行啊'
   },
   {
     id: 3,

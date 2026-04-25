@@ -41,6 +41,10 @@ import CommandPalette from "../components/Utils/CommandPallete";
 import useWordOfTheDay from "../hooks/useWordOfTheDay";
 import WordOfTheDay from "../components/WordOfTheDay/WordOfTheDay";
 import useMediaAnalysis from "../hooks/useMediaAnalysis";
+import useLiveCaptions from "../hooks/useLiveCaptions";
+import {LiveCaptionOverlay} from "../components/Subtitle/LiveCaptionOverlay";
+import {LiveCaptionControl} from "../components/Subtitle/LiveCaptionControl";
+import {SubtitlePreprocessOptions} from "../types/subtitlePreprocess";
 
 function Video() {
   const {
@@ -87,7 +91,6 @@ function Video() {
     dailyWords,
     isLoading: isDailyWordsLoading,
     dateString,
-    checkForNewDay,
     generateDailyWords
   } = useWordOfTheDay(lang);
 
@@ -175,10 +178,6 @@ function Video() {
 
   const {
     mediaInfo,
-    isAnalyzing,
-    handleEmbeddedSubtitleSelect,
-    hasEmbeddedSubtitles,
-    hasMultipleAudioTracks,
     showTrackSelectionModal,
     showAudioReencodeModal,
     showReencodeProgress,
@@ -188,53 +187,15 @@ function Video() {
     handleCloseTrackSelectionModal,
     handleCloseAudioReencodeModal,
     handleAudioReencodeConfirm,
-    handleAudioReencodeSkip,
-    selectedTracks
+    handleAudioReencodeSkip
   } = useMediaAnalysis(videoSrc.path);
+  const liveCaptions = useLiveCaptions();
 
   // Handle embedded subtitle loading
-  const handleEmbeddedSubtitleLoad = useCallback((filePath: string, type: 'primary' | 'secondary', preprocessOptions = {}) => {
+  const handleEmbeddedSubtitleLoad = useCallback((filePath: string, type: 'primary' | 'secondary', preprocessOptions?: SubtitlePreprocessOptions) => {
     // Use the specialized embedded subtitle loader
     loadEmbeddedSubtitle(filePath, type, preprocessOptions);
   }, [loadEmbeddedSubtitle]);
-
-  // Handle audio track selection
-  const handleAudioTrackSelect = useCallback((trackIndex: number) => {
-    
-    // Store the selection for when player is ready
-    const applyAudioTrack = () => {
-      if (player && player.audioTracks) {
-        const audioTrackList = player.audioTracks();
-        
-        // Video.js audio tracks might be in different order than ffprobe
-        // For now, try direct mapping but log everything for debugging
-        if (audioTrackList && audioTrackList.length > trackIndex) {
-          // Disable all audio tracks
-          for (let i = 0; i < audioTrackList.length; i++) {
-            audioTrackList[i].enabled = false;
-          }
-          // Enable selected track
-          audioTrackList[trackIndex].enabled = true;
-        } else {
-          
-          // Fallback: try to find by language if possible
-          const selectedTrack = mediaInfo.audioTracks[trackIndex];
-          if (selectedTrack?.language) {
-            for (let i = 0; i < audioTrackList.length; i++) {
-              if (audioTrackList[i].language === selectedTrack.language) {
-                audioTrackList[i].enabled = true;
-                break;
-              }
-            }
-          }
-        }
-      } else {
-        setTimeout(applyAudioTrack, 1000);
-      }
-    };
-
-    applyAudioTrack();
-  }, [player, mediaInfo.audioTracks]);
 
   // Handle loading processed video with selected audio
   const handleReencodedVideoLoad = useCallback((videoPath: string) => {
@@ -452,7 +413,7 @@ function Video() {
           <div>
             <SubtitleDisplay
                 // Primary subtitle props
-                showPrimarySub={showPrimarySub}
+                showPrimarySub={showPrimarySub && !liveCaptions.caption}
                 setMeaning={setMeaning}
                 currentTime={currentTime}
                 primarySub={primarySub}
@@ -476,7 +437,29 @@ function Video() {
                 // Mode
                 subtitleMode={subtitleMode}
             />
+            <LiveCaptionOverlay
+                caption={liveCaptions.caption}
+                subtitleStyling={primaryStyling}
+                lang={lang}
+                tokenizeMiteiru={tokenizeMiteiru}
+                setMeaning={setMeaning}
+                getLearningStateClass={getLearningStateClass}
+                changeLearningState={changeLearningState}
+                setExternalContent={setExternalContent}
+                setRubyCopyContent={setRubyCopyContent}
+            />
           </div>
+          <LiveCaptionControl
+              supported={liveCaptions.supported}
+              running={liveCaptions.running}
+              starting={liveCaptions.starting}
+              state={liveCaptions.state}
+              error={liveCaptions.error}
+              debugMessages={liveCaptions.debugMessages}
+              refreshIntervalMs={liveCaptions.refreshIntervalMs}
+              onRefreshIntervalChange={liveCaptions.setRefreshIntervalMs}
+              onToggle={liveCaptions.toggle}
+          />
           <div className={"flex flex-col justify-end bottom-0 z-[15] fixed"}>
             {player && <VideoController
                 isPlaying={isPlaying}

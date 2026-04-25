@@ -39,7 +39,7 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
   const [selectedPrimaryType, setSelectedPrimaryType] = useState<'embedded' | 'youtube' | null>(null);
   const [selectedSecondaryType, setSelectedSecondaryType] = useState<'embedded' | 'youtube' | null>(null);
   const [preprocessOptions, setPreprocessOptions] = useState<SubtitlePreprocessOptions>({
-    titleCaseAllCaps: false
+    titleCaseAllCaps: true
   });
   
   // Use YouTube subtitles hook
@@ -59,7 +59,7 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
     if (!isOpen) {
       clearSubtitles();
       setPreprocessOptions({
-        titleCaseAllCaps: false
+        titleCaseAllCaps: true
       });
       return;
     }

@@ -2,6 +2,13 @@
   "win": {
     "icon": "resources/icon.ico",
     "target": ["nsis"],
-    "artifactName": "miteiru-${version}-${os}-${arch}.${ext}"
+    "artifactName": "miteiru-${version}-${os}-${arch}.${ext}",
+    "extraResources": [
+      {
+        "from": "resources/live-captions",
+        "to": "live-captions",
+        "filter": ["MiteiruLiveCaptionsBridge.exe"]
+      }
+    ]
   }
 }

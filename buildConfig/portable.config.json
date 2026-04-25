@@ -2,6 +2,13 @@
   "win": {
     "icon": "resources/icon.ico",
     "target": ["portable"],
-    "artifactName": "miteiru-${version}-${os}-portable-${arch}.${ext}"
+    "artifactName": "miteiru-${version}-${os}-portable-${arch}.${ext}",
+    "extraResources": [
+      {
+        "from": "resources/live-captions",
+        "to": "live-captions",
+        "filter": ["MiteiruLiveCaptionsBridge.exe"]
+      }
+    ]
   }
 }

@@ -4,6 +4,7 @@ import {registerBasicHandlers} from "./common/basicHandlers";
 import {registerMediaHandlers} from "./common/mediaHandlers";
 import {registerMediaToolHandlers} from "./common/mediaToolHandlers";
 import {registerNetworkHandlers} from "./common/networkHandlers";
+import {registerLiveCaptionsHandlers} from "./common/liveCaptionsHandlers";
 import {RegisterCommonHandlersArgs} from "./common/types";
 
 export const registerCommonHandlers = (getTokenizer: RegisterCommonHandlersArgs["getTokenizer"], packageJson: RegisterCommonHandlersArgs["packageJson"], appDataDirectory: RegisterCommonHandlersArgs["appDataDirectory"]) => {
@@ -13,4 +14,5 @@ export const registerCommonHandlers = (getTokenizer: RegisterCommonHandlersArgs[
   registerMediaHandlers();
   registerMediaToolHandlers();
   registerNetworkHandlers();
+  registerLiveCaptionsHandlers();
 };

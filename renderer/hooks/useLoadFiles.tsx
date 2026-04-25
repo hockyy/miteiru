@@ -13,7 +13,7 @@ import {useAsyncAwaitQueue} from "./useAsyncAwaitQueue";
 import {videoConstants} from "../utils/constants";
 
 const DEFAULT_SUBTITLE_PREPROCESS_OPTIONS: SubtitlePreprocessOptions = {
-  titleCaseAllCaps: false
+  titleCaseAllCaps: true
 };
 
 const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
@@ -375,7 +375,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
   }, []);
 
   // Enhanced load for embedded subtitles with type specification
-  const loadEmbeddedSubtitle = useCallback((filePath: string, type: 'primary' | 'secondary', preprocessOptions: SubtitlePreprocessOptions = {}) => {
+  const loadEmbeddedSubtitle = useCallback((filePath: string, type: 'primary' | 'secondary', preprocessOptions: SubtitlePreprocessOptions = DEFAULT_SUBTITLE_PREPROCESS_OPTIONS) => {
     console.log(`[useLoadFiles] loadEmbeddedSubtitle called: ${type} from ${filePath}`);
     
     // Create a pseudo subtitle object for direct loading

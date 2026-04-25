@@ -14,3 +14,6 @@ renderer/public/chinese/**
 renderer/public/hanzi/**
 renderer/public/vietnamese/**
 archived/**
+native/live-captions/bin/
+native/live-captions/obj/
+resources/live-captions/MiteiruLiveCaptionsBridge.exe
