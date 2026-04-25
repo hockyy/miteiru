@@ -13,7 +13,11 @@ Miteiru supports multiple languages for subtitle tokenization and dictionary loo
 
 Language assets are organized as plugin-owned folders under `renderer/public/language-assets/`.
 The app currently consumes unpacked folders, and each plugin folder includes an `asset-manifest.json`
-so the same layout can later be packed as downloadable `assets.zip` archives.
+so the same layout can later be packed as downloadable `<plugin-id>-assets.zip` archives. Run
+`npm run script:download-language-assets` to download archives from the
+[assets release](https://github.com/hockyy/miteiru/releases/tag/assets),
+`npm run script:pack-language-assets` to create archives, and
+`npm run script:unpack-language-assets` to restore unpacked plugin folders from archives.
 
 Current asset ownership:
 
