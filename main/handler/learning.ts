@@ -2,8 +2,7 @@ import {app, ipcMain} from "electron";
 import {Level} from 'level';
 import path from 'path';
 import * as fsPromises from 'node:fs/promises';
-import {createHash} from 'node:crypto';
-import {v4 as uuidv4} from 'uuid';
+import {createHash, randomUUID} from 'node:crypto';
 import {LearningStateType} from "../../renderer/components/types";
 
 const TERM_IMAGES_KEY_PREFIX = 'termImages/';
@@ -109,7 +108,7 @@ class Learning {
       try {
         const userData = app.getPath('userData');
         const safeFolder = safeTermFolder(term);
-        const imageId = uuidv4();
+        const imageId = randomUUID();
         const normalizedExt = IMAGE_EXTS.includes(ext?.toLowerCase()) ? ext.toLowerCase() : 'png';
         const filename = `${imageId}.${normalizedExt}`;
         const dirPath = path.join(userData, 'termImages', lang, safeFolder);

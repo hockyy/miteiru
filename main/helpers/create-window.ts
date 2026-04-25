@@ -3,9 +3,13 @@ import {
   BrowserWindow,
   BrowserWindowConstructorOptions,
 } from 'electron';
-import Store from 'electron-store';
 
-export default (windowName: string, options: BrowserWindowConstructorOptions): BrowserWindow => {
+const loadElectronStore = () => {
+  return Function("specifier", "return import(specifier)")("electron-store") as Promise<typeof import("electron-store")>;
+};
+
+export default async (windowName: string, options: BrowserWindowConstructorOptions): Promise<BrowserWindow> => {
+  const {default: Store} = await loadElectronStore();
   const key = 'window-state';
   const name = `window-state-${windowName}`;
   const store = new Store({name});
