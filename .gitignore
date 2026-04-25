@@ -13,6 +13,13 @@ renderer/public/cantonese/**
 renderer/public/chinese/**
 renderer/public/hanzi/**
 renderer/public/vietnamese/**
+renderer/public/language-assets/han-character-core/hanzi/**
+renderer/public/language-assets/han-character-core/kanji/**
+renderer/public/language-assets/han-character-core/wanikani/**
+renderer/public/language-assets/japanese/dict/**
+renderer/public/language-assets/mandarin/chinese/**
+renderer/public/language-assets/cantonese/cantonese/**
+renderer/public/language-assets/vietnamese/vietnamese/**
 archived/**
 native/live-captions/bin/
 native/live-captions/obj/

@@ -1,4 +1,4 @@
-import {videoConstants} from "../../utils/constants";
+import {languageCodes} from "../../languages/manifest";
 import type {Line, SubtitleContainer} from "./DataStructures";
 
 export type TokenizeMiteiru = (text: string) => Promise<any[]>;
@@ -10,16 +10,16 @@ interface SubtitleLanguageSupport {
 }
 
 const subtitleLanguageSupportByLang: Record<string, SubtitleLanguageSupport> = {
-  [videoConstants.japaneseLang]: {
+  [languageCodes.japanese]: {
     fillLearningContent: (line, frequency) => line.fillContentWithLearningKotoba(frequency)
   },
-  [videoConstants.chineseLang]: {
+  [languageCodes.mandarin]: {
     fillLearningContent: (line, frequency) => line.fillContentWithLearningChinese(frequency)
   },
-  [videoConstants.cantoneseLang]: {
+  [languageCodes.cantonese]: {
     fillLearningContent: (line, frequency) => line.fillContentWithLearningChinese(frequency)
   },
-  [videoConstants.vietnameseLang]: {
+  [languageCodes.vietnamese]: {
     fillLearningContent: (line, frequency) => line.fillContentWithLearningVietnamese(frequency)
   }
 };

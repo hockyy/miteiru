@@ -1,5 +1,5 @@
 import {MediaTrack} from "../types/media";
-import {videoConstants} from "./constants";
+import {getLanguageDisplayName as getManifestLanguageDisplayName} from "../languages/manifest";
 import {isLocalPath, isYoutube} from "./utils";
 
 export type SubtitleTarget = "primary" | "secondary";
@@ -56,14 +56,7 @@ export const getYoutubeVideoId = (videoPath: string): string | null => {
 };
 
 export const getLanguageDisplayName = (langCode: string) => {
-  switch (langCode) {
-    case videoConstants.japaneseLang: return "Japanese";
-    case videoConstants.chineseLang: return "Chinese";
-    case videoConstants.cantoneseLang: return "Cantonese";
-    case videoConstants.vietnameseLang: return "Vietnamese";
-    case videoConstants.englishLang: return "English";
-    default: return langCode;
-  }
+  return getManifestLanguageDisplayName(langCode);
 };
 
 export const getLanguageEmoji = (lang: string) => {

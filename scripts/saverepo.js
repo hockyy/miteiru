@@ -1,9 +1,12 @@
 const fs = require('fs');
 const archiver = require('archiver');
 const path = require("path");
+const {migrateLanguageAssets} = require("./languageAssetLayout");
 
 const source = path.join(__dirname, '../renderer/public');
 const target = path.join(__dirname, '../archived/public.zip');
+
+migrateLanguageAssets(source);
 
 // Ensure the 'archived' directory exists
 const targetDir = path.dirname(target);

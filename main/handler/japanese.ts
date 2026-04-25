@@ -26,6 +26,7 @@ class Japanese {
   static importKanjiDict: string;
   static importDict: string;
   static importBaseSVG: string;
+  static kuromojiDictPath: string;
 
   static getJapaneseSettings = (appDataDirectory, replacements: any = {}) => {
     return {
@@ -36,6 +37,7 @@ class Japanese {
       charDictPath: path.join(appDataDirectory, `kanjidic-db`),
       dictPath: path.join(appDataDirectory, `jmdict-db`),
       importBaseSVG: path.join(__dirname, 'kanji'),
+      kuromojiDictPath: path.join(__dirname, 'dict'),
       ...replacements
     };
   }
@@ -48,6 +50,7 @@ class Japanese {
     this.importDict = settings.importDict;
     this.importKanjiDict = settings.importKanjiDict;
     this.importBaseSVG = settings.importBaseSVG;
+    this.kuromojiDictPath = settings.kuromojiDictPath;
     try {
       if (this.Dict.db) {
         this.Dict.db.close();
@@ -74,12 +77,32 @@ class Japanese {
     }
   }
 
+  static async setupHanCharacterCore(settings) {
+    this.importWanikaniKanji = settings.importWanikaniKanji;
+    this.importWanikaniRadical = settings.importWanikaniRadical;
+    this.importBaseSVG = settings.importBaseSVG;
+
+    try {
+      this.wanikanji = await readJsonFile(this.importWanikaniKanji);
+      this.waniradical = await readJsonFile(this.importWanikaniRadical);
+      return;
+    } catch (e) {
+      console.error(e);
+      return e.message;
+    }
+  }
+
   /**
    * TODO: Refactor this koakowakowakowko males bgt anjing
    */
   static registerKuromoji() {
     let tokenizer = null;
-    getTokenizer({dicPath: path.join(__dirname, 'dict/')}).then(loadedTokenizer => {
+    const dictionaryPath = [
+      this.kuromojiDictPath,
+      path.join(__dirname, 'language-assets/japanese/dict'),
+      path.join(__dirname, 'dict')
+    ].filter(Boolean).find((candidate) => fs.existsSync(candidate)) ?? path.join(__dirname, 'dict');
+    getTokenizer({dicPath: dictionaryPath}).then(loadedTokenizer => {
       tokenizer = loadedTokenizer;
     }).catch(e => {
       console.error(e)
@@ -144,11 +167,11 @@ class Japanese {
 
 
     ipcMain.handle('getWaniKanji', async (event, kanji) => {
-      return (this.wanikanji[kanji]);
+      return (this.wanikanji?.[kanji]);
     })
 
     ipcMain.handle('getWaniRadical', async (event, radicalSlug) => {
-      return (this.waniradical[radicalSlug]);
+      return (this.waniradical?.[radicalSlug]);
     });
 
     ipcMain.handle('readKanjiSVG', async (event, filename) => {

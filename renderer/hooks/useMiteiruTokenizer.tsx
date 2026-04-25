@@ -1,16 +1,8 @@
 import {useCallback, useEffect, useState} from 'react';
 import {ShunouWordWithSeparations} from "shunou";
 import Conjugator from 'jp-verbs';
-import {videoConstants} from "../utils/constants";
 import {useStoreData} from "./useStoreData";
-
-const langMap = {
-  "mecab": videoConstants.japaneseLang,
-  "kuromoji": videoConstants.japaneseLang,
-  "cantonese": videoConstants.cantoneseLang,
-  "jieba": videoConstants.chineseLang,
-  "vietnamese": videoConstants.vietnameseLang
-}
+import {getLanguageModeByTokenizerMode} from "../languages/manifest";
 
 const parseVerbs = async (res) => {
   const newRes: ShunouWordWithSeparations[] = [];
@@ -166,7 +158,7 @@ const useMiteiruTokenizer = (): {
   return {
     tokenizeMiteiru,
     tokenizerMode,
-    lang: langMap[tokenizerMode] ?? '',
+    lang: getLanguageModeByTokenizerMode(tokenizerMode)?.languageCode ?? '',
     toneType,
     setToneType,
   };

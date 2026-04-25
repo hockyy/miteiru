@@ -1,0 +1,13 @@
+{
+  "id": "cantonese",
+  "version": "1.0.0",
+  "kind": "language",
+  "description": "Cantonese dictionary and Jieba segmentation assets.",
+  "unpackRoot": "language-assets/cantonese",
+  "dependencies": [
+    "han-character-core"
+  ],
+  "files": [
+    "cantonese/"
+  ]
+}

@@ -173,7 +173,8 @@ Each language provides integrated dictionary lookup:
 - **Main Process**: Language handlers for tokenization and dictionary
 - **Renderer Process**: UI components and subtitle rendering
 - **IPC Communication**: Electron IPC for tokenization requests
-- **Dictionary Storage**: Local dictionary files for offline use
+- **Dictionary Storage**: Plugin-owned local assets under `renderer/public/language-assets`
+- **Asset Packaging**: Each plugin asset folder has an `asset-manifest.json` and can be packed into `assets.zip` for future download/install flows
 
 ### Performance
 - Dictionaries loaded on language selection

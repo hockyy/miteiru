@@ -1,0 +1,12 @@
+{
+  "id": "han-character-core",
+  "version": "1.0.0",
+  "kind": "resource",
+  "description": "Shared Han-character resources for Kanji, Hanzi, stroke data, and Wanikani metadata.",
+  "unpackRoot": "language-assets/han-character-core",
+  "files": [
+    "hanzi/",
+    "kanji/",
+    "wanikani/"
+  ]
+}

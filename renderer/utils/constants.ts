@@ -1,3 +1,11 @@
+import {
+  cantoneseToneMap,
+  hanCharacterRegex,
+  languageCodes,
+  ocrLanguageCodes,
+  speechLanguageCodes
+} from "../languages/manifest";
+
 export const videoConstants = {
   supportedVideoFormats: [
     'mkv', 'mp4', 'webm', 'ogg', 'mov', 'avi', 'flv', '3gp', 'wmv', 'wav', 'hls', 'mp3', 'mp2t', 'ts'
@@ -11,32 +19,15 @@ export const videoConstants = {
   subtitleEndPlusMultiplier: 8,
   autoPauseMultiplier: 1.02,
   playingClass: ["", "playing"],
-  cjkRegex: /[\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af\u3000-\u303f]/g,
-  cantoneseLang: 'yue',
-  englishLang: 'en',
-  japaneseLang: 'ja',
-  chineseLang: 'zh-CN',
-  vietnameseLang: 'vi',
-  varLang: {
-    "yue": ["zh-HK", "yue"],
-    "ja": ["ja"],
-    "zh-CN": ['zh-TW', 'zh-CN'],
-    "vi": ["vi"]
-  },
-  ocrLang: {
-    "yue": "chi_tra",
-    "ja": "jpn",
-    "zh-CN": "chi_tra",
-    "vi": "vie",
-  },
-  cantoneseToneMap: {
-    1: '‾',
-    2: '/',
-    3: '–',
-    4: '⦦',
-    5: '⦧',
-    6: '_'
-  },
+  cjkRegex: hanCharacterRegex,
+  cantoneseLang: languageCodes.cantonese,
+  englishLang: languageCodes.english,
+  japaneseLang: languageCodes.japanese,
+  chineseLang: languageCodes.mandarin,
+  vietnameseLang: languageCodes.vietnamese,
+  varLang: speechLanguageCodes,
+  ocrLang: ocrLanguageCodes,
+  cantoneseToneMap,
   learningStateLength: 3
 }
 
