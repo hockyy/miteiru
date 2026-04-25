@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useEffect, useMemo, useRef, useState} from "react";
 import {getLineByTime, SubtitleContainer} from "./DataStructures";
 import {ChineseSentence, JapaneseSentence, PlainSentence} from "./Sentence";
 import {CJKStyling, defaultSecondarySubtitleStyling} from "../../utils/CJKStyling";
@@ -6,45 +6,98 @@ import {adjustTimeWithShift} from "../../utils/utils";
 import useSubtitleContainerStyle from "../../hooks/useSubtitleContainerStyle";
 import {getSubtitleTokenPresentation} from "./subtitleLanguageSupport";
 
+interface CurrentSubtitleLine {
+  content: any[] | string;
+  meaning: any[];
+}
 
-export const PrimarySubtitle = ({
-                                  currentTime,
-                                  subtitle,
-                                  shift,
-                                  setMeaning,
-                                  subtitleStyling,
-                                  changeLearningState,
-                                  getLearningStateClass,
-                                  timeCache,
-                                  setTimeCache,
-                                  setExternalContent,
-                                  setRubyCopyContent
-                                }: {
-                                  currentTime: number,
-                                  subtitle: SubtitleContainer,
-                                  shift: number,
-                                  setMeaning: (newMeaning: string) => void,
-                                  subtitleStyling?: CJKStyling,
-                                  changeLearningState?: (newMeaning: string) => void,
-                                  getLearningStateClass?: (newMeaning: string) => string,
-                                  timeCache?: number[],
-                                  setTimeCache?: (cache: number[]) => void,
-                                  setExternalContent?: (content: any[]) => void,
-                                  setRubyCopyContent: any;
-                                }
-) => {
-  const [caption, setCaption] = useState([]);
+const emptySubtitleLine: CurrentSubtitleLine = {
+  content: '',
+  meaning: []
+};
 
+const isTimeInCache = (timeCache: number[] | undefined, currentAdjustedTime: number) => (
+  timeCache
+  && timeCache.length === 2
+  && timeCache[0] <= currentAdjustedTime
+  && currentAdjustedTime <= timeCache[1]
+);
 
-  const setFromContent = useCallback((content, wordMeaning = []) => {
-    if (setExternalContent) setExternalContent(content);
-    if (content === '' || content.length === 0) {
-      setCaption([]);
-      setRubyCopyContent('');
+const useCurrentSubtitleLine = ({
+  currentTime,
+  subtitle,
+  shift,
+  timeCache,
+  setTimeCache,
+  logErrors = false
+}: {
+  currentTime: number,
+  subtitle: SubtitleContainer,
+  shift: number,
+  timeCache?: number[],
+  setTimeCache?: (cache: number[]) => void,
+  logErrors?: boolean
+}) => {
+  const [line, setLine] = useState(emptySubtitleLine);
+  const cachedSubtitleRef = useRef<SubtitleContainer | null>(null);
+  const currentAdjustedTime = useMemo(() => adjustTimeWithShift(currentTime, shift), [currentTime, shift]);
+
+  useEffect(() => {
+    const updateTimeCache = (nextCache: number[]) => {
+      if (!setTimeCache) return;
+      const hasSameCache = timeCache
+        && timeCache.length === nextCache.length
+        && timeCache.every((cachedTime, index) => cachedTime === nextCache[index]);
+      if (!hasSameCache) setTimeCache(nextCache);
+    };
+
+    if (cachedSubtitleRef.current === subtitle && isTimeInCache(timeCache, currentAdjustedTime)) {
       return;
     }
+
+    try {
+      const nextLine = getLineByTime(subtitle, currentAdjustedTime);
+      cachedSubtitleRef.current = subtitle;
+      setLine({
+        content: nextLine.content,
+        meaning: nextLine.meaning
+      });
+      updateTimeCache(nextLine.timePair ?? []);
+    } catch (error) {
+      if (logErrors) console.error(error);
+      setLine(emptySubtitleLine);
+      updateTimeCache([]);
+    }
+  }, [currentAdjustedTime, logErrors, setTimeCache, subtitle, timeCache]);
+
+  return line;
+};
+
+const buildPrimaryCaption = ({
+  content,
+  wordMeaning = [],
+  setMeaning,
+  subtitleStyling,
+  getLearningStateClass,
+  changeLearningState
+}: {
+  content: any[] | string,
+  wordMeaning?: any[],
+  setMeaning: (newMeaning: string) => void,
+  subtitleStyling?: CJKStyling,
+  getLearningStateClass?: (newMeaning: string) => string,
+  changeLearningState?: (newMeaning: string) => void
+}) => {
+    if (content === '' || content.length === 0) {
+      return {
+        caption: [],
+        rubyCopyContent: ''
+      };
+    }
+
     if (typeof content === 'string') {
-      setCaption([<JapaneseSentence
+      return {
+        caption: [<JapaneseSentence
           key={'only'}
           origin={""}
           separation={[{main: content}]}
@@ -52,12 +105,13 @@ export const PrimarySubtitle = ({
           }}
           extraClass={"subtitle"}
           subtitleStyling={subtitleStyling}
-          wordMeaning={''}/>]);
-      setRubyCopyContent(content);
-      return;
+          wordMeaning={''}/>],
+        rubyCopyContent: content
+      };
     }
+
     let rubyCopyContent = '';
-    const current = content.map((val, index) => {
+    const caption = content.map((val, index) => {
       const validBasicForm = val.basicForm != '' && val.basicForm != '*';
       const presentation = getSubtitleTokenPresentation(val);
 
@@ -68,7 +122,7 @@ export const PrimarySubtitle = ({
       }).join('');
       rubyCopyContent += rubyHtml;
 
-      if (index + 1 < content.length && subtitleStyling.showSpace) {
+      if (index + 1 < content.length && subtitleStyling?.showSpace) {
         rubyCopyContent += ' ';
       }
 
@@ -99,39 +153,63 @@ export const PrimarySubtitle = ({
                     changeLearningState={changeLearningState}
                 />
             )}
-            {index + 1 < content.length && subtitleStyling.showSpace ? " " : " "}
+            {index + 1 < content.length && subtitleStyling?.showSpace ? " " : " "}
           </React.Fragment>
       );
     });
 
-    setCaption(current);
+    return {
+      caption,
+      rubyCopyContent
+    };
+};
+
+export const PrimarySubtitle = ({
+                                  currentTime,
+                                  subtitle,
+                                  shift,
+                                  setMeaning,
+                                  subtitleStyling,
+                                  changeLearningState,
+                                  getLearningStateClass,
+                                  timeCache,
+                                  setTimeCache,
+                                  setExternalContent,
+                                  setRubyCopyContent
+                                }: {
+                                  currentTime: number,
+                                  subtitle: SubtitleContainer,
+                                  shift: number,
+                                  setMeaning: (newMeaning: string) => void,
+                                  subtitleStyling?: CJKStyling,
+                                  changeLearningState?: (newMeaning: string) => void,
+                                  getLearningStateClass?: (newMeaning: string) => string,
+                                  timeCache?: number[],
+                                  setTimeCache?: (cache: number[]) => void,
+                                  setExternalContent?: (content: any[] | string) => void,
+                                  setRubyCopyContent: any;
+                                }
+) => {
+  const line = useCurrentSubtitleLine({currentTime, subtitle, shift, timeCache, setTimeCache});
+  const {
+    caption,
+    rubyCopyContent
+  } = useMemo(() => buildPrimaryCaption({
+    content: line.content,
+    wordMeaning: line.meaning,
+    setMeaning,
+    subtitleStyling,
+    getLearningStateClass,
+    changeLearningState
+  }), [changeLearningState, getLearningStateClass, line.content, line.meaning, setMeaning, subtitleStyling]);
+
+  useEffect(() => {
+    setExternalContent?.(line.content);
+  }, [line.content, setExternalContent]);
+
+  useEffect(() => {
     setRubyCopyContent(rubyCopyContent);
-  }, [setExternalContent, setRubyCopyContent, subtitleStyling, setMeaning, getLearningStateClass, changeLearningState]);
-
-  const setSubtitle = useCallback((currentAdjustedTime) => {
-    try {
-      const line = getLineByTime(subtitle, currentAdjustedTime);
-      const primaryContent = line.content;
-      setFromContent(primaryContent, line.meaning);
-      setTimeCache(line.timePair);
-    } catch {
-    }
-  }, [subtitle, setFromContent, setTimeCache]);
-
-  useEffect(() => {
-    const currentAdjustedTime = adjustTimeWithShift(currentTime, shift);
-    if (timeCache && timeCache.length == 2
-        && timeCache[0] <= currentAdjustedTime
-        && currentAdjustedTime <= timeCache[1]) {
-      return;
-    }
-    setSubtitle(currentAdjustedTime);
-  }, [setSubtitle, timeCache, currentTime, shift]);
-
-  useEffect(() => {
-    const currentAdjustedTime = adjustTimeWithShift(currentTime, shift);
-    setSubtitle(currentAdjustedTime);
-  }, [setSubtitle, currentTime, shift]);
+  }, [rubyCopyContent, setRubyCopyContent]);
 
   return <Subtitle caption={caption} subtitleStyling={subtitleStyling}/>
 };
@@ -152,34 +230,23 @@ export const SecondarySubtitle = ({
                                     setTimeCache?: (cache: number[]) => void;
                                   }
 ) => {
-  const [caption, setCaption] = useState([]);
-  const setFromContent = useCallback((content) => {
+  const line = useCurrentSubtitleLine({
+    currentTime,
+    subtitle,
+    shift,
+    timeCache,
+    setTimeCache,
+    logErrors: true
+  });
+  const caption = useMemo(() => {
+    const content = line.content;
     if (content === '' || content.length === 0) {
-      setCaption([])
-      return;
+      return [];
     }
-    const current = <PlainSentence origin={content}/>
-    setCaption([current])
-  }, []);
 
-  useEffect(() => {
-    const currentAdjustedTime = adjustTimeWithShift(currentTime, shift);
-    if (timeCache && timeCache.length == 2
-        && timeCache[0] <= currentAdjustedTime
-        && currentAdjustedTime <= timeCache[1]) {
-      return;
-    }
-    try {
-      const secondaryContent = getLineByTime(subtitle, currentAdjustedTime);
-      setTimeCache(secondaryContent.timePair);
-      setFromContent(secondaryContent.content);
-    } catch (e) {
-      console.error(e)
-    }
-  }, [currentTime, subtitle, shift, timeCache, setTimeCache, setFromContent]);
-  useEffect(() => {
-    setTimeCache([]);
-  }, [setTimeCache, subtitle])
+    return [<PlainSentence key="secondary" origin={content}/>];
+  }, [line.content]);
+
   return <Subtitle caption={caption} subtitleStyling={subtitleStyling} extraContainerStyle={{
     WebkitTextFillColor: subtitleStyling.text.color,
     WebkitTextStrokeColor: subtitleStyling.stroke.color,

@@ -1,4 +1,3 @@
-import {ArrowLeft} from "./Icons";
 import React, {useCallback} from "react";
 import {PopoverPicker} from "./PopoverPicker";
 import {
@@ -10,6 +9,7 @@ import Toggle from "./Toggle";
 import {AwesomeButton} from "react-awesome-button";
 import {GistManager} from "../Data/GistManager";
 import {SubtitleMode} from "../../utils/utils";
+import {SidebarSection, SidebarSettingRow, SidebarShell} from "./SidebarShell";
 
 export const StylingBox = ({
                              subtitleStyling,
@@ -180,7 +180,7 @@ export const StylingBox = ({
       }
     })
   }, [lang]);
-  return <div className={"w-full mx-5 px-3 flex flex-col content-start gap-3 unselectable"}>
+  return <div className={"w-full flex flex-col content-start gap-3 unselectable text-sm text-white/85"}>
     {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
       <Toggle isChecked={subtitleStyling.showFurigana} onChange={cjkShowFuriganaHandler}/>
       {subtitleName} Show Furigana
@@ -420,38 +420,26 @@ export const Sidebar = ({
       alert(`Failed to export HUF: ${error.message || 'Unknown error'}`);
     }
   }, [primarySub]);
-  return <div style={{
-    transition: "all 0.3s ease-out",
-    transform: `translate(${!showSidebar ? "30vw" : "0"}, 0`
-  }}
-              className={"overflow-y-scroll overflow-x-clip flex flex-col content-center items-center p-3 z-[19] fixed right-0 top-0 h-screen w-[30vw] bg-gray-700/70"}>
-
-    <button className={"self-start p-2"} onClick={() => {
-      setShowSidebar(old => !old)
-    }
-    }>
-      <div className={"animation h-5"}>
-        {ArrowLeft}
-      </div>
-    </button>
-    <div className={"font-bold unselectable text-3xl m-4"}>
-      Settings
-    </div>
-
-    <div className={"w-full mx-5 px-3 flex flex-col content-start gap-3 unselectable"}>
-      <div className={"flex flex-row items-center gap-3"}>
+  return <SidebarShell
+      showSidebar={showSidebar}
+      setShowSidebar={setShowSidebar}
+      title="Video Settings"
+      subtitle="Playback, learning, subtitle style, and data tools"
+  >
+    <SidebarSection title="Playback">
+      <SidebarSettingRow>
         <Toggle isChecked={toneType === 'num'} onChange={toneTypeHandler}/>
         Use {toneType} Tone Type
-      </div>
-      <div className={"flex flex-row items-center gap-3"}>
+      </SidebarSettingRow>
+      <SidebarSettingRow>
         <Toggle isChecked={autoPause} onChange={autoPauseHandler}/>
         Enable Auto Pause
-      </div>
-      <div className={"flex flex-row items-center gap-3"}>
+      </SidebarSettingRow>
+      <SidebarSettingRow>
         <Toggle isChecked={subtitleMode == SubtitleMode.Karaoke} onChange={subtitleModeHandler}/>
         Use Karaoke Mode
-      </div>
-      <div className={"flex w-full justify-around items-center gap-3"}>
+      </SidebarSettingRow>
+      <div className={"flex w-full items-center gap-3 rounded-xl bg-black/20 px-3 py-2 text-sm text-white/85"}>
         <span>Learning </span>
         <span className={'inline-block w-14'}>{learningPercentage}%</span>
         <span className={'inline-block w-1/2'}><input
@@ -468,17 +456,19 @@ export const Sidebar = ({
             type={"secondary"}
             className={"w-full"}
             onPress={exportHufHandler}>Export Primary as HUF</AwesomeButton>
-    </div>
+    </SidebarSection>
 
-    <hr className={"w-full h-1 m-5"}/>
+    <SidebarSection title="Primary Subtitle">
     <StylingBox subtitleStyling={primaryStyling} setSubtitleStyling={setPrimaryStyling}
                 subtitleName={"CJK"} defaultStyling={defaultPrimarySubtitleStyling} lang={lang}/>
-    <hr className={"w-full h-1 m-5"}/>
+    </SidebarSection>
+    <SidebarSection title="Secondary Subtitle">
     <StylingBox subtitleStyling={secondaryStyling} setSubtitleStyling={setSecondaryStyling}
                 subtitleName={"Other"} defaultStyling={defaultSecondarySubtitleStyling}
                 lang={lang}/>
-    <div className={'w-full mt-4 mx-5 px-3 flex flex-col content-center gap-3'}>
+    </SidebarSection>
+    <SidebarSection title="Cloud Sync">
       <GistManager lang={lang}/>
-    </div>
-  </div>
+    </SidebarSection>
+  </SidebarShell>
 }
