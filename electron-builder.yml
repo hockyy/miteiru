@@ -14,5 +14,6 @@ win:
     - from: resources/live-captions
       to: live-captions
       filter:
-        - MiteiruLiveCaptionsBridge.exe
+        - "**/*"
+        - "!**/.gitkeep"
 publish: null

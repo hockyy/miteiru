@@ -76,11 +76,13 @@ const VocabSidebar = ({
   }, []);
 
   const renderTokenizedWord = useCallback(() => {
-    if (!tokenizedWord) return null;
+    if (!tokenizedWord || !Array.isArray(tokenizedWord)) return null;
 
     if (lang === videoConstants.japaneseLang) {
-      return tokenizedWord;
-    } else if (lang === videoConstants.chineseLang || lang === videoConstants.cantoneseLang) {
+      // tokenizeMiteiru returns ShunouWordWithSeparations[] — objects, not renderable children
+      return tokenizedWord.map((t) => t?.origin ?? '').join(' ');
+    }
+    if (lang === videoConstants.chineseLang || lang === videoConstants.cantoneseLang) {
       return tokenizedWord.map(t => t.pinyin || t.jyutping);
     }
 
