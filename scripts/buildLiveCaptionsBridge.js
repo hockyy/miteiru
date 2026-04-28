@@ -56,10 +56,8 @@ if (publish.status !== 0) {
   process.exit(publish.status ?? 1);
 }
 
-fs.ensureDirSync(resourcesDir);
-fs.copySync(
-  path.join(publishDir, 'MiteiruLiveCaptionsBridge.exe'),
-  path.join(resourcesDir, 'MiteiruLiveCaptionsBridge.exe')
-);
+fs.emptyDirSync(resourcesDir);
+fs.copySync(publishDir, resourcesDir);
+fs.ensureFileSync(path.join(resourcesDir, '.gitkeep'));
 
 console.log(`Live Captions helper copied to ${resourcesDir}`);

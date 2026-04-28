@@ -7,7 +7,7 @@
       {
         "from": "resources/live-captions",
         "to": "live-captions",
-        "filter": ["MiteiruLiveCaptionsBridge.exe"]
+        "filter": ["**/*", "!**/.gitkeep"]
       }
     ]
   }
