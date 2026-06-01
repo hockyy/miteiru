@@ -165,6 +165,7 @@ npm run build:portable # This to build for Windows Portable with Live Captions h
 npm run build:linux20 # This to build for Linux 20.04
 npm run build:linux22 # This to build for Linux 22.04
 npm run build:linux24 # This to build for Linux 24.04
+npm run build:linux26 # This to build for Linux 26.04
 npm run build:macos # This to build for macOS
 ```
 

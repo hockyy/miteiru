@@ -35,6 +35,7 @@
     "build:linux20": "nextron build --config=buildConfig/linux20.config.json",
     "build:linux22": "nextron build --config=buildConfig/linux22.config.json",
     "build:linux24": "nextron build --config=buildConfig/linux24.config.json",
+    "build:linux26": "nextron build --config=buildConfig/linux26.config.json",
     "postinstall": "electron-builder install-app-deps && patch-package"
   },
   "dependencies": {
