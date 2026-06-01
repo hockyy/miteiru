@@ -4,25 +4,66 @@ const path = require('path');
 const sourceDir = path.join(__dirname, '../renderer', 'public');
 const destDir = path.join(__dirname, '../app');
 
-// List of important directories or files to check.
-// Language dictionaries now live under language-assets/<plugin-id>/.
-// The legacy directories are kept here so existing local asset checkouts still copy.
-const importantPaths = [
+// Core paths that must exist in modern setups.
+const requiredPaths = [
   'images',
-  'language-assets',
+  'language-assets'
+];
+
+// Legacy paths are still copied when present in renderer/public,
+// but we do not warn when they are absent.
+const legacyPaths = [
   'dict',
   'kanji',
   'wanikani',
   'cantonese',
   'chinese',
   'hanzi',
-  'vietnamese',
+  'vietnamese'
 ];
+
+const importantPaths = [...requiredPaths, ...legacyPaths];
+
+const readJsonIfExists = async (targetPath) => {
+  if (!(await fs.pathExists(targetPath))) return null;
+  try {
+    return await fs.readJson(targetPath);
+  } catch {
+    return null;
+  }
+};
+
+const hasMissingManifestAssets = async (sourceLanguageAssetsDir, destLanguageAssetsDir) => {
+  if (!(await fs.pathExists(sourceLanguageAssetsDir)) || !(await fs.pathExists(destLanguageAssetsDir))) {
+    return true;
+  }
+
+  const pluginIds = await fs.readdir(sourceLanguageAssetsDir);
+  for (const pluginId of pluginIds) {
+    const sourcePluginDir = path.join(sourceLanguageAssetsDir, pluginId);
+    const sourceStat = await fs.stat(sourcePluginDir);
+    if (!sourceStat.isDirectory()) continue;
+
+    const manifest = await readJsonIfExists(path.join(sourcePluginDir, 'asset-manifest.json'));
+    if (!manifest) continue;
+
+    for (const relativeAssetPath of manifest.files ?? []) {
+      const sourceAssetPath = path.join(sourcePluginDir, relativeAssetPath);
+      const destAssetPath = path.join(destLanguageAssetsDir, pluginId, relativeAssetPath);
+      if (!(await fs.pathExists(sourceAssetPath)) || !(await fs.pathExists(destAssetPath))) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+};
 
 const compareShallow = async (source, dest) => {
   const sourceFiles = await fs.readdir(source);
   const destFiles = await fs.readdir(dest);
-  return sourceFiles.length === destFiles.length;
+  if (sourceFiles.length !== destFiles.length) return false;
+  return !(await hasMissingManifestAssets(source, dest));
 
 }
 
@@ -74,9 +115,10 @@ const compareDirectories = async (source, dest) => {
 
 // Function to check if important paths exist
 const checkImportantPaths = async (source) => {
-  for (const p of importantPaths) {
+  for (const p of requiredPaths) {
     const fullPath = path.join(source, p);
-    if (!(await fs.pathExists(fullPath))) {
+    const sourcePath = path.join(sourceDir, p);
+    if ((await fs.pathExists(sourcePath)) && !(await fs.pathExists(fullPath))) {
       console.warn(`Warning: ${fullPath} is missing!`);
     }
   }

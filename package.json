@@ -76,7 +76,7 @@
     "remark-gfm": "^4.0.1",
     "shunou": "1.0.3",
     "styled-components": "^6.1.19",
-    "to-jyutping": "github:hockyy/to-jyutping",
+    "to-jyutping": "^3.1.1",
     "uuid": "^14.0.0",
     "video.js": "^8.23.4",
     "videojs-youtube": "^3.0.1"
@@ -106,5 +106,12 @@
     "typescript": "^5.9.2",
     "webpack": "^5.101.3",
     "webpack-cli": "^5.1.4"
+  },
+  "allowScripts": {
+    "classic-level@1.4.1": true,
+    "classic-level@3.0.0": true,
+    "core-js-pure@3.49.0": true,
+    "electron@31.7.7": true,
+    "unrs-resolver@1.12.2": true
   }
 }
