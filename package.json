@@ -18,6 +18,7 @@
   },
   "scripts": {
     "predev": "npm run script:copy",
+    "update:safe": "node scripts/safeUpdate.js",
     "script:copy": "node scripts/copy.js",
     "script:cleansvg": "node scripts/cleanSvg.js",
     "script:initrepo": "node scripts/initrepo.js",
