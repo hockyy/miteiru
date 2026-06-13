@@ -25,7 +25,7 @@ class Chinese {
   static queryHanziChinese = async (query: string) => {
     try {
       return (await hanzi(this.Dict.db, query, 1))[0];
-    } catch (e) {
+    } catch {
       return {}
     }
   }
@@ -84,25 +84,27 @@ class Chinese {
 
   static registerNodeJieba() {
     ipcMain.handle('tokenizeUsingJieba', async (event, sentence, toneType) => {
-      // Use nodejieba for segmentation
-      const tokens = this.jieba.cut(sentence);
+      return this.tokenizeUsingJieba(sentence, toneType);
+    });
+  }
 
-      return tokens.map(word => {
-        // Get all pinyin information at once
-        const pinyinInfo = pinyin(word, {
-          toneType: toneType,
-          type: 'all'
-        });
+  static tokenizeUsingJieba(sentence: string, toneType: string) {
+    const tokens = this.jieba.cut(sentence);
 
-        return {
-          origin: word,
-          pinyin: pinyinInfo.map(info => info.pinyin).join(' '),
-          separation: pinyinInfo.map(info => ({
-            main: info.origin,
-            pinyin: info.pinyin
-          }))
-        };
+    return tokens.map(word => {
+      const pinyinInfo = pinyin(word, {
+        toneType: toneType,
+        type: 'all'
       });
+
+      return {
+        origin: word,
+        pinyin: pinyinInfo.map(info => info.pinyin).join(' '),
+        separation: pinyinInfo.map(info => ({
+          main: info.origin,
+          pinyin: info.pinyin
+        }))
+      };
     });
   }
 
@@ -205,7 +207,7 @@ class Chinese {
     ipcMain.handle('queryHanzi', async (event, query) => {
       try {
         return this.queryHanziChinese(query);
-      } catch (e) {
+      } catch {
         return {}
       }
       // return searchKanji(KanjiDic.db, query);
@@ -215,7 +217,7 @@ class Chinese {
       const hanziFilePath = path.join(this.importBaseSVG, `${filename}`);
       try {
         return fs.readFileSync(hanziFilePath).toString();
-      } catch (e) {
+      } catch {
         return ''
       }
     })

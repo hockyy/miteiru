@@ -88,11 +88,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
 });
 
-contextBridge.exposeInMainWorld('shunou', {
+contextBridge.exposeInMainWorld('miteiruJapanese', {
   getFurigana: (sentence: string, mode: string) =>
-      ipcRenderer.invoke('shunou-getFurigana', sentence, mode),
+      ipcRenderer.invoke('miteiru-getFurigana', sentence, mode),
   processKuromojinToSeparations: (kuromojiEntries: any[]) =>
-      ipcRenderer.invoke('shunou-processKuromojinToSeparations', kuromojiEntries),
+      ipcRenderer.invoke('miteiru-processKuromojinToSeparations', kuromojiEntries),
 });
 
 export type IpcHandler = typeof handler

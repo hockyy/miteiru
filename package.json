@@ -2,7 +2,7 @@
   "private": true,
   "name": "miteiru",
   "description": "Miteiru",
-  "version": "6.0.1",
+  "version": "6.1.0",
   "author": "Hocky Yudhiono <hocky.yudhiono@gmail.com>",
   "main": "app/background.js",
   "homepage": "https://miteiru.hocky.id",
@@ -27,6 +27,7 @@
     "script:pack-language-assets": "node scripts/packLanguageAssets.js",
     "script:unpack-language-assets": "node scripts/unpackLanguageAssets.js",
     "script:wanikani": "node scripts/scrapeWanikaniKanji.js",
+    "test": "tsx --test \"tests/**/*.test.ts\"",
     "build:live-captions": "node scripts/buildLiveCaptionsBridge.js",
     "dev": "nextron --electron-options=\"--no-sandbox\"",
     "build": "nextron build",
@@ -76,12 +77,12 @@
     "react-svg": "^17.2.4",
     "react-video-seek-slider": "^8.0.4",
     "remark-gfm": "^4.0.1",
-    "shunou": "1.0.3",
     "styled-components": "^6.1.19",
     "to-jyutping": "^3.1.1",
     "uuid": "^14.0.0",
     "video.js": "^8.23.4",
-    "videojs-youtube": "^3.0.1"
+    "videojs-youtube": "^3.0.1",
+    "wanakana": "^5.3.1"
   },
   "devDependencies": {
     "@types/node": "^20.19.17",
@@ -105,6 +106,7 @@
     "react-dom": "^18.3.1",
     "tailwindcss": "^3.4.17",
     "ts-loader": "^9.5.4",
+    "tsx": "^4.22.4",
     "typescript": "^5.9.2",
     "webpack": "^5.101.3",
     "webpack-cli": "^5.1.4"

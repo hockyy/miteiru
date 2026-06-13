@@ -23,6 +23,7 @@ renderer/public/language-assets/vietnamese/vietnamese/**
 archived/**
 native/live-captions/bin/
 native/live-captions/obj/
+scripts/__pycache__/
 # Live captions bridge output (npm run build:live-captions); keep directory via .gitkeep
 resources/live-captions/MiteiruLiveCaptionsBridge*
 *.tsbuildinfo

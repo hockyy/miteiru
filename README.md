@@ -225,9 +225,9 @@ you can enjoy the app!
 By default, you are using whatever your default Mecab Dictionary offers you, but you can further
 customize this by modifying the `mecabrc` file which is located in `/opt/homebrew/etc/mecabrc` in
 MacOS, `C:\Program Files (x86)\MeCab\etc\mecabrc` in Windows, and `/etc/mecabrc` in Ubuntu. For
-other OS's you gotta figure it our for yourself right now. Shunou, Miteiru's microlibrary can
+other OS's you gotta figure it our for yourself right now. Miteiru's local Japanese analyzer can
 support Unidic, Jumandic, Ipadic, and it's variations. Specifically, if you check out the `dicrc`
-file of each dictionary, Shunou can support the output format `chamame`, `chasen`, and the classic
+file of each dictionary, Miteiru can support the output format `chamame`, `chasen`, and the classic
 Jumandic god knows what output format. You can
 get [UniDic files here](https://clrd.ninjal.ac.jp/unidic/en/)
 
