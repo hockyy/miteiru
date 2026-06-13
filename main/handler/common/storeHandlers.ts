@@ -6,7 +6,7 @@ type ElectronStore = {
 };
 let storePromise: Promise<ElectronStore> | undefined;
 
-const getStore = async () => {
+export const getStore = async () => {
   storePromise ??= Function("specifier", "return import(specifier)")("electron-store")
     .then(({default: Store}) => new Store()) as Promise<ElectronStore>;
   return storePromise;

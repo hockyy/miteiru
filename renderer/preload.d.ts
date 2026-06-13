@@ -20,6 +20,6 @@ declare global {
     ipc: IpcHandler;
     electronStore: any;
     electronAPI: ElectronApi;
-    shunou: any;
+    miteiruJapanese: any;
   }
 }

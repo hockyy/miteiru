@@ -79,7 +79,7 @@ const VocabSidebar = ({
     if (!tokenizedWord || !Array.isArray(tokenizedWord)) return null;
 
     if (lang === videoConstants.japaneseLang) {
-      // tokenizeMiteiru returns ShunouWordWithSeparations[] — objects, not renderable children
+      // tokenizeMiteiru returns Japanese token objects, not renderable children.
       return tokenizedWord.map((t) => t?.origin ?? '').join(' ');
     }
     if (lang === videoConstants.chineseLang || lang === videoConstants.cantoneseLang) {

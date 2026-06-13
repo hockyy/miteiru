@@ -124,6 +124,10 @@ export const startupChannelPluginIds: Record<string, string> = {
 
 export const getLanguagePlugin = (pluginId: string) => languagePlugins.find(({id}) => id === pluginId);
 
+export const getLanguagePluginByTokenizerMode = (tokenizerMode: string) => (
+  languagePlugins.find((plugin) => plugin.tokenizerMode === tokenizerMode)
+);
+
 export const loadLanguagePlugin = async (
   pluginId: string,
   context: LanguagePluginContext,

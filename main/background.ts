@@ -8,6 +8,9 @@ import Japanese from "./handler/japanese";
 import Chinese from "./handler/chinese";
 import Vietnamese from "./handler/vietnamese";
 import Learning from "./handler/learning";
+import {registerAnalyzerHandlers} from "./handler/languages/analyzerHandlers";
+import {startAnalyzerServer, AnalyzerServerHandle} from "./handler/languages/analyzerServer";
+import {getStore} from "./handler/common/storeHandlers";
 
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
@@ -54,7 +57,8 @@ if (!isProd) {
   await app.whenReady();
   registerYouTubeHeaderWorkaround();
   const appDataDirectory = app.getPath('userData');
-  let tokenizerCommand = 'mecab'
+  let tokenizerCommand = ''
+  let analyzerServer: AnalyzerServerHandle | null = null;
   const packageJsonPath = path.join(app.getAppPath(), 'package.json');
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath).toString());
 
@@ -62,6 +66,10 @@ if (!isProd) {
     tokenizerCommand = value;
   }
   const getTokenizer = () => tokenizerCommand;
+  const getToneType = async () => {
+    const store = await getStore();
+    return store.get('toneType', 'num') as string;
+  };
 
   const mainWindow = await createWindow('main', {
     width: 1000,
@@ -74,6 +82,7 @@ if (!isProd) {
 
   registerCommonHandlers(getTokenizer, packageJson, appDataDirectory);
   registerStartupHandlers(setTokenizer, appDataDirectory);
+  registerAnalyzerHandlers({getTokenizer, getToneType});
   Japanese.registerHandlers();
   Chinese.registerHandlers();
   Vietnamese.registerHandlers();
@@ -84,6 +93,14 @@ if (!isProd) {
 
   Learning.setup();
   Learning.registerHandler();
+
+  analyzerServer = await startAnalyzerServer({
+    appDataDirectory,
+    version: packageJson.version,
+    getTokenizer,
+    getToneType
+  });
+  console.log(`[AnalyzerServer] Listening on ${analyzerServer.registration.host}:${analyzerServer.registration.port}`);
 
   protocol.registerFileProtocol('miteiru', (request, callback) => {
     const url = request.url.replace('miteiru://', '');
@@ -99,6 +116,12 @@ if (!isProd) {
     const port = process.argv[2];
     await mainWindow.loadURL(`http://localhost:${port}/home`);
   }
+  app.on('before-quit', () => {
+    analyzerServer?.close().catch((error) => {
+      console.error("[AnalyzerServer] Failed to close:", error);
+    });
+    analyzerServer = null;
+  });
 })();
 
 app.on('window-all-closed', () => {

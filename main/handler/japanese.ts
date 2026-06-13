@@ -5,7 +5,7 @@ import path from "path";
 import {readJsonFile} from "../utils";
 import fs from "node:fs";
 import {getTokenizer} from "kuromojin";
-import {getFurigana, processKuromojinToSeparations} from "shunou";
+import {getFurigana, processKuromojinToSeparations, KuromojinWord} from "./languages/japaneseAnalysis";
 
 class Japanese {
 
@@ -27,6 +27,8 @@ class Japanese {
   static importDict: string;
   static importBaseSVG: string;
   static kuromojiDictPath: string;
+  static kuromojiTokenizer = null;
+  static kuromojiTokenizerPromise: Promise<any> | null = null;
 
   static getJapaneseSettings = (appDataDirectory, replacements: any = {}) => {
     return {
@@ -95,21 +97,37 @@ class Japanese {
   /**
    * TODO: Refactor this koakowakowakowko males bgt anjing
    */
-  static registerKuromoji() {
-    let tokenizer = null;
+  static async loadKuromojiTokenizer() {
     const dictionaryPath = [
       this.kuromojiDictPath,
       path.join(__dirname, 'language-assets/japanese/dict'),
       path.join(__dirname, 'dict')
     ].filter(Boolean).find((candidate) => fs.existsSync(candidate)) ?? path.join(__dirname, 'dict');
-    getTokenizer({dicPath: dictionaryPath}).then(loadedTokenizer => {
-      tokenizer = loadedTokenizer;
-    }).catch(e => {
+
+    this.kuromojiTokenizerPromise ??= getTokenizer({dicPath: dictionaryPath}).then(loadedTokenizer => {
+      this.kuromojiTokenizer = loadedTokenizer;
+      return loadedTokenizer;
+    });
+
+    return this.kuromojiTokenizerPromise;
+  }
+
+  static async tokenizeUsingKuromoji(sentence: string): Promise<KuromojinWord[]> {
+    const tokenizer = this.kuromojiTokenizer ?? await this.loadKuromojiTokenizer();
+    return tokenizer.tokenizeForSentence(sentence);
+  }
+
+  static processKuromojinToSeparations = processKuromojinToSeparations;
+
+  static getFurigana = getFurigana;
+
+  static registerKuromoji() {
+    this.loadKuromojiTokenizer().catch(e => {
       console.error(e)
     })
 
     ipcMain.handle('tokenizeUsingKuromoji', async (event, sentence) => {
-      return tokenizer.tokenizeForSentence(sentence);
+      return this.tokenizeUsingKuromoji(sentence);
     });
   }
 
@@ -183,11 +201,11 @@ class Japanese {
       }
     })
 
-    ipcMain.handle('shunou-getFurigana', async (event, sentence, mode) => {
+    ipcMain.handle('miteiru-getFurigana', async (event, sentence, mode) => {
       return getFurigana(sentence, mode);
     });
 
-    ipcMain.handle('shunou-processKuromojinToSeparations', async (event, kuromojiEntries) => {
+    ipcMain.handle('miteiru-processKuromojinToSeparations', async (event, kuromojiEntries) => {
       return processKuromojinToSeparations(kuromojiEntries);
     });
   }
