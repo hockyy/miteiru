@@ -192,6 +192,7 @@ function Video() {
   } = useMediaAnalysis(videoSrc.path);
   const liveCaptions = useLiveCaptions();
   const visibleLiveCaption = liveCaptions.caption.trim();
+  const hasVideo = Boolean(videoSrc.path && videoSrc.path !== '');
   const showPrimarySubtitle = useMemo(
       () => showPrimarySub && visibleLiveCaption.length === 0,
       [showPrimarySub, visibleLiveCaption]
@@ -279,31 +280,31 @@ function Video() {
     }
   }, [showTrackSelectionModal, showAudioReencodeModal, setIsPlaying]);
 
-  // Show Word of the Day when no media is loaded
-  if (!videoSrc.path || videoSrc.path === '') {
-    return (
+  return (
       <React.Fragment>
         <Head>
-          <title>Miteiru - Word of the Day</title>
+          <title>{hasVideo
+              ? getMiteiruVideoTitle(videoSrc.path, primarySub.path, secondarySub.path, showPrimarySub, showSecondarySub)
+              : "Miteiru - Word of the Day"}</title>
         </Head>
         <div>
           <Toast info={toastInfo}/>
           <MeaningBox meaning={meaning} setMeaning={setMeaning} tokenizeMiteiru={tokenizeMiteiru}
                       lang={lang} changeLearningState={changeLearningState}
                       getLearningState={getLearningState}/>
-          
-          {!isDailyWordsLoading && (
+
+          {!hasVideo && !isDailyWordsLoading && (
             <WordOfTheDay
-              dailyWords={dailyWords}
-              dateString={dateString}
-              lang={lang}
-              setMeaning={setMeaning}
-              tokenizeMiteiru={tokenizeMiteiru}
-              onRefresh={generateDailyWords}
+                dailyWords={dailyWords}
+                dateString={dateString}
+                lang={lang}
+                setMeaning={setMeaning}
+                tokenizeMiteiru={tokenizeMiteiru}
+                onRefresh={generateDailyWords}
             />
           )}
-          
-          {isDailyWordsLoading && (
+
+          {!hasVideo && isDailyWordsLoading && (
             <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
               <div className="text-center p-8 bg-white rounded-xl shadow-lg border-2 border-blue-200">
                 <div className="text-6xl mb-4">⏳</div>
@@ -313,25 +314,10 @@ function Video() {
             </div>
           )}
 
-          {/* Show dropzone for loading media */}
-          {tokenizerMode !== '' && <MiteiruDropzone onDrop={onLoadFiles} deltaTime={deltaTime}/>}
-        </div>
-      </React.Fragment>
-    );
-  }
+          {hasVideo && (
+            <VideoJS options={videoOptions} onReady={readyCallback} setCurrentTime={setCurrentTime} pitchValue={pitchValue}/>
+          )}
 
-  // Regular video interface when media is loaded
-  return (
-      <React.Fragment>
-        <Head>
-          <title>{getMiteiruVideoTitle(videoSrc.path, primarySub.path, secondarySub.path, showPrimarySub, showSecondarySub)}</title>
-        </Head>
-        <div>
-          <Toast info={toastInfo}/>
-          <MeaningBox meaning={meaning} setMeaning={setMeaning} tokenizeMiteiru={tokenizeMiteiru}
-                      lang={lang} changeLearningState={changeLearningState}
-                      getLearningState={getLearningState}/>
-          <VideoJS options={videoOptions} onReady={readyCallback} setCurrentTime={setCurrentTime} pitchValue={pitchValue}/>
           <div>
             <SubtitleDisplay
                 // Primary subtitle props
@@ -383,7 +369,7 @@ function Video() {
               onToggle={liveCaptions.toggle}
           />
           <div className={"flex flex-col justify-end bottom-0 z-[15] fixed"}>
-            {player && <VideoController
+            {hasVideo && player && <VideoController
                 isPlaying={isPlaying}
                 duration={duration}
                 changeTimeTo={changeTimeTo}

@@ -67,7 +67,7 @@ const WordOfTheDay: React.FC<WordOfTheDayProps> = ({
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 relative z-4">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="flex flex-col items-center justify-center max-w-6xl w-full gap-4">
         <DragIllustration />
         <p className="text-2xl text-gray-800 font-bold">Some learned words to review</p>
@@ -75,7 +75,7 @@ const WordOfTheDay: React.FC<WordOfTheDayProps> = ({
           {dailyWords.map((item, index) => (
             <div
               key={`${item.word}-${index}`}
-              className="bg-white rounded-xl p-6 shadow-lg border-2 border-gray-200 hover:border-blue-300 transition-all duration-300 cursor-pointer transform hover:scale-105 relative z-[17]"
+              className="bg-white rounded-xl p-6 shadow-lg border-2 border-gray-200 hover:border-blue-300 transition-all duration-300 cursor-pointer transform hover:scale-105"
               style={{
                 background: `linear-gradient(135deg, ${getColorGradient(item.updTime)}, white)`
               }}
