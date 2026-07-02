@@ -445,6 +445,7 @@ function Video() {
                  setAutoPause={setAutoPause}
                  learningPercentage={learningPercentage}
                  setLearningPercentage={setLearningPercentage} lang={lang} toneType={toneType}
+                 tokenizeMiteiru={tokenizeMiteiru}
                  setToneType={setToneType} subtitleMode={subtitleMode}
                  setSubtitleMode={setSubtitleMode}/>
         <VocabSidebar

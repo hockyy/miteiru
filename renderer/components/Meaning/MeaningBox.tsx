@@ -15,6 +15,13 @@ import {useStoreData} from "../../hooks/useStoreData";
 import {useUserNotes} from "../../hooks/useUserNotes";
 import {UserNotesSection} from "./UserNotesSection";
 import {TermImagesSection} from "./TermImagesSection";
+import {
+  buildDeckList,
+  createAnkiCardsForTerm,
+  safeAnkiFilename,
+  saveAnkiCards
+} from "./ankiExport";
+import {buildRubyHtmlFromRomajiedData, getMeaningEntries} from "./meaningEntries";
 
 const OutlinedStar = ({
                         color,
@@ -54,74 +61,6 @@ const initialCharacterContentState = {literal: null};
 
 const getStarColor = (learningState) => {
   return defaultLearningColorStyling.learningColor[learningState].color;
-};
-
-const escapeHtml = (value) => String(value ?? '')
-  .replace(/&/g, '&amp;')
-  .replace(/</g, '&lt;')
-  .replace(/>/g, '&gt;')
-  .replace(/"/g, '&quot;')
-  .replace(/'/g, '&#39;');
-
-const toAnkiTsvField = (value) => String(value ?? '')
-  .replace(/\r?\n/g, '<br>')
-  .replace(/\t/g, ' ');
-
-const normalizeStringArray = (value) => {
-  if (Array.isArray(value)) return value;
-  if (typeof value === 'string') return [value];
-  return [];
-};
-
-const uniqueNonEmpty = (values) => Array.from(new Set(
-  values
-    .map((value) => typeof value === 'string' ? value.trim() : '')
-    .filter(Boolean)
-));
-
-const buildHtmlList = (values) => {
-  const items = uniqueNonEmpty(values);
-  if (items.length === 0) return '';
-  return `<ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`;
-};
-
-const buildHtmlSection = (title, content) => {
-  if (!content) return '';
-  return `<div><strong>${escapeHtml(title)}</strong><br>${content}</div>`;
-};
-
-const getDictionaryDefinitions = (meaningContent, lang) => {
-  if (meaningContent?.sense) {
-    return meaningContent.sense.flatMap((sense) => (
-      sense?.gloss || []
-    ).map((gloss) => gloss?.text));
-  }
-
-  if (lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang || lang === videoConstants.vietnameseLang) {
-    return normalizeStringArray(meaningContent?.meaning);
-  }
-
-  return [];
-};
-
-const getReadingsFromRomajiedData = (romajiedData) => {
-  return uniqueNonEmpty(romajiedData.flatMap(({romajied}) => {
-    if (!Array.isArray(romajied)) return [];
-
-    return romajied.flatMap((token) => {
-      if (Array.isArray(token?.separation)) {
-        return token.separation.map((part) => (
-          part?.hiragana || part?.romaji || part?.pinyin || part?.jyutping || part?.meaning || ''
-        ));
-      }
-      return [token?.hiragana || token?.romaji || token?.pinyin || token?.jyutping || ''];
-    });
-  }));
-};
-
-const safeAnkiFilename = (term) => {
-  const safeTerm = String(term || 'card').replace(/[\\/:*?"<>|\s]+/g, '_').slice(0, 80);
-  return `miteiru_anki_${safeTerm || 'card'}.tsv`;
 };
 
 const MeaningBox = ({
@@ -334,37 +273,25 @@ Be concise, clear, and educational. Focus on practical usage.`
 
   const handleSaveAnkiCard = useCallback(async () => {
     try {
-      const userNote = getUserNote(meaning);
-      const dictionaryDefinitions = getDictionaryDefinitions(meaningContent, lang);
-      const readings = getReadingsFromRomajiedData(romajiedData);
-      const usageNote = userNote?.usageNote ? escapeHtml(userNote.usageNote) : '';
-      const examples = buildHtmlList(userNote?.examples || []);
-      const relatedTerms = buildHtmlList(userNote?.relatedTerms || []);
-
-      const front = [
-        `<div style="font-size: 2em;">${rubyHtmlContent || escapeHtml(meaning)}</div>`,
-        readings.length > 0 ? `<div>${escapeHtml(readings.join(' / '))}</div>` : ''
-      ].filter(Boolean).join('<br>');
-
-      const back = [
-        buildHtmlSection('Definitions', buildHtmlList(dictionaryDefinitions)),
-        buildHtmlSection('Usage Note', usageNote),
-        buildHtmlSection('Example Sentences', examples),
-        buildHtmlSection('Related Terms', relatedTerms)
-      ].filter(Boolean).join('<hr>');
-
-      const tags = uniqueNonEmpty(['miteiru', lang]).join(' ');
-      const ankiTsv = [front, back, tags].map(toAnkiTsvField).join('\t') + '\n';
-      const saved = await window.ipc.invoke("saveFile", ["tsv", "txt"], ankiTsv, safeAnkiFilename(meaning));
+      const cards = await createAnkiCardsForTerm({
+        term: meaning,
+        lang,
+        tokenizeMiteiru,
+        userNote: getUserNote(meaning),
+        meaningContent,
+        romajiedData,
+        rubyHtml: rubyHtmlContent
+      });
+      const saved = await saveAnkiCards(cards, safeAnkiFilename(meaning));
 
       if (saved) {
-        alert('Anki card TSV saved. Import it into Anki as tab-separated fields: Front, Back, Tags.');
+        alert(`Saved ${cards.length} Anki cards for ${buildDeckList(cards)}.`);
       }
     } catch (error) {
       console.error('Failed to save Anki card:', error);
       alert(`Failed to save Anki card: ${error.message}`);
     }
-  }, [getUserNote, lang, meaning, meaningContent, romajiedData, rubyHtmlContent]);
+  }, [getUserNote, lang, meaning, meaningContent, romajiedData, rubyHtmlContent, tokenizeMiteiru]);
 
   const handlePrevious = useCallback(() => {
     if (meaningIndex > 0) {
@@ -409,43 +336,9 @@ Be concise, clear, and educational. Focus on practical usage.`
     };
 
     const fetchMeaningData = async () => {
-      let entries = [];
+      const entries = await getMeaningEntries(meaning, lang);
       if (lang === videoConstants.japaneseLang) {
-        entries = await window.ipc.invoke('queryJapanese', meaning, 5);
-        entries.forEach(entry => {
-          entry.single = entry.kanji.length ? entry.kanji : [{text: meaning}];
-        });
         setTags(await window.ipc.invoke('japaneseTags'));
-      } else if (lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang) {
-        entries = await window.ipc.invoke('queryChinese', meaning, 5);
-        entries.forEach(entry => {
-          entry.single = entry.content.split('，').map(text => ({text}));
-        });
-      } else if (lang === videoConstants.vietnameseLang) {
-        entries = await window.ipc.invoke('queryVietnamese', meaning, 5);
-        entries.forEach(entry => {
-          // TODO i feel like single char can be mapped to meaning?
-          entry.single = entry.content.split(' ').map(text => ({text}));
-        });
-      }
-      if (entries.length === 0) {
-        if (lang === videoConstants.japaneseLang) {
-          entries.push({
-            id: "0",
-            single: [{text: meaning}],
-            sense: []
-          });
-        } else {
-          entries.push({
-            id: "0",
-            content: meaning,
-            simplified: meaning,
-            pinyin: [],
-            jyutping: [],
-            meaning: [],
-            single: [{text: meaning}]
-          })
-        }
       }
 
       setOtherMeanings(entries);
@@ -492,36 +385,7 @@ Be concise, clear, and educational. Focus on practical usage.`
       return;
     }
 
-    let rubyHtml = '';
-    romajiedData.forEach(({ romajied }) => {
-      if (Array.isArray(romajied)) {
-        romajied.forEach((token) => {
-          // Identify the language type at token level
-          const isChineseSentence = token.jyutping || token.pinyin;
-          const isJapaneseSentence = token.hiragana !== undefined;
-          const isVietnameseSentence = token.separation && !token.jyutping && !token.pinyin && !token.hiragana;
-
-          if (token.separation) {
-            // Process separated content (Japanese/Chinese/Vietnamese)
-            token.separation.forEach((part) => {
-              let reading = '';
-              if (isChineseSentence) {
-                reading = part.jyutping || part.pinyin || '';
-              } else if (isJapaneseSentence) {
-                reading = part.hiragana || part.romaji || '';
-              } else if (isVietnameseSentence) {
-                reading = part.meaning || '';
-              }
-              rubyHtml += `<ruby>${part.main}<rt>${reading}</rt></ruby>`;
-            });
-          } else {
-            // Fallback for non-separated content
-            rubyHtml += token.origin || token;
-          }
-        });
-      }
-    });
-    setRubyHtmlContent(rubyHtml);
+    setRubyHtmlContent(buildRubyHtmlFromRomajiedData(romajiedData));
   }, [romajiedData]);
 
   const renderRomajiedContent = useCallback(() => {

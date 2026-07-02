@@ -5,6 +5,11 @@ import React, { ReactNode, useCallback, useEffect, useState } from "react";
 import { isMixed, toRomaji } from "wanakana"
 import { v4 as uuidv4 } from 'uuid';
 
+const writeClipboardText = (value: string) => {
+  navigator.clipboard.writeText(value).catch((error) => {
+    console.warn('Failed to copy sentence text:', error);
+  });
+};
 
 const StyledSentence = styled.button<{ subtitleStyling: CJKStyling }>`
   ruby {
@@ -161,7 +166,7 @@ export const JapaneseSentence = ({
   }, [basicForm, getLearningStateClass, subtitleStyling]);
 
   const handleChange = useCallback((pressedString) => {
-    navigator.clipboard.writeText(pressedString);
+    writeClipboardText(pressedString);
     setMeaning(pressedString)
   }, [setMeaning]);
 
@@ -242,7 +247,7 @@ export const KanjiSentence = ({
   subtitleStyling,
 }: SentenceParam) => {
   const handleChange = useCallback((newWord) => {
-    navigator.clipboard.writeText(newWord);
+    writeClipboardText(newWord);
     setMeaning(newWord)
   }, [setMeaning]);
   return <>
@@ -284,7 +289,7 @@ export const HanziSentence = ({
   pinyin
 }: SentenceParam) => {
   const handleChange = useCallback((newWord) => {
-    navigator.clipboard.writeText(newWord);
+    writeClipboardText(newWord);
     setMeaning(newWord)
   }, [setMeaning]);
   return <>
@@ -323,7 +328,7 @@ export const ChineseSentence = ({
   getLearningStateClass = () => ''
 }: SentenceParam) => {
   const handleChange = useCallback((pressedString) => {
-    navigator.clipboard.writeText(pressedString);
+    writeClipboardText(pressedString);
     setMeaning(pressedString)
   }, [setMeaning]);
   const [learningClassName, setLearningClassName] = useState('');
@@ -405,7 +410,6 @@ export const ChineseSentence = ({
 
 
 export const TokenLikeSentence = ({
-  origin,
   setMeaning,
   extraClass,
   subtitleStyling,
@@ -413,7 +417,7 @@ export const TokenLikeSentence = ({
   separation
 }: SentenceParam) => {
   const handleChange = useCallback((newWord) => {
-    navigator.clipboard.writeText(newWord);
+    writeClipboardText(newWord);
     setMeaning(newWord)
   }, [setMeaning]);
   // Todo: Add space between the ruby between the maps only if index not the last

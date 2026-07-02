@@ -10,6 +10,13 @@ import {AwesomeButton} from "react-awesome-button";
 import {GistManager} from "../Data/GistManager";
 import {SubtitleMode} from "../../utils/utils";
 import {SidebarSection, SidebarSettingRow, SidebarShell} from "./SidebarShell";
+import {useUserNotes} from "../../hooks/useUserNotes";
+import {
+  buildDeckList,
+  createAnkiCardsForTerm,
+  safeAnkiAllFilename,
+  saveAnkiCards
+} from "../Meaning/ankiExport";
 
 export const StylingBox = ({
                              subtitleStyling,
@@ -391,9 +398,11 @@ export const Sidebar = ({
                           toneType,
                           setToneType,
                           lang,
+                          tokenizeMiteiru,
                           subtitleMode,
                           setSubtitleMode
                         }) => {
+  const {userNotes} = useUserNotes();
   const learningPercentageHandler = useCallback(event => {
     setLearningPercentage(parseFloat(event.target.value));
   }, [setLearningPercentage])
@@ -420,6 +429,39 @@ export const Sidebar = ({
       alert(`Failed to export HUF: ${error.message || 'Unknown error'}`);
     }
   }, [primarySub]);
+  const exportAllAnkiCardsHandler = useCallback(async () => {
+    try {
+      if (!lang) {
+        alert('Please select a language before exporting Anki cards.');
+        return;
+      }
+
+      const learningState = await window.ipc.invoke('loadLearningState', lang);
+      const terms = Object.keys(learningState || {}).filter(Boolean);
+      if (terms.length === 0) {
+        alert('No saved vocabulary found for this language.');
+        return;
+      }
+
+      const cards = [];
+      for (const term of terms) {
+        cards.push(...await createAnkiCardsForTerm({
+          term,
+          lang,
+          tokenizeMiteiru,
+          userNote: userNotes[term] || null
+        }));
+      }
+
+      const saved = await saveAnkiCards(cards, safeAnkiAllFilename(lang));
+      if (saved) {
+        alert(`Saved ${cards.length} Anki cards from ${terms.length} vocabulary terms for ${buildDeckList(cards)}.`);
+      }
+    } catch (error) {
+      console.error('Failed to export all Anki cards:', error);
+      alert(`Failed to export all Anki cards: ${error.message}`);
+    }
+  }, [lang, tokenizeMiteiru, userNotes]);
   return <SidebarShell
       showSidebar={showSidebar}
       setShowSidebar={setShowSidebar}
@@ -468,6 +510,13 @@ export const Sidebar = ({
                 lang={lang}/>
     </SidebarSection>
     <SidebarSection title="Cloud Sync">
+      <AwesomeButton
+          type={"secondary"}
+          className={"w-full"}
+          onPress={exportAllAnkiCardsHandler}
+      >
+        Export All Anki Cards
+      </AwesomeButton>
       <GistManager lang={lang}/>
     </SidebarSection>
   </SidebarShell>
