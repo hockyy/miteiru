@@ -8,7 +8,6 @@ import { useCacheManager } from "../hooks/useCacheManager";
 import 'react-awesome-button/dist/styles.css';
 import { AwesomeButton } from "react-awesome-button";
 import SmoothCollapse from "react-smooth-collapse";
-import Toggle from "../components/VideoPlayer/Toggle";
 
 const checkSymbol = ['❓', '✅', '🙃']
 
@@ -72,14 +71,10 @@ function Home() {
     check, 
     tokenizerMode, 
     setTokenizerMode,
-    isAutoLoading,
     isLoadingLanguage,
-    autoLoadEnabled,
-    setAutoLoadEnabled,
     languageModes,
     ableToProceedToVideo,
-    handleLanguageButtonClick,
-    performAutoLoad
+    handleLanguageButtonClick
   } = useLanguageLoader();
   const { mecab, setMecab, isRemovingCache, handleSelectMecabPath, handleRemoveCache } = useCacheManager();
 
@@ -88,11 +83,11 @@ function Home() {
   const [liveCaptionsSupported, setLiveCaptionsSupported] = useState(false);
   const [liveCaptionsChecked, setLiveCaptionsChecked] = useState(false);
 
-  // Auto-load last language on startup and check media tools
+  // Check media tools and live captions support on startup.
   useEffect(() => {
     let mounted = true; // Prevent state updates if component unmounts
     
-    const autoLoad = async () => {
+    const initializeHome = async () => {
       if (!mounted) return;
       
       // Check media tools availability on startup
@@ -112,18 +107,14 @@ function Home() {
         setLiveCaptionsChecked(true);
       });
       
-      if (!mounted) return;
-      
-      // Perform language auto-loading
-      await performAutoLoad();
     };
 
-    autoLoad();
+    initializeHome();
     
     return () => {
       mounted = false;
     };
-  }, [checkMediaTools, performAutoLoad]);
+  }, [checkMediaTools]);
 
   // Handle cache removal with state updates
   const handleRemoveCacheWithState = useCallback(async () => {
@@ -135,24 +126,6 @@ function Home() {
     const result = await handleRemoveCache();
     setCacheCheck(result);
   }, [handleRemoveCache]);
-
-  const setAutoLoadEnabledHandler = useCallback((val: boolean) => {
-    setAutoLoadEnabled(val);
-  }, [setAutoLoadEnabled]);
-  if (isAutoLoading) {
-    return (
-      <React.Fragment>
-        <Head>
-          <title>Miteiru v{miteiruVersion}</title>
-        </Head>
-        <div className={"flex flex-col justify-center items-center bg-white min-h-screen w-[100vw]"}>
-          <div className={"flex flex-col h-fit items-center bg-blue-50 gap-4 w-full md:w-4/5 p-5 rounded-lg border-blue-800 border-2"}>
-            <div className={'text-4xl text-black font-bold'}>Loading Miteiru...</div>
-          </div>
-        </div>
-      </React.Fragment>
-    );
-  }
 
   return (
     <React.Fragment>
@@ -239,7 +212,7 @@ function Home() {
                 </div>
               </SmoothCollapse>
 
-              <div className="mt-4 flex flex-col gap-4 overflow-visible md:flex-row md:items-center md:justify-between">
+              <div className="mt-4 flex flex-col gap-4 overflow-visible md:flex-row md:items-center">
                 <ButtonWrap>
                   <AwesomeButton
                     type={'primary'}
@@ -254,12 +227,6 @@ function Home() {
                     )}
                   </AwesomeButton>
                 </ButtonWrap>
-                <div className={'flex flex-row gap-4 items-center'}>
-                  <Toggle isChecked={autoLoadEnabled} onChange={setAutoLoadEnabledHandler} />
-                  <label htmlFor="autoLoadCheckbox" className={'text-gray-700 cursor-pointer select-none'}>
-                    🔄 Auto-load last language on startup
-                  </label>
-                </div>
               </div>
             </HomeCard>
 
