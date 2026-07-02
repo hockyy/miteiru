@@ -64,12 +64,13 @@ export function registerBasicHandlers({
     return "";
   });
 
-  ipcMain.handle("saveFile", async (event, allowed, saveData: string) => {
+  ipcMain.handle("saveFile", async (event, allowed, saveData: string, defaultPath?: string) => {
     const {
       filePath,
       canceled
     } = await dialog.showSaveDialog({
       properties: ["createDirectory"],
+      defaultPath,
       filters: [{
         name: "Allowed Extensions",
         extensions: allowed
@@ -77,11 +78,11 @@ export function registerBasicHandlers({
     }).then();
 
     if (filePath && !canceled) {
-      fs.writeFile(filePath, saveData, (err) => {
-        if (err) throw err;
-        console.info("The file has been saved!");
-      });
+      await fsPromises.writeFile(filePath, saveData, "utf8");
+      console.info("The file has been saved!");
+      return true;
     }
+    return false;
   });
 
   ipcMain.handle("removeDictCache", () => {
@@ -113,7 +114,7 @@ export function registerBasicHandlers({
       try {
         await access(subtitleFilePath);
         availableSubs.push(subtitleFilePath);
-      } catch (error) {
+      } catch {
         // Subtitle file does not exist, continue to the next extension
       }
     }

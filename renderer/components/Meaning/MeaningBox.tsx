@@ -56,6 +56,74 @@ const getStarColor = (learningState) => {
   return defaultLearningColorStyling.learningColor[learningState].color;
 };
 
+const escapeHtml = (value) => String(value ?? '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
+const toAnkiTsvField = (value) => String(value ?? '')
+  .replace(/\r?\n/g, '<br>')
+  .replace(/\t/g, ' ');
+
+const normalizeStringArray = (value) => {
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string') return [value];
+  return [];
+};
+
+const uniqueNonEmpty = (values) => Array.from(new Set(
+  values
+    .map((value) => typeof value === 'string' ? value.trim() : '')
+    .filter(Boolean)
+));
+
+const buildHtmlList = (values) => {
+  const items = uniqueNonEmpty(values);
+  if (items.length === 0) return '';
+  return `<ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`;
+};
+
+const buildHtmlSection = (title, content) => {
+  if (!content) return '';
+  return `<div><strong>${escapeHtml(title)}</strong><br>${content}</div>`;
+};
+
+const getDictionaryDefinitions = (meaningContent, lang) => {
+  if (meaningContent?.sense) {
+    return meaningContent.sense.flatMap((sense) => (
+      sense?.gloss || []
+    ).map((gloss) => gloss?.text));
+  }
+
+  if (lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang || lang === videoConstants.vietnameseLang) {
+    return normalizeStringArray(meaningContent?.meaning);
+  }
+
+  return [];
+};
+
+const getReadingsFromRomajiedData = (romajiedData) => {
+  return uniqueNonEmpty(romajiedData.flatMap(({romajied}) => {
+    if (!Array.isArray(romajied)) return [];
+
+    return romajied.flatMap((token) => {
+      if (Array.isArray(token?.separation)) {
+        return token.separation.map((part) => (
+          part?.hiragana || part?.romaji || part?.pinyin || part?.jyutping || part?.meaning || ''
+        ));
+      }
+      return [token?.hiragana || token?.romaji || token?.pinyin || token?.jyutping || ''];
+    });
+  }));
+};
+
+const safeAnkiFilename = (term) => {
+  const safeTerm = String(term || 'card').replace(/[\\/:*?"<>|\s]+/g, '_').slice(0, 80);
+  return `miteiru_anki_${safeTerm || 'card'}.tsv`;
+};
+
 const MeaningBox = ({
                       meaning,
                       setMeaning,
@@ -240,7 +308,7 @@ Be concise, clear, and educational. Focus on practical usage.`
         const jsonMatch = content.match(/```json\n?([\s\S]*?)\n?```/) || content.match(/\{[\s\S]*\}/);
         const jsonStr = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : content;
         noteData = JSON.parse(jsonStr);
-      } catch (e) {
+      } catch {
         // If not JSON, create a structured response from the text
         noteData = {
           usageNote: content,
@@ -263,6 +331,40 @@ Be concise, clear, and educational. Focus on practical usage.`
       setIsGeneratingNote(false);
     }
   }, [meaning, lang, openRouterApiKey, openRouterModel, setUserNote]);
+
+  const handleSaveAnkiCard = useCallback(async () => {
+    try {
+      const userNote = getUserNote(meaning);
+      const dictionaryDefinitions = getDictionaryDefinitions(meaningContent, lang);
+      const readings = getReadingsFromRomajiedData(romajiedData);
+      const usageNote = userNote?.usageNote ? escapeHtml(userNote.usageNote) : '';
+      const examples = buildHtmlList(userNote?.examples || []);
+      const relatedTerms = buildHtmlList(userNote?.relatedTerms || []);
+
+      const front = [
+        `<div style="font-size: 2em;">${rubyHtmlContent || escapeHtml(meaning)}</div>`,
+        readings.length > 0 ? `<div>${escapeHtml(readings.join(' / '))}</div>` : ''
+      ].filter(Boolean).join('<br>');
+
+      const back = [
+        buildHtmlSection('Definitions', buildHtmlList(dictionaryDefinitions)),
+        buildHtmlSection('Usage Note', usageNote),
+        buildHtmlSection('Example Sentences', examples),
+        buildHtmlSection('Related Terms', relatedTerms)
+      ].filter(Boolean).join('<hr>');
+
+      const tags = uniqueNonEmpty(['miteiru', lang]).join(' ');
+      const ankiTsv = [front, back, tags].map(toAnkiTsvField).join('\t') + '\n';
+      const saved = await window.ipc.invoke("saveFile", ["tsv", "txt"], ankiTsv, safeAnkiFilename(meaning));
+
+      if (saved) {
+        alert('Anki card TSV saved. Import it into Anki as tab-separated fields: Front, Back, Tags.');
+      }
+    } catch (error) {
+      console.error('Failed to save Anki card:', error);
+      alert(`Failed to save Anki card: ${error.message}`);
+    }
+  }, [getUserNote, lang, meaning, meaningContent, romajiedData, rubyHtmlContent]);
 
   const handlePrevious = useCallback(() => {
     if (meaningIndex > 0) {
@@ -393,7 +495,7 @@ Be concise, clear, and educational. Focus on practical usage.`
     let rubyHtml = '';
     romajiedData.forEach(({ romajied }) => {
       if (Array.isArray(romajied)) {
-        romajied.forEach((token, tokenIndex) => {
+        romajied.forEach((token) => {
           // Identify the language type at token level
           const isChineseSentence = token.jyutping || token.pinyin;
           const isJapaneseSentence = token.hiragana !== undefined;
@@ -450,6 +552,12 @@ Be concise, clear, and educational. Focus on practical usage.`
       )
   ), [getLearningState, changeLearningState, handleStarClick, meaning]);
 
+  const renderAnkiButton = useCallback(() => (
+      <AwesomeButton type="secondary" size="small" onPress={handleSaveAnkiCard}>
+        Save Anki Card
+      </AwesomeButton>
+  ), [handleSaveAnkiCard]);
+
   const memoizedCustomComponent = useMemo(() => customComponent, [customComponent]);
 
   const memoizedCharacterContent = useMemo(() => {
@@ -493,6 +601,7 @@ Be concise, clear, and educational. Focus on practical usage.`
                 {renderSpeakButton()}
                 {renderRomajiedContent()}
                 {renderStarButton()}
+                {renderAnkiButton()}
               </div>
               <AwesomeButton type="primary" disabled={meaningIndex === otherMeanings.length - 1}
                              onPress={handleNext}>
