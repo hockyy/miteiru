@@ -66,6 +66,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   ensureDir: (dirPath: string) => ipcRenderer.invoke('ensure-dir', dirPath),
   writeFile: (filePath: string, content: string) => ipcRenderer.invoke('write-file', filePath, content),
   openPath: (pathToOpen: string) => ipcRenderer.invoke('open-path', pathToOpen),
+  showItemInFolder: (filePath: string) => ipcRenderer.invoke('show-item-in-folder', filePath),
+  revealAnkiImport: (content: string, filename: string) =>
+      ipcRenderer.invoke('reveal-anki-import', content, filename),
   checkFile: (filePath: string) => ipcRenderer.invoke('check-file', filePath),
 
   // Update the Gist-related methods to include the token

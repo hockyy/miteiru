@@ -18,8 +18,8 @@ import {TermImagesSection} from "./TermImagesSection";
 import {
   buildDeckList,
   createAnkiCardsForTerm,
+  openAnkiCards,
   safeAnkiFilename,
-  saveAnkiCards
 } from "./ankiExport";
 import {buildRubyHtmlFromRomajiedData, getMeaningEntries} from "./meaningEntries";
 import {CopyButton} from "../Utils/CopyButton";
@@ -294,7 +294,7 @@ Be concise, clear, and educational. Focus on practical usage.`
     }
   }, [meaning, lang, openRouterApiKey, openRouterModel, setUserNote]);
 
-  const handleSaveAnkiCard = useCallback(async () => {
+  const handleOpenAnkiCard = useCallback(async () => {
     try {
       const cards = await createAnkiCardsForTerm({
         term: meaning,
@@ -305,14 +305,29 @@ Be concise, clear, and educational. Focus on practical usage.`
         romajiedData,
         rubyHtml: rubyHtmlContent
       });
-      const saved = await saveAnkiCards(cards, safeAnkiFilename(meaning));
+      const result = await openAnkiCards(cards, safeAnkiFilename(meaning));
 
-      if (saved) {
-        alert(`Saved ${cards.length} Anki cards for ${buildDeckList(cards)}.`);
+      if (result.canceled) {
+        return;
+      }
+
+      const deckList = buildDeckList(cards);
+      if (result.ankiLaunched) {
+        alert(
+          `Opened ${cards.length} Anki card${cards.length === 1 ? '' : 's'} (${deckList}).\n\nIn Anki: File → Import → select:\n${result.filePath}`,
+        );
+      } else if (result.openedFolderOnly) {
+        alert(
+          `Import file ready (${deckList}).\n\nIts folder was opened — select the file for Anki import:\n${result.filePath}`,
+        );
+      } else {
+        alert(
+          `Import file ready (${deckList}).\n\nHighlighted in your file manager. In Anki: File → Import → select:\n${result.filePath}`,
+        );
       }
     } catch (error) {
-      console.error('Failed to save Anki card:', error);
-      alert(`Failed to save Anki card: ${error.message}`);
+      console.error('Failed to open Anki card:', error);
+      alert(`Failed to open Anki card: ${error.message}`);
     }
   }, [getUserNote, lang, meaning, meaningContent, romajiedData, rubyHtmlContent, tokenizeMiteiru]);
 
@@ -440,10 +455,10 @@ Be concise, clear, and educational. Focus on practical usage.`
   ), [getLearningState, changeLearningState, handleStarClick, meaning]);
 
   const renderAnkiButton = useCallback(() => (
-      <AwesomeButton type="secondary" size="small" onPress={handleSaveAnkiCard}>
-        Save Anki Card
+      <AwesomeButton type="secondary" size="small" onPress={handleOpenAnkiCard}>
+        Open in Anki
       </AwesomeButton>
-  ), [handleSaveAnkiCard]);
+  ), [handleOpenAnkiCard]);
 
   const memoizedCustomComponent = useMemo(() => customComponent, [customComponent]);
 

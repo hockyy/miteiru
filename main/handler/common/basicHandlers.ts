@@ -8,6 +8,7 @@ import Chinese from "../chinese";
 import Vietnamese from "../vietnamese";
 import {videoConstants} from "../../../renderer/utils/constants";
 import {RegisterCommonHandlersArgs} from "./types";
+import {revealAnkiImportFile} from "../../helpers/ankiImportReveal";
 
 const isArrayEndsWithMatcher = (filePath, arrayMatcher) => {
   for (const videoFormat of arrayMatcher) {
@@ -197,12 +198,31 @@ export function registerBasicHandlers({
 
   ipcMain.handle("open-path", async (event, pathToOpen) => {
     try {
-      await shell.openPath(pathToOpen);
-      return true;
+      const errorMessage = await shell.openPath(pathToOpen);
+      if (errorMessage) {
+        console.error("Error opening path:", errorMessage);
+        return { ok: false, error: errorMessage };
+      }
+      return { ok: true };
     } catch (error) {
       console.error("Error opening path:", error);
-      return false;
+      return { ok: false, error: error instanceof Error ? error.message : String(error) };
     }
+  });
+
+  ipcMain.handle("show-item-in-folder", async (event, filePath) => {
+    try {
+      shell.showItemInFolder(filePath);
+      return { ok: true };
+    } catch (error) {
+      console.error("Error revealing file in folder:", error);
+      return { ok: false, error: error instanceof Error ? error.message : String(error) };
+    }
+  });
+
+  /** Write Anki TSV to user-data/anki, reveal in folder, and launch Anki when installed. */
+  ipcMain.handle("reveal-anki-import", async (event, content: string, filename: string) => {
+    return revealAnkiImportFile(appDataDirectory, content, filename);
   });
 
   ipcMain.handle("check-file", async (event, filePath) => {

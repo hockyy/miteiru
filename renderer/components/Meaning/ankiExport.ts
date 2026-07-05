@@ -146,7 +146,7 @@ const previewHtml = (value) => String(value ?? '')
   .replace(/\n{3,}/g, '\n\n')
   .trim();
 
-const buildAnkiPreview = (cards) => {
+const buildAnkiPreview = (cards, mode = 'save') => {
   const previewCards = cards.slice(0, 4).map((card, index) => [
     `Card ${index + 1}`,
     `Deck: ${card.deckName}`,
@@ -160,13 +160,17 @@ const buildAnkiPreview = (cards) => {
     ? `\n\n...and ${cards.length - previewCards.length} more cards.`
     : '';
 
+  const footer = mode === 'open'
+    ? 'Press OK to save the import file, reveal it in your file manager, and open Anki if installed.'
+    : 'Press OK to choose where to save, or Cancel to stop.';
+
   return [
     `Export ${cards.length} Anki card${cards.length === 1 ? '' : 's'}?`,
     '',
     previewCards.join('\n\n---\n\n'),
     remaining,
     '',
-    'Press OK to choose where to save, or Cancel to stop.'
+    footer,
   ].join('\n');
 };
 
@@ -174,6 +178,76 @@ export const safeAnkiAllFilename = (lang) => {
   const safeLang = String(lang || 'cards').replace(/[\\/:*?"<>|\s]+/g, '_');
   return `miteiru_anki_${safeLang}_all.tsv`;
 };
+
+export const safeAnkiSentenceFilename = (sentence) => {
+  const snippet = String(sentence || 'sentence').replace(/[\\/:*?"<>|\s]+/g, '_').slice(0, 40);
+  return `miteiru_anki_sentence_${snippet || 'sentence'}.tsv`;
+};
+
+const getSentenceAnkiCardId = (sentence, lang) => {
+  const source = [
+    lang,
+    String(sentence).normalize('NFKC').trim(),
+    'sentence-hard',
+  ].join('\u001f');
+
+  return `miteiru:${lang || 'unknown'}:${uuidv5(`https://miteiru.hocky.id/anki/${source}`, uuidv5.URL)}`;
+};
+
+export const buildSentenceAnkiFrontHtml = (frontText) =>
+  `<div style="font-size: 2em;">${escapeHtml(frontText)}</div>`;
+
+export const buildSentenceAnkiBackHtml = ({
+  rubyHtml,
+  translation,
+  note,
+}) => [
+  rubyHtml ? `<div style="font-size: 1.6em;">${rubyHtml}</div>` : '',
+  buildHtmlSection('Translation', escapeHtml(translation)),
+  buildHtmlSection('Note', escapeHtml(note)),
+].filter(Boolean).join('<hr>');
+
+export const createInitialSentenceAnkiDraft = ({
+  sourceSentence,
+  lang,
+  rubyHtml,
+  translation,
+  note,
+}) => {
+  const languageName = getLanguageDisplayName(lang);
+  return {
+    sourceSentence,
+    frontText: sourceSentence,
+    rubyHtml,
+    translation,
+    note,
+    lang,
+    deckName: `Miteiru::${languageName}::Hard`,
+    cardId: getSentenceAnkiCardId(sourceSentence, lang),
+  };
+};
+
+export const createSentenceAnkiCardFromDraft = (draft) => ({
+  cardId: draft.cardId,
+  front: buildSentenceAnkiFrontHtml(draft.frontText),
+  back: buildSentenceAnkiBackHtml(draft),
+  deckName: draft.deckName,
+  tags: uniqueNonEmpty(['miteiru', draft.lang, 'sentence', 'hard']).join(' '),
+});
+
+export const createSentenceAnkiCard = ({
+  sentence,
+  lang,
+  rubyHtml,
+  translation,
+  note,
+}) => createSentenceAnkiCardFromDraft(createInitialSentenceAnkiDraft({
+  sourceSentence: sentence,
+  lang,
+  rubyHtml,
+  translation,
+  note,
+}));
 
 export const createAnkiCardsForTerm = async ({
   term,
@@ -199,12 +273,33 @@ export const createAnkiCardsForTerm = async ({
 };
 
 export const saveAnkiCards = async (cards, defaultPath) => {
-  if (!window.confirm(buildAnkiPreview(cards))) {
+  if (!window.confirm(buildAnkiPreview(cards, 'save'))) {
     return false;
   }
 
   const ankiTsv = buildAnkiImportFile(cards);
   return await window.ipc.invoke("saveFile", ["tsv", "txt"], ankiTsv, defaultPath);
+};
+
+/** Writes TSV to user-data/anki, reveals it in the file manager, and launches Anki when found. */
+export const openAnkiCards = async (cards, filename) => {
+  if (!window.confirm(buildAnkiPreview(cards, 'open'))) {
+    return { ok: false, canceled: true };
+  }
+
+  const ankiTsv = buildAnkiImportFile(cards);
+  const result = await window.electronAPI.revealAnkiImport(ankiTsv, filename);
+
+  if (!result?.ok) {
+    throw new Error(result?.error || 'Could not prepare Anki import file.');
+  }
+
+  return {
+    ok: true,
+    filePath: result.filePath,
+    ankiLaunched: Boolean(result.ankiLaunched),
+    openedFolderOnly: Boolean(result.openedFolderOnly),
+  };
 };
 
 export const buildDeckList = (cards) => uniqueNonEmpty(cards.map((card) => card.deckName)).join(', ');
