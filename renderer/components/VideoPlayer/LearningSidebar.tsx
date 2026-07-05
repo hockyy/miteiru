@@ -1,4 +1,10 @@
-import React, {useState} from "react";
+/**
+ * Learning settings sidebar (Ctrl+X on /learn).
+ * OpenRouter key + model feed hooks/useAiTranslation.ts and hooks/useSentenceAnalysis.ts
+ * via useStoreData('openrouter.apiKey' | 'openrouter.model').
+ */
+import React, {useCallback, useEffect, useMemo, useState} from "react";
+import {AwesomeButton} from "react-awesome-button";
 import {defaultLearningStyling} from "../../utils/CJKStyling";
 import {StylingBox} from "./Sidebar";
 import {useStoreData} from "../../hooks/useStoreData";
@@ -12,10 +18,25 @@ export const LearningSidebar = ({
                                   lang
                                 }) => {
   const [openRouterApiKey, setOpenRouterApiKey] = useStoreData('openrouter.apiKey', '');
-  const [openRouterModel, setOpenRouterModel] = useStoreData('openrouter.model', 'anthropic/claude-3.5-sonnet');
+  const [openRouterModel, setOpenRouterModel] = useStoreData('openrouter.model', 'z-ai/glm-5.2:nitro');
+  const [modelDraft, setModelDraft] = useState(openRouterModel);
   const [googleVisionApiKey, setGoogleVisionApiKey] = useStoreData('google.vision.apiKey', '');
   const [showApiKey, setShowApiKey] = useState(false);
   const [showGoogleApiKey, setShowGoogleApiKey] = useState(false);
+
+  useEffect(() => {
+    setModelDraft(openRouterModel);
+  }, [openRouterModel]);
+
+  // Model field edits draft only; persist on Save (API key still saves immediately)
+  const handleSaveModel = useCallback(() => {
+    setOpenRouterModel(modelDraft.trim());
+  }, [modelDraft, setOpenRouterModel]);
+
+  const modelHasUnsavedChanges = useMemo(
+    () => modelDraft.trim() !== openRouterModel,
+    [modelDraft, openRouterModel],
+  );
 
   return <SidebarShell
       showSidebar={showSidebar}
@@ -27,13 +48,23 @@ export const LearningSidebar = ({
     <SidebarSection title="OpenRouter AI">
       <div className="flex flex-col gap-2">
         <label className="text-sm">Model</label>
-        <input
-          type="text"
-          placeholder="e.g., anthropic/claude-3.5-sonnet"
-          value={openRouterModel}
-          onChange={(e) => setOpenRouterModel(e.target.value)}
-          className="p-2 border rounded text-black"
-        />
+        <div className="flex flex-row gap-2 items-center">
+          <input
+            type="text"
+            placeholder="e.g., z-ai/glm-5.2:nitro"
+            value={modelDraft}
+            onChange={(e) => setModelDraft(e.target.value)}
+            className="flex-grow p-2 border rounded text-black"
+          />
+          <AwesomeButton
+            type="primary"
+            size="small"
+            onPress={handleSaveModel}
+            disabled={!modelHasUnsavedChanges || !modelDraft.trim()}
+          >
+            Save
+          </AwesomeButton>
+        </div>
       </div>
       <div className="flex flex-col gap-2">
         <label className="text-sm">API Key</label>

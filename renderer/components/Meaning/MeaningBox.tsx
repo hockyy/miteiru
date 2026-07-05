@@ -22,6 +22,7 @@ import {
   saveAnkiCards
 } from "./ankiExport";
 import {buildRubyHtmlFromRomajiedData, getMeaningEntries} from "./meaningEntries";
+import {CopyButton} from "../Utils/CopyButton";
 
 const OutlinedStar = ({
                         color,
@@ -91,7 +92,7 @@ const MeaningBox = ({
   } = useSpeech();
   const [selectedVoice,] = useStoreData('tts.option.voice', '');
   const [openRouterApiKey] = useStoreData('openrouter.apiKey', '');
-  const [openRouterModel] = useStoreData('openrouter.model', 'anthropic/claude-3.5-sonnet');
+  const [openRouterModel] = useStoreData('openrouter.model', 'z-ai/glm-5.2:nitro');
   
   const {
     getUserNote,
@@ -109,6 +110,30 @@ const MeaningBox = ({
     }
   }, [speaking, stop, speak, meaning, lang, selectedVoice]);
 
+  const handleCopyWord = useCallback(async () => {
+    // Plain term — same as W shortcut
+    if (!meaning) {
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(meaning);
+    } catch (error) {
+      console.error('Failed to copy word:', error);
+    }
+  }, [meaning]);
+
+  const handleCopyRuby = useCallback(async () => {
+    // HTML ruby string built below from romajiedData — same as Shift+W
+    if (!rubyHtmlContent) {
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(rubyHtmlContent);
+    } catch (error) {
+      console.error('Failed to copy ruby content:', error);
+    }
+  }, [rubyHtmlContent]);
+
   // Handle keyboard shortcuts for copying (only when meaning box is open)
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -121,14 +146,12 @@ const MeaningBox = ({
       // W - Copy plain word (no modifiers)
       if (event.code === 'KeyW' && !event.ctrlKey && !event.shiftKey && !event.altKey) {
         event.preventDefault();
-        navigator.clipboard.writeText(meaning);
+        handleCopyWord();
       }
       // Shift+W - Copy word with ruby
       else if (event.code === 'KeyW' && event.shiftKey && !event.ctrlKey && !event.altKey) {
         event.preventDefault();
-        if (rubyHtmlContent) {
-          navigator.clipboard.writeText(rubyHtmlContent);
-        }
+        handleCopyRuby();
       }
     };
 
@@ -136,7 +159,7 @@ const MeaningBox = ({
       window.addEventListener('keydown', handleKeyDown);
       return () => window.removeEventListener('keydown', handleKeyDown);
     }
-  }, [meaning, rubyHtmlContent, meaningContent.single.length]);
+  }, [handleCopyRuby, handleCopyWord, meaningContent.single.length]);
 
 
   const renderSpeakButton = useCallback(() => (
@@ -378,7 +401,7 @@ Be concise, clear, and educational. Focus on practical usage.`
     if (meaningContent.single.length) fetchRomajiedData();
   }, [lang, meaning, meaningContent, tokenizeMiteiru]);
 
-  // Generate ruby HTML for copying
+  // Build <ruby> HTML for Shift+W / "Copy with reading" (see handleCopyRuby)
   useEffect(() => {
     if (romajiedData.length === 0) {
       setRubyHtmlContent('');
@@ -481,6 +504,18 @@ Be concise, clear, and educational. Focus on practical usage.`
                 <div><kbd className="px-2 py-1 bg-white border border-blue-300 rounded">W</kbd> - Copy current word: <span className="font-mono text-purple-700">{meaning}</span></div>
                 <div><kbd className="px-2 py-1 bg-white border border-blue-300 rounded">Shift+W</kbd> - Copy word with reading (ruby HTML format)</div>
                 <div className="text-xs text-blue-600 mt-1">💡 Tip: <kbd className="px-2 py-1 bg-white border border-blue-300 rounded">Ctrl+G</kbd> copies the full sentence with ruby</div>
+              </div>
+              <div className="flex flex-wrap gap-2 mt-3">
+                <CopyButton
+                  text={meaning}
+                  label="Copy word"
+                  className="border-blue-300 bg-white text-blue-800 hover:bg-blue-100"
+                />
+                <CopyButton
+                  text={rubyHtmlContent}
+                  label="Copy with reading"
+                  className="border-blue-300 bg-white text-blue-800 hover:bg-blue-100"
+                />
               </div>
             </div>
             
