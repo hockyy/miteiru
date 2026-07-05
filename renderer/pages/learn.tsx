@@ -22,11 +22,16 @@ import {FaVolumeUp} from 'react-icons/fa';
 import useSpeech from "../hooks/useSpeech";
 import {AITranslationPanel} from "../components/Learn/AITranslationPanel";
 import {AIAnalysisPanel} from "../components/Learn/AIAnalysisPanel";
+import {AnkiCardBuilderPanel} from "../components/Learn/AnkiCardBuilderPanel";
 // Learn AI wiring: translation (left) → useAiTranslation | analysis (right) → useSentenceAnalysis
 // OpenRouter key/model: LearningSidebar.tsx | OCR (unused here): components/Utils/ImageOCR.tsx
 import {useSentenceAnalysis} from "../hooks/useSentenceAnalysis";
+import {useSentenceAnki} from "../hooks/useSentenceAnki";
 import {splitIntoLines} from "../utils/textUtils";
 import {speechLanguageCodes} from "../languages/manifest";
+import useLiveCaptions from "../hooks/useLiveCaptions";
+import {LiveCaptionOverlay} from "../components/Subtitle/LiveCaptionOverlay";
+import {LearnLiveCaptionControl} from "../components/Learn/LearnLiveCaptionControl";
 
 function Learn() {
   const {
@@ -154,6 +159,42 @@ function Learn() {
     analyzeSentence,
     clearAnalysis,
   } = useSentenceAnalysis({ openRouterApiKey, openRouterModel, lang });
+  const {
+    draft: ankiDraft,
+    errorMessage: ankiErrorMessage,
+    isBuilding: isBuildingAnkiCard,
+    isOpening: isOpeningAnkiCard,
+    openStatusMessage: ankiOpenStatusMessage,
+    hasAnkiBuilderPanel,
+    buildAnkiCard,
+    updateDraft: updateAnkiDraft,
+    openAnkiCard,
+    clearAnkiCard,
+  } = useSentenceAnki({ openRouterApiKey, openRouterModel, lang, tokenizeMiteiru });
+
+  const hasBottomPanel = hasAnalysisPanel || hasAnkiBuilderPanel;
+
+  const handleAnalyzeSentence = useCallback(() => {
+    clearAnkiCard();
+    analyzeSentence(directInput);
+  }, [analyzeSentence, clearAnkiCard, directInput]);
+
+  const handleBuildAnkiCard = useCallback(() => {
+    clearAnalysis();
+    buildAnkiCard(directInput);
+  }, [buildAnkiCard, clearAnalysis, directInput]);
+
+  const liveCaptions = useLiveCaptions();
+  const visibleLiveCaption = liveCaptions.caption.trim();
+  const showManualSentence = !liveCaptions.running || visibleLiveCaption.length === 0;
+
+  useEffect(() => {
+    if (!liveCaptions.running) {
+      return;
+    }
+    setDirectInput(liveCaptions.caption);
+  }, [liveCaptions.running, liveCaptions.caption]);
+
   const {
     getLearningStateClass,
     changeLearningState,
@@ -309,8 +350,21 @@ function Learn() {
                 </div>
 
                 {/* Current Sentence Display */}
+                <LearnLiveCaptionControl
+                  supported={liveCaptions.supported}
+                  running={liveCaptions.running}
+                  starting={liveCaptions.starting}
+                  state={liveCaptions.state}
+                  error={liveCaptions.error}
+                  refreshIntervalMs={liveCaptions.refreshIntervalMs}
+                  onRefreshIntervalChange={liveCaptions.setRefreshIntervalMs}
+                  onToggle={liveCaptions.toggle}
+                />
+
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-400 rounded-lg p-6 shadow-md">
-                  <h3 className="text-black font-bold text-lg mb-4 text-center">Current Sentence</h3>
+                  <h3 className="text-black font-bold text-lg mb-4 text-center">
+                    {liveCaptions.running ? 'Live Caption' : 'Current Sentence'}
+                  </h3>
                   <div className="relative flex justify-center items-center min-h-[80px]">
                     <style dangerouslySetInnerHTML={{__html: `
                       .learn-subtitle-container > div {
@@ -321,16 +375,33 @@ function Learn() {
                       }
                     `}} />
                     <div className="learn-subtitle-container w-full">
-                      <PrimarySubtitle
-                          setMeaning={setMeaning}
-                          currentTime={currentTime}
-                          subtitle={primarySub}
-                          shift={0}
+                      {liveCaptions.running && visibleLiveCaption ? (
+                        <LiveCaptionOverlay
+                          caption={liveCaptions.caption}
                           subtitleStyling={primaryStyling}
+                          lang={lang}
+                          tokenizeMiteiru={tokenizeMiteiru}
+                          setMeaning={setMeaning}
                           getLearningStateClass={getLearningStateClass}
                           changeLearningState={changeLearningState}
                           setRubyCopyContent={setRubyCopyContent}
-                      />
+                        />
+                      ) : showManualSentence ? (
+                        <PrimarySubtitle
+                            setMeaning={setMeaning}
+                            currentTime={currentTime}
+                            subtitle={primarySub}
+                            shift={0}
+                            subtitleStyling={primaryStyling}
+                            getLearningStateClass={getLearningStateClass}
+                            changeLearningState={changeLearningState}
+                            setRubyCopyContent={setRubyCopyContent}
+                        />
+                      ) : (
+                        <div className="text-sm text-blue-600 text-center italic">
+                          Waiting for live captions...
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -370,10 +441,17 @@ function Learn() {
                       </AwesomeButton>
                       <AwesomeButton
                           type={'primary'}
-                          onPress={() => analyzeSentence(directInput)}
+                          onPress={handleAnalyzeSentence}
                           disabled={isAnalyzing || !directInput.trim()}
                       >
                         {isAnalyzing ? 'Analyzing...' : '🤖 AI Analysis'}
+                      </AwesomeButton>
+                      <AwesomeButton
+                          type={'primary'}
+                          onPress={handleBuildAnkiCard}
+                          disabled={isBuildingAnkiCard || !directInput.trim() || !tokenizeMiteiru}
+                      >
+                        {isBuildingAnkiCard ? 'Building...' : '📇 Build Anki Card'}
                       </AwesomeButton>
                     </div>
 
@@ -419,7 +497,7 @@ function Learn() {
               {/* Sentences Section */}
               <div 
                 className="flex flex-col overflow-hidden"
-                style={{ height: hasAnalysisPanel ? `${sentencesSectionHeight}%` : '100%' }}
+                style={{ height: hasBottomPanel ? `${sentencesSectionHeight}%` : '100%' }}
               >
                 <div className="p-4 border-b-2 border-blue-400 bg-blue-100 flex-shrink-0">
                   <h3 className="text-black font-bold text-lg">Sentences</h3>
@@ -443,7 +521,7 @@ function Learn() {
               </div>
 
               {/* Vertical Divider */}
-              {hasAnalysisPanel && (
+              {hasBottomPanel && (
                 <div
                   className="h-1 bg-blue-400 hover:bg-blue-600 cursor-row-resize transition-colors flex-shrink-0 relative group"
                   onMouseDown={handleVerticalDividerMouseDown}
@@ -457,17 +535,30 @@ function Learn() {
                 </div>
               )}
 
-              {hasAnalysisPanel && (
+              {hasBottomPanel && (
                 <div
                   className="flex flex-col overflow-hidden"
                   style={{ height: `${100 - sentencesSectionHeight}%` }}
                 >
-                  <AIAnalysisPanel
-                    analysis={sentenceAnalysis}
-                    isAnalyzing={isAnalyzing}
-                    errorMessage={analysisErrorMessage ?? undefined}
-                    onClose={clearAnalysis}
-                  />
+                  {hasAnkiBuilderPanel ? (
+                    <AnkiCardBuilderPanel
+                      draft={ankiDraft}
+                      isBuilding={isBuildingAnkiCard}
+                      isOpening={isOpeningAnkiCard}
+                      openStatusMessage={ankiOpenStatusMessage}
+                      errorMessage={ankiErrorMessage ?? undefined}
+                      onUpdateDraft={updateAnkiDraft}
+                      onOpen={openAnkiCard}
+                      onClose={clearAnkiCard}
+                    />
+                  ) : (
+                    <AIAnalysisPanel
+                      analysis={sentenceAnalysis}
+                      isAnalyzing={isAnalyzing}
+                      errorMessage={analysisErrorMessage ?? undefined}
+                      onClose={clearAnalysis}
+                    />
+                  )}
                 </div>
               )}
             </div>
