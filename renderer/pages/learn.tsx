@@ -14,18 +14,18 @@ import useLearningKeyBind from "../hooks/useLearningKeyBind";
 import 'react-awesome-button/dist/styles.css';
 import {isLearningSubtitleLanguage} from "../components/Subtitle/subtitleLanguageSupport";
 import useLearningState from "../hooks/useLearningState";
-import useTranslationLinks from "../hooks/useTranslationLinks";
 import useGoogleTranslator from "../hooks/useGoogleTranslator";
 import TranslationDisplay from "../components/Subtitle/TranslationDisplay";
 import useRubyCopy from "../hooks/useRubyCopy";
 import {SentenceList} from "../components/Meaning/SentenceList";
 import {FaVolumeUp} from 'react-icons/fa';
 import useSpeech from "../hooks/useSpeech";
-import { createOpenRouter } from '@openrouter/ai-sdk-provider';
-import { streamText } from 'ai';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import {ImageOCR} from "../components/Utils/ImageOCR";
+import {AITranslationPanel} from "../components/Learn/AITranslationPanel";
+import {AIAnalysisPanel} from "../components/Learn/AIAnalysisPanel";
+// Learn AI wiring: translation (left) → useAiTranslation | analysis (right) → useSentenceAnalysis
+// OpenRouter key/model: LearningSidebar.tsx | OCR (unused here): components/Utils/ImageOCR.tsx
+import {useSentenceAnalysis} from "../hooks/useSentenceAnalysis";
+import {splitIntoLines} from "../utils/textUtils";
 import {speechLanguageCodes} from "../languages/manifest";
 
 function Learn() {
@@ -42,23 +42,20 @@ function Learn() {
   const [rubyContent, setRubyCopyContent] = useRubyCopy();
   const [sentences, setSentences] = useState<string[]>([]);
   const [sentenceInput, setSentenceInput] = useState('');
-  const [aiAnalysis, setAiAnalysis] = useState('');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const handleSentenceClick = useCallback((sentence: string) => {
     setDirectInput(sentence);
   }, [setDirectInput]);
 
-  // New function to split text into sentences
-  const splitIntoSentences = useCallback((text: string) => {
-    return text.split(/[\n\t]+/).filter(sentence => sentence.trim() !== '');
+  const handleMoveToAnalyzer = useCallback((text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) {
+      return;
+    }
+    // Keep middle textarea, sentence list, and tokenized preview in sync
+    setSentenceInput(trimmed);
+    setSentences(splitIntoLines(trimmed));
+    setDirectInput(trimmed);
   }, []);
-
-  const handleOCRTextExtracted = useCallback((text: string) => {
-    setSentenceInput(text);
-    setSentences(splitIntoSentences(text));
-  }, [splitIntoSentences]);
-
-  // Column width state
   const [leftColumnWidth, setLeftColumnWidth] = useStoreData('learn.layout.leftColumnWidth', 35);
   const [middleColumnWidth, setMiddleColumnWidth] = useStoreData('learn.layout.middleColumnWidth', 45);
   const rightColumnWidth = 100 - leftColumnWidth - middleColumnWidth;
@@ -140,7 +137,7 @@ function Learn() {
 
   const [selectedVoice, setSelectedVoice] = useStoreData('tts.option.voice','');
   const [openRouterApiKey] = useStoreData('openrouter.apiKey', '');
-  const [openRouterModel] = useStoreData('openrouter.model', 'anthropic/claude-3.5-sonnet');
+  const [openRouterModel] = useStoreData('openrouter.model', 'z-ai/glm-5.2:nitro');
   
   useLearningKeyBind(setMeaning, setShowSidebar, undo, rubyContent);
   const router = useRouter();
@@ -150,15 +147,18 @@ function Learn() {
     lang
   } = useMiteiruTokenizer();
   const {
+    analysis: sentenceAnalysis,
+    errorMessage: analysisErrorMessage,
+    isAnalyzing,
+    hasAnalysisPanel,
+    analyzeSentence,
+    clearAnalysis,
+  } = useSentenceAnalysis({ openRouterApiKey, openRouterModel, lang });
+  const {
     getLearningStateClass,
     changeLearningState,
     getLearningState,
   } = useLearningState(lang);
-
-  const {
-    openDeepL,
-    openGoogleTranslate
-  } = useTranslationLinks(directInput, lang);
 
   const {
     translate
@@ -245,75 +245,6 @@ function Learn() {
     }
   }, [sentences]);
 
-  const analyzeWithAI = useCallback(async () => {
-    if (!openRouterApiKey) {
-      setAiAnalysis('Please set your OpenRouter API key in settings (Ctrl+X)');
-      return;
-    }
-    
-    if (!directInput.trim()) {
-      setAiAnalysis('Please enter a sentence to analyze');
-      return;
-    }
-
-    setIsAnalyzing(true);
-    setAiAnalysis('');
-
-    try {
-      const openrouter = createOpenRouter({ 
-        apiKey: openRouterApiKey,
-        headers: {
-          'HTTP-Referer': 'https://github.com/hockyy/miteiru',
-          'X-Title': 'Miteiru'
-        }
-      });
-      
-      const model = openrouter(openRouterModel);
-      
-      // Get language name for better context
-      const languageNames = {
-        'ja': 'Japanese',
-        'zh': 'Chinese',
-        'yue': 'Cantonese',
-        'vi': 'Vietnamese'
-      };
-      const languageName = languageNames[lang] || lang;
-      
-      const result = await streamText({
-        model,
-        messages: [
-          {
-            role: 'system',
-            content: `You are a ${languageName} language learning assistant. Analyze the given ${languageName} sentence in detail. Provide:
-1. Grammar breakdown: Identify key grammatical structures and explain their usage in ${languageName}
-2. Vocabulary analysis: Explain important words and their meanings in context
-3. Cultural notes: If relevant, mention any cultural aspects specific to ${languageName}-speaking regions
-4. Learning tips: Suggest similar patterns or phrases to study in ${languageName}
-
-Keep your analysis clear, educational, and focused on helping learners understand the ${languageName} sentence deeply.`
-          },
-          {
-            role: 'user',
-            content: `Please analyze this ${languageName} sentence in detail: "${directInput}"`
-          }
-        ]
-      });
-
-      // Stream the response
-      let fullAnalysis = '';
-      for await (const chunk of result.textStream) {
-        fullAnalysis += chunk;
-        setAiAnalysis(fullAnalysis);
-      }
-
-    } catch (error) {
-      console.error('AI Analysis failed:', error);
-      setAiAnalysis(`Analysis failed: ${error.message || 'Unknown error occurred'}`);
-    } finally {
-      setIsAnalyzing(false);
-    }
-  }, [directInput, openRouterApiKey, openRouterModel, lang]);
-
   return (
       <React.Fragment>
         <Head>
@@ -331,14 +262,17 @@ Keep your analysis clear, educational, and focused on helping learners understan
           />
           {/* 3-Column Layout */}
           <div className="flex h-screen w-full relative">
-            {/* Left Column - Image OCR */}
-            <div 
-              className="bg-gradient-to-br from-purple-50 to-pink-50 overflow-y-auto"
+            {/* Left Column - AI Translation */}
+            <div
+              className="overflow-hidden"
               style={{ width: `${leftColumnWidth}%` }}
             >
-              <div className="image-ocr-left h-full">
-                <ImageOCR onTextExtracted={handleOCRTextExtracted} targetLanguage={lang} />
-              </div>
+              <AITranslationPanel
+                lang={lang}
+                openRouterApiKey={openRouterApiKey}
+                openRouterModel={openRouterModel}
+                onMoveToAnalyzer={handleMoveToAnalyzer}
+              />
             </div>
 
             {/* Left Divider */}
@@ -368,7 +302,7 @@ Keep your analysis clear, educational, and focused on helping learners understan
                       value={sentenceInput}
                       onChange={val => {
                         setSentenceInput(val.target.value)
-                        setSentences(splitIntoSentences(val.target.value))
+                        setSentences(splitIntoLines(val.target.value))
                       }}
                       placeholder="Enter your text here. Each line will be treated as a separate sentence."
                   />
@@ -420,12 +354,6 @@ Keep your analysis clear, educational, and focused on helping learners understan
 
                 {/* Action Buttons */}
                 <div className="flex flex-wrap gap-3 justify-center items-center">
-                      <AwesomeButton type={'primary'} onPress={openDeepL}>
-                        Translate with DeepL
-                      </AwesomeButton>
-                      <AwesomeButton type={'primary'} onPress={openGoogleTranslate}>
-                        Translate with Google
-                      </AwesomeButton>
                       <AwesomeButton type={'primary'} onPress={() => handleTranslate(true)}>
                         Translate Now
                       </AwesomeButton>
@@ -442,7 +370,7 @@ Keep your analysis clear, educational, and focused on helping learners understan
                       </AwesomeButton>
                       <AwesomeButton
                           type={'primary'}
-                          onPress={analyzeWithAI}
+                          onPress={() => analyzeSentence(directInput)}
                           disabled={isAnalyzing || !directInput.trim()}
                       >
                         {isAnalyzing ? 'Analyzing...' : '🤖 AI Analysis'}
@@ -491,7 +419,7 @@ Keep your analysis clear, educational, and focused on helping learners understan
               {/* Sentences Section */}
               <div 
                 className="flex flex-col overflow-hidden"
-                style={{ height: aiAnalysis ? `${sentencesSectionHeight}%` : '100%' }}
+                style={{ height: hasAnalysisPanel ? `${sentencesSectionHeight}%` : '100%' }}
               >
                 <div className="p-4 border-b-2 border-blue-400 bg-blue-100 flex-shrink-0">
                   <h3 className="text-black font-bold text-lg">Sentences</h3>
@@ -515,7 +443,7 @@ Keep your analysis clear, educational, and focused on helping learners understan
               </div>
 
               {/* Vertical Divider */}
-              {aiAnalysis && (
+              {hasAnalysisPanel && (
                 <div
                   className="h-1 bg-blue-400 hover:bg-blue-600 cursor-row-resize transition-colors flex-shrink-0 relative group"
                   onMouseDown={handleVerticalDividerMouseDown}
@@ -529,49 +457,17 @@ Keep your analysis clear, educational, and focused on helping learners understan
                 </div>
               )}
 
-              {/* AI Analysis Section */}
-              {aiAnalysis && (
-                <div 
+              {hasAnalysisPanel && (
+                <div
                   className="flex flex-col overflow-hidden"
                   style={{ height: `${100 - sentencesSectionHeight}%` }}
                 >
-                  <style dangerouslySetInnerHTML={{__html: `
-                    .ai-markdown h1 { font-size: 1.2em; font-weight: bold; margin: 1em 0 0.5em 0; color: #6b21a8; }
-                    .ai-markdown h2 { font-size: 1.1em; font-weight: bold; margin: 0.8em 0 0.4em 0; color: #7c3aed; }
-                    .ai-markdown h3 { font-size: 1em; font-weight: bold; margin: 0.6em 0 0.3em 0; color: #8b5cf6; }
-                    .ai-markdown p { margin: 0.5em 0; line-height: 1.6; font-size: 0.875rem; }
-                    .ai-markdown ul, .ai-markdown ol { margin: 0.5em 0; padding-left: 1.5em; font-size: 0.875rem; }
-                    .ai-markdown li { margin: 0.3em 0; line-height: 1.5; }
-                    .ai-markdown code { background: #f3e8ff; padding: 0.2em 0.4em; border-radius: 3px; font-family: monospace; color: #6b21a8; font-size: 0.8rem; }
-                    .ai-markdown pre { background: #f3e8ff; padding: 1em; border-radius: 5px; overflow-x: auto; margin: 0.5em 0; font-size: 0.8rem; }
-                    .ai-markdown pre code { background: transparent; padding: 0; }
-                    .ai-markdown strong { font-weight: 600; color: #581c87; }
-                    .ai-markdown em { font-style: italic; color: #6b21a8; }
-                    .ai-markdown blockquote { border-left: 3px solid #a855f7; padding-left: 1em; margin: 0.5em 0; color: #6b21a8; font-style: italic; font-size: 0.875rem; }
-                    .ai-markdown table { border-collapse: collapse; width: 100%; margin: 0.5em 0; font-size: 0.875rem; }
-                    .ai-markdown th, .ai-markdown td { border: 1px solid #e9d5ff; padding: 0.5em; text-align: left; }
-                    .ai-markdown th { background: #f3e8ff; font-weight: 600; }
-                    .ai-markdown hr { border: none; border-top: 2px solid #e9d5ff; margin: 1em 0; }
-                  `}} />
-                  <div className="flex flex-col h-full bg-purple-50">
-                    <div className="flex justify-between items-center p-4 pb-2 border-b-2 border-purple-200 flex-shrink-0">
-                      <h3 className="text-purple-900 font-bold text-base">🤖 AI Analysis</h3>
-                      <button
-                        onClick={() => setAiAnalysis('')}
-                        className="text-purple-600 hover:text-purple-800 hover:bg-purple-100 rounded-full w-6 h-6 flex items-center justify-center font-bold text-sm transition-colors"
-                        title="Close"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                    <div className="flex-1 overflow-y-auto p-4">
-                      <div className="ai-markdown text-black">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                          {aiAnalysis}
-                        </ReactMarkdown>
-                      </div>
-                    </div>
-                  </div>
+                  <AIAnalysisPanel
+                    analysis={sentenceAnalysis}
+                    isAnalyzing={isAnalyzing}
+                    errorMessage={analysisErrorMessage ?? undefined}
+                    onClose={clearAnalysis}
+                  />
                 </div>
               )}
             </div>
