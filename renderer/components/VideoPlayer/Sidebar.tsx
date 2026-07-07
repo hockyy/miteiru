@@ -17,6 +17,7 @@ import {
   safeAnkiAllFilename,
   saveAnkiCards
 } from "../Meaning/ankiExport";
+import {useAnkiExportConfirm} from "../../hooks/useAnkiExportConfirm";
 
 export const StylingBox = ({
                              subtitleStyling,
@@ -403,6 +404,7 @@ export const Sidebar = ({
                           setSubtitleMode
                         }) => {
   const {userNotes} = useUserNotes();
+  const { confirmExport, modal: ankiExportModal } = useAnkiExportConfirm();
   const learningPercentageHandler = useCallback(event => {
     setLearningPercentage(parseFloat(event.target.value));
   }, [setLearningPercentage])
@@ -453,7 +455,7 @@ export const Sidebar = ({
         }));
       }
 
-      const saved = await saveAnkiCards(cards, safeAnkiAllFilename(lang));
+      const saved = await saveAnkiCards(cards, safeAnkiAllFilename(lang), confirmExport);
       if (saved) {
         alert(`Saved ${cards.length} Anki cards from ${terms.length} vocabulary terms for ${buildDeckList(cards)}.`);
       }
@@ -461,8 +463,10 @@ export const Sidebar = ({
       console.error('Failed to export all Anki cards:', error);
       alert(`Failed to export all Anki cards: ${error.message}`);
     }
-  }, [lang, tokenizeMiteiru, userNotes]);
-  return <SidebarShell
+  }, [confirmExport, lang, tokenizeMiteiru, userNotes]);
+  return <>
+  {ankiExportModal}
+  <SidebarShell
       showSidebar={showSidebar}
       setShowSidebar={setShowSidebar}
       title="Video Settings"
@@ -520,4 +524,5 @@ export const Sidebar = ({
       <GistManager lang={lang}/>
     </SidebarSection>
   </SidebarShell>
+  </>;
 }

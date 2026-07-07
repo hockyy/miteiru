@@ -1,14 +1,84 @@
 import { useCallback, useEffect, useState } from 'react';
 
+export interface UserNoteExample {
+  sentence: string;
+  meaning: string;
+}
+
 export interface MiteiruUserEntry {
-  examples: string[];
+  /** Short English gloss — primary definition for Anki when set */
+  definition: string;
+  examples: UserNoteExample[];
   usageNote: string;
+  /** Optional short trivia for study / Anki */
+  funFact: string;
   relatedTerms: string[];
 }
 
 export interface UserNotesDatabase {
   [term: string]: MiteiruUserEntry;
 }
+
+export const normalizeUserNoteExample = (value: unknown): UserNoteExample | null => {
+  if (typeof value === 'string') {
+    const sentence = value.trim();
+    return sentence ? { sentence, meaning: '' } : null;
+  }
+
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+
+  const record = value as { sentence?: unknown; text?: unknown; meaning?: unknown };
+  const sentence = typeof record.sentence === 'string'
+    ? record.sentence.trim()
+    : typeof record.text === 'string'
+      ? record.text.trim()
+      : '';
+  const meaning = typeof record.meaning === 'string' ? record.meaning.trim() : '';
+
+  return sentence || meaning ? { sentence, meaning } : null;
+};
+
+export const normalizeUserNoteEntry = (value: unknown): MiteiruUserEntry => {
+  if (!value || typeof value !== 'object') {
+    return {
+      definition: '',
+      usageNote: '',
+      funFact: '',
+      examples: [],
+      relatedTerms: [],
+    };
+  }
+
+  const record = value as {
+    definition?: unknown;
+    usageNote?: unknown;
+    funFact?: unknown;
+    examples?: unknown;
+    relatedTerms?: unknown;
+  };
+
+  const examples = Array.isArray(record.examples)
+    ? record.examples
+      .map((example) => normalizeUserNoteExample(example))
+      .filter((example): example is UserNoteExample => Boolean(example?.sentence?.trim()))
+    : [];
+
+  const relatedTerms = Array.isArray(record.relatedTerms)
+    ? record.relatedTerms
+      .map((term) => (typeof term === 'string' ? term.trim() : ''))
+      .filter(Boolean)
+    : [];
+
+  return {
+    definition: typeof record.definition === 'string' ? record.definition.trim() : '',
+    usageNote: typeof record.usageNote === 'string' ? record.usageNote.trim() : '',
+    funFact: typeof record.funFact === 'string' ? record.funFact.trim() : '',
+    examples,
+    relatedTerms,
+  };
+};
 
 export const useUserNotes = () => {
   const [userNotes, setUserNotes] = useState<UserNotesDatabase>({});
@@ -29,11 +99,11 @@ export const useUserNotes = () => {
         }
         
         // Clean up any corrupted entries
-        const cleanedNotes = {};
+        const cleanedNotes: UserNotesDatabase = {};
         for (const [key, value] of Object.entries(notes)) {
           if (value && typeof value === 'object' && 
-              ('usageNote' in value || 'examples' in value || 'relatedTerms' in value)) {
-            cleanedNotes[key] = value;
+              ('definition' in value || 'usageNote' in value || 'funFact' in value || 'examples' in value || 'relatedTerms' in value)) {
+            cleanedNotes[key] = normalizeUserNoteEntry(value);
           } else {
             console.warn(`Removing corrupted note for term: ${key}`);
           }
@@ -82,7 +152,7 @@ export const useUserNotes = () => {
   // Set note for a specific term
   const setUserNote = useCallback(async (term: string, entry: MiteiruUserEntry) => {
     try {
-      const newNotes = { ...userNotes, [term]: entry };
+      const newNotes = { ...userNotes, [term]: normalizeUserNoteEntry(entry) };
       await saveUserNotes(newNotes);
     } catch (error) {
       console.error('Failed to set user note, removing it:', error);
@@ -120,4 +190,3 @@ export const useUserNotes = () => {
     hasUserNote,
   };
 };
-
