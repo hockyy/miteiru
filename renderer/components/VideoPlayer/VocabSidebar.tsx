@@ -1,36 +1,57 @@
-import React, {useCallback, useEffect, useState, useRef} from 'react';
-import {getColorGradient, getRelativeTime} from '../../utils/utils';
-import {ArrowRight, ArrowUp, ArrowDown} from "./Icons"; // Assuming you have these icons
-import {videoConstants} from "../../utils/constants";
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import type { LearningStateType } from '../types';
+import { LeftSidebarShell } from './SidebarShell';
+import { VocabWordCard } from './VocabWordCard';
+import { getVocabReadingPreview } from './vocabReadingPreview';
 
+type VocabEntry = [string, LearningStateType];
+
+type VocabSidebarProps = {
+  showVocabSidebar: boolean;
+  setShowVocabSidebar: (updater: (value: boolean) => boolean) => void;
+  lang: string;
+  setMeaning: (word: string) => void;
+  tokenizeMiteiru: (word: string) => Promise<unknown>;
+  refreshTrigger?: unknown;
+};
+
+/**
+ * Left sidebar — scrollable list of saved vocabulary for the current language.
+ * Opens with the keyboard shortcut bound in useKeyBind (Ctrl+B by default).
+ */
 const VocabSidebar = ({
-                        showVocabSidebar,
-                        setShowVocabSidebar,
-                        lang,
-                        setMeaning,
-                        tokenizeMiteiru,
-                        refreshTrigger
-                      }) => {
-  const [sortedVocab, setSortedVocab] = useState([]);
-  const [hoveredWord, setHoveredWord] = useState(null);
-  const [tokenizedWord, setTokenizedWord] = useState(null);
-  const containerRef = useRef(null);
+  showVocabSidebar,
+  setShowVocabSidebar,
+  lang,
+  setMeaning,
+  tokenizeMiteiru,
+  refreshTrigger,
+}: VocabSidebarProps) => {
+  const [sortedVocab, setSortedVocab] = useState<VocabEntry[]>([]);
+  const [hoveredWord, setHoveredWord] = useState<string | null>(null);
+  const [tokenizedWord, setTokenizedWord] = useState<Record<string, unknown>[] | null>(null);
+  const containerRef = useRef<HTMLElement>(null);
 
   const scrollToTop = useCallback(() => {
-    containerRef.current?.scrollTo({top: 0, behavior: 'smooth'});
+    containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
   const scrollToBottom = useCallback(() => {
-    containerRef.current?.scrollTo({top: containerRef.current.scrollHeight, behavior: 'smooth'});
+    containerRef.current?.scrollTo({
+      top: containerRef.current.scrollHeight,
+      behavior: 'smooth',
+    });
   }, []);
 
   const loadVocabulary = useCallback(async () => {
     try {
-      if (!lang) return;
+      if (!lang) {
+        return;
+      }
       const loadedState = await window.ipc.invoke('loadLearningState', lang);
-      const sorted = Object.entries(loadedState).sort((a: any[], b: any[]) => {
-        return a[1].updTime - b[1].updTime;
-      });
+      const sorted = Object.entries(loadedState).sort(
+        (a: VocabEntry, b: VocabEntry) => a[1].updTime - b[1].updTime,
+      ) as VocabEntry[];
       setSortedVocab(sorted);
     } catch (error) {
       console.error('Error loading vocabulary:', error);
@@ -50,97 +71,98 @@ const VocabSidebar = ({
     });
   }, [sortedVocab]);
 
+  // Jump to the word whose review time is nearest when the panel opens.
   useEffect(() => {
-    if (showVocabSidebar && containerRef.current && sortedVocab.length > 0) {
-      const closestWord = findClosestWord();
-      const wordElement = document.getElementById(`word-${closestWord[0]}`);
-      if (wordElement) {
-        wordElement.scrollIntoView({behavior: 'smooth', block: 'center'});
-      }
+    if (!showVocabSidebar || sortedVocab.length === 0) {
+      return;
     }
+    const closestWord = findClosestWord();
+    const wordElement = document.getElementById(`word-${closestWord[0]}`);
+    wordElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, [showVocabSidebar, sortedVocab, findClosestWord]);
 
-  const jumpToWord = useCallback((word) => {
-    setMeaning(word);
-  }, [setMeaning]);
-
-  const handleMouseEnter = useCallback(async (word) => {
-    setHoveredWord(word);
-    const tokenized = await tokenizeMiteiru(word);
-    setTokenizedWord(tokenized);
-  }, [tokenizeMiteiru]);
+  const handleMouseEnter = useCallback(
+    async (word: string) => {
+      setHoveredWord(word);
+      const tokenized = (await tokenizeMiteiru(word)) as Record<string, unknown>[];
+      setTokenizedWord(tokenized);
+    },
+    [tokenizeMiteiru],
+  );
 
   const handleMouseLeave = useCallback(() => {
     setHoveredWord(null);
     setTokenizedWord(null);
   }, []);
 
-  const renderTokenizedWord = useCallback(() => {
-    if (!tokenizedWord || !Array.isArray(tokenizedWord)) return null;
-
-    if (lang === videoConstants.japaneseLang) {
-      // tokenizeMiteiru returns Japanese token objects, not renderable children.
-      return tokenizedWord.map((t) => t?.origin ?? '').join(' ');
+  const renderReadingPreview = useCallback(() => {
+    if (!tokenizedWord || !Array.isArray(tokenizedWord)) {
+      return null;
     }
-    if (lang === videoConstants.chineseLang || lang === videoConstants.cantoneseLang) {
-      return tokenizedWord.map(t => t.pinyin || t.jyutping);
-    }
+    return getVocabReadingPreview(tokenizedWord, lang);
+  }, [lang, tokenizedWord]);
 
-    return null;
-  }, [tokenizedWord, lang]);
+  const levelSummary = sortedVocab.reduce(
+    (counts, [, state]) => {
+      counts[state.level] = (counts[state.level] ?? 0) + 1;
+      return counts;
+    },
+    {} as Record<number, number>,
+  );
 
   return (
-      <div
-          ref={containerRef}
-          style={{
-            transition: "all 0.3s ease-out",
-            transform: `translate(${showVocabSidebar ? "0" : "-30vw"}, 0`
-          }}
-          className={"overflow-y-scroll overflow-x-clip flex flex-col content-center items-center p-3 z-[19] fixed left-0 top-0 h-screen w-[30vw] bg-gray-700/70 text-white"}
-      >
-        <div className="sticky top-0 z-10 w-full flex justify-center items-center bg-gray-800 p-2">
-          <button className="p-2 bg-blue-500 rounded" onClick={scrollToTop}>
-            <div className="h-5">
-              {ArrowUp}
-            </div>
-          </button>
-        </div>
-        <button className={"self-end p-2"} onClick={() => setShowVocabSidebar(old => !old)}>
-          <div className={"animation h-5"}>
-            {ArrowRight}
-          </div>
-        </button>
-        <div className={"font-bold unselectable text-3xl m-4"}>
-          Vocabulary List ({lang})
-        </div>
-
-        <div className={"w-full mx-5 px-3 flex flex-col content-start gap-3 unselectable"}>
-          {sortedVocab.map((word) => (
-              <div
-                  key={word[0]}
-                  id={`word-${word[0]}`}
-                  className="cursor-pointer hover:bg-blue-200 p-2 rounded mb-2 flex flex-col justify-between items-start text-black"
-                  onClick={() => jumpToWord(word[0])}
-                  onMouseEnter={() => handleMouseEnter(word[0])}
-                  onMouseLeave={handleMouseLeave}
-                  style={{backgroundColor: getColorGradient(word[1].updTime)}}
+    <LeftSidebarShell
+      showSidebar={showVocabSidebar}
+      setShowSidebar={setShowVocabSidebar}
+      scrollRef={containerRef}
+      onScrollTop={scrollToTop}
+      onScrollBottom={scrollToBottom}
+      title="Vocabulary"
+      subtitle={`${lang} · ${sortedVocab.length} word${sortedVocab.length === 1 ? '' : 's'}`}
+    >
+      {sortedVocab.length > 0 && (
+        <div className="mb-4 flex flex-wrap gap-1.5">
+          {['New', 'Learning', 'Known', 'Mastered'].map((label, level) => {
+            const count = levelSummary[level] ?? 0;
+            if (!count) {
+              return null;
+            }
+            return (
+              <span
+                key={label}
+                className="rounded-full border border-white/10 bg-white/[0.08] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/60"
               >
-                <div className="flex w-full justify-between items-center">
-                  <span className="text-3xl">{word[0]}</span>
-                  <span className="text-gray-600">{getRelativeTime(word[1].updTime)}</span>
-                </div>
-                {hoveredWord === word[0] && renderTokenizedWord()}
-              </div>
+                {count} {label}
+              </span>
+            );
+          })}
+        </div>
+      )}
+
+      {sortedVocab.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.04] px-6 py-10 text-center">
+          <p className="text-sm font-semibold text-white/70">No saved words yet</p>
+          <p className="mt-2 text-xs leading-relaxed text-white/45">
+            Turn on learning mode and click subtitle words to build your vocabulary list.
+          </p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-1 pb-6">
+          {sortedVocab.map(([word, state]) => (
+            <VocabWordCard
+              key={word}
+              word={word}
+              state={state}
+              isHovered={hoveredWord === word}
+              readingPreview={hoveredWord === word ? renderReadingPreview() : null}
+              onClick={() => setMeaning(word)}
+              onMouseEnter={() => handleMouseEnter(word)}
+              onMouseLeave={handleMouseLeave}
+            />
           ))}
         </div>
-        <div className="sticky bottom-0 z-10 w-full flex justify-center bg-gray-800 p-2">
-          <button className="p-2 bg-blue-500 rounded" onClick={scrollToBottom}>
-            <div className="h-5">
-              {ArrowDown}
-            </div>
-          </button>
-        </div>
-      </div>
+      )}
+    </LeftSidebarShell>
   );
 };
 

@@ -151,7 +151,7 @@ export const AnkiCardBuilderDisplay: React.FC<AnkiCardBuilderDisplayProps> = ({
         disabled={isOpening || !draft.frontText.trim()}
         className="w-full rounded-lg border-2 border-emerald-400 bg-emerald-500 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {isOpening ? 'Opening...' : 'Open in Anki'}
+        {isOpening ? 'Exporting…' : 'Export to Anki'}
       </button>
     </div>
   );

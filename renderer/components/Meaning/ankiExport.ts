@@ -19,7 +19,7 @@ const toAnkiTsvField = (value) => String(value ?? '')
   .replace(/\r?\n/g, '<br>')
   .replace(/\t/g, ' ');
 
-const uniqueNonEmpty = (values) => Array.from(new Set(
+const uniqueNonEmpty = (values: unknown[]): string[] => Array.from(new Set(
   values
     .map((value) => typeof value === 'string' ? value.trim() : '')
     .filter(Boolean)
@@ -29,6 +29,28 @@ const buildHtmlList = (values) => {
   const items = uniqueNonEmpty(values);
   if (items.length === 0) return '';
   return `<ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`;
+};
+
+const buildExamplesHtml = (examples = []) => {
+  const items = examples
+    .map((example) => {
+      const sentence = typeof example?.sentence === 'string' ? example.sentence.trim() : '';
+      const meaning = typeof example?.meaning === 'string' ? example.meaning.trim() : '';
+      if (!sentence) {
+        return '';
+      }
+      if (!meaning) {
+        return `<li>${escapeHtml(sentence)}</li>`;
+      }
+      return `<li>${escapeHtml(sentence)}<br><span style="color:#555;font-style:italic;">${escapeHtml(meaning)}</span></li>`;
+    })
+    .filter(Boolean);
+
+  if (items.length === 0) {
+    return '';
+  }
+
+  return `<ul>${items.join('')}</ul>`;
 };
 
 const buildHtmlSection = (title, content) => {
@@ -69,32 +91,38 @@ const buildAnkiCardsForTerm = ({
   rubyHtml
 }) => {
   const dictionaryDefinitions = getDictionaryDefinitions(meaningContent, lang);
-  const usageNote = userNote?.usageNote ? escapeHtml(userNote.usageNote) : '';
-  const examples = buildHtmlList(userNote?.examples || []);
+  const noteDefinition = userNote?.definition?.trim() || '';
+  const usageNote = userNote?.usageNote?.trim() ? escapeHtml(userNote.usageNote.trim()) : '';
+  const funFact = userNote?.funFact?.trim() ? escapeHtml(userNote.funFact.trim()) : '';
+  const examples = buildExamplesHtml(userNote?.examples || []);
   const relatedTerms = buildHtmlList(userNote?.relatedTerms || []);
   const readingText = readings.length > 0 ? escapeHtml(readings.join(' / ')) : '';
   const languageName = getLanguageDisplayName(lang);
   const normalDeckName = `Miteiru::${languageName}::Easy`;
   const hardDeckName = `Miteiru::${languageName}::Hard`;
 
+  const definitionsSection = noteDefinition
+    ? buildHtmlSection('Definition', escapeHtml(noteDefinition))
+    : buildHtmlSection('Definitions', buildHtmlList(dictionaryDefinitions));
+
+  const studySections = [
+    definitionsSection,
+    buildHtmlSection('Usage Tip', usageNote),
+    buildHtmlSection('Fun Fact', funFact),
+    buildHtmlSection('Examples', examples),
+    buildHtmlSection('See Also', relatedTerms),
+  ].filter(Boolean).join('<hr>');
+
   const normalFront = [
     `<div style="font-size: 2em;">${rubyHtml || escapeHtml(term)}</div>`,
     readingText ? `<div>${readingText}</div>` : ''
   ].filter(Boolean).join('<br>');
 
-  const normalBack = [
-    buildHtmlSection('Definitions', buildHtmlList(dictionaryDefinitions)),
-    buildHtmlSection('Usage Note', usageNote),
-    buildHtmlSection('Example Sentences', examples),
-    buildHtmlSection('Related Terms', relatedTerms)
-  ].filter(Boolean).join('<hr>');
+  const normalBack = studySections;
 
   const hardBack = [
     buildHtmlSection('Readings', readingText),
-    buildHtmlSection('Definitions', buildHtmlList(dictionaryDefinitions)),
-    buildHtmlSection('Usage Note', usageNote),
-    buildHtmlSection('Example Sentences', examples),
-    buildHtmlSection('Related Terms', relatedTerms)
+    studySections,
   ].filter(Boolean).join('<hr>');
 
   return [
@@ -146,32 +174,48 @@ const previewHtml = (value) => String(value ?? '')
   .replace(/\n{3,}/g, '\n\n')
   .trim();
 
-const buildAnkiPreview = (cards, mode = 'save') => {
-  const previewCards = cards.slice(0, 4).map((card, index) => [
-    `Card ${index + 1}`,
-    `Deck: ${card.deckName}`,
-    `Tags: ${card.tags}`,
-    `ID: ${card.cardId}`,
-    `Front:\n${previewHtml(card.front) || '(empty)'}`,
-    `Back:\n${previewHtml(card.back) || '(empty)'}`
-  ].join('\n'));
+const truncatePreview = (value, maxLength = 160) => {
+  const text = previewHtml(value).replace(/\s+/g, ' ').trim();
+  if (text.length <= maxLength) {
+    return text;
+  }
+  return `${text.slice(0, maxLength - 1)}…`;
+};
 
-  const remaining = cards.length > previewCards.length
-    ? `\n\n...and ${cards.length - previewCards.length} more cards.`
-    : '';
+export type AnkiExportMode = 'save' | 'open';
 
-  const footer = mode === 'open'
-    ? 'Press OK to save the import file, reveal it in your file manager, and open Anki if installed.'
-    : 'Press OK to choose where to save, or Cancel to stop.';
+export type AnkiCardPreview = {
+  deckName: string;
+  tags: string;
+  frontPreview: string;
+  backPreview: string;
+};
 
-  return [
-    `Export ${cards.length} Anki card${cards.length === 1 ? '' : 's'}?`,
-    '',
-    previewCards.join('\n\n---\n\n'),
-    remaining,
-    '',
-    footer,
-  ].join('\n');
+export type AnkiExportPreview = {
+  cardCount: number;
+  decks: string[];
+  cards: AnkiCardPreview[];
+  moreCount: number;
+  mode: AnkiExportMode;
+};
+
+const PREVIEW_CARD_LIMIT = 3;
+
+export const buildAnkiExportPreview = (cards, mode: AnkiExportMode = 'save'): AnkiExportPreview => {
+  const previewCards = cards.slice(0, PREVIEW_CARD_LIMIT).map((card) => ({
+    deckName: card.deckName,
+    tags: card.tags,
+    frontPreview: truncatePreview(card.front, 120),
+    backPreview: truncatePreview(card.back, 180),
+  }));
+
+  return {
+    cardCount: cards.length,
+    decks: uniqueNonEmpty(cards.map((card) => card.deckName)),
+    cards: previewCards,
+    moreCount: Math.max(0, cards.length - previewCards.length),
+    mode,
+  };
 };
 
 export const safeAnkiAllFilename = (lang) => {
@@ -272,9 +316,12 @@ export const createAnkiCardsForTerm = async ({
   });
 };
 
-export const saveAnkiCards = async (cards, defaultPath) => {
-  if (!window.confirm(buildAnkiPreview(cards, 'save'))) {
-    return false;
+export const saveAnkiCards = async (cards, defaultPath, confirmExport?) => {
+  if (confirmExport) {
+    const confirmed = await confirmExport(cards, 'save');
+    if (!confirmed) {
+      return false;
+    }
   }
 
   const ankiTsv = buildAnkiImportFile(cards);
@@ -282,9 +329,12 @@ export const saveAnkiCards = async (cards, defaultPath) => {
 };
 
 /** Writes TSV to user-data/anki, reveals it in the file manager, and launches Anki when found. */
-export const openAnkiCards = async (cards, filename) => {
-  if (!window.confirm(buildAnkiPreview(cards, 'open'))) {
-    return { ok: false, canceled: true };
+export const openAnkiCards = async (cards, filename, confirmExport?) => {
+  if (confirmExport) {
+    const confirmed = await confirmExport(cards, 'open');
+    if (!confirmed) {
+      return { ok: false, canceled: true };
+    }
   }
 
   const ankiTsv = buildAnkiImportFile(cards);

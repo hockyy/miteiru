@@ -64,6 +64,44 @@ export const defaultMeaningBoxStyling: CJKStyling = {
   removeHearingImpaired: false
 }
 
+/**
+ * My Notes example sentences (NoteExampleSentence.tsx).
+ * Tweak colors/sizes here; furigana size/color also in styles/globals.css (.note-example-sentence).
+ */
+export const defaultNoteExampleStyling: CJKStyling = {
+  stroke: {
+    width: "0px",
+    color: "#14532d",
+    hoverColor: "#15803d",
+  },
+  text: {
+    color: "#14532d",
+    hoverColor: "#15803d",
+    fontSize: "22px",
+    weight: 600,
+    fontFamily: "Arial, Hiragino Sans, Meiryo, sans-serif",
+  },
+  textMeaning: {
+    color: "#4b5563",
+    hoverColor: "#15803d",
+    fontSize: "14px",
+    weight: 400,
+    fontFamily: "Arial, sans-serif",
+  },
+  background: "#00000000",
+  position: "0vh",
+  positionFromTop: true,
+  positionMeaningTop: false,
+  maximalMeaningLengthPerCharacter: 20,
+  showFuriganaOnKana: false,
+  showFurigana: true,
+  showRomaji: false,
+  showMeaning: false,
+  showSpace: true,
+  learning: false,
+  removeHearingImpaired: false,
+}
+
 
 export const defaultPrimarySubtitleStyling: CJKStyling = {
   stroke: {

@@ -167,6 +167,7 @@ function Learn() {
     isOpening: isOpeningAnkiCard,
     openStatusMessage: ankiOpenStatusMessage,
     hasAnkiBuilderPanel,
+    ankiExportModal,
     buildAnkiCard,
     updateDraft: updateAnkiDraft,
     openAnkiCard,
@@ -289,6 +290,7 @@ function Learn() {
 
   return (
       <React.Fragment>
+        {ankiExportModal}
         <Head>
           <title>Miteiru</title>
         </Head>

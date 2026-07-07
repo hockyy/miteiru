@@ -10,6 +10,7 @@ import {
   openAnkiCards,
   safeAnkiSentenceFilename,
 } from '../components/Meaning/ankiExport';
+import { useAnkiExportConfirm } from './useAnkiExportConfirm';
 import { SentenceAnkiDraft } from '../types/sentenceAnki';
 import {
   buildSentenceAnkiSystemPrompt,
@@ -37,6 +38,7 @@ export function useSentenceAnki({
   const [isBuilding, setIsBuilding] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
   const [openStatusMessage, setOpenStatusMessage] = useState<string | null>(null);
+  const { confirmExport, modal: ankiExportModal } = useAnkiExportConfirm();
 
   const clearAnkiCard = useCallback(() => {
     setDraft(null);
@@ -122,6 +124,7 @@ export function useSentenceAnki({
       const result = await openAnkiCards(
         [card],
         safeAnkiSentenceFilename(draft.sourceSentence),
+        confirmExport,
       );
 
       if (result.canceled) {
@@ -150,7 +153,7 @@ export function useSentenceAnki({
     } finally {
       setIsOpening(false);
     }
-  }, [draft]);
+  }, [confirmExport, draft]);
 
   const hasAnkiBuilderPanel = isBuilding || !!draft || !!errorMessage;
 
@@ -161,6 +164,7 @@ export function useSentenceAnki({
     isOpening,
     openStatusMessage,
     hasAnkiBuilderPanel,
+    ankiExportModal,
     buildAnkiCard,
     updateDraft,
     openAnkiCard,

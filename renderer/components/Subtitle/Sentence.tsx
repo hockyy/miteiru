@@ -124,7 +124,10 @@ const StyledChineseSentence = styled.button<{ subtitleStyling: CJKStyling }>`
 `
 
 const getTextShadowFromStroke = (strokeWidth: string, color: string) => {
-  const sw = parseFloat(strokeWidth) || 0.22;
+  const sw = parseFloat(strokeWidth);
+  if (!Number.isFinite(sw) || sw <= 0) {
+    return 'none';
+  }
   const scale = Math.max(0.5, sw / 0.22);
   return `0 ${scale}px ${2 * scale}px ${color}, 0 0 ${4 * scale}px ${color}, 0 ${2 * scale}px ${4 * scale}px ${color}`;
 };

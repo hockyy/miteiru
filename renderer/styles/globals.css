@@ -40,6 +40,41 @@ html {
   -webkit-text-fill-color: royalblue;
 }
 
+/* My Notes example sentences — pairs with defaultNoteExampleStyling in utils/CJKStyling.ts */
+.note-example-sentence,
+.note-example-sentence ruby,
+.note-example-sentence rt,
+.note-example-sentence .meaning-note-example,
+.note-example-sentence .meaning-note-example:hover,
+.note-example-sentence .meaning-note-example:hover ruby,
+.note-example-sentence .meaning-note-example:hover rt {
+  -webkit-text-stroke-width: 0 !important;
+  -webkit-text-stroke-color: transparent !important;
+  text-shadow: none !important;
+}
+
+.note-example-sentence {
+  line-height: 1.75;
+}
+
+.note-example-sentence ruby {
+  ruby-position: over;
+}
+
+.note-example-sentence rt {
+  font-size: 0.68em;
+  font-weight: 600;
+  color: #1d4ed8;
+  -webkit-text-fill-color: #1d4ed8;
+  letter-spacing: 0.02em;
+}
+
+.note-example-sentence .meaning-note-example:hover ruby,
+.note-example-sentence .meaning-note-example:hover rt {
+  -webkit-text-fill-color: #2563eb;
+  color: #2563eb;
+}
+
 .video-container {
   height: 100vh;
   width: 100vw;
@@ -166,14 +201,20 @@ button {
 
 .radical-bubble {
   font-size: 18px;
+  font-weight: bold;
+  color: #1e3a8a;
   text-decoration: none;
-  border-radius: 50px;
+  border: 2px solid #1d4ed8;
+  border-radius: 16px;
+  background: #fef08a;
   transition: background-color 0.2s ease-out, color 0.2s ease-out, box-shadow 0.2s ease-out;
 }
 
 .radical-bubble:hover {
   cursor: pointer;
-  transition: background-color 0.2s ease-out, color 0.2s ease-out, box-shadow 0.2s ease-out;
+  background: #fde047;
+  color: #1d4ed8;
+  box-shadow: 2px 2px 0 0 #1d4ed8;
 }
 
 
