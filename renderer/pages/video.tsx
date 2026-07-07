@@ -28,6 +28,7 @@ import useTranslationLinks from "../hooks/useTranslationLinks";
 import useContentString from "../hooks/useContentString";
 import useVocabSidebar from "../hooks/useVocabSidebar";
 import VocabSidebar from "../components/VideoPlayer/VocabSidebar";
+import {RIGHT_SIDEBAR_WIDTH, VOCAB_SIDEBAR_WIDTH} from "../components/VideoPlayer/SidebarShell";
 import useRubyCopy from "../hooks/useRubyCopy";
 import usePitchValue from "../hooks/usePitchValue";
 import {useSubtitleMode} from "../hooks/useSubtitleMode";
@@ -291,7 +292,11 @@ function Video() {
           <Toast info={toastInfo}/>
           <MeaningBox meaning={meaning} setMeaning={setMeaning} tokenizeMiteiru={tokenizeMiteiru}
                       lang={lang} changeLearningState={changeLearningState}
-                      getLearningState={getLearningState}/>
+                      getLearningState={getLearningState}
+                      sidebarInsets={{
+                        left: showVocabSidebar ? VOCAB_SIDEBAR_WIDTH : "0",
+                        right: showSidebar ? RIGHT_SIDEBAR_WIDTH : "0",
+                      }}/>
 
           {!hasVideo && !isDailyWordsLoading && (
             <WordOfTheDay

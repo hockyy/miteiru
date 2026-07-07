@@ -9,6 +9,7 @@ import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
 import {AwesomeButton} from "react-awesome-button";
 import {useRouter} from "next/router";
 import {LearningSidebar} from "../components/VideoPlayer/LearningSidebar";
+import {RIGHT_SIDEBAR_WIDTH} from "../components/VideoPlayer/SidebarShell";
 import {useStoreData} from "../hooks/useStoreData";
 import useLearningKeyBind from "../hooks/useLearningKeyBind";
 import 'react-awesome-button/dist/styles.css';
@@ -300,6 +301,9 @@ function Learn() {
                       tokenizeMiteiru={tokenizeMiteiru}
                       changeLearningState={changeLearningState}
                       getLearningState={getLearningState}
+                      sidebarInsets={{
+                        right: showSidebar ? RIGHT_SIDEBAR_WIDTH : "0",
+                      }}
           />
           {/* 3-Column Layout */}
           <div className="flex h-screen w-full relative">
