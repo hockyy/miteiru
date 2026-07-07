@@ -64,6 +64,11 @@ const getStarColor = (learningState) => {
   return defaultLearningColorStyling.learningColor[learningState].color;
 };
 
+type SidebarInsets = {
+  left?: string;
+  right?: string;
+};
+
 const MeaningBox = ({
                       meaning,
                       setMeaning,
@@ -74,7 +79,19 @@ const MeaningBox = ({
                       changeLearningState = null,
                       getLearningState = null,
                       showMeaning = true,
-                    }) => {
+                      sidebarInsets = {},
+                    }: {
+  meaning: string;
+  setMeaning: (value: string) => void;
+  tokenizeMiteiru: (text: string) => Promise<unknown>;
+  subtitleStyling?: typeof defaultMeaningBoxStyling;
+  customComponent?: React.ReactNode;
+  lang: string;
+  changeLearningState?: ((term: string) => void) | null;
+  getLearningState?: ((term: string) => number) | null;
+  showMeaning?: boolean;
+  sidebarInsets?: SidebarInsets;
+}) => {
   const [meaningContent, setMeaningContent] = useState(initialContentState);
   const [meaningCharacter, setMeaningCharacter] = useState(initialCharacterContentState);
   const [otherMeanings, setOtherMeanings] = useState([]);
@@ -484,10 +501,17 @@ Be concise, clear, and educational. Focus on practical usage.`
   if (meaningContent.single.length === 0) return null;
 
   return (
-      <div onClick={handleBGClick} className="z-[18] fixed inset-0 bg-blue-200/20 w-[100vw] h-[100vh] flex items-center justify-center">
+      <div
+          onClick={handleBGClick}
+          className="z-[20] fixed top-0 bottom-0 flex items-center justify-center bg-blue-200/20 p-2 transition-[left,right] duration-300 ease-out"
+          style={{
+            left: sidebarInsets.left ?? "0",
+            right: sidebarInsets.right ?? "0",
+          }}
+      >
         <div
             onClick={(e) => e.stopPropagation()}
-            className="overflow-auto border-2 border-blue-700 bg-blue-100 z-[101] rounded-lg w-[80vw] h-[80vh] max-w-[1200px] max-h-[90vh]"
+            className="overflow-auto border-2 border-blue-700 bg-blue-100 rounded-lg w-full max-w-[1200px] h-[80vh] max-h-[90vh] transition-[width,max-width] duration-300 ease-out"
         >
           <div className={'flex flex-col'}>
             {memoizedCustomComponent}

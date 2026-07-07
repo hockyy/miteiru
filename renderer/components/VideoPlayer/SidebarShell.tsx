@@ -1,6 +1,9 @@
 import React, {ReactNode} from "react";
 import {ArrowLeft} from "./Icons";
 
+export const RIGHT_SIDEBAR_WIDTH = "min(92vw, 28rem)";
+export const VOCAB_SIDEBAR_WIDTH = "30vw";
+
 interface SidebarShellProps {
   showSidebar: boolean;
   setShowSidebar: (updater: (value: boolean) => boolean) => void;
