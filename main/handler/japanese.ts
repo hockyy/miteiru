@@ -6,6 +6,7 @@ import {readJsonFile} from "../utils";
 import fs from "node:fs";
 import {getTokenizer} from "kuromojin";
 import {getFurigana, processKuromojinToSeparations, KuromojinWord} from "./languages/japaneseAnalysis";
+import {buildInflectionTable, type InflectionTableRequest} from "./languages/inflectionTable";
 
 class Japanese {
 
@@ -182,6 +183,15 @@ class Japanese {
     ipcMain.handle('japaneseTags', () => {
       return this.Dict.tags;
     })
+
+    ipcMain.handle('getInflectionTable', async (_event, request: InflectionTableRequest) => {
+      try {
+        return buildInflectionTable(request, this.Dict.tags ?? {});
+      } catch (e) {
+        console.error(e);
+        return null;
+      }
+    });
 
 
     ipcMain.handle('getWaniKanji', async (event, kanji) => {
