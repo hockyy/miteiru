@@ -7,6 +7,26 @@ import { normalizeGrammarUserData } from '../utils/aiGrammarPrompts';
 
 const GRAMMAR_NOTES_STORE_KEY = 'user.grammarNotes';
 
+export const loadGrammarNotesFromStore = async (): Promise<GrammarNotesDatabase> => {
+  try {
+    const notes = await window.electronStore.get(GRAMMAR_NOTES_STORE_KEY, {});
+    if (typeof notes !== 'object' || notes === null) {
+      return {};
+    }
+
+    const cleanedNotes: GrammarNotesDatabase = {};
+    for (const [key, value] of Object.entries(notes)) {
+      if (value && typeof value === 'object') {
+        cleanedNotes[key] = normalizeGrammarUserData(value);
+      }
+    }
+    return cleanedNotes;
+  } catch (error) {
+    console.error('Failed to load grammar notes:', error);
+    return {};
+  }
+};
+
 export const useGrammarNotes = () => {
   const [grammarNotes, setGrammarNotes] = useState<GrammarNotesDatabase>({});
   const [isLoading, setIsLoading] = useState(true);
@@ -14,22 +34,7 @@ export const useGrammarNotes = () => {
   useEffect(() => {
     const loadNotes = async () => {
       try {
-        const notes = await window.electronStore.get(GRAMMAR_NOTES_STORE_KEY, {});
-
-        if (typeof notes !== 'object' || notes === null) {
-          setGrammarNotes({});
-          await window.electronStore.set(GRAMMAR_NOTES_STORE_KEY, {});
-          return;
-        }
-
-        const cleanedNotes: GrammarNotesDatabase = {};
-        for (const [key, value] of Object.entries(notes)) {
-          if (value && typeof value === 'object') {
-            cleanedNotes[key] = normalizeGrammarUserData(value);
-          }
-        }
-
-        setGrammarNotes(cleanedNotes);
+        setGrammarNotes(await loadGrammarNotesFromStore());
       } catch (error) {
         console.error('Failed to load grammar notes:', error);
         setGrammarNotes({});

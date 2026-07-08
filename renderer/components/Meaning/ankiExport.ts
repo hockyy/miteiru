@@ -8,7 +8,7 @@ import {
 } from "./meaningEntries";
 import {v5 as uuidv5} from 'uuid';
 
-const escapeHtml = (value) => String(value ?? '')
+export const escapeHtml = (value) => String(value ?? '')
   .replace(/&/g, '&amp;')
   .replace(/</g, '&lt;')
   .replace(/>/g, '&gt;')
@@ -19,19 +19,19 @@ const toAnkiTsvField = (value) => String(value ?? '')
   .replace(/\r?\n/g, '<br>')
   .replace(/\t/g, ' ');
 
-const uniqueNonEmpty = (values: unknown[]): string[] => Array.from(new Set(
+export const uniqueNonEmpty = (values: unknown[]): string[] => Array.from(new Set(
   values
     .map((value) => typeof value === 'string' ? value.trim() : '')
     .filter(Boolean)
 ));
 
-const buildHtmlList = (values) => {
+export const buildHtmlList = (values) => {
   const items = uniqueNonEmpty(values);
   if (items.length === 0) return '';
   return `<ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`;
 };
 
-const buildExamplesHtml = (examples = []) => {
+export const buildExamplesHtml = (examples = []) => {
   const items = examples
     .map((example) => {
       const sentence = typeof example?.sentence === 'string' ? example.sentence.trim() : '';
@@ -53,7 +53,7 @@ const buildExamplesHtml = (examples = []) => {
   return `<ul>${items.join('')}</ul>`;
 };
 
-const buildHtmlSection = (title, content) => {
+export const buildHtmlSection = (title, content) => {
   if (!content) return '';
   return `<div><strong>${escapeHtml(title)}</strong><br>${content}</div>`;
 };
