@@ -1,8 +1,12 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { AwesomeButton } from "react-awesome-button";
-import { TranslationVariantRow } from "../../../../Learn/TranslationVariantRow";
+import type { UserNoteExample } from "../../../hooks/useUserNotes";
+import {
+  flattenInflectionRows,
+  indexInflectionExamples,
+} from "../../../../utils/aiInflectionPrompts";
+import { NoteExampleSentence } from "../../NoteExampleSentence";
 import type { InflectionRow, InflectionTable } from "../../../../../main/handler/languages/inflectionTypes";
-import { buildInflectionExamples } from "../../../../utils/inflectionExamples";
 import {
   MEANING_SECTION,
   MEANING_SECTION_HEADER,
@@ -11,9 +15,13 @@ import {
 
 type InflectionSectionProps = {
   table: InflectionTable;
-  wordMeaning: string;
-  onAddExamples: (rows: InflectionRow[]) => Promise<void>;
-  onMoveToAnalyzer?: (text: string) => void;
+  lang: string;
+  tokenizeMiteiru: (text: string) => Promise<unknown>;
+  examples: UserNoteExample[];
+  onNavigateToTerm: (term: string) => void;
+  onGenerateExamples: (rows: InflectionRow[]) => Promise<void>;
+  isGenerating: boolean;
+  errorMessage?: string | null;
 };
 
 const KIND_LABELS: Record<InflectionTable["kind"], string> = {
@@ -24,12 +32,15 @@ const KIND_LABELS: Record<InflectionTable["kind"], string> = {
 
 export const InflectionSection = ({
   table,
-  wordMeaning,
-  onAddExamples,
-  onMoveToAnalyzer = () => {},
+  lang,
+  tokenizeMiteiru,
+  examples,
+  onNavigateToTerm,
+  onGenerateExamples,
+  isGenerating,
+  errorMessage = null,
 }: InflectionSectionProps) => {
   const [showExtended, setShowExtended] = useState(false);
-  const [isAddingExamples, setIsAddingExamples] = useState(false);
 
   const essentialRows = useMemo(
     () => table.rows.filter((row) => row.essential),
@@ -41,19 +52,19 @@ export const InflectionSection = ({
   );
   const visibleRows = showExtended ? table.rows : essentialRows;
 
-  const previewExamples = useMemo(
-    () => buildInflectionExamples(visibleRows, table, wordMeaning),
-    [table, visibleRows, wordMeaning],
+  const visibleForms = useMemo(
+    () => flattenInflectionRows(visibleRows),
+    [visibleRows],
   );
 
-  const handleAddExamples = useCallback(async () => {
-    setIsAddingExamples(true);
-    try {
-      await onAddExamples(visibleRows);
-    } finally {
-      setIsAddingExamples(false);
-    }
-  }, [onAddExamples, visibleRows]);
+  const examplesByForm = useMemo(
+    () => indexInflectionExamples(examples),
+    [examples],
+  );
+
+  const handleGenerate = useCallback(async () => {
+    await onGenerateExamples(visibleRows);
+  }, [onGenerateExamples, visibleRows]);
 
   return (
     <section className={MEANING_SECTION}>
@@ -68,20 +79,26 @@ export const InflectionSection = ({
             ) : null}
           </h3>
           <p className="mt-0.5 text-xs font-medium text-blue-700">
-            Saves one example sentence per form into My Notes
+            AI examples appear in the table below and are saved to My Notes
           </p>
         </div>
         <AwesomeButton
           type="secondary"
           size="small"
-          onPress={handleAddExamples}
-          disabled={isAddingExamples || previewExamples.length === 0}
+          onPress={handleGenerate}
+          disabled={isGenerating || visibleForms.length === 0}
         >
-          {isAddingExamples ? "Adding…" : `Add examples (${previewExamples.length})`}
+          {isGenerating ? "Generating…" : `AI examples (${visibleForms.length})`}
         </AwesomeButton>
       </div>
 
       <div className="space-y-4 px-4 py-3 text-sm">
+        {errorMessage ? (
+          <p className="rounded-lg border border-red-400 bg-red-50 px-3 py-2 text-sm text-red-800">
+            {errorMessage}
+          </p>
+        ) : null}
+
         {table.isInflected && table.ladder.length > 0 ? (
           <div className="rounded-lg border border-blue-500 bg-blue-50 px-3 py-2">
             <div className="text-xs font-bold uppercase tracking-wide text-blue-900">
@@ -101,19 +118,53 @@ export const InflectionSection = ({
           </div>
         ) : null}
 
-        <div className="space-y-2">
-          {previewExamples.map((example, index) => (
-            <TranslationVariantRow
-              key={`${example.label}-${index}`}
-              label={example.label}
-              variant={{
-                text: example.sentence,
-                pronunciation: example.meaning,
-              }}
-              pronunciationLabel="Meaning"
-              onMoveToAnalyzer={onMoveToAnalyzer}
-            />
-          ))}
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] border-collapse text-left">
+            <thead>
+              <tr className="border-b border-blue-300 text-xs uppercase tracking-wide text-blue-800">
+                <th className="py-2 pr-3 font-bold">Form</th>
+                <th className="py-2 pr-3 font-bold">Label</th>
+                <th className="py-2 pr-3 font-bold">When to use</th>
+                <th className="py-2 font-bold">Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visibleForms.map((entry) => {
+                const example = examplesByForm.get(`${entry.label}::${entry.form}`);
+                return (
+                  <tr
+                    key={`${entry.label}-${entry.form}`}
+                    className="border-b border-blue-100 align-top"
+                  >
+                    <td className="py-2 pr-3 font-mono font-bold text-blue-950">
+                      {entry.form}
+                    </td>
+                    <td className="py-2 pr-3 font-semibold text-blue-900">{entry.label}</td>
+                    <td className="py-2 pr-3 text-blue-800">{entry.useHint}</td>
+                    <td className="py-2 text-blue-950">
+                      {example ? (
+                        <div className="min-w-[220px] rounded-lg border border-blue-300 bg-blue-50 px-3 py-2">
+                          <NoteExampleSentence
+                            sentence={example.sentence}
+                            lang={lang}
+                            tokenizeMiteiru={tokenizeMiteiru}
+                            setMeaning={onNavigateToTerm}
+                          />
+                          {example.meaning ? (
+                            <p className="mt-2 border-t border-blue-200 pt-2 text-xs font-medium italic text-red-700">
+                              {example.meaning}
+                            </p>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <span className="text-xs italic text-blue-400">—</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
 
         {extendedRows.length > 0 ? (

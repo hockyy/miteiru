@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react';
 import { useStoreData } from '../../../../hooks/useStoreData';
-import { useUserNotes } from '../../../../hooks/useUserNotes';
 import {
   buildUserNoteSystemPrompt,
   buildUserNoteUserPrompt,
@@ -8,10 +7,19 @@ import {
 } from '../../../../utils/aiUserNotePrompts';
 import type { MiteiruUserEntry } from '../../../../hooks/useUserNotes';
 
+export type UserNotesApi = Pick<
+  ReturnType<typeof import("../../../hooks/useUserNotes").useUserNotes>,
+  "getUserNote" | "setUserNote" | "deleteUserNote" | "userNotes"
+>;
+
 /** CRUD + OpenRouter AI generation for the My Notes panel. */
-export const useMeaningUserNotes = (meaning: string, lang: string) => {
+export const useMeaningUserNotes = (
+  meaning: string,
+  lang: string,
+  notesApi: UserNotesApi,
+) => {
   const [isGeneratingNote, setIsGeneratingNote] = useState(false);
-  const { getUserNote, setUserNote, deleteUserNote } = useUserNotes();
+  const { getUserNote, setUserNote, deleteUserNote } = notesApi;
   const [openRouterApiKey] = useStoreData('openrouter.apiKey', '');
   const [openRouterModel] = useStoreData('openrouter.model', 'z-ai/glm-5.2:nitro');
 
