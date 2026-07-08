@@ -1,0 +1,6655 @@
+{
+  "version": 1,
+  "count": 831,
+  "entries": [
+    {
+      "id": "N5-1",
+      "level": "N5",
+      "index": 1,
+      "form": "ちゃいけない・じゃいけない",
+      "reading": "cha ikenai / ja ikenai",
+      "meaning": "must not do (spoken Japanese)",
+      "source": "https://jlptsensei.com"
+    },
+    {
+      "id": "N5-2",
+      "level": "N5",
+      "index": 2,
+      "form": "だ・です",
+      "reading": "da / desu",
+      "meaning": "to be (am, is, are, were, used to)"
+    },
+    {
+      "id": "N5-3",
+      "level": "N5",
+      "index": 3,
+      "form": "だけ",
+      "reading": "dake",
+      "meaning": "only; just; as much as"
+    },
+    {
+      "id": "N5-4",
+      "level": "N5",
+      "index": 4,
+      "form": "だろう",
+      "reading": "darou",
+      "meaning": "I think; it seems; probably; right?"
+    },
+    {
+      "id": "N5-5",
+      "level": "N5",
+      "index": 5,
+      "form": "で",
+      "reading": "de",
+      "meaning": "in; at; on; by; with; via"
+    },
+    {
+      "id": "N5-6",
+      "level": "N5",
+      "index": 6,
+      "form": "でも",
+      "reading": "demo",
+      "meaning": "but; however"
+    },
+    {
+      "id": "N5-7",
+      "level": "N5",
+      "index": 7,
+      "form": "でしょう",
+      "reading": "deshou",
+      "meaning": "I think; it seems; probably; right?"
+    },
+    {
+      "id": "N5-8",
+      "level": "N5",
+      "index": 8,
+      "form": "どんな",
+      "reading": "donna",
+      "meaning": "what kind of; what sort of"
+    },
+    {
+      "id": "N5-9",
+      "level": "N5",
+      "index": 9,
+      "form": "どうして",
+      "reading": "doushite",
+      "meaning": "why; for what reason; how"
+    },
+    {
+      "id": "N5-10",
+      "level": "N5",
+      "index": 10,
+      "form": "どうやって",
+      "reading": "douyatte",
+      "meaning": "how; in what way; by what means"
+    },
+    {
+      "id": "N5-11",
+      "level": "N5",
+      "index": 11,
+      "form": "が",
+      "reading": "ga",
+      "meaning": "subject marker; however; but"
+    },
+    {
+      "id": "N5-12",
+      "level": "N5",
+      "index": 12,
+      "form": "があります",
+      "reading": "ga arimasu",
+      "meaning": "there is; is (non-living things)"
+    },
+    {
+      "id": "N5-13",
+      "level": "N5",
+      "index": 13,
+      "form": "がほしい",
+      "reading": "ga hoshii",
+      "meaning": "to want something"
+    },
+    {
+      "id": "N5-14",
+      "level": "N5",
+      "index": 14,
+      "form": "がいます",
+      "reading": "ga imasu",
+      "meaning": "there is; to be; is (living things)"
+    },
+    {
+      "id": "N5-15",
+      "level": "N5",
+      "index": 15,
+      "form": "ほうがいい",
+      "reading": "hou ga ii",
+      "meaning": "had better; it'd be better to; should~"
+    },
+    {
+      "id": "N5-16",
+      "level": "N5",
+      "index": 16,
+      "form": "い-adjectives",
+      "reading": "i-adjectives",
+      "meaning": "i-adjectives"
+    },
+    {
+      "id": "N5-17",
+      "level": "N5",
+      "index": 17,
+      "form": "一番",
+      "reading": "ichiban",
+      "meaning": "the most; the best"
+    },
+    {
+      "id": "N5-18",
+      "level": "N5",
+      "index": 18,
+      "form": "一緒に",
+      "reading": "issho ni",
+      "meaning": "together"
+    },
+    {
+      "id": "N5-19",
+      "level": "N5",
+      "index": 19,
+      "form": "いつも",
+      "reading": "itsumo",
+      "meaning": "always; usually; habitually"
+    },
+    {
+      "id": "N5-20",
+      "level": "N5",
+      "index": 20,
+      "form": "じゃない・ではない",
+      "reading": "janai / dewa nai",
+      "meaning": "to not be (am not; is not; are not)"
+    },
+    {
+      "id": "N5-21",
+      "level": "N5",
+      "index": 21,
+      "form": "か",
+      "reading": "ka",
+      "meaning": "question particle"
+    },
+    {
+      "id": "N5-22",
+      "level": "N5",
+      "index": 22,
+      "form": "か〜か",
+      "reading": "ka~ka",
+      "meaning": "or"
+    },
+    {
+      "id": "N5-23",
+      "level": "N5",
+      "index": 23,
+      "form": "から",
+      "reading": "kara",
+      "meaning": "because; since; from"
+    },
+    {
+      "id": "N5-24",
+      "level": "N5",
+      "index": 24,
+      "form": "方",
+      "reading": "kata",
+      "meaning": "the way of doing something; how to do"
+    },
+    {
+      "id": "N5-25",
+      "level": "N5",
+      "index": 25,
+      "form": "けど",
+      "reading": "kedo",
+      "meaning": "but; however; although"
+    },
+    {
+      "id": "N5-26",
+      "level": "N5",
+      "index": 26,
+      "form": "けれども",
+      "reading": "keredo mo",
+      "meaning": "but; however; although"
+    },
+    {
+      "id": "N5-27",
+      "level": "N5",
+      "index": 27,
+      "form": "まだ",
+      "reading": "mada",
+      "meaning": "still; not yet"
+    },
+    {
+      "id": "N5-28",
+      "level": "N5",
+      "index": 28,
+      "form": "まだ〜ていません",
+      "reading": "mada ~te imasen",
+      "meaning": "have not yet"
+    },
+    {
+      "id": "N5-29",
+      "level": "N5",
+      "index": 29,
+      "form": "まで",
+      "reading": "made",
+      "meaning": "until ~; as far as ~; to (an extent); even ~"
+    },
+    {
+      "id": "N5-30",
+      "level": "N5",
+      "index": 30,
+      "form": "前に",
+      "reading": "mae ni",
+      "meaning": "before ~; in front of ~"
+    },
+    {
+      "id": "N5-31",
+      "level": "N5",
+      "index": 31,
+      "form": "ませんか",
+      "reading": "masen ka",
+      "meaning": "would you; do you want to; shall we~"
+    },
+    {
+      "id": "N5-32",
+      "level": "N5",
+      "index": 32,
+      "form": "ましょう",
+      "reading": "mashou",
+      "meaning": "let's ~; shall we ~"
+    },
+    {
+      "id": "N5-33",
+      "level": "N5",
+      "index": 33,
+      "form": "ましょうか",
+      "reading": "mashouka",
+      "meaning": "shall I ~; used to offer help to the listener"
+    },
+    {
+      "id": "N5-34",
+      "level": "N5",
+      "index": 34,
+      "form": "も",
+      "reading": "mo",
+      "meaning": "too; also; as well"
+    },
+    {
+      "id": "N5-35",
+      "level": "N5",
+      "index": 35,
+      "form": "もう",
+      "reading": "mou",
+      "meaning": "already; anymore; again; other"
+    },
+    {
+      "id": "N5-36",
+      "level": "N5",
+      "index": 36,
+      "form": "な-adjectives",
+      "reading": "na-adjectives",
+      "meaning": "na-adjectives"
+    },
+    {
+      "id": "N5-37",
+      "level": "N5",
+      "index": 37,
+      "form": "なあ",
+      "reading": "naa",
+      "meaning": "sentence ending particle; confirmation; admiration, etc"
+    },
+    {
+      "id": "N5-38",
+      "level": "N5",
+      "index": 38,
+      "form": "ないで",
+      "reading": "naide",
+      "meaning": "without doing~ ; To do [B] without doing [A]"
+    },
+    {
+      "id": "N5-39",
+      "level": "N5",
+      "index": 39,
+      "form": "ないでください",
+      "reading": "naide kudasai",
+      "meaning": "please don't do"
+    },
+    {
+      "id": "N5-40",
+      "level": "N5",
+      "index": 40,
+      "form": "なくてもいい",
+      "reading": "naku temo ii",
+      "meaning": "don't have to"
+    },
+    {
+      "id": "N5-41",
+      "level": "N5",
+      "index": 41,
+      "form": "なくちゃ",
+      "reading": "nakucha",
+      "meaning": "must do; need to; gotta do"
+    },
+    {
+      "id": "N5-42",
+      "level": "N5",
+      "index": 42,
+      "form": "なくてはいけない",
+      "reading": "nakute wa ikenai",
+      "meaning": "must do; need to do"
+    },
+    {
+      "id": "N5-43",
+      "level": "N5",
+      "index": 43,
+      "form": "なくてはならない",
+      "reading": "nakute wa naranai",
+      "meaning": "must do; need to do"
+    },
+    {
+      "id": "N5-44",
+      "level": "N5",
+      "index": 44,
+      "form": "なる",
+      "reading": "naru",
+      "meaning": "to become"
+    },
+    {
+      "id": "N5-45",
+      "level": "N5",
+      "index": 45,
+      "form": "んです",
+      "reading": "ndesu",
+      "meaning": "to explain something; show emphasis"
+    },
+    {
+      "id": "N5-46",
+      "level": "N5",
+      "index": 46,
+      "form": "ね",
+      "reading": "ne",
+      "meaning": "isn't it? right? eh?"
+    },
+    {
+      "id": "N5-47",
+      "level": "N5",
+      "index": 47,
+      "form": "に",
+      "reading": "ni",
+      "meaning": "destination particle; in; at; on; to"
+    },
+    {
+      "id": "N5-48",
+      "level": "N5",
+      "index": 48,
+      "form": "にいく",
+      "reading": "ni iku",
+      "meaning": "go to do"
+    },
+    {
+      "id": "N5-49",
+      "level": "N5",
+      "index": 49,
+      "form": "にする",
+      "reading": "ni suru",
+      "meaning": "to decide on"
+    },
+    {
+      "id": "N5-50",
+      "level": "N5",
+      "index": 50,
+      "form": "に/へ",
+      "reading": "ni/e",
+      "meaning": "to (indicates direction / destination)"
+    },
+    {
+      "id": "N5-51",
+      "level": "N5",
+      "index": 51,
+      "form": "の",
+      "reading": "no",
+      "meaning": "possessive particle"
+    },
+    {
+      "id": "N5-52",
+      "level": "N5",
+      "index": 52,
+      "form": "のです",
+      "reading": "no desu",
+      "meaning": "to explain something; show emphasis"
+    },
+    {
+      "id": "N5-53",
+      "level": "N5",
+      "index": 53,
+      "form": "のが下手",
+      "reading": "no ga heta",
+      "meaning": "to be bad at doing something"
+    },
+    {
+      "id": "N5-54",
+      "level": "N5",
+      "index": 54,
+      "form": "のが上手",
+      "reading": "no ga jouzu",
+      "meaning": "to be good at"
+    },
+    {
+      "id": "N5-55",
+      "level": "N5",
+      "index": 55,
+      "form": "のが好き",
+      "reading": "no ga suki",
+      "meaning": "to like doing something"
+    },
+    {
+      "id": "N5-56",
+      "level": "N5",
+      "index": 56,
+      "form": "の中で[A]が一番",
+      "reading": "no naka de [A] ga ichiban",
+      "meaning": "out of this group, [A] is best"
+    },
+    {
+      "id": "N5-57",
+      "level": "N5",
+      "index": 57,
+      "form": "ので",
+      "reading": "node",
+      "meaning": "because of; given that; since"
+    },
+    {
+      "id": "N5-58",
+      "level": "N5",
+      "index": 58,
+      "form": "を",
+      "reading": "o / wo",
+      "meaning": "object marker particle"
+    },
+    {
+      "id": "N5-59",
+      "level": "N5",
+      "index": 59,
+      "form": "をください",
+      "reading": "o kudasai",
+      "meaning": "please give me~"
+    },
+    {
+      "id": "N5-60",
+      "level": "N5",
+      "index": 60,
+      "form": "しかし",
+      "reading": "shikashi",
+      "meaning": "but; however"
+    },
+    {
+      "id": "N5-61",
+      "level": "N5",
+      "index": 61,
+      "form": "すぎる",
+      "reading": "sugiru",
+      "meaning": "too much"
+    },
+    {
+      "id": "N5-62",
+      "level": "N5",
+      "index": 62,
+      "form": "たことがある",
+      "reading": "ta koto ga aru",
+      "meaning": "to have done something before"
+    },
+    {
+      "id": "N5-63",
+      "level": "N5",
+      "index": 63,
+      "form": "たい",
+      "reading": "tai",
+      "meaning": "want to do something"
+    },
+    {
+      "id": "N5-64",
+      "level": "N5",
+      "index": 64,
+      "form": "たり〜たり",
+      "reading": "tari~tari",
+      "meaning": "do such things as A and B"
+    },
+    {
+      "id": "N5-65",
+      "level": "N5",
+      "index": 65,
+      "form": "てある",
+      "reading": "te aru",
+      "meaning": "is/has been done (resulting state)"
+    },
+    {
+      "id": "N5-66",
+      "level": "N5",
+      "index": 66,
+      "form": "ている",
+      "reading": "te iru",
+      "meaning": "ongoing action or current state"
+    },
+    {
+      "id": "N5-67",
+      "level": "N5",
+      "index": 67,
+      "form": "てから",
+      "reading": "te kara",
+      "meaning": "after doing~"
+    },
+    {
+      "id": "N5-68",
+      "level": "N5",
+      "index": 68,
+      "form": "てください",
+      "reading": "te kudasai",
+      "meaning": "please do"
+    },
+    {
+      "id": "N5-69",
+      "level": "N5",
+      "index": 69,
+      "form": "てはいけない",
+      "reading": "te wa ikenai",
+      "meaning": "must not; may not; cannot"
+    },
+    {
+      "id": "N5-70",
+      "level": "N5",
+      "index": 70,
+      "form": "てもいいです",
+      "reading": "temo ii desu",
+      "meaning": "is OK to..; is alright to..; may I..?"
+    },
+    {
+      "id": "N5-71",
+      "level": "N5",
+      "index": 71,
+      "form": "と",
+      "reading": "to",
+      "meaning": "and; with; as; connecting particle"
+    },
+    {
+      "id": "N5-72",
+      "level": "N5",
+      "index": 72,
+      "form": "とき",
+      "reading": "toki",
+      "meaning": "when; at this time"
+    },
+    {
+      "id": "N5-73",
+      "level": "N5",
+      "index": 73,
+      "form": "とても",
+      "reading": "totemo",
+      "meaning": "very; awfully; exceedingly"
+    },
+    {
+      "id": "N5-74",
+      "level": "N5",
+      "index": 74,
+      "form": "つもり",
+      "reading": "tsumori",
+      "meaning": "plan to ~; intend to ~"
+    },
+    {
+      "id": "N5-75",
+      "level": "N5",
+      "index": 75,
+      "form": "は",
+      "reading": "wa - topic marker",
+      "meaning": "topic marker"
+    },
+    {
+      "id": "N5-76",
+      "level": "N5",
+      "index": 76,
+      "form": "は〜より・・・です",
+      "reading": "wa ~yori... desu",
+      "meaning": "[A] is more ~ than [B]"
+    },
+    {
+      "id": "N5-77",
+      "level": "N5",
+      "index": 77,
+      "form": "はどうですか",
+      "reading": "wa dou desu ka",
+      "meaning": "how about; how is"
+    },
+    {
+      "id": "N5-78",
+      "level": "N5",
+      "index": 78,
+      "form": "や",
+      "reading": "ya",
+      "meaning": "and; or; connecting particle"
+    },
+    {
+      "id": "N5-79",
+      "level": "N5",
+      "index": 79,
+      "form": "よ",
+      "reading": "yo",
+      "meaning": "you know; emphasis (ending particle)"
+    },
+    {
+      "id": "N5-80",
+      "level": "N5",
+      "index": 80,
+      "form": "より〜ほうが",
+      "reading": "yori ~hou ga",
+      "meaning": "[A] is more than [B]"
+    },
+    {
+      "id": "N4-1",
+      "level": "N4",
+      "index": 1,
+      "form": "間",
+      "reading": "aida",
+      "meaning": "while; during; between"
+    },
+    {
+      "id": "N4-2",
+      "level": "N4",
+      "index": 2,
+      "form": "間に",
+      "reading": "aida ni",
+      "meaning": "while/during~ something happened"
+    },
+    {
+      "id": "N4-3",
+      "level": "N4",
+      "index": 3,
+      "form": "あまり～ない",
+      "reading": "amari~nai",
+      "meaning": "not very, not much"
+    },
+    {
+      "id": "N4-4",
+      "level": "N4",
+      "index": 4,
+      "form": "後で",
+      "reading": "ato de",
+      "meaning": "after ~; later"
+    },
+    {
+      "id": "N4-5",
+      "level": "N4",
+      "index": 5,
+      "form": "ば",
+      "reading": "ba",
+      "meaning": "conditional form; If [A] then [B]"
+    },
+    {
+      "id": "N4-6",
+      "level": "N4",
+      "index": 6,
+      "form": "場合は",
+      "reading": "baai wa",
+      "meaning": "in the event of; in the case that"
+    },
+    {
+      "id": "N4-7",
+      "level": "N4",
+      "index": 7,
+      "form": "ばかり",
+      "reading": "bakari",
+      "meaning": "only; nothing but"
+    },
+    {
+      "id": "N4-8",
+      "level": "N4",
+      "index": 8,
+      "form": "だけで",
+      "reading": "dake de",
+      "meaning": "just by; just by doing"
+    },
+    {
+      "id": "N4-9",
+      "level": "N4",
+      "index": 9,
+      "form": "出す",
+      "reading": "dasu",
+      "meaning": "to suddenly begin; to suddenly appear"
+    },
+    {
+      "id": "N4-10",
+      "level": "N4",
+      "index": 10,
+      "form": "でございます",
+      "reading": "de gozaimasu",
+      "meaning": "to be (honorific)"
+    },
+    {
+      "id": "N4-11",
+      "level": "N4",
+      "index": 11,
+      "form": "でも",
+      "reading": "demo",
+      "meaning": "... or something"
+    },
+    {
+      "id": "N4-12",
+      "level": "N4",
+      "index": 12,
+      "form": "ではないか",
+      "reading": "dewa nai ka",
+      "meaning": "right?; isn't it?"
+    },
+    {
+      "id": "N4-13",
+      "level": "N4",
+      "index": 13,
+      "form": "が必要",
+      "reading": "ga hitsuyou",
+      "meaning": "need; necessary"
+    },
+    {
+      "id": "N4-14",
+      "level": "N4",
+      "index": 14,
+      "form": "がする",
+      "reading": "ga suru",
+      "meaning": "to smell; hear; taste"
+    },
+    {
+      "id": "N4-15",
+      "level": "N4",
+      "index": 15,
+      "form": "がり",
+      "reading": "gari",
+      "meaning": "personality; tend to~; sensitivity towards~"
+    },
+    {
+      "id": "N4-16",
+      "level": "N4",
+      "index": 16,
+      "form": "がる・がっている",
+      "reading": "garu; gatteiru",
+      "meaning": "to show signs of; to appear; to feel"
+    },
+    {
+      "id": "N4-17",
+      "level": "N4",
+      "index": 17,
+      "form": "ございます",
+      "reading": "gozaimasu",
+      "meaning": "to be, to exist (polite form of いる/ある)"
+    },
+    {
+      "id": "N4-18",
+      "level": "N4",
+      "index": 18,
+      "form": "始める",
+      "reading": "hajimeru",
+      "meaning": "to start; to begin to ~"
+    },
+    {
+      "id": "N4-19",
+      "level": "N4",
+      "index": 19,
+      "form": "はずだ",
+      "reading": "hazu da",
+      "meaning": "it must be; it should be (expectation)"
+    },
+    {
+      "id": "N4-20",
+      "level": "N4",
+      "index": 20,
+      "form": "はずがない",
+      "reading": "hazu ga nai",
+      "meaning": "cannot be (impossible)"
+    },
+    {
+      "id": "N4-21",
+      "level": "N4",
+      "index": 21,
+      "form": "必要がある",
+      "reading": "hitsuyou ga aru",
+      "meaning": "need to; it is necessary to"
+    },
+    {
+      "id": "N4-22",
+      "level": "N4",
+      "index": 22,
+      "form": "意向形",
+      "reading": "ikou kei",
+      "meaning": "volitional form; let's do ~"
+    },
+    {
+      "id": "N4-23",
+      "level": "N4",
+      "index": 23,
+      "form": "いらっしゃる",
+      "reading": "irassharu",
+      "meaning": "to be; to come; to go (polite version)"
+    },
+    {
+      "id": "N4-24",
+      "level": "N4",
+      "index": 24,
+      "form": "いたします",
+      "reading": "itashimasu",
+      "meaning": "to do (polite form of する)"
+    },
+    {
+      "id": "N4-25",
+      "level": "N4",
+      "index": 25,
+      "form": "じゃないか",
+      "reading": "janai ka",
+      "meaning": "right? isn't it? let's~; confirmation"
+    },
+    {
+      "id": "N4-26",
+      "level": "N4",
+      "index": 26,
+      "form": "かどうか",
+      "reading": "ka dou ka",
+      "meaning": "whether or not"
+    },
+    {
+      "id": "N4-27",
+      "level": "N4",
+      "index": 27,
+      "form": "かしら",
+      "reading": "ka shira",
+      "meaning": "I wonder"
+    },
+    {
+      "id": "N4-28",
+      "level": "N4",
+      "index": 28,
+      "form": "かい",
+      "reading": "kai",
+      "meaning": "turns a sentence into a yes/no question"
+    },
+    {
+      "id": "N4-29",
+      "level": "N4",
+      "index": 29,
+      "form": "かもしれない",
+      "reading": "kamo shirenai",
+      "meaning": "might; perhaps; indicates possibility"
+    },
+    {
+      "id": "N4-30",
+      "level": "N4",
+      "index": 30,
+      "form": "かな",
+      "reading": "kana",
+      "meaning": "I wonder; should I?"
+    },
+    {
+      "id": "N4-31",
+      "level": "N4",
+      "index": 31,
+      "form": "から作る",
+      "reading": "kara tsukuru",
+      "meaning": "made from; made with"
+    },
+    {
+      "id": "N4-32",
+      "level": "N4",
+      "index": 32,
+      "form": "きっと",
+      "reading": "kitto",
+      "meaning": "surely; undoubtedly; certainly; likely"
+    },
+    {
+      "id": "N4-33",
+      "level": "N4",
+      "index": 33,
+      "form": "頃",
+      "reading": "koro / goro",
+      "meaning": "around; about; when"
+    },
+    {
+      "id": "N4-34",
+      "level": "N4",
+      "index": 34,
+      "form": "こと",
+      "reading": "koto",
+      "meaning": "Verb nominalizer"
+    },
+    {
+      "id": "N4-35",
+      "level": "N4",
+      "index": 35,
+      "form": "ことがある",
+      "reading": "koto ga aru",
+      "meaning": "there are times when"
+    },
+    {
+      "id": "N4-36",
+      "level": "N4",
+      "index": 36,
+      "form": "ことができる",
+      "reading": "koto ga dekiru",
+      "meaning": "can; able to"
+    },
+    {
+      "id": "N4-37",
+      "level": "N4",
+      "index": 37,
+      "form": "ことになる",
+      "reading": "koto ni naru",
+      "meaning": "It has been decided that..; it turns out ~"
+    },
+    {
+      "id": "N4-38",
+      "level": "N4",
+      "index": 38,
+      "form": "ことにする",
+      "reading": "koto ni suru",
+      "meaning": "to decide on"
+    },
+    {
+      "id": "N4-39",
+      "level": "N4",
+      "index": 39,
+      "form": "くする",
+      "reading": "ku suru",
+      "meaning": "to make something ~"
+    },
+    {
+      "id": "N4-40",
+      "level": "N4",
+      "index": 40,
+      "form": "急に",
+      "reading": "kyuu ni",
+      "meaning": "suddenly"
+    },
+    {
+      "id": "N4-41",
+      "level": "N4",
+      "index": 41,
+      "form": "までに",
+      "reading": "made ni",
+      "meaning": "by; by the time; indicates time limit"
+    },
+    {
+      "id": "N4-42",
+      "level": "N4",
+      "index": 42,
+      "form": "まま",
+      "reading": "mama",
+      "meaning": "as it is; current state; without changing"
+    },
+    {
+      "id": "N4-43",
+      "level": "N4",
+      "index": 43,
+      "form": "または",
+      "reading": "matawa",
+      "meaning": "both; or; otherwise; choice of [A] or [B]"
+    },
+    {
+      "id": "N4-44",
+      "level": "N4",
+      "index": 44,
+      "form": "みたいだ",
+      "reading": "mitai da",
+      "meaning": "like, similar to, resembling"
+    },
+    {
+      "id": "N4-45",
+      "level": "N4",
+      "index": 45,
+      "form": "みたいな",
+      "reading": "mitai na",
+      "meaning": "like, similar to"
+    },
+    {
+      "id": "N4-46",
+      "level": "N4",
+      "index": 46,
+      "form": "みたいに",
+      "reading": "mitai ni",
+      "meaning": "like, similar to"
+    },
+    {
+      "id": "N4-47",
+      "level": "N4",
+      "index": 47,
+      "form": "も",
+      "reading": "mo",
+      "meaning": "as many as; as much as; up to; nearly"
+    },
+    {
+      "id": "N4-48",
+      "level": "N4",
+      "index": 48,
+      "form": "な",
+      "reading": "na",
+      "meaning": "don’t ~ (order somebody to not do ~)"
+    },
+    {
+      "id": "N4-49",
+      "level": "N4",
+      "index": 49,
+      "form": "など",
+      "reading": "nado",
+      "meaning": "such as, things like"
+    },
+    {
+      "id": "N4-50",
+      "level": "N4",
+      "index": 50,
+      "form": "ながら",
+      "reading": "nagara",
+      "meaning": "while; during; as; simultaneously"
+    },
+    {
+      "id": "N4-51",
+      "level": "N4",
+      "index": 51,
+      "form": "なかなか～ない",
+      "reading": "nakanaka~nai",
+      "meaning": "not easy to; struggling to; not able to~"
+    },
+    {
+      "id": "N4-52",
+      "level": "N4",
+      "index": 52,
+      "form": "なければいけない",
+      "reading": "nakereba ikenai",
+      "meaning": "must do something; have to do something"
+    },
+    {
+      "id": "N4-53",
+      "level": "N4",
+      "index": 53,
+      "form": "なければならない",
+      "reading": "nakereba naranai",
+      "meaning": "must do something; have to do something"
+    },
+    {
+      "id": "N4-54",
+      "level": "N4",
+      "index": 54,
+      "form": "なら",
+      "reading": "nara",
+      "meaning": "if; in the case that ~"
+    },
+    {
+      "id": "N4-55",
+      "level": "N4",
+      "index": 55,
+      "form": "なさい",
+      "reading": "nasai",
+      "meaning": "do this (soft/firm command)"
+    },
+    {
+      "id": "N4-56",
+      "level": "N4",
+      "index": 56,
+      "form": "なさる",
+      "reading": "nasaru",
+      "meaning": "to do (honorific)"
+    },
+    {
+      "id": "N4-57",
+      "level": "N4",
+      "index": 57,
+      "form": "に気がつく",
+      "reading": "ni ki ga tsuku",
+      "meaning": "to notice; to realize"
+    },
+    {
+      "id": "N4-58",
+      "level": "N4",
+      "index": 58,
+      "form": "にみえる",
+      "reading": "ni mieru",
+      "meaning": "to look; to seem; to appear"
+    },
+    {
+      "id": "N4-59",
+      "level": "N4",
+      "index": 59,
+      "form": "にする",
+      "reading": "ni suru",
+      "meaning": "to make something ~"
+    },
+    {
+      "id": "N4-60",
+      "level": "N4",
+      "index": 60,
+      "form": "にくい",
+      "reading": "nikui",
+      "meaning": "difficult to do"
+    },
+    {
+      "id": "N4-61",
+      "level": "N4",
+      "index": 61,
+      "form": "の中で",
+      "reading": "no naka de",
+      "meaning": "in, among"
+    },
+    {
+      "id": "N4-62",
+      "level": "N4",
+      "index": 62,
+      "form": "のに",
+      "reading": "noni",
+      "meaning": "although, in spite of, even though"
+    },
+    {
+      "id": "N4-63",
+      "level": "N4",
+      "index": 63,
+      "form": "のに",
+      "reading": "noni",
+      "meaning": "to (do something); in order to"
+    },
+    {
+      "id": "N4-64",
+      "level": "N4",
+      "index": 64,
+      "form": "のは〜だ",
+      "reading": "nowa~da",
+      "meaning": "[A] is [B]; the reason for [A] is [B]"
+    },
+    {
+      "id": "N4-65",
+      "level": "N4",
+      "index": 65,
+      "form": "お～ください",
+      "reading": "o~kudasai",
+      "meaning": "please do (honorific)"
+    },
+    {
+      "id": "N4-66",
+      "level": "N4",
+      "index": 66,
+      "form": "お～になる",
+      "reading": "o~ni naru",
+      "meaning": "to do (honorific)"
+    },
+    {
+      "id": "N4-67",
+      "level": "N4",
+      "index": 67,
+      "form": "おきに",
+      "reading": "oki ni",
+      "meaning": "repeated at intervals, every"
+    },
+    {
+      "id": "N4-68",
+      "level": "N4",
+      "index": 68,
+      "form": "終わる",
+      "reading": "owaru",
+      "meaning": "to finish; to end"
+    },
+    {
+      "id": "N4-69",
+      "level": "N4",
+      "index": 69,
+      "form": "られる",
+      "reading": "rareru",
+      "meaning": "potential form; ability/inability to do ~"
+    },
+    {
+      "id": "N4-70",
+      "level": "N4",
+      "index": 70,
+      "form": "らしい",
+      "reading": "rashii",
+      "meaning": "it seems like; I heard; apparently~"
+    },
+    {
+      "id": "N4-71",
+      "level": "N4",
+      "index": 71,
+      "form": "さ",
+      "reading": "sa",
+      "meaning": "-ness ; nominalizer for adjective"
+    },
+    {
+      "id": "N4-72",
+      "level": "N4",
+      "index": 72,
+      "form": "さっき",
+      "reading": "sakki",
+      "meaning": "some time ago; just now"
+    },
+    {
+      "id": "N4-73",
+      "level": "N4",
+      "index": 73,
+      "form": "させられる",
+      "reading": "saserareru",
+      "meaning": "causative-passive; to be made to do ~"
+    },
+    {
+      "id": "N4-74",
+      "level": "N4",
+      "index": 74,
+      "form": "させる",
+      "reading": "saseru",
+      "meaning": "causative form; to make/let somebody do"
+    },
+    {
+      "id": "N4-75",
+      "level": "N4",
+      "index": 75,
+      "form": "させてください",
+      "reading": "sasete kudasai",
+      "meaning": "please let me do"
+    },
+    {
+      "id": "N4-76",
+      "level": "N4",
+      "index": 76,
+      "form": "さすが",
+      "reading": "sasuga",
+      "meaning": "as one would expect; as is to be expected"
+    },
+    {
+      "id": "N4-77",
+      "level": "N4",
+      "index": 77,
+      "form": "し",
+      "reading": "shi",
+      "meaning": "and; and what’s more; emphasis"
+    },
+    {
+      "id": "N4-78",
+      "level": "N4",
+      "index": 78,
+      "form": "そんなに",
+      "reading": "sonna ni",
+      "meaning": "so much; so; like that"
+    },
+    {
+      "id": "N4-79",
+      "level": "N4",
+      "index": 79,
+      "form": "それでも",
+      "reading": "sore demo",
+      "meaning": "but still; and yet; even so"
+    },
+    {
+      "id": "N4-80",
+      "level": "N4",
+      "index": 80,
+      "form": "そうだ",
+      "reading": "sou da [1]",
+      "meaning": "I heard that; it is said that"
+    },
+    {
+      "id": "N4-81",
+      "level": "N4",
+      "index": 81,
+      "form": "そうだ",
+      "reading": "sou da [2]",
+      "meaning": "looks like; appears like"
+    },
+    {
+      "id": "N4-82",
+      "level": "N4",
+      "index": 82,
+      "form": "そうに・そうな",
+      "reading": "sou ni / sou na",
+      "meaning": "seems like; looks like"
+    },
+    {
+      "id": "N4-83",
+      "level": "N4",
+      "index": 83,
+      "form": "たばかり",
+      "reading": "ta bakari",
+      "meaning": "just finished; something just occurred"
+    },
+    {
+      "id": "N4-84",
+      "level": "N4",
+      "index": 84,
+      "form": "たところ",
+      "reading": "ta tokoro",
+      "meaning": "just finished doing, was just doing"
+    },
+    {
+      "id": "N4-85",
+      "level": "N4",
+      "index": 85,
+      "form": "他動詞 & 自動詞",
+      "reading": "tadoushi & jidoushi",
+      "meaning": "Transitive & Intransitive Verbs"
+    },
+    {
+      "id": "N4-86",
+      "level": "N4",
+      "index": 86,
+      "form": "たがる",
+      "reading": "tagaru",
+      "meaning": "wants to do~ (third person)"
+    },
+    {
+      "id": "N4-87",
+      "level": "N4",
+      "index": 87,
+      "form": "たら",
+      "reading": "tara",
+      "meaning": "if, after, when"
+    },
+    {
+      "id": "N4-88",
+      "level": "N4",
+      "index": 88,
+      "form": "たらどう",
+      "reading": "tara dou",
+      "meaning": "why don't you"
+    },
+    {
+      "id": "N4-89",
+      "level": "N4",
+      "index": 89,
+      "form": "たらいいですか",
+      "reading": "tara ii desu ka",
+      "meaning": "what should I do?; seeking instruction"
+    },
+    {
+      "id": "N4-90",
+      "level": "N4",
+      "index": 90,
+      "form": "て / で",
+      "reading": "te / de",
+      "meaning": "conjunctive; so; because of [A], [B]..."
+    },
+    {
+      "id": "N4-91",
+      "level": "N4",
+      "index": 91,
+      "form": "てあげる",
+      "reading": "te ageru",
+      "meaning": "to do for; to do a favor"
+    },
+    {
+      "id": "N4-92",
+      "level": "N4",
+      "index": 92,
+      "form": "てほしい",
+      "reading": "te hoshii",
+      "meaning": "I want you to; need you to~"
+    },
+    {
+      "id": "N4-93",
+      "level": "N4",
+      "index": 93,
+      "form": "ていく",
+      "reading": "te iku",
+      "meaning": "to start; to continue; to go on"
+    },
+    {
+      "id": "N4-94",
+      "level": "N4",
+      "index": 94,
+      "form": "ていた",
+      "reading": "te ita",
+      "meaning": "was doing something (past continuous)"
+    },
+    {
+      "id": "N4-95",
+      "level": "N4",
+      "index": 95,
+      "form": "ていただけませんか",
+      "reading": "te itadakemasen ka",
+      "meaning": "could you please"
+    },
+    {
+      "id": "N4-96",
+      "level": "N4",
+      "index": 96,
+      "form": "てくれる",
+      "reading": "te kureru",
+      "meaning": "to do a favor; do something for someone"
+    },
+    {
+      "id": "N4-97",
+      "level": "N4",
+      "index": 97,
+      "form": "てくる",
+      "reading": "te kuru",
+      "meaning": "to do… and come back; to continue"
+    },
+    {
+      "id": "N4-98",
+      "level": "N4",
+      "index": 98,
+      "form": "てみる",
+      "reading": "te miru",
+      "meaning": "try doing"
+    },
+    {
+      "id": "N4-99",
+      "level": "N4",
+      "index": 99,
+      "form": "てもらう",
+      "reading": "te morau",
+      "meaning": "to get somebody to do something"
+    },
+    {
+      "id": "N4-100",
+      "level": "N4",
+      "index": 100,
+      "form": "ておく",
+      "reading": "te oku",
+      "meaning": "to do something in advance"
+    },
+    {
+      "id": "N4-101",
+      "level": "N4",
+      "index": 101,
+      "form": "てしまう / ちゃう",
+      "reading": "te shimau / chau",
+      "meaning": "to do something by accident, to finish"
+    },
+    {
+      "id": "N4-102",
+      "level": "N4",
+      "index": 102,
+      "form": "てすみません",
+      "reading": "te sumimasen",
+      "meaning": "I’m sorry for"
+    },
+    {
+      "id": "N4-103",
+      "level": "N4",
+      "index": 103,
+      "form": "てやる",
+      "reading": "te yaru",
+      "meaning": "to do for; to do a favor (casual)"
+    },
+    {
+      "id": "N4-104",
+      "level": "N4",
+      "index": 104,
+      "form": "てよかった",
+      "reading": "te yokatta",
+      "meaning": "I’m glad that.."
+    },
+    {
+      "id": "N4-105",
+      "level": "N4",
+      "index": 105,
+      "form": "ているところ",
+      "reading": "teiru tokoro",
+      "meaning": "in the process of doing"
+    },
+    {
+      "id": "N4-106",
+      "level": "N4",
+      "index": 106,
+      "form": "ても",
+      "reading": "temo",
+      "meaning": "even; even if; even though"
+    },
+    {
+      "id": "N4-107",
+      "level": "N4",
+      "index": 107,
+      "form": "と",
+      "reading": "to",
+      "meaning": "whenever [A] happens, [B] also happens"
+    },
+    {
+      "id": "N4-108",
+      "level": "N4",
+      "index": 108,
+      "form": "と言ってもいい",
+      "reading": "to ittemo ii",
+      "meaning": "you could say; one might say; I'd say"
+    },
+    {
+      "id": "N4-109",
+      "level": "N4",
+      "index": 109,
+      "form": "という",
+      "reading": "to iu",
+      "meaning": "called; named; that"
+    },
+    {
+      "id": "N4-110",
+      "level": "N4",
+      "index": 110,
+      "form": "ということ",
+      "reading": "to iu koto",
+      "meaning": "convert phrase into noun"
+    },
+    {
+      "id": "N4-111",
+      "level": "N4",
+      "index": 111,
+      "form": "と言われている",
+      "reading": "to iwarete iru",
+      "meaning": "it is said that..."
+    },
+    {
+      "id": "N4-112",
+      "level": "N4",
+      "index": 112,
+      "form": "と聞いた",
+      "reading": "to kiita",
+      "meaning": "I heard..."
+    },
+    {
+      "id": "N4-113",
+      "level": "N4",
+      "index": 113,
+      "form": "と思う",
+      "reading": "to omou",
+      "meaning": "to think…; I think…; you think…"
+    },
+    {
+      "id": "N4-114",
+      "level": "N4",
+      "index": 114,
+      "form": "とか～とか",
+      "reading": "toka~toka",
+      "meaning": "among other things; such as; like"
+    },
+    {
+      "id": "N4-115",
+      "level": "N4",
+      "index": 115,
+      "form": "ところ",
+      "reading": "tokoro",
+      "meaning": "just about to; on the verge of doing ~"
+    },
+    {
+      "id": "N4-116",
+      "level": "N4",
+      "index": 116,
+      "form": "続ける",
+      "reading": "tsuzukeru",
+      "meaning": "continue to; keen on"
+    },
+    {
+      "id": "N4-117",
+      "level": "N4",
+      "index": 117,
+      "form": "って",
+      "reading": "tte",
+      "meaning": "named; called"
+    },
+    {
+      "id": "N4-118",
+      "level": "N4",
+      "index": 118,
+      "form": "受身形",
+      "reading": "ukemi kei",
+      "meaning": "passive form; passive voice"
+    },
+    {
+      "id": "N4-119",
+      "level": "N4",
+      "index": 119,
+      "form": "は〜が… は",
+      "reading": "wa~ga... wa",
+      "meaning": "[A] but [B]; however; comparison"
+    },
+    {
+      "id": "N4-120",
+      "level": "N4",
+      "index": 120,
+      "form": "やすい",
+      "reading": "yasui",
+      "meaning": "easy to; likely to; prone to; a tendency to~"
+    },
+    {
+      "id": "N4-121",
+      "level": "N4",
+      "index": 121,
+      "form": "やっと",
+      "reading": "yatto",
+      "meaning": "at last; finally; barely; narrowly"
+    },
+    {
+      "id": "N4-122",
+      "level": "N4",
+      "index": 122,
+      "form": "より",
+      "reading": "yori",
+      "meaning": "than; rather than; more than"
+    },
+    {
+      "id": "N4-123",
+      "level": "N4",
+      "index": 123,
+      "form": "予定だ",
+      "reading": "yotei da",
+      "meaning": "plan to, intend to"
+    },
+    {
+      "id": "N4-124",
+      "level": "N4",
+      "index": 124,
+      "form": "ようだ",
+      "reading": "you da",
+      "meaning": "appears; seems; looks as if"
+    },
+    {
+      "id": "N4-125",
+      "level": "N4",
+      "index": 125,
+      "form": "ように / ような",
+      "reading": "you ni / you na",
+      "meaning": "like; as; similar to"
+    },
+    {
+      "id": "N4-126",
+      "level": "N4",
+      "index": 126,
+      "form": "ようになる",
+      "reading": "you ni naru",
+      "meaning": "to reach the point that; to turn into"
+    },
+    {
+      "id": "N4-127",
+      "level": "N4",
+      "index": 127,
+      "form": "ようにする",
+      "reading": "you ni suru",
+      "meaning": "to try to; to make sure that"
+    },
+    {
+      "id": "N4-128",
+      "level": "N4",
+      "index": 128,
+      "form": "ようと思う",
+      "reading": "you to omou",
+      "meaning": "thinking of doing; planning to"
+    },
+    {
+      "id": "N4-129",
+      "level": "N4",
+      "index": 129,
+      "form": "ぜひ",
+      "reading": "zehi",
+      "meaning": "by all means; certainly; definitely"
+    },
+    {
+      "id": "N4-130",
+      "level": "N4",
+      "index": 130,
+      "form": "全然～ない",
+      "reading": "zenzen~nai",
+      "meaning": "(not) at all"
+    },
+    {
+      "id": "N4-131",
+      "level": "N4",
+      "index": 131,
+      "form": "づらい",
+      "reading": "zurai",
+      "meaning": "difficult to do"
+    },
+    {
+      "id": "N3-1",
+      "level": "N3",
+      "index": 1,
+      "form": "上げる",
+      "reading": "ageru",
+      "meaning": "to finish doing~"
+    },
+    {
+      "id": "N3-2",
+      "level": "N3",
+      "index": 2,
+      "form": "あまり",
+      "reading": "amari",
+      "meaning": "so much… that"
+    },
+    {
+      "id": "N3-3",
+      "level": "N3",
+      "index": 3,
+      "form": "あまりにも",
+      "reading": "amari ni mo",
+      "meaning": "too…; so much… that; excessively~"
+    },
+    {
+      "id": "N3-4",
+      "level": "N3",
+      "index": 4,
+      "form": "合う",
+      "reading": "au",
+      "meaning": "do something together"
+    },
+    {
+      "id": "N3-5",
+      "level": "N3",
+      "index": 5,
+      "form": "ばいい",
+      "reading": "ba ii",
+      "meaning": "should, can, it’d be good if"
+    },
+    {
+      "id": "N3-6",
+      "level": "N3",
+      "index": 6,
+      "form": "ばよかった",
+      "reading": "ba yokatta",
+      "meaning": "should have, would have been better if~"
+    },
+    {
+      "id": "N3-7",
+      "level": "N3",
+      "index": 7,
+      "form": "ば～ほど",
+      "reading": "ba~hodo",
+      "meaning": "the more… the more"
+    },
+    {
+      "id": "N3-8",
+      "level": "N3",
+      "index": 8,
+      "form": "ば～のに",
+      "reading": "ba~noni",
+      "meaning": "would have; should have; if only~"
+    },
+    {
+      "id": "N3-9",
+      "level": "N3",
+      "index": 9,
+      "form": "ばかりで",
+      "reading": "bakari de",
+      "meaning": "only; just (negative description)"
+    },
+    {
+      "id": "N3-10",
+      "level": "N3",
+      "index": 10,
+      "form": "ばかりでなく",
+      "reading": "bakari denaku",
+      "meaning": "not only.. but also; as well as"
+    },
+    {
+      "id": "N3-11",
+      "level": "N3",
+      "index": 11,
+      "form": "べきだ",
+      "reading": "beki da",
+      "meaning": "should do~; must do~"
+    },
+    {
+      "id": "N3-12",
+      "level": "N3",
+      "index": 12,
+      "form": "べきではない",
+      "reading": "beki dewa nai",
+      "meaning": "should not do~; must not do~"
+    },
+    {
+      "id": "N3-13",
+      "level": "N3",
+      "index": 13,
+      "form": "別に～ない",
+      "reading": "betsu ni~nai",
+      "meaning": "not really, not particularly"
+    },
+    {
+      "id": "N3-14",
+      "level": "N3",
+      "index": 14,
+      "form": "ぶりに",
+      "reading": "buri ni",
+      "meaning": "for the first time in (period of time)"
+    },
+    {
+      "id": "N3-15",
+      "level": "N3",
+      "index": 15,
+      "form": "中",
+      "reading": "chuu / juu",
+      "meaning": "currently; during; throughout"
+    },
+    {
+      "id": "N3-16",
+      "level": "N3",
+      "index": 16,
+      "form": "だけ",
+      "reading": "dake",
+      "meaning": "as much as~"
+    },
+    {
+      "id": "N3-17",
+      "level": "N3",
+      "index": 17,
+      "form": "だけでなく",
+      "reading": "dake de naku",
+      "meaning": "not only… but also"
+    },
+    {
+      "id": "N3-18",
+      "level": "N3",
+      "index": 18,
+      "form": "だけど",
+      "reading": "dakedo",
+      "meaning": "however; but"
+    },
+    {
+      "id": "N3-19",
+      "level": "N3",
+      "index": 19,
+      "form": "だらけ",
+      "reading": "darake",
+      "meaning": "full of; covered with; a lot of~"
+    },
+    {
+      "id": "N3-20",
+      "level": "N3",
+      "index": 20,
+      "form": "どんなに～ても",
+      "reading": "donna ni~temo",
+      "meaning": "no matter how (much)"
+    },
+    {
+      "id": "N3-21",
+      "level": "N3",
+      "index": 21,
+      "form": "どうしても",
+      "reading": "doushitemo",
+      "meaning": "no matter what; at any cost; after all"
+    },
+    {
+      "id": "N3-22",
+      "level": "N3",
+      "index": 22,
+      "form": "ふりをする",
+      "reading": "furi o suru",
+      "meaning": "to pretend; to act as if~"
+    },
+    {
+      "id": "N3-23",
+      "level": "N3",
+      "index": 23,
+      "form": "ふと",
+      "reading": "futo",
+      "meaning": "suddenly; accidentally; unexpectedly"
+    },
+    {
+      "id": "N3-24",
+      "level": "N3",
+      "index": 24,
+      "form": "がち",
+      "reading": "gachi",
+      "meaning": "tend to; tendency to; frequently; often~"
+    },
+    {
+      "id": "N3-25",
+      "level": "N3",
+      "index": 25,
+      "form": "がたい",
+      "reading": "gatai",
+      "meaning": "very difficult to; impossible to"
+    },
+    {
+      "id": "N3-26",
+      "level": "N3",
+      "index": 26,
+      "form": "気味",
+      "reading": "gimi",
+      "meaning": "-like; -looking; -looked; tending to"
+    },
+    {
+      "id": "N3-27",
+      "level": "N3",
+      "index": 27,
+      "form": "ごとに",
+      "reading": "goto ni",
+      "meaning": "each; every; at intervals of"
+    },
+    {
+      "id": "N3-28",
+      "level": "N3",
+      "index": 28,
+      "form": "ほど",
+      "reading": "hodo",
+      "meaning": "degree; extent; bounds; upper limit"
+    },
+    {
+      "id": "N3-29",
+      "level": "N3",
+      "index": 29,
+      "form": "ほど～ない",
+      "reading": "hodo~nai",
+      "meaning": "is not as… as"
+    },
+    {
+      "id": "N3-30",
+      "level": "N3",
+      "index": 30,
+      "form": "一度に",
+      "reading": "ichido ni",
+      "meaning": "all at once"
+    },
+    {
+      "id": "N3-31",
+      "level": "N3",
+      "index": 31,
+      "form": "いくら～ても",
+      "reading": "ikura~temo",
+      "meaning": "no matter how~"
+    },
+    {
+      "id": "N3-32",
+      "level": "N3",
+      "index": 32,
+      "form": "一方だ",
+      "reading": "ippou da",
+      "meaning": "more and more; continue to"
+    },
+    {
+      "id": "N3-33",
+      "level": "N3",
+      "index": 33,
+      "form": "一体",
+      "reading": "ittai",
+      "meaning": "emphasis; what on earth?"
+    },
+    {
+      "id": "N3-34",
+      "level": "N3",
+      "index": 34,
+      "form": "じゃない",
+      "reading": "janai",
+      "meaning": "maybe; most likely; confirmation"
+    },
+    {
+      "id": "N3-35",
+      "level": "N3",
+      "index": 35,
+      "form": "か何か",
+      "reading": "ka nani ka",
+      "meaning": "or something"
+    },
+    {
+      "id": "N3-36",
+      "level": "N3",
+      "index": 36,
+      "form": "かける",
+      "reading": "kakeru",
+      "meaning": "half-; not yet finished; in the middle of~"
+    },
+    {
+      "id": "N3-37",
+      "level": "N3",
+      "index": 37,
+      "form": "から〜にかけて",
+      "reading": "kara~ni kakete",
+      "meaning": "through; from [A] to [B]"
+    },
+    {
+      "id": "N3-38",
+      "level": "N3",
+      "index": 38,
+      "form": "代わりに",
+      "reading": "kawari ni",
+      "meaning": "instead of; in exchange for~"
+    },
+    {
+      "id": "N3-39",
+      "level": "N3",
+      "index": 39,
+      "form": "結果",
+      "reading": "kekka",
+      "meaning": "as a result of; after"
+    },
+    {
+      "id": "N3-40",
+      "level": "N3",
+      "index": 40,
+      "form": "結局",
+      "reading": "kekkyoku",
+      "meaning": "after all; eventually; in the end"
+    },
+    {
+      "id": "N3-41",
+      "level": "N3",
+      "index": 41,
+      "form": "決して～ない",
+      "reading": "kesshite~nai",
+      "meaning": "never; by no means"
+    },
+    {
+      "id": "N3-42",
+      "level": "N3",
+      "index": 42,
+      "form": "切れない",
+      "reading": "kirenai",
+      "meaning": "unable to do; too much to finish"
+    },
+    {
+      "id": "N3-43",
+      "level": "N3",
+      "index": 43,
+      "form": "きり",
+      "reading": "kiri",
+      "meaning": "only; just; since; after"
+    },
+    {
+      "id": "N3-44",
+      "level": "N3",
+      "index": 44,
+      "form": "切る",
+      "reading": "kiru",
+      "meaning": "to do something completely to the end"
+    },
+    {
+      "id": "N3-45",
+      "level": "N3",
+      "index": 45,
+      "form": "っけ",
+      "reading": "kke",
+      "meaning": "casual suffix to confirm something"
+    },
+    {
+      "id": "N3-46",
+      "level": "N3",
+      "index": 46,
+      "form": "込む",
+      "reading": "komu",
+      "meaning": "Move inside; do a long time"
+    },
+    {
+      "id": "N3-47",
+      "level": "N3",
+      "index": 47,
+      "form": "こそ",
+      "reading": "koso",
+      "meaning": "for sure; precisely; definitely"
+    },
+    {
+      "id": "N3-48",
+      "level": "N3",
+      "index": 48,
+      "form": "こと",
+      "reading": "koto",
+      "meaning": "(must) do"
+    },
+    {
+      "id": "N3-49",
+      "level": "N3",
+      "index": 49,
+      "form": "ことから",
+      "reading": "koto kara",
+      "meaning": "from the fact that~"
+    },
+    {
+      "id": "N3-50",
+      "level": "N3",
+      "index": 50,
+      "form": "ことになっている",
+      "reading": "koto ni natteiru",
+      "meaning": "to be expected to; it has been decided~"
+    },
+    {
+      "id": "N3-51",
+      "level": "N3",
+      "index": 51,
+      "form": "ことはない",
+      "reading": "koto wa nai",
+      "meaning": "there is no need to; no possibility that~"
+    },
+    {
+      "id": "N3-52",
+      "level": "N3",
+      "index": 52,
+      "form": "ことは～が",
+      "reading": "koto wa~ga",
+      "meaning": "although; but"
+    },
+    {
+      "id": "N3-53",
+      "level": "N3",
+      "index": 53,
+      "form": "くらい・ぐらい",
+      "reading": "kurai / gurai",
+      "meaning": "approximately; about; to the extent"
+    },
+    {
+      "id": "N3-54",
+      "level": "N3",
+      "index": 54,
+      "form": "くせに",
+      "reading": "kuse ni",
+      "meaning": "although~; despite the fact that~"
+    },
+    {
+      "id": "N3-55",
+      "level": "N3",
+      "index": 55,
+      "form": "まるで",
+      "reading": "maru de",
+      "meaning": "as if; as though; just like"
+    },
+    {
+      "id": "N3-56",
+      "level": "N3",
+      "index": 56,
+      "form": "まさか",
+      "reading": "masaka",
+      "meaning": "there's no way; that's impossible"
+    },
+    {
+      "id": "N3-57",
+      "level": "N3",
+      "index": 57,
+      "form": "めったに～ない",
+      "reading": "metta ni~nai",
+      "meaning": "hardly; rarely; seldom"
+    },
+    {
+      "id": "N3-58",
+      "level": "N3",
+      "index": 58,
+      "form": "も～ば～も",
+      "reading": "mo~ba~mo",
+      "meaning": "and; also; as well; either/or; neither"
+    },
+    {
+      "id": "N3-59",
+      "level": "N3",
+      "index": 59,
+      "form": "もしかしたら",
+      "reading": "moshika shitara",
+      "meaning": "perhaps; maybe; perchance; by chance"
+    },
+    {
+      "id": "N3-60",
+      "level": "N3",
+      "index": 60,
+      "form": "もしも〜たら",
+      "reading": "moshimo~tara",
+      "meaning": "if; in the case; supposing~"
+    },
+    {
+      "id": "N3-61",
+      "level": "N3",
+      "index": 61,
+      "form": "向け",
+      "reading": "muke",
+      "meaning": "intended for; aimed at~"
+    },
+    {
+      "id": "N3-62",
+      "level": "N3",
+      "index": 62,
+      "form": "向き",
+      "reading": "muki",
+      "meaning": "suitable for~"
+    },
+    {
+      "id": "N3-63",
+      "level": "N3",
+      "index": 63,
+      "form": "むしろ",
+      "reading": "mushiro",
+      "meaning": "rather; instead; better"
+    },
+    {
+      "id": "N3-64",
+      "level": "N3",
+      "index": 64,
+      "form": "ながらも",
+      "reading": "nagara mo",
+      "meaning": "but; although; despite"
+    },
+    {
+      "id": "N3-65",
+      "level": "N3",
+      "index": 65,
+      "form": "ないことはない",
+      "reading": "nai koto wa nai",
+      "meaning": "can do~; is not impossible to~"
+    },
+    {
+      "id": "N3-66",
+      "level": "N3",
+      "index": 66,
+      "form": "ないと",
+      "reading": "naito",
+      "meaning": "must do; unless/if you don't~"
+    },
+    {
+      "id": "N3-67",
+      "level": "N3",
+      "index": 67,
+      "form": "なかなか",
+      "reading": "nakanaka",
+      "meaning": "quite~; pretty~; rather~; just not ~"
+    },
+    {
+      "id": "N3-68",
+      "level": "N3",
+      "index": 68,
+      "form": "なんか / なんて",
+      "reading": "nanka / nante",
+      "meaning": "examples; modesty; make light of~"
+    },
+    {
+      "id": "N3-69",
+      "level": "N3",
+      "index": 69,
+      "form": "直す",
+      "reading": "naosu",
+      "meaning": "to do something again; to do over"
+    },
+    {
+      "id": "N3-70",
+      "level": "N3",
+      "index": 70,
+      "form": "なるべく",
+      "reading": "naru beku",
+      "meaning": "as much as possible"
+    },
+    {
+      "id": "N3-71",
+      "level": "N3",
+      "index": 71,
+      "form": "なぜなら",
+      "reading": "nazenara",
+      "meaning": "because; the reason is"
+    },
+    {
+      "id": "N3-72",
+      "level": "N3",
+      "index": 72,
+      "form": "んだって",
+      "reading": "ndatte",
+      "meaning": "I hear that; heard that~"
+    },
+    {
+      "id": "N3-73",
+      "level": "N3",
+      "index": 73,
+      "form": "に違いない",
+      "reading": "ni chigai nai",
+      "meaning": "I’m sure/ certain; no doubt that"
+    },
+    {
+      "id": "N3-74",
+      "level": "N3",
+      "index": 74,
+      "form": "に反して",
+      "reading": "ni hanshite",
+      "meaning": "against; contrary to; in contrast to"
+    },
+    {
+      "id": "N3-75",
+      "level": "N3",
+      "index": 75,
+      "form": "にかけて",
+      "reading": "ni kakete",
+      "meaning": "over (a period); concerning; regarding~"
+    },
+    {
+      "id": "N3-76",
+      "level": "N3",
+      "index": 76,
+      "form": "に関する",
+      "reading": "ni kan suru",
+      "meaning": "about; regarding; related to"
+    },
+    {
+      "id": "N3-77",
+      "level": "N3",
+      "index": 77,
+      "form": "にかわって",
+      "reading": "ni kawatte",
+      "meaning": "instead of~; replacing~; on behalf of~"
+    },
+    {
+      "id": "N3-78",
+      "level": "N3",
+      "index": 78,
+      "form": "に比べて",
+      "reading": "ni kurabete",
+      "meaning": "compared to~; in comparison to~"
+    },
+    {
+      "id": "N3-79",
+      "level": "N3",
+      "index": 79,
+      "form": "に慣れる",
+      "reading": "ni nareru",
+      "meaning": "to be used to something"
+    },
+    {
+      "id": "N3-80",
+      "level": "N3",
+      "index": 80,
+      "form": "において",
+      "reading": "ni oite",
+      "meaning": "in; at (place); regarding~; as for~"
+    },
+    {
+      "id": "N3-81",
+      "level": "N3",
+      "index": 81,
+      "form": "にしたがって",
+      "reading": "ni shitagatte",
+      "meaning": "as; therefore; in accordance with"
+    },
+    {
+      "id": "N3-82",
+      "level": "N3",
+      "index": 82,
+      "form": "にしても",
+      "reading": "ni shite mo",
+      "meaning": "even if; even though; regardless of"
+    },
+    {
+      "id": "N3-83",
+      "level": "N3",
+      "index": 83,
+      "form": "にしては",
+      "reading": "ni shite wa",
+      "meaning": "for; considering it’s"
+    },
+    {
+      "id": "N3-84",
+      "level": "N3",
+      "index": 84,
+      "form": "に対して",
+      "reading": "ni taishite",
+      "meaning": "towards; against; regarding~"
+    },
+    {
+      "id": "N3-85",
+      "level": "N3",
+      "index": 85,
+      "form": "にとって",
+      "reading": "ni totte",
+      "meaning": "to; for; concerning; regarding~"
+    },
+    {
+      "id": "N3-86",
+      "level": "N3",
+      "index": 86,
+      "form": "について",
+      "reading": "ni tsuite",
+      "meaning": "concerning; regarding; about; on"
+    },
+    {
+      "id": "N3-87",
+      "level": "N3",
+      "index": 87,
+      "form": "につれて",
+      "reading": "ni tsurete",
+      "meaning": "as; in proportion to; with; as… then…"
+    },
+    {
+      "id": "N3-88",
+      "level": "N3",
+      "index": 88,
+      "form": "には",
+      "reading": "ni wa",
+      "meaning": "for the purpose of; in order to~"
+    },
+    {
+      "id": "N3-89",
+      "level": "N3",
+      "index": 89,
+      "form": "によると /によれば",
+      "reading": "ni yoru to/ni yoreba",
+      "meaning": "according to~"
+    },
+    {
+      "id": "N3-90",
+      "level": "N3",
+      "index": 90,
+      "form": "によって / による",
+      "reading": "ni yotte / ni yoru",
+      "meaning": "by means of; due to; because of~"
+    },
+    {
+      "id": "N3-91",
+      "level": "N3",
+      "index": 91,
+      "form": "のでしょうか",
+      "reading": "no deshou ka",
+      "meaning": "ask a question in a polite way"
+    },
+    {
+      "id": "N3-92",
+      "level": "N3",
+      "index": 92,
+      "form": "を中心に",
+      "reading": "o chuushin ni",
+      "meaning": "focused on; centered on"
+    },
+    {
+      "id": "N3-93",
+      "level": "N3",
+      "index": 93,
+      "form": "をはじめ",
+      "reading": "o hajime",
+      "meaning": "for example; starting with"
+    },
+    {
+      "id": "N3-94",
+      "level": "N3",
+      "index": 94,
+      "form": "を込めて",
+      "reading": "o komete",
+      "meaning": "filled with; full of"
+    },
+    {
+      "id": "N3-95",
+      "level": "N3",
+      "index": 95,
+      "form": "を通じて /を通して",
+      "reading": "o tsuujite /o tooshite",
+      "meaning": "through; via; throughout; by"
+    },
+    {
+      "id": "N3-96",
+      "level": "N3",
+      "index": 96,
+      "form": "おかげで",
+      "reading": "okage de",
+      "meaning": "thanks to ...; owing to ...; because of ..."
+    },
+    {
+      "id": "N3-97",
+      "level": "N3",
+      "index": 97,
+      "form": "っぱなし",
+      "reading": "ppanashi",
+      "meaning": "leaving (something) on / still in use"
+    },
+    {
+      "id": "N3-98",
+      "level": "N3",
+      "index": 98,
+      "form": "っぽい",
+      "reading": "ppoi",
+      "meaning": "seems; somewhat; -ish; easily does~;"
+    },
+    {
+      "id": "N3-99",
+      "level": "N3",
+      "index": 99,
+      "form": "さえ",
+      "reading": "sae",
+      "meaning": "even; so much as; not even"
+    },
+    {
+      "id": "N3-100",
+      "level": "N3",
+      "index": 100,
+      "form": "さえ～ば",
+      "reading": "sae~ba",
+      "meaning": "if only; as long as"
+    },
+    {
+      "id": "N3-101",
+      "level": "N3",
+      "index": 101,
+      "form": "際に",
+      "reading": "sai ni",
+      "meaning": "when; at the time of; in the case of"
+    },
+    {
+      "id": "N3-102",
+      "level": "N3",
+      "index": 102,
+      "form": "最中に",
+      "reading": "saichuu ni",
+      "meaning": "while; during; in the middle of"
+    },
+    {
+      "id": "N3-103",
+      "level": "N3",
+      "index": 103,
+      "form": "さらに",
+      "reading": "sara ni",
+      "meaning": "furthermore; again; more and more"
+    },
+    {
+      "id": "N3-104",
+      "level": "N3",
+      "index": 104,
+      "form": "さて",
+      "reading": "sate",
+      "meaning": "conjunction: well; now; then"
+    },
+    {
+      "id": "N3-105",
+      "level": "N3",
+      "index": 105,
+      "form": "せいで",
+      "reading": "sei de",
+      "meaning": "because of; due to; as a result of~"
+    },
+    {
+      "id": "N3-106",
+      "level": "N3",
+      "index": 106,
+      "form": "せいぜい",
+      "reading": "seizei",
+      "meaning": "at the most; at best; to the utmost"
+    },
+    {
+      "id": "N3-107",
+      "level": "N3",
+      "index": 107,
+      "form": "しばらく",
+      "reading": "shibaraku",
+      "meaning": "for a moment; for a while"
+    },
+    {
+      "id": "N3-108",
+      "level": "N3",
+      "index": 108,
+      "form": "しかない",
+      "reading": "shikanai",
+      "meaning": "have no choice but~"
+    },
+    {
+      "id": "N3-109",
+      "level": "N3",
+      "index": 109,
+      "form": "そのために",
+      "reading": "sono tame ni",
+      "meaning": "hence; for that reason; because of~"
+    },
+    {
+      "id": "N3-110",
+      "level": "N3",
+      "index": 110,
+      "form": "それとも",
+      "reading": "soretomo",
+      "meaning": "or; or else"
+    },
+    {
+      "id": "N3-111",
+      "level": "N3",
+      "index": 111,
+      "form": "そうもない",
+      "reading": "sou mo nai",
+      "meaning": "very unlikely to~; showing no signs of~"
+    },
+    {
+      "id": "N3-112",
+      "level": "N3",
+      "index": 112,
+      "form": "すでに",
+      "reading": "sude ni",
+      "meaning": "something has already been done"
+    },
+    {
+      "id": "N3-113",
+      "level": "N3",
+      "index": 113,
+      "form": "すなわち",
+      "reading": "sunawachi",
+      "meaning": "in other words; namely"
+    },
+    {
+      "id": "N3-114",
+      "level": "N3",
+      "index": 114,
+      "form": "数量 + は",
+      "reading": "suuryou + wa",
+      "meaning": "at least"
+    },
+    {
+      "id": "N3-115",
+      "level": "N3",
+      "index": 115,
+      "form": "たものだ",
+      "reading": "ta mono da",
+      "meaning": "used to do; would often do"
+    },
+    {
+      "id": "N3-116",
+      "level": "N3",
+      "index": 116,
+      "form": "たとたん",
+      "reading": "ta totan",
+      "meaning": "as soon as; just as"
+    },
+    {
+      "id": "N3-117",
+      "level": "N3",
+      "index": 117,
+      "form": "たびに",
+      "reading": "tabi ni",
+      "meaning": "whenever; every time"
+    },
+    {
+      "id": "N3-118",
+      "level": "N3",
+      "index": 118,
+      "form": "ために",
+      "reading": "tame ni",
+      "meaning": "for; in order to; for the benefit of"
+    },
+    {
+      "id": "N3-119",
+      "level": "N3",
+      "index": 119,
+      "form": "確かに",
+      "reading": "tashika ni",
+      "meaning": "surely, certainly"
+    },
+    {
+      "id": "N3-120",
+      "level": "N3",
+      "index": 120,
+      "form": "たて",
+      "reading": "tate",
+      "meaning": "just done; freshly done; newly done"
+    },
+    {
+      "id": "N3-121",
+      "level": "N3",
+      "index": 121,
+      "form": "たとえ～ても",
+      "reading": "tatoe~temo",
+      "meaning": "even if… is the case"
+    },
+    {
+      "id": "N3-122",
+      "level": "N3",
+      "index": 122,
+      "form": "例えば",
+      "reading": "tatoeba",
+      "meaning": "for example"
+    },
+    {
+      "id": "N3-123",
+      "level": "N3",
+      "index": 123,
+      "form": "たって",
+      "reading": "tatte",
+      "meaning": "even if; even though; no matter how"
+    },
+    {
+      "id": "N3-124",
+      "level": "N3",
+      "index": 124,
+      "form": "てばかりいる",
+      "reading": "te bakari iru",
+      "meaning": "only; nothing but~"
+    },
+    {
+      "id": "N3-125",
+      "level": "N3",
+      "index": 125,
+      "form": "てごらん",
+      "reading": "te goran",
+      "meaning": "(please) try to; (please) look"
+    },
+    {
+      "id": "N3-126",
+      "level": "N3",
+      "index": 126,
+      "form": "てはじめて",
+      "reading": "te hajimete",
+      "meaning": "not until; only after [x] did I"
+    },
+    {
+      "id": "N3-127",
+      "level": "N3",
+      "index": 127,
+      "form": "てからでないと",
+      "reading": "te kara de nai to",
+      "meaning": "must first do; cannot do without~"
+    },
+    {
+      "id": "N3-128",
+      "level": "N3",
+      "index": 128,
+      "form": "てしょうがない",
+      "reading": "te shou ga nai",
+      "meaning": "can't help but~; very; extremely"
+    },
+    {
+      "id": "N3-129",
+      "level": "N3",
+      "index": 129,
+      "form": "て済む",
+      "reading": "te sumu",
+      "meaning": "sufficient by; resolve by~"
+    },
+    {
+      "id": "N3-130",
+      "level": "N3",
+      "index": 130,
+      "form": "てはいけないから",
+      "reading": "te wa ikenai kara",
+      "meaning": "in order to not~"
+    },
+    {
+      "id": "N3-131",
+      "level": "N3",
+      "index": 131,
+      "form": "ている場合じゃない",
+      "reading": "teiru baai janai",
+      "meaning": "this is no time to be doing~"
+    },
+    {
+      "id": "N3-132",
+      "level": "N3",
+      "index": 132,
+      "form": "的",
+      "reading": "teki",
+      "meaning": "change noun into na-adjective"
+    },
+    {
+      "id": "N3-133",
+      "level": "N3",
+      "index": 133,
+      "form": "ても始まらない",
+      "reading": "temo hajimaranai",
+      "meaning": "even if you... it’s no use;"
+    },
+    {
+      "id": "N3-134",
+      "level": "N3",
+      "index": 134,
+      "form": "てもかまわない",
+      "reading": "temo kamawanai",
+      "meaning": "it doesn't matter if ~"
+    },
+    {
+      "id": "N3-135",
+      "level": "N3",
+      "index": 135,
+      "form": "てもしょうがない",
+      "reading": "temo shou ga nai",
+      "meaning": "there's no point to~; it's no use to~"
+    },
+    {
+      "id": "N3-136",
+      "level": "N3",
+      "index": 136,
+      "form": "と言えば",
+      "reading": "to ieba",
+      "meaning": "speaking of; when you talk of~"
+    },
+    {
+      "id": "N3-137",
+      "level": "N3",
+      "index": 137,
+      "form": "といい / たらいい",
+      "reading": "to ii / tara ii",
+      "meaning": "it would be nice if; should; I hope~"
+    },
+    {
+      "id": "N3-138",
+      "level": "N3",
+      "index": 138,
+      "form": "といっても",
+      "reading": "to ittemo",
+      "meaning": "although I say; although one might say~"
+    },
+    {
+      "id": "N3-139",
+      "level": "N3",
+      "index": 139,
+      "form": "ということだ",
+      "reading": "to iu koto da",
+      "meaning": "I heard; it means~; in other words~"
+    },
+    {
+      "id": "N3-140",
+      "level": "N3",
+      "index": 140,
+      "form": "というのは",
+      "reading": "to iu nowa",
+      "meaning": "this means~; because~; that is to say"
+    },
+    {
+      "id": "N3-141",
+      "level": "N3",
+      "index": 141,
+      "form": "と言うと",
+      "reading": "to iu to",
+      "meaning": "speaking of; when you say~"
+    },
+    {
+      "id": "N3-142",
+      "level": "N3",
+      "index": 142,
+      "form": "というより",
+      "reading": "to iu yori",
+      "meaning": "rather than~"
+    },
+    {
+      "id": "N3-143",
+      "level": "N3",
+      "index": 143,
+      "form": "とみえる / とみえて",
+      "reading": "to mieru / to miete",
+      "meaning": "it seems that~"
+    },
+    {
+      "id": "N3-144",
+      "level": "N3",
+      "index": 144,
+      "form": "とすれば",
+      "reading": "to sureba",
+      "meaning": "in the case of~; assuming~; if A then B"
+    },
+    {
+      "id": "N3-145",
+      "level": "N3",
+      "index": 145,
+      "form": "と共に",
+      "reading": "to tomo ni",
+      "meaning": "together with; at the same time as"
+    },
+    {
+      "id": "N3-146",
+      "level": "N3",
+      "index": 146,
+      "form": "途中で",
+      "reading": "tochuu de",
+      "meaning": "on the way; in the middle of~"
+    },
+    {
+      "id": "N3-147",
+      "level": "N3",
+      "index": 147,
+      "form": "ところで",
+      "reading": "tokoro de",
+      "meaning": "by the way~"
+    },
+    {
+      "id": "N3-148",
+      "level": "N3",
+      "index": 148,
+      "form": "ところが",
+      "reading": "tokoro ga",
+      "meaning": "even so; however; even though~"
+    },
+    {
+      "id": "N3-149",
+      "level": "N3",
+      "index": 149,
+      "form": "とおりに",
+      "reading": "toori ni",
+      "meaning": "in the same way as; in the way; as~"
+    },
+    {
+      "id": "N3-150",
+      "level": "N3",
+      "index": 150,
+      "form": "通す",
+      "reading": "toosu",
+      "meaning": "to do until the end; to continually do"
+    },
+    {
+      "id": "N3-151",
+      "level": "N3",
+      "index": 151,
+      "form": "として",
+      "reading": "toshite",
+      "meaning": "as~; in the role of~"
+    },
+    {
+      "id": "N3-152",
+      "level": "N3",
+      "index": 152,
+      "form": "とても～ない",
+      "reading": "totemo~nai",
+      "meaning": "cannot possibly be; hardly~"
+    },
+    {
+      "id": "N3-153",
+      "level": "N3",
+      "index": 153,
+      "form": "とは限らない",
+      "reading": "towa kagiranai",
+      "meaning": "not necessarily so; is not always true"
+    },
+    {
+      "id": "N3-154",
+      "level": "N3",
+      "index": 154,
+      "form": "つい",
+      "reading": "tsui",
+      "meaning": "accidentally; unintentionally"
+    },
+    {
+      "id": "N3-155",
+      "level": "N3",
+      "index": 155,
+      "form": "ついに",
+      "reading": "tsui ni",
+      "meaning": "finally ~; at last ~; in the end"
+    },
+    {
+      "id": "N3-156",
+      "level": "N3",
+      "index": 156,
+      "form": "ついでに",
+      "reading": "tsuide ni",
+      "meaning": "while, incidentally, at the same time"
+    },
+    {
+      "id": "N3-157",
+      "level": "N3",
+      "index": 157,
+      "form": "つまり",
+      "reading": "tsumari",
+      "meaning": "in other words; in summary; in short"
+    },
+    {
+      "id": "N3-158",
+      "level": "N3",
+      "index": 158,
+      "form": "つもりだった",
+      "reading": "tsumori datta",
+      "meaning": "I thought I~; I believe I did~"
+    },
+    {
+      "id": "N3-159",
+      "level": "N3",
+      "index": 159,
+      "form": "つもりで",
+      "reading": "tsumori de",
+      "meaning": "with the intention of doing~"
+    },
+    {
+      "id": "N3-160",
+      "level": "N3",
+      "index": 160,
+      "form": "うちに",
+      "reading": "uchi ni",
+      "meaning": "while; before~"
+    },
+    {
+      "id": "N3-161",
+      "level": "N3",
+      "index": 161,
+      "form": "上で",
+      "reading": "ue de",
+      "meaning": "upon; after; when; for; in order to"
+    },
+    {
+      "id": "N3-162",
+      "level": "N3",
+      "index": 162,
+      "form": "上に",
+      "reading": "ue ni",
+      "meaning": "as well; not only… but also"
+    },
+    {
+      "id": "N3-163",
+      "level": "N3",
+      "index": 163,
+      "form": "は別として",
+      "reading": "wa betsu toshite",
+      "meaning": "aside from; whether or not~"
+    },
+    {
+      "id": "N3-164",
+      "level": "N3",
+      "index": 164,
+      "form": "はもちろん",
+      "reading": "wa mochiron",
+      "meaning": "not to mention; not only; but also~"
+    },
+    {
+      "id": "N3-165",
+      "level": "N3",
+      "index": 165,
+      "form": "は～で有名",
+      "reading": "wa~de yuumei",
+      "meaning": "famous for~"
+    },
+    {
+      "id": "N3-166",
+      "level": "N3",
+      "index": 166,
+      "form": "わけだ",
+      "reading": "wake da",
+      "meaning": "for that reason; no wonder"
+    },
+    {
+      "id": "N3-167",
+      "level": "N3",
+      "index": 167,
+      "form": "わけではない",
+      "reading": "wake dewa nai",
+      "meaning": "it doesn’t mean that~"
+    },
+    {
+      "id": "N3-168",
+      "level": "N3",
+      "index": 168,
+      "form": "わけがない",
+      "reading": "wake ga nai",
+      "meaning": "there is no way that~"
+    },
+    {
+      "id": "N3-169",
+      "level": "N3",
+      "index": 169,
+      "form": "わけにはいかない",
+      "reading": "wake niwa ikanai",
+      "meaning": "must not; cannot afford to; must~"
+    },
+    {
+      "id": "N3-170",
+      "level": "N3",
+      "index": 170,
+      "form": "割に",
+      "reading": "wari ni",
+      "meaning": "considering; relatively; unexpectedly"
+    },
+    {
+      "id": "N3-171",
+      "level": "N3",
+      "index": 171,
+      "form": "わざと",
+      "reading": "wazato",
+      "meaning": "on purpose; intentionally~"
+    },
+    {
+      "id": "N3-172",
+      "level": "N3",
+      "index": 172,
+      "form": "わざわざ",
+      "reading": "wazawaza",
+      "meaning": "to go to the trouble of"
+    },
+    {
+      "id": "N3-173",
+      "level": "N3",
+      "index": 173,
+      "form": "よりも",
+      "reading": "yorimo",
+      "meaning": "rather than~; more than~"
+    },
+    {
+      "id": "N3-174",
+      "level": "N3",
+      "index": 174,
+      "form": "ようがない",
+      "reading": "you ga nai",
+      "meaning": "there is no way to; it’s impossible to~"
+    },
+    {
+      "id": "N3-175",
+      "level": "N3",
+      "index": 175,
+      "form": "ような気がする",
+      "reading": "you na ki ga suru",
+      "meaning": "have a feeling that; feels like; seems like"
+    },
+    {
+      "id": "N3-176",
+      "level": "N3",
+      "index": 176,
+      "form": "ように",
+      "reading": "you ni",
+      "meaning": "in order to, so that~"
+    },
+    {
+      "id": "N3-177",
+      "level": "N3",
+      "index": 177,
+      "form": "ように見える",
+      "reading": "you ni mieru",
+      "meaning": "to look; to seem; to appear~"
+    },
+    {
+      "id": "N3-178",
+      "level": "N3",
+      "index": 178,
+      "form": "ようとしない",
+      "reading": "you to shinai",
+      "meaning": "not try to; not make an effort to~"
+    },
+    {
+      "id": "N3-179",
+      "level": "N3",
+      "index": 179,
+      "form": "ようとする",
+      "reading": "you to suru",
+      "meaning": "try to; attempt to; be about to~"
+    },
+    {
+      "id": "N3-180",
+      "level": "N3",
+      "index": 180,
+      "form": "ずに",
+      "reading": "zuni",
+      "meaning": "without doing~"
+    },
+    {
+      "id": "N3-181",
+      "level": "N3",
+      "index": 181,
+      "form": "ずにはいられない",
+      "reading": "zuni wa irarenai",
+      "meaning": "can’t help but feel; can’t help but do"
+    },
+    {
+      "id": "N3-182",
+      "level": "N3",
+      "index": 182,
+      "form": "ずつ",
+      "reading": "zutsu",
+      "meaning": "apiece; each; at a time"
+    },
+    {
+      "id": "N2-1",
+      "level": "N2",
+      "index": 1,
+      "form": "あげく",
+      "reading": "ageku",
+      "meaning": "to end up; in the end; finally; after all"
+    },
+    {
+      "id": "N2-2",
+      "level": "N2",
+      "index": 2,
+      "form": "あるいは",
+      "reading": "aruiwa",
+      "meaning": "or; either; maybe; perhaps; possibly"
+    },
+    {
+      "id": "N2-3",
+      "level": "N2",
+      "index": 3,
+      "form": "ばかり",
+      "reading": "bakari",
+      "meaning": "about, approximately"
+    },
+    {
+      "id": "N2-4",
+      "level": "N2",
+      "index": 4,
+      "form": "ばかりだ",
+      "reading": "bakari da",
+      "meaning": "continue to (go in negative direction)"
+    },
+    {
+      "id": "N2-5",
+      "level": "N2",
+      "index": 5,
+      "form": "ばかりか",
+      "reading": "bakari ka",
+      "meaning": "not only.. but also; as well as"
+    },
+    {
+      "id": "N2-6",
+      "level": "N2",
+      "index": 6,
+      "form": "ばかりに",
+      "reading": "bakari ni",
+      "meaning": "simply because; on account of"
+    },
+    {
+      "id": "N2-7",
+      "level": "N2",
+      "index": 7,
+      "form": "ちなみに",
+      "reading": "chinamini",
+      "meaning": "by the way; incidentally"
+    },
+    {
+      "id": "N2-8",
+      "level": "N2",
+      "index": 8,
+      "form": "ちっとも～ない",
+      "reading": "chitto mo~nai",
+      "meaning": "(not) at all; (not) in the least"
+    },
+    {
+      "id": "N2-9",
+      "level": "N2",
+      "index": 9,
+      "form": "だけあって",
+      "reading": "dake atte",
+      "meaning": "being the case; precisely because"
+    },
+    {
+      "id": "N2-10",
+      "level": "N2",
+      "index": 10,
+      "form": "だけましだ",
+      "reading": "dake mashi da",
+      "meaning": "it’s better than; should feel grateful for"
+    },
+    {
+      "id": "N2-11",
+      "level": "N2",
+      "index": 11,
+      "form": "だけに",
+      "reading": "dake ni",
+      "meaning": "being the case; precisely because"
+    },
+    {
+      "id": "N2-12",
+      "level": "N2",
+      "index": 12,
+      "form": "だけのことはある",
+      "reading": "dake no koto wa aru",
+      "meaning": "as expected of; not for nothing"
+    },
+    {
+      "id": "N2-13",
+      "level": "N2",
+      "index": 13,
+      "form": "だけは",
+      "reading": "dake wa",
+      "meaning": "to do all that one can"
+    },
+    {
+      "id": "N2-14",
+      "level": "N2",
+      "index": 14,
+      "form": "だって",
+      "reading": "datte",
+      "meaning": "because; but; after all; even; too"
+    },
+    {
+      "id": "N2-15",
+      "level": "N2",
+      "index": 15,
+      "form": "でしかない",
+      "reading": "de shika nai",
+      "meaning": "merely; nothing but; no more than"
+    },
+    {
+      "id": "N2-16",
+      "level": "N2",
+      "index": 16,
+      "form": "どころではない",
+      "reading": "dokoro dewa nai",
+      "meaning": "not the time for; far from"
+    },
+    {
+      "id": "N2-17",
+      "level": "N2",
+      "index": 17,
+      "form": "どころか",
+      "reading": "dokoro ka",
+      "meaning": "far from; anything but; let alone"
+    },
+    {
+      "id": "N2-18",
+      "level": "N2",
+      "index": 18,
+      "form": "どうやら",
+      "reading": "dou yara",
+      "meaning": "apparently; seems like; somehow"
+    },
+    {
+      "id": "N2-19",
+      "level": "N2",
+      "index": 19,
+      "form": "どうせ",
+      "reading": "douse",
+      "meaning": "anyhow; in any case; at any rate"
+    },
+    {
+      "id": "N2-20",
+      "level": "N2",
+      "index": 20,
+      "form": "得ない",
+      "reading": "enai",
+      "meaning": "unable to; cannot; it is not possible to~"
+    },
+    {
+      "id": "N2-21",
+      "level": "N2",
+      "index": 21,
+      "form": "得る",
+      "reading": "eru / uru",
+      "meaning": "can; to be able to; is possible to~"
+    },
+    {
+      "id": "N2-22",
+      "level": "N2",
+      "index": 22,
+      "form": "再び",
+      "reading": "futatabi",
+      "meaning": "again; once more"
+    },
+    {
+      "id": "N2-23",
+      "level": "N2",
+      "index": 23,
+      "form": "ふうに",
+      "reading": "fuu ni",
+      "meaning": "this way; that way; in such a way; how"
+    },
+    {
+      "id": "N2-24",
+      "level": "N2",
+      "index": 24,
+      "form": "がきっかけで",
+      "reading": "ga kikkake de",
+      "meaning": "as a result of; taking advantage of"
+    },
+    {
+      "id": "N2-25",
+      "level": "N2",
+      "index": 25,
+      "form": "げ",
+      "reading": "ge",
+      "meaning": "looks like; seems like; appears to"
+    },
+    {
+      "id": "N2-26",
+      "level": "N2",
+      "index": 26,
+      "form": "逆に",
+      "reading": "gyaku ni",
+      "meaning": "conversely; on the contrary"
+    },
+    {
+      "id": "N2-27",
+      "level": "N2",
+      "index": 27,
+      "form": "反面",
+      "reading": "hanmen",
+      "meaning": "while, although; on the other hand"
+    },
+    {
+      "id": "N2-28",
+      "level": "N2",
+      "index": 28,
+      "form": "果たして",
+      "reading": "hatashite",
+      "meaning": "as was expected; sure enough; really"
+    },
+    {
+      "id": "N2-29",
+      "level": "N2",
+      "index": 29,
+      "form": "一応",
+      "reading": "ichiou",
+      "meaning": "more or less; pretty much; roughly"
+    },
+    {
+      "id": "N2-30",
+      "level": "N2",
+      "index": 30,
+      "form": "以外",
+      "reading": "igai",
+      "meaning": "with the exception of; excepting"
+    },
+    {
+      "id": "N2-31",
+      "level": "N2",
+      "index": 31,
+      "form": "以上に",
+      "reading": "ijou ni",
+      "meaning": "more than; not less than; beyond"
+    },
+    {
+      "id": "N2-32",
+      "level": "N2",
+      "index": 32,
+      "form": "以上は",
+      "reading": "ijou wa",
+      "meaning": "because; since; seeing that"
+    },
+    {
+      "id": "N2-33",
+      "level": "N2",
+      "index": 33,
+      "form": "いきなり",
+      "reading": "ikinari",
+      "meaning": "abruptly; suddenly; all of a sudden"
+    },
+    {
+      "id": "N2-34",
+      "level": "N2",
+      "index": 34,
+      "form": "一気に",
+      "reading": "ikki ni",
+      "meaning": "in one go; without stopping; all at once"
+    },
+    {
+      "id": "N2-35",
+      "level": "N2",
+      "index": 35,
+      "form": "一方で",
+      "reading": "ippou de",
+      "meaning": "on one hand, on the other hand"
+    },
+    {
+      "id": "N2-36",
+      "level": "N2",
+      "index": 36,
+      "form": "いわゆる",
+      "reading": "iwayuru",
+      "meaning": "what is called; as it is called; so-called"
+    },
+    {
+      "id": "N2-37",
+      "level": "N2",
+      "index": 37,
+      "form": "いよいよ",
+      "reading": "iyoiyo",
+      "meaning": "at last; finally; beyond doubt"
+    },
+    {
+      "id": "N2-38",
+      "level": "N2",
+      "index": 38,
+      "form": "上",
+      "reading": "jou",
+      "meaning": "for the sake of; from the standpoint of"
+    },
+    {
+      "id": "N2-39",
+      "level": "N2",
+      "index": 39,
+      "form": "かのように",
+      "reading": "ka no you ni",
+      "meaning": "as if; just like"
+    },
+    {
+      "id": "N2-40",
+      "level": "N2",
+      "index": 40,
+      "form": "かと思ったら",
+      "reading": "ka to omottara",
+      "meaning": "just when; no sooner than"
+    },
+    {
+      "id": "N2-41",
+      "level": "N2",
+      "index": 41,
+      "form": "か～ないかのうちに",
+      "reading": "ka~nai ka no uchi ni",
+      "meaning": "just as; right after; as soon as"
+    },
+    {
+      "id": "N2-42",
+      "level": "N2",
+      "index": 42,
+      "form": "かえって",
+      "reading": "kaette",
+      "meaning": "on the contrary; rather; all the more"
+    },
+    {
+      "id": "N2-43",
+      "level": "N2",
+      "index": 43,
+      "form": "限り",
+      "reading": "kagiri",
+      "meaning": "as long as; while… is the case; as far as"
+    },
+    {
+      "id": "N2-44",
+      "level": "N2",
+      "index": 44,
+      "form": "甲斐がある",
+      "reading": "kai ga aru",
+      "meaning": "it’s worth one’s efforts to do something"
+    },
+    {
+      "id": "N2-45",
+      "level": "N2",
+      "index": 45,
+      "form": "かねない",
+      "reading": "kanenai",
+      "meaning": "(someone) might do something"
+    },
+    {
+      "id": "N2-46",
+      "level": "N2",
+      "index": 46,
+      "form": "かねる",
+      "reading": "kaneru",
+      "meaning": "unable to do something; can’t do~"
+    },
+    {
+      "id": "N2-47",
+      "level": "N2",
+      "index": 47,
+      "form": "から言うと",
+      "reading": "kara iu to",
+      "meaning": "in terms of; from the point of view of"
+    },
+    {
+      "id": "N2-48",
+      "level": "N2",
+      "index": 48,
+      "form": "からこそ",
+      "reading": "kara koso",
+      "meaning": "precisely because"
+    },
+    {
+      "id": "N2-49",
+      "level": "N2",
+      "index": 49,
+      "form": "から見ると",
+      "reading": "kara miru to",
+      "meaning": "from the point of view of; judging from"
+    },
+    {
+      "id": "N2-50",
+      "level": "N2",
+      "index": 50,
+      "form": "からには",
+      "reading": "kara niwa",
+      "meaning": "now that; since; so long as; because"
+    },
+    {
+      "id": "N2-51",
+      "level": "N2",
+      "index": 51,
+      "form": "からして",
+      "reading": "kara shite",
+      "meaning": "judging from; based on; since; from"
+    },
+    {
+      "id": "N2-52",
+      "level": "N2",
+      "index": 52,
+      "form": "からすると",
+      "reading": "kara suru to",
+      "meaning": "judging from; considering"
+    },
+    {
+      "id": "N2-53",
+      "level": "N2",
+      "index": 53,
+      "form": "からと言って",
+      "reading": "kara to itte",
+      "meaning": "just because; even if; even though~"
+    },
+    {
+      "id": "N2-54",
+      "level": "N2",
+      "index": 54,
+      "form": "っこない",
+      "reading": "kkonai",
+      "meaning": "no chance of; definitely not possible"
+    },
+    {
+      "id": "N2-55",
+      "level": "N2",
+      "index": 55,
+      "form": "ことだ",
+      "reading": "koto da",
+      "meaning": "should do~ (suggestions or advice)"
+    },
+    {
+      "id": "N2-56",
+      "level": "N2",
+      "index": 56,
+      "form": "ことだから",
+      "reading": "koto dakara",
+      "meaning": "because; since~"
+    },
+    {
+      "id": "N2-57",
+      "level": "N2",
+      "index": 57,
+      "form": "ことか",
+      "reading": "koto ka",
+      "meaning": "how…!; what…!"
+    },
+    {
+      "id": "N2-58",
+      "level": "N2",
+      "index": 58,
+      "form": "ことなく",
+      "reading": "koto naku",
+      "meaning": "without doing something even once"
+    },
+    {
+      "id": "N2-59",
+      "level": "N2",
+      "index": 59,
+      "form": "ことに",
+      "reading": "koto ni",
+      "meaning": "emphasize speaker's feelings"
+    },
+    {
+      "id": "N2-60",
+      "level": "N2",
+      "index": 60,
+      "form": "ことにはならない",
+      "reading": "koto niwa naranai",
+      "meaning": "just because… doesn’t mean~"
+    },
+    {
+      "id": "N2-61",
+      "level": "N2",
+      "index": 61,
+      "form": "くせして",
+      "reading": "kuse shite",
+      "meaning": "although~; despite the fact that~"
+    },
+    {
+      "id": "N2-62",
+      "level": "N2",
+      "index": 62,
+      "form": "まだしも",
+      "reading": "madashimo",
+      "meaning": "rather; better"
+    },
+    {
+      "id": "N2-63",
+      "level": "N2",
+      "index": 63,
+      "form": "まい",
+      "reading": "mai",
+      "meaning": "will not; intend not to"
+    },
+    {
+      "id": "N2-64",
+      "level": "N2",
+      "index": 64,
+      "form": "ままに",
+      "reading": "mama ni",
+      "meaning": "as, to do as~"
+    },
+    {
+      "id": "N2-65",
+      "level": "N2",
+      "index": 65,
+      "form": "全く～ない",
+      "reading": "mattaku~nai",
+      "meaning": "not at all~"
+    },
+    {
+      "id": "N2-66",
+      "level": "N2",
+      "index": 66,
+      "form": "もかまわず",
+      "reading": "mo kamawazu",
+      "meaning": "without caring; without worrying"
+    },
+    {
+      "id": "N2-67",
+      "level": "N2",
+      "index": 67,
+      "form": "も当然だ",
+      "reading": "mo touzen da",
+      "meaning": "it’s only natural; no wonder"
+    },
+    {
+      "id": "N2-68",
+      "level": "N2",
+      "index": 68,
+      "form": "もの / もん",
+      "reading": "mono / mon",
+      "meaning": "because; reason/ excuse/dissatisfaction"
+    },
+    {
+      "id": "N2-69",
+      "level": "N2",
+      "index": 69,
+      "form": "ものだ",
+      "reading": "mono da",
+      "meaning": "describe feeling; express memories"
+    },
+    {
+      "id": "N2-70",
+      "level": "N2",
+      "index": 70,
+      "form": "ものだから",
+      "reading": "mono dakara",
+      "meaning": "so; therefore; the reason for something"
+    },
+    {
+      "id": "N2-71",
+      "level": "N2",
+      "index": 71,
+      "form": "ものではない",
+      "reading": "mono dewa nai",
+      "meaning": "shouldn’t do something; it’s impossible"
+    },
+    {
+      "id": "N2-72",
+      "level": "N2",
+      "index": 72,
+      "form": "ものがある",
+      "reading": "mono ga aru",
+      "meaning": "there is such a thing; to be the case"
+    },
+    {
+      "id": "N2-73",
+      "level": "N2",
+      "index": 73,
+      "form": "ものか / もんか",
+      "reading": "mono ka / mon ka",
+      "meaning": "as if; there's no way~"
+    },
+    {
+      "id": "N2-74",
+      "level": "N2",
+      "index": 74,
+      "form": "ものなら",
+      "reading": "mono nara",
+      "meaning": "if [A] is possible, then [B]"
+    },
+    {
+      "id": "N2-75",
+      "level": "N2",
+      "index": 75,
+      "form": "ものの",
+      "reading": "monono",
+      "meaning": "but; although; even though~"
+    },
+    {
+      "id": "N2-76",
+      "level": "N2",
+      "index": 76,
+      "form": "もっとも",
+      "reading": "motto mo",
+      "meaning": "but then; although; though~"
+    },
+    {
+      "id": "N2-77",
+      "level": "N2",
+      "index": 77,
+      "form": "もう少しで",
+      "reading": "mou sukoshi de",
+      "meaning": "almost; nearly, close to~"
+    },
+    {
+      "id": "N2-78",
+      "level": "N2",
+      "index": 78,
+      "form": "ないではいられない",
+      "reading": "nai dewa irarenai",
+      "meaning": "can’t help but feel; can’t help but do"
+    },
+    {
+      "id": "N2-79",
+      "level": "N2",
+      "index": 79,
+      "form": "ないことには～ない",
+      "reading": "nai koto niwa~nai",
+      "meaning": "unless you~"
+    },
+    {
+      "id": "N2-80",
+      "level": "N2",
+      "index": 80,
+      "form": "中を /中では",
+      "reading": "naka o /naka dewa",
+      "meaning": "in; on; in the midst of; when; while~"
+    },
+    {
+      "id": "N2-81",
+      "level": "N2",
+      "index": 81,
+      "form": "なくはない",
+      "reading": "naku wa nai",
+      "meaning": "it’s not that; I may (double negative)"
+    },
+    {
+      "id": "N2-82",
+      "level": "N2",
+      "index": 82,
+      "form": "なくて済む",
+      "reading": "nakute sumu",
+      "meaning": "get by without doing~"
+    },
+    {
+      "id": "N2-83",
+      "level": "N2",
+      "index": 83,
+      "form": "何も～ない",
+      "reading": "nani mo~nai",
+      "meaning": "nothing; (not) ~ at all"
+    },
+    {
+      "id": "N2-84",
+      "level": "N2",
+      "index": 84,
+      "form": "なお",
+      "reading": "nao",
+      "meaning": "still; yet; furthermore; in addition~"
+    },
+    {
+      "id": "N2-85",
+      "level": "N2",
+      "index": 85,
+      "form": "ねばならない",
+      "reading": "neba naranai",
+      "meaning": "have to do; must; should~"
+    },
+    {
+      "id": "N2-86",
+      "level": "N2",
+      "index": 86,
+      "form": "にあたって",
+      "reading": "ni atatte",
+      "meaning": "at the time; on the occasion of~"
+    },
+    {
+      "id": "N2-87",
+      "level": "N2",
+      "index": 87,
+      "form": "にほかならない",
+      "reading": "ni hoka naranai",
+      "meaning": "nothing but; none other than~"
+    },
+    {
+      "id": "N2-88",
+      "level": "N2",
+      "index": 88,
+      "form": "に限らず",
+      "reading": "ni kagirazu",
+      "meaning": "not just; not only.. but also~"
+    },
+    {
+      "id": "N2-89",
+      "level": "N2",
+      "index": 89,
+      "form": "に限る",
+      "reading": "ni kagiru",
+      "meaning": "is best; nothing is better than~"
+    },
+    {
+      "id": "N2-90",
+      "level": "N2",
+      "index": 90,
+      "form": "に限って",
+      "reading": "ni kagitte",
+      "meaning": "only; in particular~"
+    },
+    {
+      "id": "N2-91",
+      "level": "N2",
+      "index": 91,
+      "form": "に関わらず",
+      "reading": "ni kakawarazu",
+      "meaning": "in spite of; regardless of~"
+    },
+    {
+      "id": "N2-92",
+      "level": "N2",
+      "index": 92,
+      "form": "に関わる",
+      "reading": "ni kakawaru",
+      "meaning": "to relate to; to have to do with"
+    },
+    {
+      "id": "N2-93",
+      "level": "N2",
+      "index": 93,
+      "form": "に決まっている",
+      "reading": "ni kimatte iru",
+      "meaning": "certainly; I’m sure/certain that"
+    },
+    {
+      "id": "N2-94",
+      "level": "N2",
+      "index": 94,
+      "form": "に越したことはない",
+      "reading": "ni koshita koto wa nai",
+      "meaning": "it’s best that, nothing better than"
+    },
+    {
+      "id": "N2-95",
+      "level": "N2",
+      "index": 95,
+      "form": "に応えて",
+      "reading": "ni kotaete",
+      "meaning": "in response to"
+    },
+    {
+      "id": "N2-96",
+      "level": "N2",
+      "index": 96,
+      "form": "に加えて",
+      "reading": "ni kuwaete",
+      "meaning": "in addition"
+    },
+    {
+      "id": "N2-97",
+      "level": "N2",
+      "index": 97,
+      "form": "に基づいて",
+      "reading": "ni motozuite",
+      "meaning": "based on; on the basis of"
+    },
+    {
+      "id": "N2-98",
+      "level": "N2",
+      "index": 98,
+      "form": "に向かって",
+      "reading": "ni mukatte",
+      "meaning": "to face; to go towards; to head to"
+    },
+    {
+      "id": "N2-99",
+      "level": "N2",
+      "index": 99,
+      "form": "に応じて",
+      "reading": "ni oujite",
+      "meaning": "depending on; in accordance with"
+    },
+    {
+      "id": "N2-100",
+      "level": "N2",
+      "index": 100,
+      "form": "に際して",
+      "reading": "ni saishite",
+      "meaning": "on the occasion of; at the time of"
+    },
+    {
+      "id": "N2-101",
+      "level": "N2",
+      "index": 101,
+      "form": "に先立ち",
+      "reading": "ni sakidachi",
+      "meaning": "before; prior to"
+    },
+    {
+      "id": "N2-102",
+      "level": "N2",
+      "index": 102,
+      "form": "にせよ/ にしろ",
+      "reading": "ni seyo/ ni shiro",
+      "meaning": "even if; regardless; whether... or"
+    },
+    {
+      "id": "N2-103",
+      "level": "N2",
+      "index": 103,
+      "form": "にしろ～にしろ",
+      "reading": "ni shiro~ni shiro",
+      "meaning": "whether… or~"
+    },
+    {
+      "id": "N2-104",
+      "level": "N2",
+      "index": 104,
+      "form": "にしたら",
+      "reading": "ni shitara",
+      "meaning": "from one’s perspective"
+    },
+    {
+      "id": "N2-105",
+      "level": "N2",
+      "index": 105,
+      "form": "にしても",
+      "reading": "ni shitemo",
+      "meaning": "regardless of whether"
+    },
+    {
+      "id": "N2-106",
+      "level": "N2",
+      "index": 106,
+      "form": "に沿って",
+      "reading": "ni sotte",
+      "meaning": "along with; in accordance with"
+    },
+    {
+      "id": "N2-107",
+      "level": "N2",
+      "index": 107,
+      "form": "に相違ない",
+      "reading": "ni soui nai",
+      "meaning": "without a doubt; certain; sure"
+    },
+    {
+      "id": "N2-108",
+      "level": "N2",
+      "index": 108,
+      "form": "に過ぎない",
+      "reading": "ni suginai",
+      "meaning": "no more than; just; merely; only~"
+    },
+    {
+      "id": "N2-109",
+      "level": "N2",
+      "index": 109,
+      "form": "に伴って",
+      "reading": "ni tomonatte",
+      "meaning": "as; due to; with; along with; following"
+    },
+    {
+      "id": "N2-110",
+      "level": "N2",
+      "index": 110,
+      "form": "につけ",
+      "reading": "ni tsuke",
+      "meaning": "every time; whenever; as; whether"
+    },
+    {
+      "id": "N2-111",
+      "level": "N2",
+      "index": 111,
+      "form": "につき",
+      "reading": "ni tsuki",
+      "meaning": "due to; because of; per; each"
+    },
+    {
+      "id": "N2-112",
+      "level": "N2",
+      "index": 112,
+      "form": "にわたって",
+      "reading": "ni watatte",
+      "meaning": "throughout; over a period of"
+    },
+    {
+      "id": "N2-113",
+      "level": "N2",
+      "index": 113,
+      "form": "にも関わらず",
+      "reading": "nimo kakawarazu",
+      "meaning": "despite; in spite of; nevertheless"
+    },
+    {
+      "id": "N2-114",
+      "level": "N2",
+      "index": 114,
+      "form": "にて",
+      "reading": "nite",
+      "meaning": "in, at, with, by (formal particle)"
+    },
+    {
+      "id": "N2-115",
+      "level": "N2",
+      "index": 115,
+      "form": "のももっともだ",
+      "reading": "no mo motto mo da",
+      "meaning": "no wonder; …is only natural"
+    },
+    {
+      "id": "N2-116",
+      "level": "N2",
+      "index": 116,
+      "form": "の下で",
+      "reading": "no moto de",
+      "meaning": "under; with~"
+    },
+    {
+      "id": "N2-117",
+      "level": "N2",
+      "index": 117,
+      "form": "の上では",
+      "reading": "no ue de wa",
+      "meaning": "according to; from the viewpoint of~"
+    },
+    {
+      "id": "N2-118",
+      "level": "N2",
+      "index": 118,
+      "form": "のみならず",
+      "reading": "nominarazu",
+      "meaning": "not only; besides; as well as~"
+    },
+    {
+      "id": "N2-119",
+      "level": "N2",
+      "index": 119,
+      "form": "ぬ",
+      "reading": "nu",
+      "meaning": "negative verb conjugation (traditional)"
+    },
+    {
+      "id": "N2-120",
+      "level": "N2",
+      "index": 120,
+      "form": "抜きにして",
+      "reading": "nuki ni shite",
+      "meaning": "without; leaving out; cutting out~"
+    },
+    {
+      "id": "N2-121",
+      "level": "N2",
+      "index": 121,
+      "form": "抜く",
+      "reading": "nuku",
+      "meaning": "from beginning to end; completely"
+    },
+    {
+      "id": "N2-122",
+      "level": "N2",
+      "index": 122,
+      "form": "を契機に",
+      "reading": "o keiki ni",
+      "meaning": "as a good opportunity/chance to"
+    },
+    {
+      "id": "N2-123",
+      "level": "N2",
+      "index": 123,
+      "form": "をめぐって",
+      "reading": "o megutte",
+      "meaning": "concerning; in regard to~"
+    },
+    {
+      "id": "N2-124",
+      "level": "N2",
+      "index": 124,
+      "form": "をもとに",
+      "reading": "o moto ni",
+      "meaning": "based on; derived from; building on"
+    },
+    {
+      "id": "N2-125",
+      "level": "N2",
+      "index": 125,
+      "form": "を除いて",
+      "reading": "o nozoite",
+      "meaning": "except; with the exception of"
+    },
+    {
+      "id": "N2-126",
+      "level": "N2",
+      "index": 126,
+      "form": "を問わず",
+      "reading": "o towazu",
+      "meaning": "regardless of; irrespective of; no matter"
+    },
+    {
+      "id": "N2-127",
+      "level": "N2",
+      "index": 127,
+      "form": "お～願う",
+      "reading": "o~negau",
+      "meaning": "please do; could you please~"
+    },
+    {
+      "id": "N2-128",
+      "level": "N2",
+      "index": 128,
+      "form": "おまけに",
+      "reading": "omake ni",
+      "meaning": "to make matters worse; what's more"
+    },
+    {
+      "id": "N2-129",
+      "level": "N2",
+      "index": 129,
+      "form": "恐らく",
+      "reading": "osoraku",
+      "meaning": "perhaps; likely; probably; I dare say~"
+    },
+    {
+      "id": "N2-130",
+      "level": "N2",
+      "index": 130,
+      "form": "恐れがある",
+      "reading": "osore ga aru",
+      "meaning": "it is feared that; to be in danger of"
+    },
+    {
+      "id": "N2-131",
+      "level": "N2",
+      "index": 131,
+      "form": "及び",
+      "reading": "oyobi",
+      "meaning": "and; as well as~"
+    },
+    {
+      "id": "N2-132",
+      "level": "N2",
+      "index": 132,
+      "form": "ろくに～ない",
+      "reading": "roku ni~nai",
+      "meaning": "not well; not enough; improperly"
+    },
+    {
+      "id": "N2-133",
+      "level": "N2",
+      "index": 133,
+      "form": "幸いなことに",
+      "reading": "saiwai na koto ni",
+      "meaning": "fortunately; luckily; thankfully~"
+    },
+    {
+      "id": "N2-134",
+      "level": "N2",
+      "index": 134,
+      "form": "せいか",
+      "reading": "sei ka",
+      "meaning": "perhaps because~"
+    },
+    {
+      "id": "N2-135",
+      "level": "N2",
+      "index": 135,
+      "form": "せっかく",
+      "reading": "sekkaku",
+      "meaning": "especially; (thank you for) troubling to"
+    },
+    {
+      "id": "N2-136",
+      "level": "N2",
+      "index": 136,
+      "form": "せめて",
+      "reading": "semete",
+      "meaning": "at least; at most~"
+    },
+    {
+      "id": "N2-137",
+      "level": "N2",
+      "index": 137,
+      "form": "次第",
+      "reading": "shidai",
+      "meaning": "as soon as, dependent upon"
+    },
+    {
+      "id": "N2-138",
+      "level": "N2",
+      "index": 138,
+      "form": "次第で",
+      "reading": "shidai de",
+      "meaning": "depending on; so~"
+    },
+    {
+      "id": "N2-139",
+      "level": "N2",
+      "index": 139,
+      "form": "次第に",
+      "reading": "shidai ni",
+      "meaning": "gradually; in sequence; in order"
+    },
+    {
+      "id": "N2-140",
+      "level": "N2",
+      "index": 140,
+      "form": "しかも",
+      "reading": "shikamo",
+      "meaning": "moreover; furthermore; what’s more~"
+    },
+    {
+      "id": "N2-141",
+      "level": "N2",
+      "index": 141,
+      "form": "その上",
+      "reading": "sono ue",
+      "meaning": "besides; in addition; furthermore~"
+    },
+    {
+      "id": "N2-142",
+      "level": "N2",
+      "index": 142,
+      "form": "それなのに",
+      "reading": "sore na noni",
+      "meaning": "and yet; despite this; but even so~"
+    },
+    {
+      "id": "N2-143",
+      "level": "N2",
+      "index": 143,
+      "form": "それなら",
+      "reading": "sore nara",
+      "meaning": "if that’s the case; if so~"
+    },
+    {
+      "id": "N2-144",
+      "level": "N2",
+      "index": 144,
+      "form": "それにしても",
+      "reading": "sore ni shitemo",
+      "meaning": "nevertheless; at any rate; even so"
+    },
+    {
+      "id": "N2-145",
+      "level": "N2",
+      "index": 145,
+      "form": "そう言えば",
+      "reading": "sou ieba",
+      "meaning": "come to think of it~"
+    },
+    {
+      "id": "N2-146",
+      "level": "N2",
+      "index": 146,
+      "form": "そうすると",
+      "reading": "sou suru to",
+      "meaning": "having done that; if that is done"
+    },
+    {
+      "id": "N2-147",
+      "level": "N2",
+      "index": 147,
+      "form": "末に",
+      "reading": "sue ni",
+      "meaning": "finally; after; following; at the end"
+    },
+    {
+      "id": "N2-148",
+      "level": "N2",
+      "index": 148,
+      "form": "少しも～ない",
+      "reading": "sukoshi mo~nai",
+      "meaning": "not one bit; not even a little~"
+    },
+    {
+      "id": "N2-149",
+      "level": "N2",
+      "index": 149,
+      "form": "少なくとも",
+      "reading": "sukunaku tomo",
+      "meaning": "at least~"
+    },
+    {
+      "id": "N2-150",
+      "level": "N2",
+      "index": 150,
+      "form": "直ちに",
+      "reading": "tadachi ni",
+      "meaning": "at once; immediately; directly"
+    },
+    {
+      "id": "N2-151",
+      "level": "N2",
+      "index": 151,
+      "form": "たまえ",
+      "reading": "tamae",
+      "meaning": "do~; order somebody to do something"
+    },
+    {
+      "id": "N2-152",
+      "level": "N2",
+      "index": 152,
+      "form": "てばかりはいられない",
+      "reading": "te bakari wa irarenai",
+      "meaning": "can’t keep doing~"
+    },
+    {
+      "id": "N2-153",
+      "level": "N2",
+      "index": 153,
+      "form": "てでも",
+      "reading": "te demo",
+      "meaning": "even if I have to; by all means~"
+    },
+    {
+      "id": "N2-154",
+      "level": "N2",
+      "index": 154,
+      "form": "て以来",
+      "reading": "te irai",
+      "meaning": "since; henceforth~"
+    },
+    {
+      "id": "N2-155",
+      "level": "N2",
+      "index": 155,
+      "form": "ていては",
+      "reading": "te ite wa",
+      "meaning": "if one keeps doing~"
+    },
+    {
+      "id": "N2-156",
+      "level": "N2",
+      "index": 156,
+      "form": "てこそ",
+      "reading": "te koso",
+      "meaning": "now that; since (something happened)"
+    },
+    {
+      "id": "N2-157",
+      "level": "N2",
+      "index": 157,
+      "form": "てまで",
+      "reading": "te made",
+      "meaning": "even; will go far so as to~"
+    },
+    {
+      "id": "N2-158",
+      "level": "N2",
+      "index": 158,
+      "form": "てならない",
+      "reading": "te naranai",
+      "meaning": "can't help but; dying to; extremely~"
+    },
+    {
+      "id": "N2-159",
+      "level": "N2",
+      "index": 159,
+      "form": "てたまらない",
+      "reading": "te tamaranai",
+      "meaning": "can't help but; dying to; extremely~"
+    },
+    {
+      "id": "N2-160",
+      "level": "N2",
+      "index": 160,
+      "form": "て当然だ",
+      "reading": "te touzen da",
+      "meaning": "natural; as a matter of course"
+    },
+    {
+      "id": "N2-161",
+      "level": "N2",
+      "index": 161,
+      "form": "ては / では",
+      "reading": "tewa / dewa",
+      "meaning": "whenever; if; when~; repetitive action"
+    },
+    {
+      "id": "N2-162",
+      "level": "N2",
+      "index": 162,
+      "form": "てはいられない",
+      "reading": "tewa irarenai",
+      "meaning": "can’t afford to; unable to~"
+    },
+    {
+      "id": "N2-163",
+      "level": "N2",
+      "index": 163,
+      "form": "てはならない",
+      "reading": "tewa naranai",
+      "meaning": "must not; cannot; should not~"
+    },
+    {
+      "id": "N2-164",
+      "level": "N2",
+      "index": 164,
+      "form": "ては～ては",
+      "reading": "tewa~tewa",
+      "meaning": "repetitive situations/actions"
+    },
+    {
+      "id": "N2-165",
+      "level": "N2",
+      "index": 165,
+      "form": "と同時に",
+      "reading": "to douji ni",
+      "meaning": "at the same time as; while"
+    },
+    {
+      "id": "N2-166",
+      "level": "N2",
+      "index": 166,
+      "form": "といった",
+      "reading": "to itta",
+      "meaning": "like; such as~"
+    },
+    {
+      "id": "N2-167",
+      "level": "N2",
+      "index": 167,
+      "form": "というふうに",
+      "reading": "to iu fuu ni",
+      "meaning": "in such a way that~"
+    },
+    {
+      "id": "N2-168",
+      "level": "N2",
+      "index": 168,
+      "form": "ということは",
+      "reading": "to iu koto wa",
+      "meaning": "that is to say; in other words~"
+    },
+    {
+      "id": "N2-169",
+      "level": "N2",
+      "index": 169,
+      "form": "というものだ",
+      "reading": "to iu mono da",
+      "meaning": "something like; something called~"
+    },
+    {
+      "id": "N2-170",
+      "level": "N2",
+      "index": 170,
+      "form": "というものではない",
+      "reading": "to iu mono dewa nai",
+      "meaning": "there is no guarantee that~"
+    },
+    {
+      "id": "N2-171",
+      "level": "N2",
+      "index": 171,
+      "form": "と考えられる",
+      "reading": "to kangaerareru",
+      "meaning": "one can think that; it is conceivable that"
+    },
+    {
+      "id": "N2-172",
+      "level": "N2",
+      "index": 172,
+      "form": "とか（で）",
+      "reading": "toka (de)",
+      "meaning": "I heard that~"
+    },
+    {
+      "id": "N2-173",
+      "level": "N2",
+      "index": 173,
+      "form": "とっくに",
+      "reading": "tokku ni",
+      "meaning": "long ago; already; a long time ago"
+    },
+    {
+      "id": "N2-174",
+      "level": "N2",
+      "index": 174,
+      "form": "ところだった",
+      "reading": "tokoro datta",
+      "meaning": "was just about to do something"
+    },
+    {
+      "id": "N2-175",
+      "level": "N2",
+      "index": 175,
+      "form": "ところに",
+      "reading": "tokoro ni",
+      "meaning": "at the time; just as I was~"
+    },
+    {
+      "id": "N2-176",
+      "level": "N2",
+      "index": 176,
+      "form": "ところを見ると",
+      "reading": "tokoro o miru to",
+      "meaning": "judging from; seeing that~"
+    },
+    {
+      "id": "N2-177",
+      "level": "N2",
+      "index": 177,
+      "form": "とも",
+      "reading": "tomo",
+      "meaning": "even if; no matter; though~"
+    },
+    {
+      "id": "N2-178",
+      "level": "N2",
+      "index": 178,
+      "form": "としても",
+      "reading": "toshitemo",
+      "meaning": "assuming; even if~"
+    },
+    {
+      "id": "N2-179",
+      "level": "N2",
+      "index": 179,
+      "form": "つつ",
+      "reading": "tsutsu",
+      "meaning": "while; even though; despite~"
+    },
+    {
+      "id": "N2-180",
+      "level": "N2",
+      "index": 180,
+      "form": "つつある",
+      "reading": "tsutsu aru",
+      "meaning": "to be doing; in the process of doing~"
+    },
+    {
+      "id": "N2-181",
+      "level": "N2",
+      "index": 181,
+      "form": "上は",
+      "reading": "ue wa",
+      "meaning": "now that; since; as long as~"
+    },
+    {
+      "id": "N2-182",
+      "level": "N2",
+      "index": 182,
+      "form": "はもとより",
+      "reading": "wa moto yori",
+      "meaning": "also; let alone; from the beginning"
+    },
+    {
+      "id": "N2-183",
+      "level": "N2",
+      "index": 183,
+      "form": "はともかく",
+      "reading": "wa tomokaku",
+      "meaning": "anyhow; anyway; regardless"
+    },
+    {
+      "id": "N2-184",
+      "level": "N2",
+      "index": 184,
+      "form": "わずかに",
+      "reading": "wazuka ni",
+      "meaning": "slightly; only; barely; narrowly~"
+    },
+    {
+      "id": "N2-185",
+      "level": "N2",
+      "index": 185,
+      "form": "やがて",
+      "reading": "yagate",
+      "meaning": "before long; soon; almost; eventually~"
+    },
+    {
+      "id": "N2-186",
+      "level": "N2",
+      "index": 186,
+      "form": "やら～やら",
+      "reading": "yara~yara",
+      "meaning": "such things as A and B; and so on~"
+    },
+    {
+      "id": "N2-187",
+      "level": "N2",
+      "index": 187,
+      "form": "よほど / よっぽど",
+      "reading": "yohodo / yoppodo",
+      "meaning": "very; greatly; much; to a large extent"
+    },
+    {
+      "id": "N2-188",
+      "level": "N2",
+      "index": 188,
+      "form": "より [2]",
+      "reading": "yori",
+      "meaning": "from~ (a time, place, or person)"
+    },
+    {
+      "id": "N2-189",
+      "level": "N2",
+      "index": 189,
+      "form": "よりほかない",
+      "reading": "yori hoka nai",
+      "meaning": "to have no choice but~"
+    },
+    {
+      "id": "N2-190",
+      "level": "N2",
+      "index": 190,
+      "form": "ようでは",
+      "reading": "you dewa",
+      "meaning": "if~ (bad result)"
+    },
+    {
+      "id": "N2-191",
+      "level": "N2",
+      "index": 191,
+      "form": "ようではないか",
+      "reading": "you dewa nai ka",
+      "meaning": "let’s do (something); why don’t we~"
+    },
+    {
+      "id": "N2-192",
+      "level": "N2",
+      "index": 192,
+      "form": "ようか～まいか",
+      "reading": "you ka~mai ka",
+      "meaning": "whether or not; considering options"
+    },
+    {
+      "id": "N2-193",
+      "level": "N2",
+      "index": 193,
+      "form": "要するに",
+      "reading": "you suru ni",
+      "meaning": "in short; in a word; to sum up"
+    },
+    {
+      "id": "N2-194",
+      "level": "N2",
+      "index": 194,
+      "form": "ざるを得ない",
+      "reading": "zaru o enai",
+      "meaning": "cannot help (doing); have no choice but"
+    },
+    {
+      "id": "N2-195",
+      "level": "N2",
+      "index": 195,
+      "form": "ずに済む",
+      "reading": "zu ni sumu",
+      "meaning": "get by without doing~"
+    },
+    {
+      "id": "N1-1",
+      "level": "N1",
+      "index": 1,
+      "form": "敢えて",
+      "reading": "aete",
+      "meaning": "dare to; deliberately; purposely ~"
+    },
+    {
+      "id": "N1-2",
+      "level": "N1",
+      "index": 2,
+      "form": "あくまでも",
+      "reading": "akumade mo",
+      "meaning": "to the end; persistently; is still very ~"
+    },
+    {
+      "id": "N1-3",
+      "level": "N1",
+      "index": 3,
+      "form": "案の定",
+      "reading": "an no jou",
+      "meaning": "just as one thought; sure enough"
+    },
+    {
+      "id": "N1-4",
+      "level": "N1",
+      "index": 4,
+      "form": "あらかじめ",
+      "reading": "arakajime",
+      "meaning": "beforehand; in advance; previously"
+    },
+    {
+      "id": "N1-5",
+      "level": "N1",
+      "index": 5,
+      "form": "あっての",
+      "reading": "atte no",
+      "meaning": "which can exist solely due to"
+    },
+    {
+      "id": "N1-6",
+      "level": "N1",
+      "index": 6,
+      "form": "ばこそ",
+      "reading": "ba koso",
+      "meaning": "only because ~"
+    },
+    {
+      "id": "N1-7",
+      "level": "N1",
+      "index": 7,
+      "form": "ばそれまでだ /たらそれまでだ",
+      "reading": "ba sore made da / tara sore made da",
+      "meaning": "if… then it’s over"
+    },
+    {
+      "id": "N1-8",
+      "level": "N1",
+      "index": 8,
+      "form": "べからず / べからざる",
+      "reading": "bekarazu/ bekarazaru",
+      "meaning": "must not; should not; do not ~"
+    },
+    {
+      "id": "N1-9",
+      "level": "N1",
+      "index": 9,
+      "form": "べく",
+      "reading": "beku",
+      "meaning": "in order to; for the purpose of ~"
+    },
+    {
+      "id": "N1-10",
+      "level": "N1",
+      "index": 10,
+      "form": "べくもない",
+      "reading": "beku mo nai",
+      "meaning": "cannot possibly be ~"
+    },
+    {
+      "id": "N1-11",
+      "level": "N1",
+      "index": 11,
+      "form": "べくして",
+      "reading": "beku shite",
+      "meaning": "as it is bound to (happen)"
+    },
+    {
+      "id": "N1-12",
+      "level": "N1",
+      "index": 12,
+      "form": "びる / びて / びた",
+      "reading": "biru / bite / bita",
+      "meaning": "to seem to be; to appear; to behave as ~"
+    },
+    {
+      "id": "N1-13",
+      "level": "N1",
+      "index": 13,
+      "form": "ぶり / っぷり",
+      "reading": "buri / ppuri",
+      "meaning": "style; manner; way"
+    },
+    {
+      "id": "N1-14",
+      "level": "N1",
+      "index": 14,
+      "form": "ぶる / ぶって / ぶった",
+      "reading": "buru / butte / butta",
+      "meaning": "behaving like; to pretend / act like ~"
+    },
+    {
+      "id": "N1-15",
+      "level": "N1",
+      "index": 15,
+      "form": "だに / だにしない",
+      "reading": "dani / dani shinai",
+      "meaning": "even; not even ~"
+    },
+    {
+      "id": "N1-16",
+      "level": "N1",
+      "index": 16,
+      "form": "だの〜だの",
+      "reading": "dano~dano",
+      "meaning": "and; and the like; and so forth ~"
+    },
+    {
+      "id": "N1-17",
+      "level": "N1",
+      "index": 17,
+      "form": "だろうに",
+      "reading": "darou ni",
+      "meaning": "(1) surely..., but ~ (2) should have ~"
+    },
+    {
+      "id": "N1-18",
+      "level": "N1",
+      "index": 18,
+      "form": "であれ / であろうと",
+      "reading": "de are / de arou to",
+      "meaning": "whoever; whatever; however; even ~"
+    },
+    {
+      "id": "N1-19",
+      "level": "N1",
+      "index": 19,
+      "form": "であれ〜であれ",
+      "reading": "de are~de are",
+      "meaning": "whether [A] or [B]"
+    },
+    {
+      "id": "N1-20",
+      "level": "N1",
+      "index": 20,
+      "form": "でもあり〜でもある",
+      "reading": "demo ari~demo aru",
+      "meaning": "to also be; both… and ~"
+    },
+    {
+      "id": "N1-21",
+      "level": "N1",
+      "index": 21,
+      "form": "でも何でもない /くも何ともない",
+      "reading": "demo nan demo nai / kumo nan tomo nai",
+      "meaning": "not in the least; nothing like that"
+    },
+    {
+      "id": "N1-22",
+      "level": "N1",
+      "index": 22,
+      "form": "でなくてなんだろう",
+      "reading": "denakute nan darou",
+      "meaning": "must be; is definitely ~"
+    },
+    {
+      "id": "N1-23",
+      "level": "N1",
+      "index": 23,
+      "form": "ではあるまいか",
+      "reading": "dewa arumai ka",
+      "meaning": "isn't it; I wonder if it’s not ~"
+    },
+    {
+      "id": "N1-24",
+      "level": "N1",
+      "index": 24,
+      "form": "ではあるまいし",
+      "reading": "dewa arumai shi",
+      "meaning": "it’s not like; it isn’t as if ~"
+    },
+    {
+      "id": "N1-25",
+      "level": "N1",
+      "index": 25,
+      "form": "では済まない",
+      "reading": "dewa sumanai",
+      "meaning": "it doesn’t end with just ~"
+    },
+    {
+      "id": "N1-26",
+      "level": "N1",
+      "index": 26,
+      "form": "どうにも〜ない",
+      "reading": "dou nimo~nai",
+      "meaning": "not … by any means"
+    },
+    {
+      "id": "N1-27",
+      "level": "N1",
+      "index": 27,
+      "form": "が早いか",
+      "reading": "ga hayai ka",
+      "meaning": "no sooner than; as soon as ~"
+    },
+    {
+      "id": "N1-28",
+      "level": "N1",
+      "index": 28,
+      "form": "が/も〜なら、〜も〜だ",
+      "reading": "ga/mo~nara, ~mo~da",
+      "meaning": "negative connection/comparison"
+    },
+    {
+      "id": "N1-29",
+      "level": "N1",
+      "index": 29,
+      "form": "がましい",
+      "reading": "gamashii",
+      "meaning": "look like; sound like; somewhat like ~"
+    },
+    {
+      "id": "N1-30",
+      "level": "N1",
+      "index": 30,
+      "form": "がてら",
+      "reading": "gatera",
+      "meaning": "while; at the same time; coincidentally"
+    },
+    {
+      "id": "N1-31",
+      "level": "N1",
+      "index": 31,
+      "form": "ごとき/ごとく/ごとし",
+      "reading": "gotoki/gotoku/gotoshi",
+      "meaning": "like; as if; the same as ~"
+    },
+    {
+      "id": "N1-32",
+      "level": "N1",
+      "index": 32,
+      "form": "ぐるみ",
+      "reading": "gurumi",
+      "meaning": "together (with); -wide"
+    },
+    {
+      "id": "N1-33",
+      "level": "N1",
+      "index": 33,
+      "form": "羽目になる",
+      "reading": "hame ni naru",
+      "meaning": "to get stuck with (unpleasant)"
+    },
+    {
+      "id": "N1-34",
+      "level": "N1",
+      "index": 34,
+      "form": "ほどのことではない",
+      "reading": "hodo no koto dewa nai",
+      "meaning": "it's not worth; no need to ~"
+    },
+    {
+      "id": "N1-35",
+      "level": "N1",
+      "index": 35,
+      "form": "ほうがましだ",
+      "reading": "hou ga mashi da",
+      "meaning": "better than; would rather ~"
+    },
+    {
+      "id": "N1-36",
+      "level": "N1",
+      "index": 36,
+      "form": "放題",
+      "reading": "houdai",
+      "meaning": "doing as one pleases; uncontrolled"
+    },
+    {
+      "id": "N1-37",
+      "level": "N1",
+      "index": 37,
+      "form": "いかんだ / いかんでは/ いかんによっては",
+      "reading": "ikan da / ikan dewa / ikan ni yotte wa",
+      "meaning": "in accordance with; depending on ~"
+    },
+    {
+      "id": "N1-38",
+      "level": "N1",
+      "index": 38,
+      "form": "いかんにかかわらず /いかんによらず /いかんをとわず",
+      "reading": "ikan ni kakawarazu / ikan ni yorazu /ikan o towazu",
+      "meaning": "regardless of; whether or not ~"
+    },
+    {
+      "id": "N1-39",
+      "level": "N1",
+      "index": 39,
+      "form": "いかなる",
+      "reading": "ikanaru",
+      "meaning": "any kind of; every; whatever"
+    },
+    {
+      "id": "N1-40",
+      "level": "N1",
+      "index": 40,
+      "form": "いかに",
+      "reading": "ikani",
+      "meaning": "how; in what way; to what extent"
+    },
+    {
+      "id": "N1-41",
+      "level": "N1",
+      "index": 41,
+      "form": "いかにも",
+      "reading": "ikani mo",
+      "meaning": "indeed; really; just (like); very ~"
+    },
+    {
+      "id": "N1-42",
+      "level": "N1",
+      "index": 42,
+      "form": "いずれにしても / いずれにしろ / いずれにせよ",
+      "reading": "izure ni shitemo / izure ni shiro / izure ni seyo",
+      "meaning": "anyhow; anyway; in any case ~"
+    },
+    {
+      "id": "N1-43",
+      "level": "N1",
+      "index": 43,
+      "form": "じみた",
+      "reading": "jimita",
+      "meaning": "to become; to appear like; to look like ~"
+    },
+    {
+      "id": "N1-44",
+      "level": "N1",
+      "index": 44,
+      "form": "か否か",
+      "reading": "ka ina ka",
+      "meaning": "whether or not ~"
+    },
+    {
+      "id": "N1-45",
+      "level": "N1",
+      "index": 45,
+      "form": "かと思いきや",
+      "reading": "ka to omoikiya",
+      "meaning": "contrary to expectations"
+    },
+    {
+      "id": "N1-46",
+      "level": "N1",
+      "index": 46,
+      "form": "限りだ",
+      "reading": "kagiri da",
+      "meaning": "to feel strongly"
+    },
+    {
+      "id": "N1-47",
+      "level": "N1",
+      "index": 47,
+      "form": "甲斐もなく",
+      "reading": "kai mo naku",
+      "meaning": "despite; even though ~"
+    },
+    {
+      "id": "N1-48",
+      "level": "N1",
+      "index": 48,
+      "form": "可能性がある",
+      "reading": "kanousei ga aru",
+      "meaning": "may/might; there’s a possibility that ~"
+    },
+    {
+      "id": "N1-49",
+      "level": "N1",
+      "index": 49,
+      "form": "からある / からする/ からの",
+      "reading": "kara aru / kara suru / kara no",
+      "meaning": "at least; as much as; as many as ~"
+    },
+    {
+      "id": "N1-50",
+      "level": "N1",
+      "index": 50,
+      "form": "かれ〜かれ",
+      "reading": "kare~kare",
+      "meaning": "sooner or later; more or less"
+    },
+    {
+      "id": "N1-51",
+      "level": "N1",
+      "index": 51,
+      "form": "かたがた",
+      "reading": "katagata",
+      "meaning": "while; at the same time; incidentally ~"
+    },
+    {
+      "id": "N1-52",
+      "level": "N1",
+      "index": 52,
+      "form": "かたわら",
+      "reading": "katawara",
+      "meaning": "while; at the same time; in addition"
+    },
+    {
+      "id": "N1-53",
+      "level": "N1",
+      "index": 53,
+      "form": "かつて",
+      "reading": "katsute",
+      "meaning": "once; before; formerly; former; ex-"
+    },
+    {
+      "id": "N1-54",
+      "level": "N1",
+      "index": 54,
+      "form": "嫌いがある",
+      "reading": "kirai ga aru",
+      "meaning": "bad habit; to have a tendency to ~"
+    },
+    {
+      "id": "N1-55",
+      "level": "N1",
+      "index": 55,
+      "form": "切りがない",
+      "reading": "kiri ga nai",
+      "meaning": "endless; boundless; there’s no end to ~"
+    },
+    {
+      "id": "N1-56",
+      "level": "N1",
+      "index": 56,
+      "form": "きっての",
+      "reading": "kitte no",
+      "meaning": "the most / greatest … of all"
+    },
+    {
+      "id": "N1-57",
+      "level": "N1",
+      "index": 57,
+      "form": "極まる / 極まりない",
+      "reading": "kiwamaru/ kiwamarinai",
+      "meaning": "extremely; very ~"
+    },
+    {
+      "id": "N1-58",
+      "level": "N1",
+      "index": 58,
+      "form": "こそあれ",
+      "reading": "koso are",
+      "meaning": "although; even though ~"
+    },
+    {
+      "id": "N1-59",
+      "level": "N1",
+      "index": 59,
+      "form": "こそすれ",
+      "reading": "koso sure",
+      "meaning": "and; although; but ~"
+    },
+    {
+      "id": "N1-60",
+      "level": "N1",
+      "index": 60,
+      "form": "こそ「〜が・けれど」",
+      "reading": "koso~ga/keredo",
+      "meaning": "but; although (emphasis)"
+    },
+    {
+      "id": "N1-61",
+      "level": "N1",
+      "index": 61,
+      "form": "ことごとく",
+      "reading": "koto gotoku",
+      "meaning": "altogether; entirely; completely ~"
+    },
+    {
+      "id": "N1-62",
+      "level": "N1",
+      "index": 62,
+      "form": "ことこの上ない / この上ない / この上なく",
+      "reading": "koto kono ue nai / kono ue nai / kono ue naku",
+      "meaning": "the most of all; the best; nothing is more ... than ~"
+    },
+    {
+      "id": "N1-63",
+      "level": "N1",
+      "index": 63,
+      "form": "こともあって",
+      "reading": "koto mo atte",
+      "meaning": "partly because; also because of ~"
+    },
+    {
+      "id": "N1-64",
+      "level": "N1",
+      "index": 64,
+      "form": "ことなしに",
+      "reading": "koto nashi ni",
+      "meaning": "without doing something"
+    },
+    {
+      "id": "N1-65",
+      "level": "N1",
+      "index": 65,
+      "form": "ことのないように",
+      "reading": "koto no nai you ni",
+      "meaning": "so as not to; to not ~"
+    },
+    {
+      "id": "N1-66",
+      "level": "N1",
+      "index": 66,
+      "form": "こととて",
+      "reading": "koto tote",
+      "meaning": "because; since ~"
+    },
+    {
+      "id": "N1-67",
+      "level": "N1",
+      "index": 67,
+      "form": "くらいなら",
+      "reading": "kurai nara",
+      "meaning": "rather than (do ...)"
+    },
+    {
+      "id": "N1-68",
+      "level": "N1",
+      "index": 68,
+      "form": "くらいのものだ",
+      "reading": "kurai no mono da",
+      "meaning": "only (emphasis)"
+    },
+    {
+      "id": "N1-69",
+      "level": "N1",
+      "index": 69,
+      "form": "までだ / までのことだ",
+      "reading": "made da/no koto da",
+      "meaning": "only; just; nothing else"
+    },
+    {
+      "id": "N1-70",
+      "level": "N1",
+      "index": 70,
+      "form": "までもない / までもなく",
+      "reading": "made mo nai/naku",
+      "meaning": "there's no need to; not necessary to ~"
+    },
+    {
+      "id": "N1-71",
+      "level": "N1",
+      "index": 71,
+      "form": "まじき",
+      "reading": "majiki",
+      "meaning": "should not; must not ~"
+    },
+    {
+      "id": "N1-72",
+      "level": "N1",
+      "index": 72,
+      "form": "まくる",
+      "reading": "makuru",
+      "meaning": "to do over and over again"
+    },
+    {
+      "id": "N1-73",
+      "level": "N1",
+      "index": 73,
+      "form": "まみれ",
+      "reading": "mamire",
+      "meaning": "covered with; stained; smeared with ~"
+    },
+    {
+      "id": "N1-74",
+      "level": "N1",
+      "index": 74,
+      "form": "まるっきり",
+      "reading": "marukkiri",
+      "meaning": "completely; totally; (not) at all ~"
+    },
+    {
+      "id": "N1-75",
+      "level": "N1",
+      "index": 75,
+      "form": "めく",
+      "reading": "meku",
+      "meaning": "seems; show signs of ~"
+    },
+    {
+      "id": "N1-76",
+      "level": "N1",
+      "index": 76,
+      "form": "も同然だ",
+      "reading": "mo douzen da",
+      "meaning": "just like; same as~"
+    },
+    {
+      "id": "N1-77",
+      "level": "N1",
+      "index": 77,
+      "form": "もさることながら",
+      "reading": "mo saru koto nagara",
+      "meaning": "not only... but also ~"
+    },
+    {
+      "id": "N1-78",
+      "level": "N1",
+      "index": 78,
+      "form": "もしないで",
+      "reading": "mo shinai de",
+      "meaning": "without even doing ~"
+    },
+    {
+      "id": "N1-79",
+      "level": "N1",
+      "index": 79,
+      "form": "もはや",
+      "reading": "mohaya",
+      "meaning": "already; now; no longer; not anymore"
+    },
+    {
+      "id": "N1-80",
+      "level": "N1",
+      "index": 80,
+      "form": "もので",
+      "reading": "mono de",
+      "meaning": "because; for that reason"
+    },
+    {
+      "id": "N1-81",
+      "level": "N1",
+      "index": 81,
+      "form": "ものを",
+      "reading": "mono o",
+      "meaning": "if only (regret)"
+    },
+    {
+      "id": "N1-82",
+      "level": "N1",
+      "index": 82,
+      "form": "ものと思われる /ものと見られる",
+      "reading": "mono to omowareru/ mirareru",
+      "meaning": "to think; to suppose; it is believed/expected that ~"
+    },
+    {
+      "id": "N1-83",
+      "level": "N1",
+      "index": 83,
+      "form": "ものとする",
+      "reading": "mono to suru",
+      "meaning": "shall; to assume; understood as ~"
+    },
+    {
+      "id": "N1-84",
+      "level": "N1",
+      "index": 84,
+      "form": "ものとして",
+      "reading": "mono toshite",
+      "meaning": "to assume; to suppose ~"
+    },
+    {
+      "id": "N1-85",
+      "level": "N1",
+      "index": 85,
+      "form": "もしくは",
+      "reading": "moshikuwa",
+      "meaning": "or; otherwise"
+    },
+    {
+      "id": "N1-86",
+      "level": "N1",
+      "index": 86,
+      "form": "んばかりに",
+      "reading": "n bakari ni",
+      "meaning": "as if; as though ~"
+    },
+    {
+      "id": "N1-87",
+      "level": "N1",
+      "index": 87,
+      "form": "んがために",
+      "reading": "n ga tame ni",
+      "meaning": "in order to ~"
+    },
+    {
+      "id": "N1-88",
+      "level": "N1",
+      "index": 88,
+      "form": "ながらに / ながらの",
+      "reading": "nagara ni/no",
+      "meaning": "while; without change"
+    },
+    {
+      "id": "N1-89",
+      "level": "N1",
+      "index": 89,
+      "form": "ないまでも",
+      "reading": "nai made mo",
+      "meaning": "not to say; does not reach the level of~"
+    },
+    {
+      "id": "N1-90",
+      "level": "N1",
+      "index": 90,
+      "form": "ないものでもない",
+      "reading": "nai mono demo nai",
+      "meaning": "is not entirely impossible"
+    },
+    {
+      "id": "N1-91",
+      "level": "N1",
+      "index": 91,
+      "form": "ないものか /ないものだろうか",
+      "reading": "nai mono ka / nai mono darou ka",
+      "meaning": "isn't there; can’t we…?; can’t I…?"
+    },
+    {
+      "id": "N1-92",
+      "level": "N1",
+      "index": 92,
+      "form": "ないとも限らない",
+      "reading": "nai tomo kagiranai",
+      "meaning": "not necessarily; maybe; might ~"
+    },
+    {
+      "id": "N1-93",
+      "level": "N1",
+      "index": 93,
+      "form": "なくしては",
+      "reading": "nakushite wa",
+      "meaning": "cannot do without ~"
+    },
+    {
+      "id": "N1-94",
+      "level": "N1",
+      "index": 94,
+      "form": "並み",
+      "reading": "nami",
+      "meaning": "average; equal to; on par with ~"
+    },
+    {
+      "id": "N1-95",
+      "level": "N1",
+      "index": 95,
+      "form": "なんという / なんと/ なんて",
+      "reading": "nan to iu / nanto / nante",
+      "meaning": "how (beautiful, etc.); what a ~"
+    },
+    {
+      "id": "N1-96",
+      "level": "N1",
+      "index": 96,
+      "form": "何しろ",
+      "reading": "nani shiro",
+      "meaning": "anyway; because; as you know ~"
+    },
+    {
+      "id": "N1-97",
+      "level": "N1",
+      "index": 97,
+      "form": "ならでは",
+      "reading": "nara dewa",
+      "meaning": "distinctive of; uniquely applying to ~"
+    },
+    {
+      "id": "N1-98",
+      "level": "N1",
+      "index": 98,
+      "form": "ならいざしらず /はいざしらず",
+      "reading": "nara iza shirazu / wa iza shirazu",
+      "meaning": "I don't know about ... but ~"
+    },
+    {
+      "id": "N1-99",
+      "level": "N1",
+      "index": 99,
+      "form": "なり",
+      "reading": "nari",
+      "meaning": "as soon as; right after ~"
+    },
+    {
+      "id": "N1-100",
+      "level": "N1",
+      "index": 100,
+      "form": "なりに / なりの",
+      "reading": "nari ni / nari no",
+      "meaning": "suitable; in one's own way/style"
+    },
+    {
+      "id": "N1-101",
+      "level": "N1",
+      "index": 101,
+      "form": "なりとも",
+      "reading": "nari tomo",
+      "meaning": "at least; even just a little"
+    },
+    {
+      "id": "N1-102",
+      "level": "N1",
+      "index": 102,
+      "form": "なり〜なり",
+      "reading": "nari~nari",
+      "meaning": "[A] or [B] or something; for instance ~"
+    },
+    {
+      "id": "N1-103",
+      "level": "N1",
+      "index": 103,
+      "form": "なしに / なしで",
+      "reading": "nashi ni / nashi de",
+      "meaning": "without; without doing ~"
+    },
+    {
+      "id": "N1-104",
+      "level": "N1",
+      "index": 104,
+      "form": "に",
+      "reading": "ni",
+      "meaning": "and; in addition to"
+    },
+    {
+      "id": "N1-105",
+      "level": "N1",
+      "index": 105,
+      "form": "に値する",
+      "reading": "ni atai suru",
+      "meaning": "to be worth; to be worthy of ~"
+    },
+    {
+      "id": "N1-106",
+      "level": "N1",
+      "index": 106,
+      "form": "にあって",
+      "reading": "ni atte",
+      "meaning": "at; on; during; in the condition of ~"
+    },
+    {
+      "id": "N1-107",
+      "level": "N1",
+      "index": 107,
+      "form": "に引き換え",
+      "reading": "ni hikikae",
+      "meaning": "compared to; in contrast to; unlike ~"
+    },
+    {
+      "id": "N1-108",
+      "level": "N1",
+      "index": 108,
+      "form": "に至る / に至った",
+      "reading": "ni itaru / ni itatta",
+      "meaning": "leads to; come to a conclusion"
+    },
+    {
+      "id": "N1-109",
+      "level": "N1",
+      "index": 109,
+      "form": "に至るまで",
+      "reading": "ni itaru made",
+      "meaning": "as far as; everything from ... to ~"
+    },
+    {
+      "id": "N1-110",
+      "level": "N1",
+      "index": 110,
+      "form": "に至っても",
+      "reading": "ni itattemo",
+      "meaning": "even if; although something ~"
+    },
+    {
+      "id": "N1-111",
+      "level": "N1",
+      "index": 111,
+      "form": "に至っては",
+      "reading": "ni ittate wa",
+      "meaning": "when it comes to; as for ~"
+    },
+    {
+      "id": "N1-112",
+      "level": "N1",
+      "index": 112,
+      "form": "に言わせれば",
+      "reading": "ni iwasereba",
+      "meaning": "if you ask; if one may say ~"
+    },
+    {
+      "id": "N1-113",
+      "level": "N1",
+      "index": 113,
+      "form": "に限ったことではない",
+      "reading": "ni kagitta koto dewa nai",
+      "meaning": "not limited to only ~"
+    },
+    {
+      "id": "N1-114",
+      "level": "N1",
+      "index": 114,
+      "form": "にかかっては /にかかったら / にかかると / かかれば",
+      "reading": "ni kakatte wa / ni kakattara / ni kakaru to / kakareba",
+      "meaning": "when handled by (N), becomes a different result"
+    },
+    {
+      "id": "N1-115",
+      "level": "N1",
+      "index": 115,
+      "form": "にかかっている",
+      "reading": "ni kakatteiru",
+      "meaning": "depending on ~"
+    },
+    {
+      "id": "N1-116",
+      "level": "N1",
+      "index": 116,
+      "form": "にかこつけて",
+      "reading": "ni kako tsukete",
+      "meaning": "to use as a pretext; to use as an excuse"
+    },
+    {
+      "id": "N1-117",
+      "level": "N1",
+      "index": 117,
+      "form": "にかまけて",
+      "reading": "ni kamakete",
+      "meaning": "to be too busy; to focus only on ~"
+    },
+    {
+      "id": "N1-118",
+      "level": "N1",
+      "index": 118,
+      "form": "に難くない",
+      "reading": "ni katakunai",
+      "meaning": "easy to do; it’s not hard to ~"
+    },
+    {
+      "id": "N1-119",
+      "level": "N1",
+      "index": 119,
+      "form": "にまつわる",
+      "reading": "ni matsuwaru",
+      "meaning": "to be related to; to concern with ~"
+    },
+    {
+      "id": "N1-120",
+      "level": "N1",
+      "index": 120,
+      "form": "に則って",
+      "reading": "ni nottotte",
+      "meaning": "based on; according to ~"
+    },
+    {
+      "id": "N1-121",
+      "level": "N1",
+      "index": 121,
+      "form": "に先駆けて",
+      "reading": "ni sakigakete",
+      "meaning": "prior to; being ahead of ~"
+    },
+    {
+      "id": "N1-122",
+      "level": "N1",
+      "index": 122,
+      "form": "に忍びない",
+      "reading": "ni shinobinai",
+      "meaning": "cannot bring oneself (to do)"
+    },
+    {
+      "id": "N1-123",
+      "level": "N1",
+      "index": 123,
+      "form": "にしたところで /としたところで",
+      "reading": "ni shita tokoro de / to shita tokoro de",
+      "meaning": "even if; even supposing that ~"
+    },
+    {
+      "id": "N1-124",
+      "level": "N1",
+      "index": 124,
+      "form": "にして",
+      "reading": "ni shite",
+      "meaning": "at/on/under conditions (time, position)"
+    },
+    {
+      "id": "N1-125",
+      "level": "N1",
+      "index": 125,
+      "form": "に即して",
+      "reading": "ni sokushite",
+      "meaning": "according to; to be based on ~"
+    },
+    {
+      "id": "N1-126",
+      "level": "N1",
+      "index": 126,
+      "form": "に耐える / に耐えない",
+      "reading": "ni taeru / ni taenai",
+      "meaning": "worth doing; cannot bear doing ~"
+    },
+    {
+      "id": "N1-127",
+      "level": "N1",
+      "index": 127,
+      "form": "に足らない/に足りない",
+      "reading": "ni taranai/tarinai",
+      "meaning": "cannot; not worthy; not worth doing ~"
+    },
+    {
+      "id": "N1-128",
+      "level": "N1",
+      "index": 128,
+      "form": "に足る / に足りる",
+      "reading": "ni taru/tariru",
+      "meaning": "can do; worthy; worth doing"
+    },
+    {
+      "id": "N1-129",
+      "level": "N1",
+      "index": 129,
+      "form": "に照らして",
+      "reading": "ni terashite",
+      "meaning": "according to; in view of; in light of ~"
+    },
+    {
+      "id": "N1-130",
+      "level": "N1",
+      "index": 130,
+      "form": "にとどまらず",
+      "reading": "ni todomarazu",
+      "meaning": "not limited to; not only… but also ~"
+    },
+    {
+      "id": "N1-131",
+      "level": "N1",
+      "index": 131,
+      "form": "には無理がある",
+      "reading": "ni wa muri ga aru",
+      "meaning": "difficult to do; is unreasonable"
+    },
+    {
+      "id": "N1-132",
+      "level": "N1",
+      "index": 132,
+      "form": "によらず",
+      "reading": "ni yorazu",
+      "meaning": "regardless of ~"
+    },
+    {
+      "id": "N1-133",
+      "level": "N1",
+      "index": 133,
+      "form": "に〜を重ねて",
+      "reading": "ni~o kasanete",
+      "meaning": "success after continuous (effort)"
+    },
+    {
+      "id": "N1-134",
+      "level": "N1",
+      "index": 134,
+      "form": "にもほどがある",
+      "reading": "nimo hodo ga aru",
+      "meaning": "to go too far"
+    },
+    {
+      "id": "N1-135",
+      "level": "N1",
+      "index": 135,
+      "form": "にも増して",
+      "reading": "nimo mashite",
+      "meaning": "more than…; above ~"
+    },
+    {
+      "id": "N1-136",
+      "level": "N1",
+      "index": 136,
+      "form": "には当たらない",
+      "reading": "niwa ataranai",
+      "meaning": "it’s not worth; there’s no need to ~"
+    },
+    {
+      "id": "N1-137",
+      "level": "N1",
+      "index": 137,
+      "form": "には及ばない",
+      "reading": "niwa oyobanai",
+      "meaning": "there is no need to; no match for ~"
+    },
+    {
+      "id": "N1-138",
+      "level": "N1",
+      "index": 138,
+      "form": "の至り",
+      "reading": "no itari",
+      "meaning": "utmost; extremely ~"
+    },
+    {
+      "id": "N1-139",
+      "level": "N1",
+      "index": 139,
+      "form": "の極み",
+      "reading": "no kiwami",
+      "meaning": "utmost; extremely ~"
+    },
+    {
+      "id": "N1-140",
+      "level": "N1",
+      "index": 140,
+      "form": "のなんのって",
+      "reading": "no nan notte",
+      "meaning": "extremely ~ (cannot express in words)"
+    },
+    {
+      "id": "N1-141",
+      "level": "N1",
+      "index": 141,
+      "form": "のやら / ものやら /ことやら",
+      "reading": "no yara / mono yara/ koto yara",
+      "meaning": "I wonder..; unsure; I don’t know ~"
+    },
+    {
+      "id": "N1-142",
+      "level": "N1",
+      "index": 142,
+      "form": "のやら〜のやら",
+      "reading": "no yara~no yara",
+      "meaning": "or ~ (I don't know)"
+    },
+    {
+      "id": "N1-143",
+      "level": "N1",
+      "index": 143,
+      "form": "を踏まえて",
+      "reading": "o fumaete",
+      "meaning": "to be based on; to take into account ~"
+    },
+    {
+      "id": "N1-144",
+      "level": "N1",
+      "index": 144,
+      "form": "を経て",
+      "reading": "o hete",
+      "meaning": "through; by way of; after; via ~"
+    },
+    {
+      "id": "N1-145",
+      "level": "N1",
+      "index": 145,
+      "form": "を控えて",
+      "reading": "o hikaete",
+      "meaning": "to be soon; the time has come to ~"
+    },
+    {
+      "id": "N1-146",
+      "level": "N1",
+      "index": 146,
+      "form": "をいいことに",
+      "reading": "o ii koto ni",
+      "meaning": "to take advantage of ~"
+    },
+    {
+      "id": "N1-147",
+      "level": "N1",
+      "index": 147,
+      "form": "を顧みず / も顧みず",
+      "reading": "o/mo kaerimizu",
+      "meaning": "despite; regardless of ~"
+    },
+    {
+      "id": "N1-148",
+      "level": "N1",
+      "index": 148,
+      "form": "を限りに",
+      "reading": "o kagiri ni",
+      "meaning": "starting from; the last time"
+    },
+    {
+      "id": "N1-149",
+      "level": "N1",
+      "index": 149,
+      "form": "を兼ねて",
+      "reading": "o kanete",
+      "meaning": "also for the purpose of ~"
+    },
+    {
+      "id": "N1-150",
+      "level": "N1",
+      "index": 150,
+      "form": "を皮切りに",
+      "reading": "o kawakiri ni",
+      "meaning": "one after another; starting with ~"
+    },
+    {
+      "id": "N1-151",
+      "level": "N1",
+      "index": 151,
+      "form": "を機に",
+      "reading": "o ki ni",
+      "meaning": "as an opportunity/chance to ~"
+    },
+    {
+      "id": "N1-152",
+      "level": "N1",
+      "index": 152,
+      "form": "を禁じ得ない",
+      "reading": "o kinji enai",
+      "meaning": "can’t help but; can’t refrain from ~"
+    },
+    {
+      "id": "N1-153",
+      "level": "N1",
+      "index": 153,
+      "form": "をものともせずに",
+      "reading": "o mono tomo sezuni",
+      "meaning": "in defiance; not losing to/worrying about ~"
+    },
+    {
+      "id": "N1-154",
+      "level": "N1",
+      "index": 154,
+      "form": "をもって /をもちまして",
+      "reading": "o motte /o mochimashite",
+      "meaning": "by means of; with; on / at / as of (time)"
+    },
+    {
+      "id": "N1-155",
+      "level": "N1",
+      "index": 155,
+      "form": "をおいて〜ない",
+      "reading": "o oite~nai",
+      "meaning": "can only be; no alternative, only ~"
+    },
+    {
+      "id": "N1-156",
+      "level": "N1",
+      "index": 156,
+      "form": "を押して /を押し切って",
+      "reading": "o oshite /o oshikitte",
+      "meaning": "to overcome (opposition)"
+    },
+    {
+      "id": "N1-157",
+      "level": "N1",
+      "index": 157,
+      "form": "を境に",
+      "reading": "o sakai ni",
+      "meaning": "since ~ (indicates large change)"
+    },
+    {
+      "id": "N1-158",
+      "level": "N1",
+      "index": 158,
+      "form": "を余儀なくされる",
+      "reading": "o yogi naku sareru",
+      "meaning": "forced to do something (no choice)"
+    },
+    {
+      "id": "N1-159",
+      "level": "N1",
+      "index": 159,
+      "form": "をよそに",
+      "reading": "o yoso ni",
+      "meaning": "despite; without regards to ~"
+    },
+    {
+      "id": "N1-160",
+      "level": "N1",
+      "index": 160,
+      "form": "を前提として",
+      "reading": "o zentei toshite",
+      "meaning": "with the intention to; on the condition"
+    },
+    {
+      "id": "N1-161",
+      "level": "N1",
+      "index": 161,
+      "form": "思いをする",
+      "reading": "omoi o suru",
+      "meaning": "to think; to feel ~"
+    },
+    {
+      "id": "N1-162",
+      "level": "N1",
+      "index": 162,
+      "form": "折に",
+      "reading": "ori ni",
+      "meaning": "when; at the time; on the occasion ~"
+    },
+    {
+      "id": "N1-163",
+      "level": "N1",
+      "index": 163,
+      "form": "およそ",
+      "reading": "oyoso",
+      "meaning": "about; roughly; generally; completely ~"
+    },
+    {
+      "id": "N1-164",
+      "level": "N1",
+      "index": 164,
+      "form": "さ",
+      "reading": "sa",
+      "meaning": "ending particle; indicates assertion"
+    },
+    {
+      "id": "N1-165",
+      "level": "N1",
+      "index": 165,
+      "form": "さも",
+      "reading": "samo",
+      "meaning": "really (seem, appear, etc.); truly; as if ~"
+    },
+    {
+      "id": "N1-166",
+      "level": "N1",
+      "index": 166,
+      "form": "さもないと",
+      "reading": "samonaito",
+      "meaning": "otherwise; or else; if not ~"
+    },
+    {
+      "id": "N1-167",
+      "level": "N1",
+      "index": 167,
+      "form": "さぞ",
+      "reading": "sazo",
+      "meaning": "surely; certainly; no doubt; indeed ~"
+    },
+    {
+      "id": "N1-168",
+      "level": "N1",
+      "index": 168,
+      "form": "始末だ",
+      "reading": "shimatsu da",
+      "meaning": "in the end; as a result (negative)"
+    },
+    {
+      "id": "N1-169",
+      "level": "N1",
+      "index": 169,
+      "form": "そばから",
+      "reading": "soba kara",
+      "meaning": "as soon as; right after ~"
+    },
+    {
+      "id": "N1-170",
+      "level": "N1",
+      "index": 170,
+      "form": "そびれる",
+      "reading": "sobireru",
+      "meaning": "to miss a chance; to fail to do ~"
+    },
+    {
+      "id": "N1-171",
+      "level": "N1",
+      "index": 171,
+      "form": "損なう / 損ねる /損じる",
+      "reading": "sokonau / sokoneru/ sonjiru",
+      "meaning": "to fail to; miss a chance"
+    },
+    {
+      "id": "N1-172",
+      "level": "N1",
+      "index": 172,
+      "form": "術がない",
+      "reading": "sube ga nai",
+      "meaning": "there is no way / means; cannot do ~"
+    },
+    {
+      "id": "N1-173",
+      "level": "N1",
+      "index": 173,
+      "form": "すら / ですら",
+      "reading": "sura / de sura",
+      "meaning": "even ~ (with emphasis)"
+    },
+    {
+      "id": "N1-174",
+      "level": "N1",
+      "index": 174,
+      "form": "た弾みに /た拍子に",
+      "reading": "ta hazumi ni / ta hyoushi ni",
+      "meaning": "the moment [A], unintentionally caused something to happen"
+    },
+    {
+      "id": "N1-175",
+      "level": "N1",
+      "index": 175,
+      "form": "たことにする /たことになる",
+      "reading": "ta koto ni suru / ta koto ni naru",
+      "meaning": "pretend to; contrary to the truth ~"
+    },
+    {
+      "id": "N1-176",
+      "level": "N1",
+      "index": 176,
+      "form": "たところで",
+      "reading": "ta tokoro de",
+      "meaning": "even if; no matter (who, what, when...)"
+    },
+    {
+      "id": "N1-177",
+      "level": "N1",
+      "index": 177,
+      "form": "たつもりはない",
+      "reading": "ta tsumori wa nai",
+      "meaning": "have no intention to / didn't mean to ~"
+    },
+    {
+      "id": "N1-178",
+      "level": "N1",
+      "index": 178,
+      "form": "ただ〜のみだ",
+      "reading": "tada~nomi da",
+      "meaning": "can do nothing but; only ~"
+    },
+    {
+      "id": "N1-179",
+      "level": "N1",
+      "index": 179,
+      "form": "ためしがない",
+      "reading": "tameshi ga nai",
+      "meaning": "is never the case; have never heard of ~"
+    },
+    {
+      "id": "N1-180",
+      "level": "N1",
+      "index": 180,
+      "form": "たら最後 / たが最後",
+      "reading": "tara saigo / taga saigo",
+      "meaning": "if you do... negative result"
+    },
+    {
+      "id": "N1-181",
+      "level": "N1",
+      "index": 181,
+      "form": "たら〜たで",
+      "reading": "tara~tade",
+      "meaning": "if / in the case... of course / should ~"
+    },
+    {
+      "id": "N1-182",
+      "level": "N1",
+      "index": 182,
+      "form": "たら〜ところだ",
+      "reading": "tara~tokoro da",
+      "meaning": "if... (counterfactual), then would be ~"
+    },
+    {
+      "id": "N1-183",
+      "level": "N1",
+      "index": 183,
+      "form": "たりとも",
+      "reading": "tari tomo",
+      "meaning": "not even; not any ~"
+    },
+    {
+      "id": "N1-184",
+      "level": "N1",
+      "index": 184,
+      "form": "たるもの / たる",
+      "reading": "taru mono / taru",
+      "meaning": "(that) which is; in capacity of ... should"
+    },
+    {
+      "id": "N1-185",
+      "level": "N1",
+      "index": 185,
+      "form": "て敵わない",
+      "reading": "te kanawanai",
+      "meaning": "can't bear to; unable to; troublesome to"
+    },
+    {
+      "id": "N1-186",
+      "level": "N1",
+      "index": 186,
+      "form": "てからというもの",
+      "reading": "te kara to iu mono",
+      "meaning": "ever since ~"
+    },
+    {
+      "id": "N1-187",
+      "level": "N1",
+      "index": 187,
+      "form": "てみせる",
+      "reading": "te miseru",
+      "meaning": "I’ll do my best; I'll show you ~"
+    },
+    {
+      "id": "N1-188",
+      "level": "N1",
+      "index": 188,
+      "form": "てしかるべきだ",
+      "reading": "te shikaru beki da",
+      "meaning": "should; appropriate; natural to do ~"
+    },
+    {
+      "id": "N1-189",
+      "level": "N1",
+      "index": 189,
+      "form": "て済むことではない",
+      "reading": "te sumu koto dewa nai",
+      "meaning": "~ is not enough to solve the problem"
+    },
+    {
+      "id": "N1-190",
+      "level": "N1",
+      "index": 190,
+      "form": "てやまない",
+      "reading": "te yamanai",
+      "meaning": "always; never stop; can’t help but ~"
+    },
+    {
+      "id": "N1-191",
+      "level": "N1",
+      "index": 191,
+      "form": "手前",
+      "reading": "temae",
+      "meaning": "considering; before; one’s standpoint"
+    },
+    {
+      "id": "N1-192",
+      "level": "N1",
+      "index": 192,
+      "form": "てもどうにもならない",
+      "reading": "temo dou ni mo naranai",
+      "meaning": "it's no use; can't do anything"
+    },
+    {
+      "id": "N1-193",
+      "level": "N1",
+      "index": 193,
+      "form": "ても差し支えない",
+      "reading": "temo sashitsukaenai",
+      "meaning": "can ~; it’s okay if ~ (compromise)"
+    },
+    {
+      "id": "N1-194",
+      "level": "N1",
+      "index": 194,
+      "form": "ても知らない",
+      "reading": "temo shiranai",
+      "meaning": "if continue... you'll end up / I don't care"
+    },
+    {
+      "id": "N1-195",
+      "level": "N1",
+      "index": 195,
+      "form": "と相まって",
+      "reading": "to aimatte",
+      "meaning": "together with..., more ~"
+    },
+    {
+      "id": "N1-196",
+      "level": "N1",
+      "index": 196,
+      "form": "とあれば",
+      "reading": "to areba",
+      "meaning": "if it is the case that; if ~"
+    },
+    {
+      "id": "N1-197",
+      "level": "N1",
+      "index": 197,
+      "form": "とあって",
+      "reading": "to atte",
+      "meaning": "due to the fact that; because of ~"
+    },
+    {
+      "id": "N1-198",
+      "level": "N1",
+      "index": 198,
+      "form": "とばかりに",
+      "reading": "to bakari ni",
+      "meaning": "as if to say; as though~"
+    },
+    {
+      "id": "N1-199",
+      "level": "N1",
+      "index": 199,
+      "form": "といえども",
+      "reading": "to ie domo",
+      "meaning": "even if; even though; despite ~"
+    },
+    {
+      "id": "N1-200",
+      "level": "N1",
+      "index": 200,
+      "form": "と言えなくもない",
+      "reading": "to ienaku mo nai",
+      "meaning": "it can also be said that ~"
+    },
+    {
+      "id": "N1-201",
+      "level": "N1",
+      "index": 201,
+      "form": "といい〜といい",
+      "reading": "to ii~to ii",
+      "meaning": "both ... and; whether it be ... or ~"
+    },
+    {
+      "id": "N1-202",
+      "level": "N1",
+      "index": 202,
+      "form": "といったらない",
+      "reading": "to ittara nai",
+      "meaning": "extremely; nothing more ... than this"
+    },
+    {
+      "id": "N1-203",
+      "level": "N1",
+      "index": 203,
+      "form": "という",
+      "reading": "to iu",
+      "meaning": "all; every single ~ (no exceptions)"
+    },
+    {
+      "id": "N1-204",
+      "level": "N1",
+      "index": 204,
+      "form": "というか〜というか",
+      "reading": "to iu ka~to iu ka",
+      "meaning": "or rather; I mean ~"
+    },
+    {
+      "id": "N1-205",
+      "level": "N1",
+      "index": 205,
+      "form": "というもの",
+      "reading": "to iu mono",
+      "meaning": "during; for; since; over a period of time"
+    },
+    {
+      "id": "N1-206",
+      "level": "N1",
+      "index": 206,
+      "form": "というところだ /といったところだ",
+      "reading": "to iu tokoro da / to itta tokoro da",
+      "meaning": "at the most; no more than; roughly ~"
+    },
+    {
+      "id": "N1-207",
+      "level": "N1",
+      "index": 207,
+      "form": "というわけだ",
+      "reading": "to iu wake da",
+      "meaning": "that's why; no wonder ~"
+    },
+    {
+      "id": "N1-208",
+      "level": "N1",
+      "index": 208,
+      "form": "というわけではない",
+      "reading": "to iu wake dewa nai",
+      "meaning": "it’s not that; it doesn’t mean that ~"
+    },
+    {
+      "id": "N1-209",
+      "level": "N1",
+      "index": 209,
+      "form": "といわず〜といわず",
+      "reading": "to iwazu~to iwazu",
+      "meaning": "both; not only A or B, but (overall) ~"
+    },
+    {
+      "id": "N1-210",
+      "level": "N1",
+      "index": 210,
+      "form": "ときている",
+      "reading": "to kiteiru",
+      "meaning": "because of ~"
+    },
+    {
+      "id": "N1-211",
+      "level": "N1",
+      "index": 211,
+      "form": "とみると",
+      "reading": "to miru to",
+      "meaning": "as soon as one realizes ..., then ~"
+    },
+    {
+      "id": "N1-212",
+      "level": "N1",
+      "index": 212,
+      "form": "と見るや",
+      "reading": "to miru ya",
+      "meaning": "at the sight of; after confirming ~"
+    },
+    {
+      "id": "N1-213",
+      "level": "N1",
+      "index": 213,
+      "form": "となると / となれば",
+      "reading": "to naru to / to nareba",
+      "meaning": "when it comes to; in such a case"
+    },
+    {
+      "id": "N1-214",
+      "level": "N1",
+      "index": 214,
+      "form": "とされる",
+      "reading": "to sareru",
+      "meaning": "is considered to; it is said that ~"
+    },
+    {
+      "id": "N1-215",
+      "level": "N1",
+      "index": 215,
+      "form": "ときたら",
+      "reading": "tokitara",
+      "meaning": "when it comes to; concerning ~"
+    },
+    {
+      "id": "N1-216",
+      "level": "N1",
+      "index": 216,
+      "form": "ところを",
+      "reading": "tokoro o",
+      "meaning": "although (it is a certain time/condition)"
+    },
+    {
+      "id": "N1-217",
+      "level": "N1",
+      "index": 217,
+      "form": "ともあろうものが",
+      "reading": "tomo arou mono ga",
+      "meaning": "of all people... (surprise)"
+    },
+    {
+      "id": "N1-218",
+      "level": "N1",
+      "index": 218,
+      "form": "ともなく / ともなしに",
+      "reading": "tomo naku/nashi ni",
+      "meaning": "somehow; without knowing/thinking"
+    },
+    {
+      "id": "N1-219",
+      "level": "N1",
+      "index": 219,
+      "form": "ともすれば",
+      "reading": "tomo sureba",
+      "meaning": "apt to (do); tend to; liable to; prone to ~"
+    },
+    {
+      "id": "N1-220",
+      "level": "N1",
+      "index": 220,
+      "form": "とも〜とも",
+      "reading": "tomo~tomo",
+      "meaning": "unable to draw a conclusion/ judge"
+    },
+    {
+      "id": "N1-221",
+      "level": "N1",
+      "index": 221,
+      "form": "とりわけ",
+      "reading": "toriwake",
+      "meaning": "especially; above all ~"
+    },
+    {
+      "id": "N1-222",
+      "level": "N1",
+      "index": 222,
+      "form": "としたことが",
+      "reading": "toshita koto ga",
+      "meaning": "of all people, who would have thought?"
+    },
+    {
+      "id": "N1-223",
+      "level": "N1",
+      "index": 223,
+      "form": "とっさに",
+      "reading": "tossa ni",
+      "meaning": "at once; right away; promptly"
+    },
+    {
+      "id": "N1-224",
+      "level": "N1",
+      "index": 224,
+      "form": "とて",
+      "reading": "tote",
+      "meaning": "even; even if/though ~"
+    },
+    {
+      "id": "N1-225",
+      "level": "N1",
+      "index": 225,
+      "form": "とは",
+      "reading": "towa",
+      "meaning": "I was surprised that; the fact that ~"
+    },
+    {
+      "id": "N1-226",
+      "level": "N1",
+      "index": 226,
+      "form": "とはいえ",
+      "reading": "towa ie",
+      "meaning": "though; although; nonetheless"
+    },
+    {
+      "id": "N1-227",
+      "level": "N1",
+      "index": 227,
+      "form": "とは比べものにならない",
+      "reading": "towa kurabemono ni naranai",
+      "meaning": "can't compare with ~"
+    },
+    {
+      "id": "N1-228",
+      "level": "N1",
+      "index": 228,
+      "form": "とは打って変わって/ とは打って変わり",
+      "reading": "towa utte kawatte / to wa utte kawari",
+      "meaning": "unlike; very different from ~"
+    },
+    {
+      "id": "N1-229",
+      "level": "N1",
+      "index": 229,
+      "form": "つ〜つ",
+      "reading": "tsu~tsu",
+      "meaning": "and ~ (indicates 2 contrasting actions)"
+    },
+    {
+      "id": "N1-230",
+      "level": "N1",
+      "index": 230,
+      "form": "尽くす",
+      "reading": "tsukusu",
+      "meaning": "to use up (completely)"
+    },
+    {
+      "id": "N1-231",
+      "level": "N1",
+      "index": 231,
+      "form": "ってば / ったら",
+      "reading": "tteba / ttara",
+      "meaning": "speaking of; I told you already"
+    },
+    {
+      "id": "N1-232",
+      "level": "N1",
+      "index": 232,
+      "form": "うちに入らない",
+      "reading": "uchi ni hairanai",
+      "meaning": "not really; can't be regarded as ~"
+    },
+    {
+      "id": "N1-233",
+      "level": "N1",
+      "index": 233,
+      "form": "わ",
+      "reading": "wa",
+      "meaning": "feminine sentence ending particle"
+    },
+    {
+      "id": "N1-234",
+      "level": "N1",
+      "index": 234,
+      "form": "はどうであれ",
+      "reading": "wa dou de are",
+      "meaning": "however; whatever ~"
+    },
+    {
+      "id": "N1-235",
+      "level": "N1",
+      "index": 235,
+      "form": "はおろか",
+      "reading": "wa oroka",
+      "meaning": "let alone; needless to say ~"
+    },
+    {
+      "id": "N1-236",
+      "level": "N1",
+      "index": 236,
+      "form": "はさておき",
+      "reading": "wa sateoki",
+      "meaning": "setting aside ~"
+    },
+    {
+      "id": "N1-237",
+      "level": "N1",
+      "index": 237,
+      "form": "はそっちのけで /をそっちのけで",
+      "reading": "wa socchinoke de / o socchinoke de",
+      "meaning": "ignoring (one thing) for (another)"
+    },
+    {
+      "id": "N1-238",
+      "level": "N1",
+      "index": 238,
+      "form": "わ〜わで",
+      "reading": "wa~wade",
+      "meaning": "and (list neg. things happening at same time)"
+    },
+    {
+      "id": "N1-239",
+      "level": "N1",
+      "index": 239,
+      "form": "や否や",
+      "reading": "ya ina ya",
+      "meaning": "as soon as; the moment ~"
+    },
+    {
+      "id": "N1-240",
+      "level": "N1",
+      "index": 240,
+      "form": "やしない",
+      "reading": "ya shinai",
+      "meaning": "should do, but don't; there's no way ~"
+    },
+    {
+      "id": "N1-241",
+      "level": "N1",
+      "index": 241,
+      "form": "やれ〜やれ",
+      "reading": "yare~yare",
+      "meaning": "give 2 representative examples (negative)"
+    },
+    {
+      "id": "N1-242",
+      "level": "N1",
+      "index": 242,
+      "form": "ようが / ようと",
+      "reading": "you ga / you to",
+      "meaning": "even if; no matter how/what ~"
+    },
+    {
+      "id": "N1-243",
+      "level": "N1",
+      "index": 243,
+      "form": "ようが〜ようが /ようと〜ようと",
+      "reading": "you ga~you ga / you to~you to",
+      "meaning": "no matter; whether; even if [A] or [B]"
+    }
+  ]
+}
