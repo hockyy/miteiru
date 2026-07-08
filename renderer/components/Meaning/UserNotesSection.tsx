@@ -2,8 +2,7 @@ import React, { useCallback, useState, useEffect } from 'react';
 import { AwesomeButton } from 'react-awesome-button';
 import { MiteiruUserEntry, UserNoteExample } from '../../hooks/useUserNotes';
 import { emptyUserNote } from '../../utils/aiUserNotePrompts';
-import { CopyButton } from '../Utils/CopyButton';
-import { NoteExampleSentence } from './NoteExampleSentence';
+import { TranslationVariantRow } from '../Learn/TranslationVariantRow';
 import {
   MEANING_FIELD_INPUT,
   MEANING_NOTE_DIVIDER,
@@ -23,9 +22,9 @@ interface UserNotesSectionProps {
   onAIGenerate: () => Promise<void>;
   isGenerating: boolean;
   onNavigateToTerm: (term: string) => void;
+  onMoveToAnalyzer?: (text: string) => void;
 }
 
-const MAX_EXAMPLES = 2;
 const MAX_RELATED_TERMS = 2;
 
 const fieldInputClass = MEANING_FIELD_INPUT;
@@ -77,6 +76,7 @@ export const UserNotesSection: React.FC<UserNotesSectionProps> = ({
   onAIGenerate,
   isGenerating,
   onNavigateToTerm,
+  onMoveToAnalyzer = () => {},
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState<MiteiruUserEntry>(emptyUserNote());
@@ -129,7 +129,7 @@ export const UserNotesSection: React.FC<UserNotesSectionProps> = ({
   }, []);
 
   const handleAddExample = useCallback((example: UserNoteExample) => {
-    if (!example.sentence.trim() || draft.examples.length >= MAX_EXAMPLES) {
+    if (!example.sentence.trim()) {
       return;
     }
     updateDraft({
@@ -286,7 +286,7 @@ export const UserNotesSection: React.FC<UserNotesSectionProps> = ({
             </NoteSection>
           )}
 
-          <NoteSection title="Examples" hint={`up to ${MAX_EXAMPLES}`}>
+          <NoteSection title="Examples">
             {draft.examples.length > 0 ? (
               <div className="space-y-2.5">
                 {draft.examples.map((example, index) => (
@@ -310,28 +310,15 @@ export const UserNotesSection: React.FC<UserNotesSectionProps> = ({
                           />
                         </div>
                       ) : (
-                        <>
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="min-w-0 flex-grow">
-                              <NoteExampleSentence
-                                sentence={example.sentence}
-                                lang={lang}
-                                tokenizeMiteiru={tokenizeMiteiru}
-                                setMeaning={onNavigateToTerm}
-                              />
-                            </div>
-                            <CopyButton
-                              text={example.sentence}
-                              label="Copy"
-                              className="border border-blue-600 bg-yellow-100 font-bold text-blue-900 hover:bg-yellow-200"
-                            />
-                          </div>
-                          {example.meaning && (
-                            <p className="mt-2 border-t-2 border-blue-200 pt-2 text-sm font-medium italic text-red-700">
-                              {example.meaning}
-                            </p>
-                          )}
-                        </>
+                        <TranslationVariantRow
+                          label={`Example ${index + 1}`}
+                          variant={{
+                            text: example.sentence,
+                            pronunciation: example.meaning,
+                          }}
+                          pronunciationLabel="Meaning"
+                          onMoveToAnalyzer={onMoveToAnalyzer}
+                        />
                       )}
                     </div>
                     {isEditing && (
@@ -352,7 +339,7 @@ export const UserNotesSection: React.FC<UserNotesSectionProps> = ({
             ) : (
               <p className="text-sm font-medium italic text-blue-500">No examples yet</p>
             )}
-            {isEditing && draft.examples.length < MAX_EXAMPLES && (
+            {isEditing && (
               <ExampleInput onAdd={handleAddExample} />
             )}
           </NoteSection>

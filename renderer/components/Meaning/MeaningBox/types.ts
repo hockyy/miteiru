@@ -18,6 +18,7 @@ export type MeaningBoxProps = {
   getLearningState?: ((term: string) => number) | null;
   showMeaning?: boolean;
   sidebarInsets?: SidebarInsets;
+  onMoveToAnalyzer?: (text: string) => void;
 };
 
 /** Dictionary payload shape returned by `getMeaningEntries`. */

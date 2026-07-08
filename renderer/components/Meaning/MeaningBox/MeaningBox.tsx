@@ -2,18 +2,29 @@ import React, { useCallback, useMemo } from 'react';
 import { defaultMeaningBoxStyling } from '../../../utils/CJKStyling';
 import useSpeech from '../../../hooks/useSpeech';
 import { useStoreData } from '../../../hooks/useStoreData';
+import { useUserNotes } from '../../../hooks/useUserNotes';
+import { emptyUserNote } from '../../../utils/aiUserNotePrompts';
+import {
+  buildInflectionExamples,
+  mergeInflectionExamples,
+} from '../../../utils/inflectionExamples';
+import { getDictionaryDefinitions } from '../meaningEntries';
 import { UserNotesSection } from '../UserNotesSection';
 import { CharacterContent } from './components/entries/CharacterContent';
 import { MeaningContent } from './components/entries/MeaningContent';
 import { DictionarySection } from './components/DictionarySection';
+import { InflectionSection } from './components/InflectionSection';
 import { MeaningBoxHeader } from './components/MeaningBoxHeader';
 import { MeaningBoxShell } from './components/MeaningBoxShell';
 import { QuickActionsSection } from './components/QuickActionsSection';
 import { useMeaningAnkiExport } from './hooks/useMeaningAnkiExport';
 import { useMeaningCopyShortcuts } from './hooks/useMeaningCopyShortcuts';
+import { useMeaningInflection } from './hooks/useMeaningInflection';
 import { useMeaningLookup } from './hooks/useMeaningLookup';
 import { useMeaningRomajied } from './hooks/useMeaningRomajied';
 import { useMeaningUserNotes } from './hooks/useMeaningUserNotes';
+import { videoConstants } from '../../../utils/constants';
+import type { InflectionRow } from '../../../../main/handler/languages/inflectionTypes';
 import type { MeaningBoxProps } from './types';
 
 /**
@@ -36,6 +47,7 @@ const MeaningBox = ({
   getLearningState = null,
   showMeaning = true,
   sidebarInsets = {},
+  onMoveToAnalyzer,
 }: MeaningBoxProps) => {
   const { speak, stop, speaking, supported } = useSpeech();
   const [selectedVoice] = useStoreData('tts.option.voice', '');
@@ -60,13 +72,42 @@ const MeaningBox = ({
 
   useMeaningCopyShortcuts(isOpen, meaning, rubyHtmlContent);
 
+  const { table: inflectionTable } = useMeaningInflection(meaning, lang, meaningContent);
+  const noteTerm = inflectionTable?.dictionaryForm || meaning;
+  const { getUserNote, setUserNote } = useUserNotes();
+
   const {
     userNote,
     isGeneratingNote,
     saveNote,
     deleteNote,
     generateNoteWithAI,
-  } = useMeaningUserNotes(meaning, lang);
+  } = useMeaningUserNotes(noteTerm, lang);
+
+  const wordMeaning = useMemo(() => {
+    const definitions = getDictionaryDefinitions(meaningContent, lang);
+    return definitions[0] ?? '';
+  }, [lang, meaningContent]);
+
+  const handleAddInflectionExamples = useCallback(async (rows: InflectionRow[]) => {
+    if (!inflectionTable) {
+      return;
+    }
+
+    const incoming = buildInflectionExamples(rows, inflectionTable, wordMeaning);
+    const existing = getUserNote(noteTerm) ?? emptyUserNote();
+    const mergedExamples = mergeInflectionExamples(existing.examples, incoming);
+
+    try {
+      await setUserNote(noteTerm, {
+        ...existing,
+        examples: mergedExamples,
+      });
+    } catch (error) {
+      console.error('Failed to save inflection examples:', error);
+      alert('Failed to save inflection examples. Please try again.');
+    }
+  }, [getUserNote, inflectionTable, noteTerm, setUserNote, wordMeaning]);
 
   const { isExportingAnki, exportToAnki, ankiExportModal } = useMeaningAnkiExport({
     meaning,
@@ -154,7 +195,7 @@ const MeaningBox = ({
         />
 
         <UserNotesSection
-          term={meaning}
+          term={noteTerm}
           lang={lang}
           tokenizeMiteiru={tokenizeMiteiru}
           userNote={userNote}
@@ -163,7 +204,17 @@ const MeaningBox = ({
           onAIGenerate={generateNoteWithAI}
           isGenerating={isGeneratingNote}
           onNavigateToTerm={handleNavigateToTerm}
+          onMoveToAnalyzer={onMoveToAnalyzer}
         />
+
+        {lang === videoConstants.japaneseLang && inflectionTable ? (
+          <InflectionSection
+            table={inflectionTable}
+            wordMeaning={wordMeaning}
+            onAddExamples={handleAddInflectionExamples}
+            onMoveToAnalyzer={onMoveToAnalyzer}
+          />
+        ) : null}
 
         <DictionarySection
           characterContent={characterPanel}

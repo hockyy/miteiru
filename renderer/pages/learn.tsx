@@ -315,6 +315,7 @@ function Learn() {
                       tokenizeMiteiru={tokenizeMiteiru}
                       changeLearningState={changeLearningState}
                       getLearningState={getLearningState}
+                      onMoveToAnalyzer={handleMoveToAnalyzer}
                       sidebarInsets={{
                         right: showSidebar ? RIGHT_SIDEBAR_WIDTH : "0",
                       }}
