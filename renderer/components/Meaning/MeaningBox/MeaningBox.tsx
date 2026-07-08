@@ -3,11 +3,6 @@ import { defaultMeaningBoxStyling } from '../../../utils/CJKStyling';
 import useSpeech from '../../../hooks/useSpeech';
 import { useStoreData } from '../../../hooks/useStoreData';
 import { useUserNotes } from '../../../hooks/useUserNotes';
-import { emptyUserNote } from '../../../utils/aiUserNotePrompts';
-import {
-  buildInflectionExamples,
-  mergeInflectionExamples,
-} from '../../../utils/inflectionExamples';
 import { getDictionaryDefinitions } from '../meaningEntries';
 import { UserNotesSection } from '../UserNotesSection';
 import { CharacterContent } from './components/entries/CharacterContent';
@@ -20,6 +15,9 @@ import { QuickActionsSection } from './components/QuickActionsSection';
 import { useMeaningAnkiExport } from './hooks/useMeaningAnkiExport';
 import { useMeaningCopyShortcuts } from './hooks/useMeaningCopyShortcuts';
 import { useMeaningInflection } from './hooks/useMeaningInflection';
+import {
+  useMeaningInflectionAi,
+} from './hooks/useMeaningInflectionAi';
 import { useMeaningLookup } from './hooks/useMeaningLookup';
 import { useMeaningRomajied } from './hooks/useMeaningRomajied';
 import { useMeaningUserNotes } from './hooks/useMeaningUserNotes';
@@ -51,6 +49,8 @@ const MeaningBox = ({
 }: MeaningBoxProps) => {
   const { speak, stop, speaking, supported } = useSpeech();
   const [selectedVoice] = useStoreData('tts.option.voice', '');
+  const [openRouterApiKey] = useStoreData('openrouter.apiKey', '');
+  const [openRouterModel] = useStoreData('openrouter.model', 'z-ai/glm-5.2:nitro');
 
   const {
     meaningContent,
@@ -74,7 +74,8 @@ const MeaningBox = ({
 
   const { table: inflectionTable } = useMeaningInflection(meaning, lang, meaningContent);
   const noteTerm = inflectionTable?.dictionaryForm || meaning;
-  const { getUserNote, setUserNote } = useUserNotes();
+  const notesApi = useUserNotes();
+  const { getUserNote, setUserNote, userNotes } = notesApi;
 
   const {
     userNote,
@@ -82,32 +83,36 @@ const MeaningBox = ({
     saveNote,
     deleteNote,
     generateNoteWithAI,
-  } = useMeaningUserNotes(noteTerm, lang);
+  } = useMeaningUserNotes(noteTerm, lang, notesApi);
 
   const wordMeaning = useMemo(() => {
     const definitions = getDictionaryDefinitions(meaningContent, lang);
     return definitions[0] ?? '';
   }, [lang, meaningContent]);
 
-  const handleAddInflectionExamples = useCallback(async (rows: InflectionRow[]) => {
-    if (!inflectionTable) {
-      return;
-    }
+  const {
+    inflectionExamples,
+    isGenerating: isGeneratingInflectionExamples,
+    errorMessage: inflectionAiError,
+    generateExamples: generateInflectionExamples,
+  } = useMeaningInflectionAi({
+    openRouterApiKey,
+    openRouterModel,
+    noteTerm,
+    getUserNote,
+    setUserNote,
+    userNotes,
+  });
 
-    const incoming = buildInflectionExamples(rows, inflectionTable, wordMeaning);
-    const existing = getUserNote(noteTerm) ?? emptyUserNote();
-    const mergedExamples = mergeInflectionExamples(existing.examples, incoming);
-
-    try {
-      await setUserNote(noteTerm, {
-        ...existing,
-        examples: mergedExamples,
-      });
-    } catch (error) {
-      console.error('Failed to save inflection examples:', error);
-      alert('Failed to save inflection examples. Please try again.');
-    }
-  }, [getUserNote, inflectionTable, noteTerm, setUserNote, wordMeaning]);
+  const handleGenerateInflectionExamples = useCallback(
+    async (rows: InflectionRow[]) => {
+      if (!inflectionTable) {
+        return;
+      }
+      await generateInflectionExamples(inflectionTable, rows, wordMeaning);
+    },
+    [generateInflectionExamples, inflectionTable, wordMeaning],
+  );
 
   const { isExportingAnki, exportToAnki, ankiExportModal } = useMeaningAnkiExport({
     meaning,
@@ -204,15 +209,18 @@ const MeaningBox = ({
           onAIGenerate={generateNoteWithAI}
           isGenerating={isGeneratingNote}
           onNavigateToTerm={handleNavigateToTerm}
-          onMoveToAnalyzer={onMoveToAnalyzer}
         />
 
         {lang === videoConstants.japaneseLang && inflectionTable ? (
           <InflectionSection
             table={inflectionTable}
-            wordMeaning={wordMeaning}
-            onAddExamples={handleAddInflectionExamples}
-            onMoveToAnalyzer={onMoveToAnalyzer}
+            lang={lang}
+            tokenizeMiteiru={tokenizeMiteiru}
+            examples={inflectionExamples}
+            onNavigateToTerm={handleNavigateToTerm}
+            onGenerateExamples={handleGenerateInflectionExamples}
+            isGenerating={isGeneratingInflectionExamples}
+            errorMessage={inflectionAiError}
           />
         ) : null}
 

@@ -1,8 +1,10 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import { AwesomeButton } from 'react-awesome-button';
 import { MiteiruUserEntry, UserNoteExample } from '../../hooks/useUserNotes';
 import { emptyUserNote } from '../../utils/aiUserNotePrompts';
-import { TranslationVariantRow } from '../Learn/TranslationVariantRow';
+import { isInflectionExample } from '../../utils/aiInflectionPrompts';
+import { CopyButton } from '../Utils/CopyButton';
+import { NoteExampleSentence } from './NoteExampleSentence';
 import {
   MEANING_FIELD_INPUT,
   MEANING_NOTE_DIVIDER,
@@ -22,7 +24,6 @@ interface UserNotesSectionProps {
   onAIGenerate: () => Promise<void>;
   isGenerating: boolean;
   onNavigateToTerm: (term: string) => void;
-  onMoveToAnalyzer?: (text: string) => void;
 }
 
 const MAX_RELATED_TERMS = 2;
@@ -76,7 +77,6 @@ export const UserNotesSection: React.FC<UserNotesSectionProps> = ({
   onAIGenerate,
   isGenerating,
   onNavigateToTerm,
-  onMoveToAnalyzer = () => {},
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState<MiteiruUserEntry>(emptyUserNote());
@@ -167,6 +167,11 @@ export const UserNotesSection: React.FC<UserNotesSectionProps> = ({
   );
 
   const showFunFact = Boolean(draft.funFact?.trim() || isEditing);
+
+  const visibleExamples = useMemo(
+    () => (isEditing ? draft.examples : draft.examples.filter((example) => !isInflectionExample(example.meaning))),
+    [draft.examples, isEditing],
+  );
 
   return (
     <section className={MEANING_SECTION}>
@@ -287,9 +292,9 @@ export const UserNotesSection: React.FC<UserNotesSectionProps> = ({
           )}
 
           <NoteSection title="Examples">
-            {draft.examples.length > 0 ? (
+            {visibleExamples.length > 0 ? (
               <div className="space-y-2.5">
-                {draft.examples.map((example, index) => (
+                {visibleExamples.map((example, index) => (
                   <div key={index} className="flex gap-2">
                     <div className="min-w-0 flex-grow rounded-lg border border-blue-300 bg-blue-50 px-3 py-2.5">
                       {isEditing ? (
@@ -310,15 +315,28 @@ export const UserNotesSection: React.FC<UserNotesSectionProps> = ({
                           />
                         </div>
                       ) : (
-                        <TranslationVariantRow
-                          label={`Example ${index + 1}`}
-                          variant={{
-                            text: example.sentence,
-                            pronunciation: example.meaning,
-                          }}
-                          pronunciationLabel="Meaning"
-                          onMoveToAnalyzer={onMoveToAnalyzer}
-                        />
+                        <>
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-grow">
+                              <NoteExampleSentence
+                                sentence={example.sentence}
+                                lang={lang}
+                                tokenizeMiteiru={tokenizeMiteiru}
+                                setMeaning={onNavigateToTerm}
+                              />
+                            </div>
+                            <CopyButton
+                              text={example.sentence}
+                              label="Copy"
+                              className="border border-blue-600 bg-yellow-100 font-bold text-blue-900 hover:bg-yellow-200"
+                            />
+                          </div>
+                          {example.meaning && (
+                            <p className="mt-2 border-t-2 border-blue-200 pt-2 text-sm font-medium italic text-red-700">
+                              {example.meaning}
+                            </p>
+                          )}
+                        </>
                       )}
                     </div>
                     {isEditing && (
