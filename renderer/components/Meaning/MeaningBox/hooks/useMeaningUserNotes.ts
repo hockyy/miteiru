@@ -8,7 +8,7 @@ import {
 import type { MiteiruUserEntry } from '../../../../hooks/useUserNotes';
 
 export type UserNotesApi = Pick<
-  ReturnType<typeof import("../../../hooks/useUserNotes").useUserNotes>,
+  ReturnType<typeof import("../../../../hooks/useUserNotes").useUserNotes>,
   "getUserNote" | "setUserNote" | "deleteUserNote" | "userNotes"
 >;
 
