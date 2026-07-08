@@ -8,6 +8,7 @@
     "han-character-core"
   ],
   "files": [
-    "dict/"
+    "dict/",
+    "grammar/jp_grammar.json"
   ]
 }

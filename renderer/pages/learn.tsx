@@ -21,7 +21,7 @@ import useRubyCopy from "../hooks/useRubyCopy";
 import {SentenceList} from "../components/Meaning/SentenceList";
 import {FaVolumeUp} from 'react-icons/fa';
 import useSpeech from "../hooks/useSpeech";
-import {AITranslationPanel} from "../components/Learn/AITranslationPanel";
+import {LearnStudyPanel} from "../components/Learn/LearnStudyPanel";
 import {AIAnalysisPanel} from "../components/Learn/AIAnalysisPanel";
 import {AnkiCardBuilderPanel} from "../components/Learn/AnkiCardBuilderPanel";
 // Learn AI wiring: translation (left) → useAiTranslation | analysis (right) → useSentenceAnalysis
@@ -62,6 +62,18 @@ function Learn() {
     setSentences(splitIntoLines(trimmed));
     setDirectInput(trimmed);
   }, []);
+
+  const handleAppendToAnalyzer = useCallback((text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) {
+      return;
+    }
+    const combined = sentenceInput.trim() ? `${sentenceInput.trim()}\n${trimmed}` : trimmed;
+    setSentenceInput(combined);
+    setSentences(splitIntoLines(combined));
+    setDirectInput(combined);
+  }, [sentenceInput]);
+
   const [leftColumnWidth, setLeftColumnWidth] = useStoreData('learn.layout.leftColumnWidth', 35);
   const [middleColumnWidth, setMiddleColumnWidth] = useStoreData('learn.layout.middleColumnWidth', 45);
   const rightColumnWidth = 100 - leftColumnWidth - middleColumnWidth;
@@ -314,11 +326,12 @@ function Learn() {
               className="overflow-hidden"
               style={{ width: `${leftColumnWidth}%` }}
             >
-              <AITranslationPanel
+              <LearnStudyPanel
                 lang={lang}
                 openRouterApiKey={openRouterApiKey}
                 openRouterModel={openRouterModel}
                 onMoveToAnalyzer={handleMoveToAnalyzer}
+                onAppendToAnalyzer={handleAppendToAnalyzer}
               />
             </div>
 
