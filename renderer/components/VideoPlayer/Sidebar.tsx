@@ -6,7 +6,7 @@ import {
   defaultSecondarySubtitleStyling
 } from "../../utils/CJKStyling";
 import Toggle from "./Toggle";
-import {AwesomeButton} from "react-awesome-button";
+import {Button} from "../Utils/Button";
 import {GistManager} from "../Data/GistManager";
 import {SubtitleMode} from "../../utils/utils";
 import {SidebarSection, SidebarSettingRow, SidebarShell} from "./SidebarShell";
@@ -223,14 +223,14 @@ export const StylingBox = ({
       {subtitleName} Use learning styling
     </div>}
     {subtitleName == "CJK" && <div className={"flex flex-row gap-2 w-full"}>
-      <AwesomeButton
+      <Button
           type={"primary"}
           className={"w-full"}
-          onPress={saveLearningHandler}>Save Learning</AwesomeButton>
-      <AwesomeButton
+          onPress={saveLearningHandler}>Save Learning</Button>
+      <Button
           type={"secondary"}
           className={"w-full"}
-          onPress={loadLearningHandler}>Load Learning</AwesomeButton>
+          onPress={loadLearningHandler}>Load Learning</Button>
     </div>}
     {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
       <Toggle isChecked={subtitleStyling.showSpace} onChange={cjkShowMoreSpaceHandler}/>
@@ -369,22 +369,22 @@ export const StylingBox = ({
           onChange={positionFromTopSlideHandler}
       />
     </div>
-    <AwesomeButton
+    <Button
         type={"danger"}
         onPress={() => {
           setSubtitleStyling(defaultStyling)
         }}
-    >Reset</AwesomeButton>
+    >Reset</Button>
     <div className={"flex flex-row gap-2 w-full"}>
-      <AwesomeButton
+      <Button
           type={"primary"}
           className={"w-full"}
-          onPress={loadHandler}>Import</AwesomeButton>
-      <AwesomeButton
+          onPress={loadHandler}>Import</Button>
+      <Button
           type={"secondary"}
           className={"w-full"}
           onPress={saveHandler}>Export
-      </AwesomeButton>
+      </Button>
     </div>
   </div>
 }
@@ -545,10 +545,10 @@ export const Sidebar = ({
             onChange={learningPercentageHandler}
         /></span>
       </div>
-      <AwesomeButton
+      <Button
             type={"secondary"}
             className={"w-full"}
-            onPress={exportHufHandler}>Export Primary as HUF</AwesomeButton>
+            onPress={exportHufHandler}>Export Primary as HUF</Button>
     </SidebarSection>
 
     <SidebarSection title="Primary Subtitle">
@@ -561,13 +561,13 @@ export const Sidebar = ({
                 lang={lang}/>
     </SidebarSection>
     <SidebarSection title="Cloud Sync">
-      <AwesomeButton
+      <Button
           type={"secondary"}
           className={"w-full"}
           onPress={exportAllAnkiCardsHandler}
       >
         Export All Anki Cards
-      </AwesomeButton>
+      </Button>
       <GistManager lang={lang}/>
     </SidebarSection>
   </SidebarShell>

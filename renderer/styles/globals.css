@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 /* Hide scrollbar for Chrome, Safari, and Opera */
 ::-webkit-scrollbar {
@@ -26,6 +24,68 @@ html {
 @layer components {
   .btn-blue {
     @apply text-white font-bold px-4 py-2 rounded bg-blue-600 hover:bg-blue-500;
+  }
+
+  .miteiru-btn {
+    @apply relative inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border font-semibold transition-colors duration-150 ease-out;
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-1;
+    @apply disabled:cursor-not-allowed disabled:opacity-45;
+  }
+
+  .miteiru-btn--medium {
+    @apply px-4 py-2 text-sm;
+  }
+
+  .miteiru-btn--small {
+    @apply px-2.5 py-1 text-xs;
+  }
+
+  .miteiru-btn--primary {
+    @apply border-blue-300 bg-blue-200 text-blue-800 shadow-sm;
+  }
+
+  .miteiru-btn--primary:not(:disabled):hover {
+    @apply border-blue-300 bg-blue-300 text-blue-900;
+  }
+
+  .miteiru-btn--primary:not(:disabled):active {
+    @apply border-blue-400 bg-blue-300;
+  }
+
+  .miteiru-btn--secondary {
+    @apply border-blue-200 bg-white text-blue-700 shadow-sm;
+  }
+
+  .miteiru-btn--secondary:not(:disabled):hover {
+    @apply border-blue-200 bg-blue-50 text-blue-800;
+  }
+
+  .miteiru-btn--secondary:not(:disabled):active {
+    @apply border-blue-300 bg-blue-100;
+  }
+
+  .miteiru-btn--danger {
+    @apply border-red-200 bg-red-500 text-white shadow-sm;
+  }
+
+  .miteiru-btn--danger:not(:disabled):hover {
+    @apply border-red-300 bg-red-600;
+  }
+
+  .miteiru-btn--danger:not(:disabled):active {
+    @apply border-red-300 bg-red-700;
+  }
+
+  .miteiru-btn--link {
+    @apply rounded-md border-transparent bg-transparent px-1 py-0.5 text-xs font-medium text-blue-500 shadow-none;
+  }
+
+  .miteiru-btn--link:not(:disabled):hover {
+    @apply bg-blue-50 text-blue-600;
+  }
+
+  .miteiru-btn--link:not(:disabled):active {
+    @apply bg-blue-100 text-blue-700;
   }
 }
 

@@ -1,6 +1,6 @@
 // components/GistManager.tsx
 import React, {useState, useCallback} from 'react';
-import {AwesomeButton} from "react-awesome-button";
+import {Button} from "../Utils/Button";
 import {useStoreData} from "../../hooks/useStoreData";
 
 interface GistManagerProps {
@@ -132,22 +132,22 @@ export const GistManager: React.FC<GistManagerProps> = ({lang}) => {
             Create a new GitHub token
           </a>
         </div>
-        <AwesomeButton
+        <Button
             type={"primary"}
             className={"w-full"}
             onPress={saveLearningHandler}
             disabled={isLoading}
         >
           {isLoading ? 'Saving...' : 'Save to Gist'}
-        </AwesomeButton>
-        <AwesomeButton
+        </Button>
+        <Button
             type={"secondary"}
             className={"w-full"}
             onPress={loadLearningHandler}
             disabled={isLoading}
         >
           {isLoading ? 'Loading...' : 'Load from Gist'}
-        </AwesomeButton>
+        </Button>
       </div>
   );
 };

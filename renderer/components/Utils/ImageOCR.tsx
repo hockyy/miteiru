@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useRef } from 'react';
-import { AwesomeButton } from 'react-awesome-button';
+import { Button } from './Button';
 import { useStoreData } from '../../hooks/useStoreData';
 
 interface ImageOCRProps {
@@ -474,25 +474,25 @@ export const ImageOCR: React.FC<ImageOCRProps> = ({ onTextExtracted, targetLangu
             onChange={handleImageSelect}
             className="hidden"
           />
-          <AwesomeButton
+          <Button
             type="primary"
             onPress={handleButtonClick}
             disabled={isProcessing}
           >
             📁 Browse Files
-          </AwesomeButton>
+          </Button>
         </div>
 
         {/* Action Buttons */}
         {previewUrl && (
           <div className="flex gap-3 justify-center items-center flex-wrap">
-            <AwesomeButton
+            <Button
               type="secondary"
               onPress={handleManualProcess}
               disabled={isProcessing || !selectedFile}
             >
               🔍 Process Image
-            </AwesomeButton>
+            </Button>
             
             {/* Zoom Controls */}
             <div className="flex gap-2 items-center bg-white px-3 py-2 rounded-lg border-2 border-purple-300">

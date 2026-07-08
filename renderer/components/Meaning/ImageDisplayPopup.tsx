@@ -1,5 +1,5 @@
 import React from 'react';
-import {AwesomeButton} from 'react-awesome-button';
+import {Button} from '../Utils/Button';
 import {JapaneseSentence, ChineseSentence} from '../Subtitle/Sentence';
 import {videoConstants} from '../../utils/constants';
 import {defaultMeaningBoxStyling, defaultPrimarySubtitleStyling} from '../../utils/CJKStyling';
@@ -121,9 +121,9 @@ export const ImageDisplayPopup: React.FC<ImageDisplayPopupProps> = ({
           )}
 
           <div className="flex justify-center pt-2">
-            <AwesomeButton type="primary" size="small" onPress={onClose}>
+            <Button type="primary" size="small" onPress={onClose}>
               Close
-            </AwesomeButton>
+            </Button>
           </div>
         </div>
       </div>

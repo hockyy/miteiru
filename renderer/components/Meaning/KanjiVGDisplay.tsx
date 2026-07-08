@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {AwesomeButton} from "react-awesome-button";
+import {Button} from "../Utils/Button";
 
 const KanjiVGDisplay = ({filename}) => {
   const [svgData, setSvgData] = useState("");
@@ -102,7 +102,7 @@ const KanjiVGDisplay = ({filename}) => {
 
   return (
     <div className={'flex flex-col w-auto p-4 gap-4 items-center'}>
-      <AwesomeButton type={'primary'} onPress={handleButtonClick}>Repeat Animation</AwesomeButton>
+      <Button type={'primary'} onPress={handleButtonClick}>Repeat Animation</Button>
       <div className="svg-container" ref={svgRef} dangerouslySetInnerHTML={{__html: svgData}}/>
     </div>
   );

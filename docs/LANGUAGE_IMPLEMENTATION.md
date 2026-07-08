@@ -213,7 +213,7 @@ export default LanguageName;
 
 ### Step 2: Update Main Process Integration
 
-**Update `main/background.ts`:**
+**Update `main/main.ts`:**
 ```typescript
 import LanguageName from "./handler/language";
 

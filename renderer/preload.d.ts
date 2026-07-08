@@ -16,6 +16,11 @@ interface ElectronApi {
 }
 
 declare global {
+  /** Electron adds a filesystem path to dragged/dropped File objects. */
+  interface File {
+    readonly path?: string;
+  }
+
   interface Window {
     ipc: IpcHandler;
     electronStore: any;
@@ -23,3 +28,5 @@ declare global {
     miteiruJapanese: any;
   }
 }
+
+export {};

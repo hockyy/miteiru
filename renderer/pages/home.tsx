@@ -5,8 +5,7 @@ import useMiteiruVersion from "../hooks/useMiteiruVersion";
 import { useToolsCheck } from "../hooks/useToolsCheck";
 import { useLanguageLoader } from "../hooks/useLanguageLoader";
 import { useCacheManager } from "../hooks/useCacheManager";
-import 'react-awesome-button/dist/styles.css';
-import { AwesomeButton } from "react-awesome-button";
+import { Button } from "../components/Utils/Button";
 import SmoothCollapse from "react-smooth-collapse";
 
 const checkSymbol = ['❓', '✅', '🙃']
@@ -198,9 +197,9 @@ function Home() {
                 <div className={"mt-4 rounded-2xl border border-blue-200 bg-blue-50 p-4"}>
                   <div className={"flex flex-col gap-3 overflow-visible md:flex-row md:items-center"}>
                     <ButtonWrap>
-                      <AwesomeButton onPress={handleSelectMecabPath}>
+                      <Button onPress={handleSelectMecabPath}>
                         Select Mecab Path
-                      </AwesomeButton>
+                      </Button>
                     </ButtonWrap>
                     <input
                       className={"w-full rounded-lg border border-gray-300 px-3 py-2 text-lg text-blue-800 outline-none ring-1 ring-blue-200 focus:border-blue-500 focus:ring-blue-500"}
@@ -214,7 +213,7 @@ function Home() {
 
               <div className="mt-4 flex flex-col gap-4 overflow-visible md:flex-row md:items-center">
                 <ButtonWrap>
-                  <AwesomeButton
+                  <Button
                     type={'primary'}
                     onPress={handleLanguageButtonClick}
                     className={ableToProceedToVideo ? '' : 'buttonDisabled'}
@@ -225,7 +224,7 @@ function Home() {
                       languageModes.find(m => m.id === tokenizerMode)?.description &&
                       <div className={'text-xl'}>{languageModes.find(m => m.id === tokenizerMode)?.description}</div>
                     )}
-                  </AwesomeButton>
+                  </Button>
                 </ButtonWrap>
               </div>
             </HomeCard>
@@ -253,20 +252,20 @@ function Home() {
               >
                 <div className={'flex flex-wrap gap-3 overflow-visible'}>
                   <ButtonWrap>
-                    <AwesomeButton
+                    <Button
                       type={"danger"}
                       disabled={isRemovingCache}
                       onPress={handleRemoveCacheWithState}>
                       {isRemovingCache ? 'Removing...' : 'Remove Dict Caches'}
-                    </AwesomeButton>
+                    </Button>
                   </ButtonWrap>
                   <ButtonWrap>
-                    <AwesomeButton
+                    <Button
                       type={"secondary"}
                       disabled={toolsCheckInProgress}
                       onPress={() => checkMediaTools(true)}>
                       {toolsCheckInProgress ? 'Checking...' : 'Check Optional Tools'}
-                    </AwesomeButton>
+                    </Button>
                   </ButtonWrap>
                 </div>
                 <div className="mt-4">
@@ -291,14 +290,14 @@ function Home() {
                         </span>
                         {!status.available && (
                           <ButtonWrap className="py-0">
-                            <AwesomeButton
+                            <Button
                               type="link"
                               size="small"
                               disabled={isDownloading === toolName}
                               onPress={() => downloadTool(toolName)}
                             >
                               {isDownloading === toolName ? 'Opening...' : 'Open Link'}
-                            </AwesomeButton>
+                            </Button>
                           </ButtonWrap>
                         )}
                       </div>

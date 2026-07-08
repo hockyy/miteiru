@@ -1,10 +1,10 @@
 /**
- * Learning settings sidebar (Ctrl+X on /learn).
+ * Learning settings sidebar (X on /learn, Ctrl+X opens vocab sidebar).
  * OpenRouter key + model feed hooks/useAiTranslation.ts and hooks/useSentenceAnalysis.ts
  * via useStoreData('openrouter.apiKey' | 'openrouter.model').
  */
 import React, {useCallback, useEffect, useMemo, useState} from "react";
-import {AwesomeButton} from "react-awesome-button";
+import {Button} from "../Utils/Button";
 import {defaultLearningStyling} from "../../utils/CJKStyling";
 import {StylingBox} from "./Sidebar";
 import {useStoreData} from "../../hooks/useStoreData";
@@ -56,14 +56,14 @@ export const LearningSidebar = ({
             onChange={(e) => setModelDraft(e.target.value)}
             className="flex-grow p-2 border rounded text-black"
           />
-          <AwesomeButton
+          <Button
             type="primary"
             size="small"
             onPress={handleSaveModel}
             disabled={!modelHasUnsavedChanges || !modelDraft.trim()}
           >
             Save
-          </AwesomeButton>
+          </Button>
         </div>
       </div>
       <div className="flex flex-col gap-2">

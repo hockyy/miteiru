@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Volume2, Zap, Clock, HardDrive, Film } from 'lucide-react';
-import { AwesomeButton } from 'react-awesome-button';
+import { Button } from './Button';
 import { MediaTrack } from '../../types/media';
 import {getLanguageEmoji, getTrackLabel} from "../../utils/mediaUtils";
 import {ModalShell} from "./ModalShell";
@@ -77,14 +77,14 @@ const AudioReencodeModal: React.FC<AudioReencodeModalProps> = ({
       minSizeClassName="min-h-0 min-w-[min(92vw,24rem)]"
       footer={(
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
-          <AwesomeButton type="secondary" onPress={handlePlayDefault}>
+          <Button type="secondary" onPress={handlePlayDefault}>
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4" />
               Play with Default Audio
             </div>
-          </AwesomeButton>
+          </Button>
 
-          <AwesomeButton type="primary" onPress={handleRencode}>
+          <Button type="primary" onPress={handleRencode}>
             <div className="flex items-center gap-2">
               {isHEVC() && convertToX264 ? <Film className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
               {isHEVC() && convertToX264
@@ -96,7 +96,7 @@ const AudioReencodeModal: React.FC<AudioReencodeModalProps> = ({
                   : 'Fast Remux Media'
               }
             </div>
-          </AwesomeButton>
+          </Button>
         </div>
       )}
     >

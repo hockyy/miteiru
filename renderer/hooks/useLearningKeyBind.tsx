@@ -6,7 +6,8 @@ export default function useLearningKeyBind(
     setMeaning,
     setShowSidebar,
     undo,
-    rubyContent: any = ''
+    rubyContent: any = '',
+    setShowVocabSidebar?: (updater: (value: boolean) => boolean) => void,
 ) {
   const router = useRouter();
   const { clearLanguage } = useLanguageManager();
@@ -23,9 +24,13 @@ export default function useLearningKeyBind(
       } else if (event.code === "KeyD" && event.ctrlKey) {
         undo();
       } else if (event.code === "KeyX" && event.ctrlKey) {
-        setShowSidebar((old) => {
-          return !old;
-        });
+        if (setShowVocabSidebar) {
+          setShowVocabSidebar((old) => !old);
+        } else {
+          setShowSidebar((old) => !old);
+        }
+      } else if (event.code === "KeyX" && !event.ctrlKey && setShowVocabSidebar) {
+        setShowSidebar((old) => !old);
       } else if (event.code === "KeyG" && event.ctrlKey) {
         if (rubyContent) {
           await navigator.clipboard.writeText(rubyContent);
@@ -38,6 +43,6 @@ export default function useLearningKeyBind(
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [router, rubyContent, setMeaning, setShowSidebar, undo, clearLanguage]);
+  }, [router, rubyContent, setMeaning, setShowSidebar, setShowVocabSidebar, undo, clearLanguage]);
 
 }

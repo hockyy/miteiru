@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { AwesomeButton } from "react-awesome-button";
+import { Button } from "../../../Utils/Button";
 import type { UserNoteExample } from "../../../../hooks/useUserNotes";
 import {
   flattenInflectionRows,
@@ -82,14 +82,14 @@ export const InflectionSection = ({
             AI examples appear in the table below and are saved to My Notes
           </p>
         </div>
-        <AwesomeButton
+        <Button
           type="secondary"
           size="small"
           onPress={handleGenerate}
           disabled={isGenerating || visibleForms.length === 0}
         >
           {isGenerating ? "Generating…" : `AI examples (${visibleForms.length})`}
-        </AwesomeButton>
+        </Button>
       </div>
 
       <div className="space-y-4 px-4 py-3 text-sm">

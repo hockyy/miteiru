@@ -4,7 +4,7 @@
  * Grammar: hooks/useGrammarStudy.ts, useGrammarNotes.ts, useGrammarAiNotes.ts
  */
 import React, { useCallback, useMemo, useState } from 'react';
-import { AwesomeButton } from 'react-awesome-button';
+import { Button } from '../Utils/Button';
 import { languageCodes, getLanguageDisplayName } from '../../languages/manifest';
 import { useAiTranslation } from '../../hooks/useAiTranslation';
 import { useGrammarAiNotes } from '../../hooks/useGrammarAiNotes';
@@ -188,13 +188,13 @@ export const LearnStudyPanel: React.FC<LearnStudyPanelProps> = ({
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <AwesomeButton
+          <Button
             type="primary"
             onPress={translateWithAI}
             disabled={isTranslating}
           >
             {isTranslating ? 'Translating...' : 'Translate with AI'}
-          </AwesomeButton>
+          </Button>
         </div>
 
         {isJapanese && (

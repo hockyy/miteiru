@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect, useMemo } from 'react';
-import { AwesomeButton } from 'react-awesome-button';
+import { Button } from '../Utils/Button';
 import { MiteiruUserEntry, UserNoteExample } from '../../hooks/useUserNotes';
 import { emptyUserNote } from '../../utils/aiUserNotePrompts';
 import { isInflectionExample } from '../../utils/aiInflectionPrompts';
@@ -197,30 +197,30 @@ export const UserNotesSection: React.FC<UserNotesSectionProps> = ({
         <div className="flex flex-wrap gap-2">
           {!isEditing ? (
             <>
-              <AwesomeButton
+              <Button
                 type="primary"
                 size="small"
                 onPress={() => setIsEditing(true)}
               >
                 {hasSavedNote ? 'Edit' : 'Add note'}
-              </AwesomeButton>
-              <AwesomeButton
+              </Button>
+              <Button
                 type="secondary"
                 size="small"
                 onPress={onAIGenerate}
                 disabled={isGenerating}
               >
                 {isGenerating ? 'Generating…' : 'AI generate'}
-              </AwesomeButton>
+              </Button>
             </>
           ) : (
             <>
-              <AwesomeButton type="primary" size="small" onPress={handleSave}>
+              <Button type="primary" size="small" onPress={handleSave}>
                 Save
-              </AwesomeButton>
-              <AwesomeButton type="secondary" size="small" onPress={handleCancel}>
+              </Button>
+              <Button type="secondary" size="small" onPress={handleCancel}>
                 Cancel
-              </AwesomeButton>
+              </Button>
             </>
           )}
         </div>
@@ -233,12 +233,12 @@ export const UserNotesSection: React.FC<UserNotesSectionProps> = ({
             Generate with AI or write your own definition, usage tip, examples, and related terms.
           </p>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
-            <AwesomeButton type="primary" onPress={() => setIsEditing(true)}>
+            <Button type="primary" onPress={() => setIsEditing(true)}>
               Write manually
-            </AwesomeButton>
-            <AwesomeButton type="secondary" onPress={onAIGenerate} disabled={isGenerating}>
+            </Button>
+            <Button type="secondary" onPress={onAIGenerate} disabled={isGenerating}>
               {isGenerating ? 'Generating…' : 'AI generate'}
-            </AwesomeButton>
+            </Button>
           </div>
         </div>
       ) : (
@@ -454,9 +454,9 @@ const ExampleInput = ({ onAdd }: { onAdd: (example: UserNoteExample) => void }) 
           placeholder="English meaning (optional)"
           className={`${fieldInputClass} flex-grow`}
         />
-        <AwesomeButton type="primary" size="small" onPress={handleAdd}>
+        <Button type="primary" size="small" onPress={handleAdd}>
           Add
-        </AwesomeButton>
+        </Button>
       </div>
     </div>
   );
@@ -480,7 +480,7 @@ const RelatedTermInput = ({ onAdd }: { onAdd: (value: string) => void }) => {
         placeholder="Related term"
         className={`${fieldInputClass} flex-grow`}
       />
-      <AwesomeButton
+      <Button
         type="primary"
         size="small"
         onPress={() => {
@@ -489,7 +489,7 @@ const RelatedTermInput = ({ onAdd }: { onAdd: (value: string) => void }) => {
         }}
       >
         Add
-      </AwesomeButton>
+      </Button>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from "react";
 
-import {AwesomeButton} from "react-awesome-button";
+import {Button} from "../Utils/Button";
 
 const MakeMeAHanziDisplay = ({character}) => {
 
@@ -17,11 +17,11 @@ const MakeMeAHanziDisplay = ({character}) => {
 
   const svgRef = useRef(null);
   return svgData ? <div className={'flex flex-col w-auto p-4 gap-4 items-center'}>
-    <AwesomeButton type={'primary'} onPress={() => {
+    <Button type={'primary'} onPress={() => {
       setSvgData(old => {
         return old + ' ';
       })
-    }}>Repeat Animation</AwesomeButton>
+    }}>Repeat Animation</Button>
     <div className="svg-container" ref={svgRef} dangerouslySetInnerHTML={{__html: svgData}}/>
   </div> : (<></>);
 }

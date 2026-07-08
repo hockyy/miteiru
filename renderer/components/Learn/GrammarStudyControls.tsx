@@ -1,6 +1,6 @@
 /** JLPT level filter for grammar study controls. */
 import React, { useCallback } from 'react';
-import { AwesomeButton } from 'react-awesome-button';
+import { Button } from '../Utils/Button';
 import { GrammarLevelFilter, JLPT_LEVELS } from '../../types/jpGrammar';
 
 interface GrammarStudyControlsProps {
@@ -55,13 +55,13 @@ export const GrammarStudyControls: React.FC<GrammarStudyControlsProps> = ({
           ))}
         </select>
 
-        <AwesomeButton
+        <Button
           type="primary"
           onPress={onPickRandom}
           disabled={isCatalogLoading || isPicking || filteredCount === 0}
         >
           {isPicking ? 'Picking…' : 'Random grammar'}
-        </AwesomeButton>
+        </Button>
       </div>
     </div>
   );
