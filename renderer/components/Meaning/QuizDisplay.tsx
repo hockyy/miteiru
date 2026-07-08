@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import HanziWriter from "hanzi-writer";
 
-import {AwesomeButton} from "react-awesome-button";
+import {Button} from "../Utils/Button";
 import {learningConstants} from "../../utils/constants";
 
 const Review = ({questionData}) => {
@@ -280,11 +280,11 @@ const WritingQuizDisplay = ({
         </svg>
 
         {character && <QuestionInfo questionData={character}/>}
-        <AwesomeButton type={'primary'} onPress={() => {
+        <Button type={'primary'} onPress={() => {
           setChanger(old => {
             return old + 1;
           })
-        }}>Reset</AwesomeButton>
+        }}>Reset</Button>
         {showReview && (
             <div className="text-center">
               <p className="text-xl">
@@ -347,18 +347,18 @@ const QuestionInfo = ({questionData}) => {
   return (
       <div className="border-2 border-red-700 rounded-lg">
         <div className="w-full flex justify-around p-4 flex-wrap gap-2">
-          <AwesomeButton onPress={togglePronunciation}>
+          <Button onPress={togglePronunciation}>
             {showPronunciation ? 'Hide Pronunciation' : 'Show Pronunciation'}
-          </AwesomeButton>
+          </Button>
           {decomposition && (
-              <AwesomeButton onPress={toggleDecomposition}>
+              <Button onPress={toggleDecomposition}>
                 {showDecomposition ? 'Hide Decomposition' : 'Show Decomposition'}
-              </AwesomeButton>
+              </Button>
           )}
           {shownMeanings < meaning.length && (
-              <AwesomeButton onPress={showMoreMeanings}>
+              <Button onPress={showMoreMeanings}>
                 Show More ({shownMeanings}/{meaning.length})
-              </AwesomeButton>
+              </Button>
           )}
         </div>
         <div className="text-xl flex flex-col p-4 text-start items-start gap-3">

@@ -1,13 +1,11 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import Head from 'next/head';
-import "react-awesome-button/dist/styles.css";
 import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
 import MeaningBox from '../components/Meaning/MeaningBox';
-import {AwesomeButton} from "react-awesome-button";
+import {Button} from "../components/Utils/Button";
 import {getRelativeTime} from "../utils/utils";
 import useLearningState from "../hooks/useLearningState";
 import useLearningKeyBind from "../hooks/useLearningKeyBind";
-import 'react-awesome-button/dist/styles.css';
 
 interface LearningStateEntry {
   level: number;
@@ -115,24 +113,24 @@ const VocabFlashCards: React.FC = () => {
             ({getRelativeTime(state.updTime)})
           </div>
           {!showAnswer ? (
-              <AwesomeButton type="primary" onPress={() => setShowAnswer(true)}>
+              <Button type="primary" onPress={() => setShowAnswer(true)}>
                 Show Answer
-              </AwesomeButton>
+              </Button>
           ) : (
               <div className={'flex flex-row justify-center gap-4'}>
-                <AwesomeButton type="secondary"
+                <Button type="secondary"
                                onPress={() => handleAnswer('hard')}>
                   Hard 🧠
-                </AwesomeButton>
-                <AwesomeButton type="secondary" onPress={() => handleAnswer('good')}>
+                </Button>
+                <Button type="secondary" onPress={() => handleAnswer('good')}>
                   Good 😊
-                </AwesomeButton>
-                <AwesomeButton type="secondary" onPress={() => handleAnswer('easy')}>
+                </Button>
+                <Button type="secondary" onPress={() => handleAnswer('easy')}>
                   Easy 😎
-                </AwesomeButton>
-                <AwesomeButton type="secondary" onPress={() => handleAnswer('banish')}>
+                </Button>
+                <Button type="secondary" onPress={() => handleAnswer('banish')}>
                   Banish 👻
-                </AwesomeButton>
+                </Button>
               </div>
           )}
         </div>

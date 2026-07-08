@@ -1,6 +1,6 @@
 /** Grammar study card — catalog entry + saved AI notes + actions. */
 import React, { useCallback, useMemo } from 'react';
-import { AwesomeButton } from 'react-awesome-button';
+import { Button } from '../Utils/Button';
 import { GrammarStudyEntry } from '../../types/jpGrammar';
 import { jlptLevelBadgeClass } from '../../utils/jpGrammarCatalog';
 import { TranslationVariantRow } from './TranslationVariantRow';
@@ -149,26 +149,26 @@ export const GrammarStudyDisplay: React.FC<GrammarStudyDisplayProps> = ({
         )}
 
         <div className="flex flex-wrap gap-2 border-t border-indigo-200 pt-3">
-          <AwesomeButton
+          <Button
             type="primary"
             onPress={onGenerateNotes}
             disabled={isGenerating || isAddingExamples}
           >
             {isGenerating ? 'Generating…' : hasSavedNotes ? 'Regenerate notes' : 'Generate notes'}
-          </AwesomeButton>
+          </Button>
 
-          <AwesomeButton
+          <Button
             type="secondary"
             onPress={onAddMoreExamples}
             disabled={isGenerating || isAddingExamples || !hasSavedNotes}
           >
             {isAddingExamples ? 'Adding…' : 'Add more examples'}
-          </AwesomeButton>
+          </Button>
 
           {hasSavedNotes && (
-            <AwesomeButton type="secondary" onPress={onClearNotes} disabled={isGenerating}>
+            <Button type="secondary" onPress={onClearNotes} disabled={isGenerating}>
               Clear notes
-            </AwesomeButton>
+            </Button>
           )}
         </div>
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { FileText, Globe } from 'lucide-react';
-import { AwesomeButton } from 'react-awesome-button';
+import { Button } from './Button';
 import { SubtitlePreprocessOptions } from '../../types/subtitlePreprocess';
 import {getLanguageEmoji} from "../../utils/mediaUtils";
 import {ModalShell} from "./ModalShell";
@@ -77,13 +77,13 @@ const SubtitleSelectionModal: React.FC<SubtitleSelectionModalProps> = ({
               <div className="text-gray-400 text-xs mb-3">
                 Processed as {currentAppLanguage}, analyzed for learning
               </div>
-              <AwesomeButton
+              <Button
                 type="primary"
                 onPress={onSelectPrimary}
                 className="w-full text-sm"
               >
                 Load as Primary
-              </AwesomeButton>
+              </Button>
             </div>
 
             {/* Secondary Subtitle Option */}
@@ -95,13 +95,13 @@ const SubtitleSelectionModal: React.FC<SubtitleSelectionModalProps> = ({
               <div className="text-gray-400 text-xs mb-3">
                 Reference only, no analysis
               </div>
-              <AwesomeButton
+              <Button
                 type="secondary"
                 onPress={onSelectSecondary}
                 className="w-full text-sm"
               >
                 Load as Secondary
-              </AwesomeButton>
+              </Button>
             </div>
           </div>
     </ModalShell>

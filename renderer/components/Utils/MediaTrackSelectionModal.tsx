@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Subtitles, Play, Download, RefreshCw } from 'lucide-react';
-import { AwesomeButton } from 'react-awesome-button';
+import { Button } from './Button';
 import { MediaTrack } from '../../types/media';
 import { useYoutubeSubtitles } from '../../hooks/useYoutubeSubtitles';
 import { SubtitlePreprocessOptions } from '../../types/subtitlePreprocess';
@@ -140,15 +140,15 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
           <div className="text-sm text-white/55">{footerSummary}</div>
 
           <div className="flex gap-3">
-            <AwesomeButton type="secondary" onPress={onClose}>
+            <Button type="secondary" onPress={onClose}>
               Cancel
-            </AwesomeButton>
-            <AwesomeButton type="primary" onPress={handleConfirm}>
+            </Button>
+            <Button type="primary" onPress={handleConfirm}>
               <div className="flex items-center gap-2">
                 <Play className="w-4 h-4" />
                 Load Subtitles
               </div>
-            </AwesomeButton>
+            </Button>
           </div>
         </div>
       )}

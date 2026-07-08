@@ -6,13 +6,14 @@ import {defaultLearningStyling} from "../utils/CJKStyling";
 import MeaningBox from "../components/Meaning/MeaningBox";
 import useMeaning from "../hooks/useMeaning";
 import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
-import {AwesomeButton} from "react-awesome-button";
+import {Button} from "../components/Utils/Button";
 import {useRouter} from "next/router";
 import {LearningSidebar} from "../components/VideoPlayer/LearningSidebar";
-import {RIGHT_SIDEBAR_WIDTH} from "../components/VideoPlayer/SidebarShell";
+import VocabSidebar from "../components/VideoPlayer/VocabSidebar";
+import {RIGHT_SIDEBAR_WIDTH, VOCAB_SIDEBAR_WIDTH} from "../components/VideoPlayer/SidebarShell";
+import useVocabSidebar from "../hooks/useVocabSidebar";
 import {useStoreData} from "../hooks/useStoreData";
 import useLearningKeyBind from "../hooks/useLearningKeyBind";
-import 'react-awesome-button/dist/styles.css';
 import {isLearningSubtitleLanguage} from "../components/Subtitle/subtitleLanguageSupport";
 import useLearningState from "../hooks/useLearningState";
 import useGoogleTranslator from "../hooks/useGoogleTranslator";
@@ -157,7 +158,12 @@ function Learn() {
   const [openRouterApiKey] = useStoreData('openrouter.apiKey', '');
   const [openRouterModel] = useStoreData('openrouter.model', 'z-ai/glm-5.2:nitro');
   
-  useLearningKeyBind(setMeaning, setShowSidebar, undo, rubyContent);
+  const {
+    showVocabSidebar,
+    setShowVocabSidebar,
+  } = useVocabSidebar();
+
+  useLearningKeyBind(setMeaning, setShowSidebar, undo, rubyContent, setShowVocabSidebar);
   const router = useRouter();
   const {
     tokenizerMode,
@@ -213,6 +219,7 @@ function Learn() {
     getLearningStateClass,
     changeLearningState,
     getLearningState,
+    refreshTrigger,
   } = useLearningState(lang);
 
   const {
@@ -317,6 +324,7 @@ function Learn() {
                       getLearningState={getLearningState}
                       onMoveToAnalyzer={handleMoveToAnalyzer}
                       sidebarInsets={{
+                        left: showVocabSidebar ? VOCAB_SIDEBAR_WIDTH : "0",
                         right: showSidebar ? RIGHT_SIDEBAR_WIDTH : "0",
                       }}
           />
@@ -445,34 +453,34 @@ function Learn() {
 
                 {/* Action Buttons */}
                 <div className="flex flex-wrap gap-3 justify-center items-center">
-                      <AwesomeButton type={'primary'} onPress={() => handleTranslate(true)}>
+                      <Button type={'primary'} onPress={() => handleTranslate(true)}>
                         Translate Now
-                      </AwesomeButton>
-                      <AwesomeButton type={isAutoTranslating ? 'secondary' : 'primary'}
+                      </Button>
+                      <Button type={isAutoTranslating ? 'secondary' : 'primary'}
                                      onPress={toggleAutoTranslate}>
                         {isAutoTranslating ? 'Stop Auto Translate' : 'Start Auto Translate'}
-                      </AwesomeButton>
-                      <AwesomeButton
+                      </Button>
+                      <Button
                           type={'primary'}
                           onPress={handleSpeak}
                           disabled={!supported || speaking}
                       >
                         {speaking ? 'Speaking...' : <FaVolumeUp/>}
-                      </AwesomeButton>
-                      <AwesomeButton
+                      </Button>
+                      <Button
                           type={'primary'}
                           onPress={handleAnalyzeSentence}
                           disabled={isAnalyzing || !directInput.trim()}
                       >
                         {isAnalyzing ? 'Analyzing...' : '🤖 AI Analysis'}
-                      </AwesomeButton>
-                      <AwesomeButton
+                      </Button>
+                      <Button
                           type={'primary'}
                           onPress={handleBuildAnkiCard}
                           disabled={isBuildingAnkiCard || !directInput.trim() || !tokenizeMiteiru}
                       >
                         {isBuildingAnkiCard ? 'Building...' : '📇 Build Anki Card'}
-                      </AwesomeButton>
+                      </Button>
                     </div>
 
                 {/* Translation Display */}
@@ -484,14 +492,14 @@ function Learn() {
 
                 {/* Navigation */}
                 <div className="flex justify-center mt-4">
-                  <AwesomeButton
+                  <Button
                       type={'secondary'}
                       onPress={async () => {
                         await router.push('/video')
                       }}
                   >
                     Back to Video
-                  </AwesomeButton>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -583,6 +591,14 @@ function Learn() {
               )}
             </div>
           </div>
+          <VocabSidebar
+              showVocabSidebar={showVocabSidebar}
+              setShowVocabSidebar={setShowVocabSidebar}
+              lang={lang}
+              setMeaning={setMeaning}
+              tokenizeMiteiru={tokenizeMiteiru}
+              refreshTrigger={refreshTrigger}
+          />
           <LearningSidebar
               showSidebar={showSidebar}
               setShowSidebar={setShowSidebar}

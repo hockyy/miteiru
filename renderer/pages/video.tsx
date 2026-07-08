@@ -21,7 +21,6 @@ import {
 } from "../hooks/useVideoController";
 import {usePlayNextAfterEnd} from "../hooks/usePlayNextAfterEnd";
 import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
-import 'react-awesome-button/dist/styles.css';
 import useLearningState from "../hooks/useLearningState";
 import usePauseAndRepeat from "../hooks/usePauseAndRepeat";
 import useTranslationLinks from "../hooks/useTranslationLinks";

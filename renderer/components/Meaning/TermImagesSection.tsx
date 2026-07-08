@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { AwesomeButton } from 'react-awesome-button';
+import { Button } from '../Utils/Button';
 import { ImageDisplayPopup } from './ImageDisplayPopup';
 import { videoConstants } from '../../utils/constants';
 import { joinString } from '../../utils/utils';
@@ -124,9 +124,9 @@ export const TermImagesSection: React.FC<TermImagesSectionProps> = ({
             <span className="text-sm font-normal text-amber-600">({images.length})</span>
           )}
         </h3>
-        <AwesomeButton type="primary" size="small" onPress={handleAddImage}>
+        <Button type="primary" size="small" onPress={handleAddImage}>
           ➕ Add Image
-        </AwesomeButton>
+        </Button>
       </div>
 
       {loading ? (
@@ -134,9 +134,9 @@ export const TermImagesSection: React.FC<TermImagesSectionProps> = ({
       ) : images.length === 0 ? (
         <div className="text-center py-6">
           <p className="text-amber-700 mb-3">No images for &quot;{term}&quot; yet</p>
-          <AwesomeButton type="primary" onPress={handleAddImage}>
+          <Button type="primary" onPress={handleAddImage}>
             Add your first image
-          </AwesomeButton>
+          </Button>
         </div>
       ) : (
         <div className="flex flex-wrap gap-4">
@@ -157,13 +157,13 @@ export const TermImagesSection: React.FC<TermImagesSectionProps> = ({
                 )}
               </div>
               <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
-                <AwesomeButton
+                <Button
                   type="primary"
                   size="small"
                   onPress={() => handleDisplay(img.id)}
                 >
                   Display
-                </AwesomeButton>
+                </Button>
                 <button
                   onClick={() => handleDelete(img.id)}
                   className="text-xs text-red-300 hover:text-red-100"

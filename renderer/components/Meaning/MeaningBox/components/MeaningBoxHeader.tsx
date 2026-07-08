@@ -1,5 +1,5 @@
 import React from 'react';
-import { AwesomeButton } from 'react-awesome-button';
+import { Button } from '../../../Utils/Button';
 import { FaVolumeUp } from 'react-icons/fa';
 import { MEANING_HEADER } from '../../meaningBoxTheme';
 import { OutlinedStar } from './shared/OutlinedStar';
@@ -43,18 +43,18 @@ export const MeaningBoxHeader = ({
   changeLearningState,
 }: MeaningBoxHeaderProps) => (
   <div className={MEANING_HEADER}>
-    <AwesomeButton type="primary" disabled={meaningIndex === 0} onPress={onPrevious}>
+    <Button type="primary" disabled={meaningIndex === 0} onPress={onPrevious}>
       Previous
-    </AwesomeButton>
+    </Button>
 
     <div
       className="flex flex-wrap items-center justify-center gap-5"
       style={{ fontFamily: 'Arial', fontSize: '40px' }}
     >
       <div className="mr-4">
-        <AwesomeButton onPress={onSpeak} disabled={!speechSupported}>
+        <Button onPress={onSpeak} disabled={!speechSupported}>
           {speaking ? 'Stop' : <FaVolumeUp />}
-        </AwesomeButton>
+        </Button>
       </div>
 
       {romajiedData.map(({ key, romajied }) => (
@@ -83,12 +83,12 @@ export const MeaningBoxHeader = ({
       )}
     </div>
 
-    <AwesomeButton
+    <Button
       type="primary"
       disabled={meaningIndex >= otherMeaningsCount - 1}
       onPress={onNext}
     >
       Next
-    </AwesomeButton>
+    </Button>
   </div>
 );
