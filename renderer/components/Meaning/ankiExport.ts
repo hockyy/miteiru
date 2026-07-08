@@ -58,6 +58,32 @@ const buildHtmlSection = (title, content) => {
   return `<div><strong>${escapeHtml(title)}</strong><br>${content}</div>`;
 };
 
+/** True when the export should use the My Notes deck instead of dictionary Easy/Hard. */
+export const hasAnkiNoteContent = (userNote) => {
+  if (!userNote) {
+    return false;
+  }
+  return Boolean(
+    userNote.definition?.trim()
+    || userNote.usageNote?.trim()
+    || userNote.funFact?.trim()
+    || userNote.examples?.length
+    || userNote.relatedTerms?.length
+  );
+};
+
+export const getAnkiDeckNames = (lang, usesNotes) => {
+  const languageName = getLanguageDisplayName(lang);
+  if (usesNotes) {
+    const notesDeckName = `Miteiru::${languageName}::Notes`;
+    return { readingDeckName: notesDeckName, hardDeckName: notesDeckName };
+  }
+  return {
+    readingDeckName: `Miteiru::${languageName}::Easy`,
+    hardDeckName: `Miteiru::${languageName}::Hard`,
+  };
+};
+
 export const safeAnkiFilename = (term) => {
   const safeTerm = String(term || 'card').replace(/[\\/:*?"<>|\s]+/g, '_').slice(0, 80);
   return `miteiru_anki_${safeTerm || 'card'}.tsv`;
@@ -97,9 +123,8 @@ const buildAnkiCardsForTerm = ({
   const examples = buildExamplesHtml(userNote?.examples || []);
   const relatedTerms = buildHtmlList(userNote?.relatedTerms || []);
   const readingText = readings.length > 0 ? escapeHtml(readings.join(' / ')) : '';
-  const languageName = getLanguageDisplayName(lang);
-  const normalDeckName = `Miteiru::${languageName}::Easy`;
-  const hardDeckName = `Miteiru::${languageName}::Hard`;
+  const usesNotes = hasAnkiNoteContent(userNote);
+  const { readingDeckName, hardDeckName } = getAnkiDeckNames(lang, usesNotes);
 
   const definitionsSection = noteDefinition
     ? buildHtmlSection('Definition', escapeHtml(noteDefinition))
@@ -127,18 +152,18 @@ const buildAnkiCardsForTerm = ({
 
   return [
     {
-      cardId: getVariantAnkiCardId(term, meaningContent, lang, 'reading'),
+      cardId: getVariantAnkiCardId(term, meaningContent, lang, usesNotes ? 'notes-reading' : 'reading'),
       front: normalFront,
       back: normalBack,
-      deckName: normalDeckName,
-      tags: uniqueNonEmpty(['miteiru', lang, 'reading']).join(' ')
+      deckName: readingDeckName,
+      tags: uniqueNonEmpty(['miteiru', lang, usesNotes ? 'notes' : '', 'reading']).join(' ')
     },
     {
-      cardId: getVariantAnkiCardId(term, meaningContent, lang, 'hard'),
+      cardId: getVariantAnkiCardId(term, meaningContent, lang, usesNotes ? 'notes-hard' : 'hard'),
       front: `<div style="font-size: 2em;">${escapeHtml(term)}</div>`,
       back: hardBack,
       deckName: hardDeckName,
-      tags: uniqueNonEmpty(['miteiru', lang, 'hard']).join(' ')
+      tags: uniqueNonEmpty(['miteiru', lang, usesNotes ? 'notes' : '', 'hard']).join(' ')
     }
   ];
 };
