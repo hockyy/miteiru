@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import type { InflectionRow, InflectionTable } from "../../../../main/handler/languages/inflectionTypes";
-import type { MiteiruUserEntry, UserNoteExample } from "../../../hooks/useUserNotes";
+import type { InflectionRow, InflectionTable } from "../../../../../main/handler/languages/inflectionTypes";
+import type { MiteiruUserEntry, UserNoteExample } from "../../../../hooks/useUserNotes";
 import {
   buildInflectionExamplesSystemPrompt,
   buildInflectionExamplesUserPrompt,

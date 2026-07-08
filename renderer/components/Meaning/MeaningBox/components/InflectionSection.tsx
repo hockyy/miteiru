@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { AwesomeButton } from "react-awesome-button";
-import type { UserNoteExample } from "../../../hooks/useUserNotes";
+import type { UserNoteExample } from "../../../../hooks/useUserNotes";
 import {
   flattenInflectionRows,
   indexInflectionExamples,
