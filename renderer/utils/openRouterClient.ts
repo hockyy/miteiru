@@ -32,9 +32,16 @@ export async function streamOpenRouterCompletion(
     headers: MITEIRU_OPENROUTER_HEADERS,
   });
 
+  const systemContent = messages
+    .filter((message) => message.role === 'system')
+    .map((message) => message.content)
+    .join('\n\n');
+  const userMessages = messages.filter((message) => message.role !== 'system');
+
   const result = await streamText({
     model: openrouter(model),
-    messages,
+    ...(systemContent ? { system: systemContent } : {}),
+    messages: userMessages,
   });
 
   // Collect full response before JSON parse (hooks don't stream partial UI)
