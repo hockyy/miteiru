@@ -1,7 +1,7 @@
 import "react-video-seek-slider/styles.css"
 import {VideoSeekSlider} from "react-video-seek-slider";
 import React, {useCallback} from "react";
-import SmoothCollapse from "react-smooth-collapse";
+import SmoothCollapse from "../Utils/SmoothCollapse";
 import {Volume} from "./Volume";
 import SettingsController from "./SettingsController";
 import {ArrowLeft, ArrowRight, RepeatSubtitle, StepLeft, StepRight} from "./Icons";

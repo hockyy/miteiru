@@ -17,7 +17,6 @@ export function registerStoreHandlers() {
     try {
       const store = await getStore();
       const value = store.get(key, defaultValue);
-      console.log(`[Store] Get ${key} =`, value);
       return value;
     } catch (error) {
       console.error(`[Store] Failed to get ${key}:`, error);
@@ -28,9 +27,7 @@ export function registerStoreHandlers() {
   ipcMain.handle("electron-store-set", async (event, key, value) => {
     try {
       const store = await getStore();
-      console.log(`[Store] Set ${key} =`, value);
       store.set(key, value);
-      console.log(`[Store] Successfully saved ${key}`);
       return true;
     } catch (error) {
       console.error(`[Store] Failed to set ${key}:`, error);

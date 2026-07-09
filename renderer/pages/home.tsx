@@ -6,7 +6,7 @@ import { useToolsCheck } from "../hooks/useToolsCheck";
 import { useLanguageLoader } from "../hooks/useLanguageLoader";
 import { useCacheManager } from "../hooks/useCacheManager";
 import { Button } from "../components/Utils/Button";
-import SmoothCollapse from "react-smooth-collapse";
+import SmoothCollapse from "../components/Utils/SmoothCollapse";
 
 const checkSymbol = ['❓', '✅', '🙃']
 
