@@ -4,6 +4,7 @@ import {ChineseSentence, JapaneseSentence, PlainSentence} from "./Sentence";
 import {CJKStyling, defaultSecondarySubtitleStyling} from "../../utils/CJKStyling";
 import {adjustTimeWithShift} from "../../utils/utils";
 import useSubtitleContainerStyle from "../../hooks/useSubtitleContainerStyle";
+import {getSubtitleOutlineStyle} from "../../utils/subtitleStroke";
 import {getSubtitleTokenPresentation} from "./subtitleLanguageSupport";
 
 interface CurrentSubtitleLine {
@@ -249,8 +250,7 @@ export const SecondarySubtitle = ({
 
   return <Subtitle caption={caption} subtitleStyling={subtitleStyling} extraContainerStyle={{
     WebkitTextFillColor: subtitleStyling.text.color,
-    WebkitTextStrokeColor: subtitleStyling.stroke.color,
-    WebkitTextStrokeWidth: subtitleStyling.stroke.width,
+    ...getSubtitleOutlineStyle(subtitleStyling.stroke),
   }}/>
 };
 export const Subtitle = (
@@ -272,7 +272,7 @@ export const Subtitle = (
       className={"unselectable fixed w-[100vw] z-10 text-center " + extraClass}
       style={currentContainerStyle}>
     {caption.length > 0 &&
-        <div className={"w-fit z-10 mx-auto rounded-lg px-3 pt-2 pb-1"} style={{
+        <div className={"subtitle-stroke-shadow w-fit z-10 mx-auto rounded-lg px-3 pt-2 pb-1"} style={{
           backgroundColor: subtitleStyling.background,
           fontSize: subtitleStyling.text.fontSize, // Add this line to set the font size
         }}>

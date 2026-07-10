@@ -1,4 +1,5 @@
 interface StrokeStyling {
+  /** Outline width from settings slider — rendered via text-shadow (see utils/subtitleStroke.ts). */
   width: string
   color: string
   hoverColor: string

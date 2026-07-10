@@ -3,6 +3,7 @@ import {Button} from '../Utils/Button';
 import {JapaneseSentence, ChineseSentence} from '../Subtitle/Sentence';
 import {videoConstants} from '../../utils/constants';
 import {defaultMeaningBoxStyling, defaultPrimarySubtitleStyling} from '../../utils/CJKStyling';
+import {getSubtitleOutlineStyle} from '../../utils/subtitleStroke';
 import { useStoreData } from '../../hooks/useStoreData';
 
 interface ImageDisplayPopupProps {
@@ -30,9 +31,7 @@ export const ImageDisplayPopup: React.FC<ImageDisplayPopupProps> = ({
     fontFamily: subtitleStyling.text.fontFamily,
     fontWeight: subtitleStyling.text.weight,
     fontSize: subtitleStyling.text.fontSize,
-    WebkitTextShadow: '0 1px 2px rgba(0,0,0,0.9), 0 0 4px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.9)',
-    textShadow: '0 1px 2px rgba(0,0,0,0.9), 0 0 4px rgba(0,0,0,0.8), 0 2px 4px rgba(0,0,0,0.9)',
-    WebkitTextStroke: `${subtitleStyling.stroke.width} ${subtitleStyling.stroke.color}`,
+    ...getSubtitleOutlineStyle(subtitleStyling.stroke),
   };
 
   return (

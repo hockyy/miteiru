@@ -118,6 +118,16 @@ html {
   text-shadow: none !important;
 }
 
+/* Video/learn subtitles — webkit stroke breaks on Windows CJK ruby; outline uses text-shadow (subtitleStroke.ts) */
+.subtitle-stroke-shadow,
+.subtitle-stroke-shadow ruby,
+.subtitle-stroke-shadow rt,
+.subtitle-stroke-shadow rb,
+.subtitle-stroke-shadow button {
+  -webkit-text-stroke-width: 0 !important;
+  -webkit-text-stroke-color: transparent !important;
+}
+
 .note-example-sentence {
   line-height: 1.75;
 }
