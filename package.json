@@ -2,13 +2,18 @@
   "private": true,
   "name": "miteiru",
   "description": "Miteiru",
-  "version": "7.1.0",
+  "version": "7.2.0",
   "author": "Hocky Yudhiono <hocky.yudhiono@gmail.com>",
   "main": "app/main.js",
   "homepage": "https://miteiru.hocky.id",
   "build": {
     "appId": "id.hocky.miteiru",
     "artifactName": "miteiru-${version}-${os}-${arch}.${ext}",
+    "files": [
+      "**/*",
+      "!renderer/.next",
+      "!renderer/.next/**"
+    ],
     "mac": {
       "icon": "resources/icon.icns",
       "target": [
@@ -27,17 +32,18 @@
     "script:pack-language-assets": "node scripts/packLanguageAssets.js",
     "script:unpack-language-assets": "node scripts/unpackLanguageAssets.js",
     "script:wanikani": "node scripts/scrapeWanikaniKanji.js",
+    "script:clean-next": "node scripts/cleanRendererNext.js",
     "test": "tsx --test \"tests/**/*.test.ts\"",
     "build:live-captions": "node scripts/buildLiveCaptionsBridge.js",
     "dev": "nextron --electron-options=\"--no-sandbox\"",
-    "build": "nextron build",
-    "build:macos": "nextron build --config=buildConfig/macos.config.json",
-    "build:nsis": "npm run build:live-captions && nextron build --config=buildConfig/nsis.config.json",
-    "build:portable": "npm run build:live-captions && nextron build --config=buildConfig/portable.config.json",
-    "build:linux20": "nextron build --config=buildConfig/linux20.config.json",
-    "build:linux22": "nextron build --config=buildConfig/linux22.config.json",
-    "build:linux24": "nextron build --config=buildConfig/linux24.config.json",
-    "build:linux26": "nextron build --config=buildConfig/linux26.config.json",
+    "build": "npm run script:clean-next && nextron build",
+    "build:macos": "npm run script:clean-next && nextron build --config=buildConfig/macos.config.json",
+    "build:nsis": "npm run build:live-captions && npm run script:clean-next && nextron build --config=buildConfig/nsis.config.json",
+    "build:portable": "npm run build:live-captions && npm run script:clean-next && nextron build --config=buildConfig/portable.config.json",
+    "build:linux20": "npm run script:clean-next && nextron build --config=buildConfig/linux20.config.json",
+    "build:linux22": "npm run script:clean-next && nextron build --config=buildConfig/linux22.config.json",
+    "build:linux24": "npm run script:clean-next && nextron build --config=buildConfig/linux24.config.json",
+    "build:linux26": "npm run script:clean-next && nextron build --config=buildConfig/linux26.config.json",
     "postinstall": "electron-builder install-app-deps && patch-package"
   },
   "dependencies": {

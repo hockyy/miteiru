@@ -2,6 +2,7 @@
 import React, {useState, useCallback} from 'react';
 import {Button} from "../Utils/Button";
 import {useStoreData} from "../../hooks/useStoreData";
+import {SIDEBAR_FIELD_INPUT} from "../VideoPlayer/SidebarShell";
 
 interface GistManagerProps {
   lang: string;
@@ -103,7 +104,7 @@ export const GistManager: React.FC<GistManagerProps> = ({lang}) => {
               placeholder="GitHub Username"
               value={githubUsername}
               onChange={(e) => setGithubUsername(e.target.value)}
-              className="flex-grow p-2 border rounded text-black"
+              className={SIDEBAR_FIELD_INPUT}
           />
         </div>
         <div className="flex flex-row gap-2 items-center">
@@ -112,14 +113,16 @@ export const GistManager: React.FC<GistManagerProps> = ({lang}) => {
               placeholder="GitHub Token"
               value={githubToken}
               onChange={(e) => setGithubToken(e.target.value)}
-              className="flex-grow p-2 border rounded text-black"
+              className={SIDEBAR_FIELD_INPUT}
           />
-          <button
-              onClick={() => setShowToken(!showToken)}
-              className="p-2 bg-gray-200 rounded hover:bg-gray-300 focus:outline-none text-black dark:text-white"
+          <Button
+              type="secondary"
+              size="small"
+              className="shrink-0"
+              onPress={() => setShowToken(!showToken)}
           >
             {showToken ? "Hide" : "Show"}
-          </button>
+          </Button>
         </div>
         <div className="text-sm text-red-500 mb-2">
           <strong>Warning: The token ONLY requires &apos;gist&apos; scope permissions.</strong>
@@ -134,7 +137,7 @@ export const GistManager: React.FC<GistManagerProps> = ({lang}) => {
         </div>
         <Button
             type={"primary"}
-            className={"w-full"}
+            className={"w-full min-w-0 max-w-full"}
             onPress={saveLearningHandler}
             disabled={isLoading}
         >
@@ -142,7 +145,7 @@ export const GistManager: React.FC<GistManagerProps> = ({lang}) => {
         </Button>
         <Button
             type={"secondary"}
-            className={"w-full"}
+            className={"w-full min-w-0 max-w-full"}
             onPress={loadLearningHandler}
             disabled={isLoading}
         >

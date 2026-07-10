@@ -8,7 +8,7 @@ import {Button} from "../Utils/Button";
 import {defaultLearningStyling} from "../../utils/CJKStyling";
 import {StylingBox} from "./Sidebar";
 import {useStoreData} from "../../hooks/useStoreData";
-import {SidebarSection, SidebarShell} from "./SidebarShell";
+import {SidebarSection, SidebarShell, SIDEBAR_FIELD_INPUT} from "./SidebarShell";
 
 export const LearningSidebar = ({
                                   showSidebar,
@@ -47,18 +47,19 @@ export const LearningSidebar = ({
     {/* OpenRouter Settings */}
     <SidebarSection title="OpenRouter AI">
       <div className="flex flex-col gap-2">
-        <label className="text-sm">Model</label>
-        <div className="flex flex-row gap-2 items-center">
+        <label className="text-sm text-white/85">Model</label>
+        <div className="flex min-w-0 flex-row gap-2 items-center">
           <input
             type="text"
             placeholder="e.g., z-ai/glm-5.2:nitro"
             value={modelDraft}
             onChange={(e) => setModelDraft(e.target.value)}
-            className="flex-grow p-2 border rounded text-black"
+            className={SIDEBAR_FIELD_INPUT}
           />
           <Button
             type="primary"
             size="small"
+            className="shrink-0"
             onPress={handleSaveModel}
             disabled={!modelHasUnsavedChanges || !modelDraft.trim()}
           >
@@ -67,21 +68,23 @@ export const LearningSidebar = ({
         </div>
       </div>
       <div className="flex flex-col gap-2">
-        <label className="text-sm">API Key</label>
-        <div className="flex flex-row gap-2 items-center">
+        <label className="text-sm text-white/85">API Key</label>
+        <div className="flex min-w-0 flex-row gap-2 items-center">
           <input
             type={showApiKey ? "text" : "password"}
             placeholder="OpenRouter API Key"
             value={openRouterApiKey}
             onChange={(e) => setOpenRouterApiKey(e.target.value)}
-            className="flex-grow p-2 border rounded text-black"
+            className={SIDEBAR_FIELD_INPUT}
           />
-          <button
-            onClick={() => setShowApiKey(!showApiKey)}
-            className="p-2 bg-gray-200 rounded hover:bg-gray-300 focus:outline-none text-black"
+          <Button
+            type="secondary"
+            size="small"
+            className="shrink-0"
+            onPress={() => setShowApiKey(!showApiKey)}
           >
             {showApiKey ? "Hide" : "Show"}
-          </button>
+          </Button>
         </div>
       </div>
     </SidebarSection>
@@ -89,23 +92,25 @@ export const LearningSidebar = ({
     {/* Google Vision Settings */}
     <SidebarSection title="Google Cloud Vision OCR">
       <div className="flex flex-col gap-2">
-        <label className="text-sm">API Key</label>
-        <div className="flex flex-row gap-2 items-center">
+        <label className="text-sm text-white/85">API Key</label>
+        <div className="flex min-w-0 flex-row gap-2 items-center">
           <input
             type={showGoogleApiKey ? "text" : "password"}
             placeholder="Google Cloud Vision API Key"
             value={googleVisionApiKey}
             onChange={(e) => setGoogleVisionApiKey(e.target.value)}
-            className="flex-grow p-2 border rounded text-black"
+            className={SIDEBAR_FIELD_INPUT}
           />
-          <button
-            onClick={() => setShowGoogleApiKey(!showGoogleApiKey)}
-            className="p-2 bg-gray-200 rounded hover:bg-gray-300 focus:outline-none text-black"
+          <Button
+            type="secondary"
+            size="small"
+            className="shrink-0"
+            onPress={() => setShowGoogleApiKey(!showGoogleApiKey)}
           >
             {showGoogleApiKey ? "Hide" : "Show"}
-          </button>
+          </Button>
         </div>
-        <div className="text-xs text-gray-300">
+        <div className="text-xs text-white/50">
           For image OCR feature. Get your key at <span className="text-blue-300">console.cloud.google.com</span>
         </div>
       </div>

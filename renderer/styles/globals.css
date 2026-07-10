@@ -27,9 +27,14 @@ html {
   }
 
   .miteiru-btn {
-    @apply relative inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border font-semibold transition-colors duration-150 ease-out;
+    @apply relative inline-flex min-w-0 max-w-full items-center justify-center gap-1.5 rounded-lg border font-semibold transition-colors duration-150 ease-out;
+    @apply text-center whitespace-normal;
     @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-1;
     @apply disabled:cursor-not-allowed disabled:opacity-45;
+  }
+
+  .miteiru-btn--fill {
+    @apply w-full min-w-0 flex-1 basis-0;
   }
 
   .miteiru-btn--medium {
