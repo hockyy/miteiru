@@ -5,7 +5,7 @@
  */
 import React, { useCallback, useMemo, useState } from 'react';
 import { Button } from '../Utils/Button';
-import { languageCodes, getLanguageDisplayName } from '../../languages/manifest';
+import { languageCodes } from '../../languages/manifest';
 import { useAiTranslation } from '../../hooks/useAiTranslation';
 import { useGrammarAiNotes } from '../../hooks/useGrammarAiNotes';
 import { useGrammarNotes } from '../../hooks/useGrammarNotes';
@@ -16,6 +16,14 @@ import {
   getTranslationTargetLang,
 } from '../../utils/aiTranslationPrompts';
 import { splitIntoLines } from '../../utils/textUtils';
+import {
+  MiteiruActionBar,
+  MiteiruPanel,
+  UI_ACTION_BTN,
+  UI_HINT_TEXT,
+  UI_STUDY_COLUMN_BG,
+  UI_TEXTAREA,
+} from '../UI';
 import { AITranslationResults } from './AITranslationResults';
 import { GrammarStudyControls } from './GrammarStudyControls';
 import { GrammarStudyResults } from './GrammarStudyResults';
@@ -91,7 +99,6 @@ export const LearnStudyPanel: React.FC<LearnStudyPanelProps> = ({
   const missingSentences = sourceSentences.length === 0;
   const unsupportedLang = lang !== '' && !targetLang;
   const pronunciationLabel = targetLang ? getPronunciationLabel(targetLang) : 'Reading';
-  const languageLabel = targetLang ? getLanguageDisplayName(lang) : 'target language';
 
   const translateWithAI = useCallback(() => {
     clearCurrent();
@@ -166,36 +173,24 @@ export const LearnStudyPanel: React.FC<LearnStudyPanelProps> = ({
   const showResultsSection = showTranslationResults || showGrammarResults;
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-br from-purple-50 to-pink-50 overflow-hidden">
-      <div className="p-4 border-b-2 border-purple-200 flex-shrink-0">
-        <h3 className="text-purple-900 font-bold text-xl">Study tools</h3>
-        <p className="text-sm text-purple-700 mt-1">
-          AI translation{isJapanese ? ' and JLPT grammar' : ''} for {languageLabel}
-        </p>
-      </div>
-
-      <div className="p-4 space-y-4 flex-shrink-0">
-        <div>
-          <label className="text-purple-900 font-semibold mb-2 block text-sm">
-            Text to translate
-          </label>
+    <div className={`flex h-full flex-col overflow-hidden ${UI_STUDY_COLUMN_BG}`}>
+      <div
+        className={`space-y-3 p-3 ${showResultsSection ? 'shrink-0' : 'min-h-0 flex-1 overflow-y-auto'}`}
+      >
+        <MiteiruPanel label="Text to translate">
           <textarea
-            className="text-black w-full p-3 border-2 border-purple-300 rounded-lg min-h-[180px] resize-y focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-200 transition-colors text-sm"
+            className={`${UI_TEXTAREA} min-h-[160px]`}
             value={sourceInput}
             onChange={(e) => setSourceInput(e.target.value)}
-            placeholder="Enter your text here. Each line will be translated separately."
+            placeholder="Each line will be translated separately."
           />
-        </div>
+        </MiteiruPanel>
 
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="primary"
-            onPress={translateWithAI}
-            disabled={isTranslating}
-          >
-            {isTranslating ? 'Translating...' : 'Translate with AI'}
+        <MiteiruActionBar>
+          <Button type="primary" size="small" onPress={translateWithAI} disabled={isTranslating}>
+            {isTranslating ? 'Translating…' : 'Translate with AI'}
           </Button>
-        </div>
+        </MiteiruActionBar>
 
         {isJapanese && (
           <GrammarStudyControls
@@ -208,42 +203,40 @@ export const LearnStudyPanel: React.FC<LearnStudyPanelProps> = ({
           />
         )}
 
-        <div className="text-xs text-purple-600 space-y-1">
+        <div className={`${UI_HINT_TEXT} space-y-1`}>
           {sourceSentences.length > 0 && (
             <p>{sourceSentences.length} line{sourceSentences.length !== 1 ? 's' : ''} to translate</p>
           )}
           {missingSentences && (
-            <p className="text-amber-700">Enter text above (one sentence per line).</p>
+            <p className="text-amber-800">Enter text above (one sentence per line).</p>
           )}
           {missingApiKey && (
-            <p className="text-amber-700">{openRouterMessages.missingApiKey}</p>
+            <p className="text-amber-800">{openRouterMessages.missingApiKey}</p>
           )}
           {missingModel && (
-            <p className="text-amber-700">{openRouterMessages.missingModel}</p>
+            <p className="text-amber-800">{openRouterMessages.missingModel}</p>
           )}
           {unsupportedLang && (
-            <p className="text-amber-700">AI translation supports Japanese, Chinese, and Cantonese only.</p>
+            <p className="text-amber-800">AI translation supports Japanese, Chinese, and Cantonese only.</p>
           )}
         </div>
       </div>
 
       {showResultsSection && (
-        <div className="flex-1 overflow-hidden flex flex-col border-t-2 border-purple-200 min-h-0">
-          <div className="flex justify-between items-center px-4 py-2 flex-shrink-0">
-            <h4 className="text-purple-900 font-semibold text-sm">
-              {showGrammarResults ? 'Grammar' : 'Translation results'}
-            </h4>
-            {showTranslationResults && hasResults && (
-              <button
-                onClick={handleCloseTranslation}
-                className="text-purple-600 hover:text-purple-800 hover:bg-purple-100 rounded-full w-6 h-6 flex items-center justify-center font-bold text-sm transition-colors"
-                title="Clear"
-              >
-                ✕
-              </button>
-            )}
-          </div>
-          <div className="flex-1 overflow-y-auto px-4 pb-4 min-h-0">
+        <div className="flex min-h-0 flex-1 flex-col p-3 pt-0">
+          <MiteiruPanel
+            fill
+            variant={showGrammarResults ? 'default' : 'purple'}
+            label={showGrammarResults ? 'Grammar' : 'Translation'}
+            className="h-full"
+            headerAction={
+              showTranslationResults && hasResults ? (
+                <button type="button" onClick={handleCloseTranslation} className={UI_ACTION_BTN} title="Clear">
+                  ✕
+                </button>
+              ) : undefined
+            }
+          >
             {showGrammarResults ? (
               <GrammarStudyResults
                 entry={currentStudyEntry}
@@ -272,7 +265,7 @@ export const LearnStudyPanel: React.FC<LearnStudyPanelProps> = ({
                 onMoveToAnalyzer={onMoveToAnalyzer}
               />
             )}
-          </div>
+          </MiteiruPanel>
         </div>
       )}
     </div>
