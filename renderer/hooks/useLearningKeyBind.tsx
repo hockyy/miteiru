@@ -16,10 +16,10 @@ export default function useLearningKeyBind(
     const handleKeyPress = async (event) => {
       if (event.code === "Escape") {
         setMeaning("");
-      } else if (event.code === "KeyQ" && event.ctrlKey) {
-        clearLanguage(); // Clear language state when explicitly going home
+      } else if (event.code === "KeyH" && event.ctrlKey && !event.shiftKey) {
+        clearLanguage();
         await router.push('/home');
-      } else if (event.code === "KeyL" && event.ctrlKey) {
+      } else if (event.code === "KeyL" && event.ctrlKey && !event.shiftKey) {
         await router.push('/video');
       } else if (event.code === "KeyD" && event.ctrlKey) {
         undo();

@@ -206,14 +206,10 @@ function Learn() {
 
   const liveCaptions = useLiveCaptions();
   const visibleLiveCaption = liveCaptions.caption.trim();
-  const showManualSentence = !liveCaptions.running || visibleLiveCaption.length === 0;
 
-  useEffect(() => {
-    if (!liveCaptions.running) {
-      return;
-    }
-    setDirectInput(liveCaptions.caption);
-  }, [liveCaptions.running, liveCaptions.caption]);
+  const handleCopyLiveCaptionToAnalyzer = useCallback(() => {
+    handleMoveToAnalyzer(liveCaptions.caption);
+  }, [handleMoveToAnalyzer, liveCaptions.caption]);
 
   const {
     getLearningStateClass,
@@ -362,7 +358,7 @@ function Learn() {
               className="flex flex-col overflow-y-auto bg-blue-50"
               style={{ width: `${middleColumnWidth}%` }}
             >
-              <div className="flex-1 p-6 space-y-6">
+              <div className="flex-1 p-4 space-y-4">
                 {/* Text Input Section */}
                 <div>
                   <h3 className="text-black font-bold text-lg mb-3">Enter Text (one sentence per line)</h3>
@@ -389,58 +385,75 @@ function Learn() {
                   onToggle={liveCaptions.toggle}
                 />
 
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-400 rounded-lg p-6 shadow-md">
-                  <h3 className="text-black font-bold text-lg mb-4 text-center">
-                    {liveCaptions.running ? 'Live Caption' : 'Current Sentence'}
-                  </h3>
-                  <div className="relative flex justify-center items-center min-h-[80px]">
-                    <style dangerouslySetInnerHTML={{__html: `
-                      .learn-subtitle-container > div {
-                        position: relative !important;
-                        width: 100% !important;
-                        top: auto !important;
-                        bottom: auto !important;
-                      }
-                    `}} />
+                <style dangerouslySetInnerHTML={{__html: `
+                  .learn-subtitle-container > div {
+                    position: relative !important;
+                    width: 100% !important;
+                    top: auto !important;
+                    bottom: auto !important;
+                  }
+                `}} />
+
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-400 rounded-lg p-4 shadow-md">
+                  <h3 className="text-black font-bold text-base mb-2 text-center">Current Sentence</h3>
+                  <div className="relative flex justify-center items-center min-h-[60px]">
                     <div className="learn-subtitle-container w-full">
-                      {liveCaptions.running && visibleLiveCaption ? (
-                        <LiveCaptionOverlay
-                          caption={liveCaptions.caption}
-                          subtitleStyling={primaryStyling}
-                          lang={lang}
-                          tokenizeMiteiru={tokenizeMiteiru}
+                      <PrimarySubtitle
                           setMeaning={setMeaning}
+                          currentTime={currentTime}
+                          subtitle={primarySub}
+                          shift={0}
+                          subtitleStyling={primaryStyling}
                           getLearningStateClass={getLearningStateClass}
                           changeLearningState={changeLearningState}
                           setRubyCopyContent={setRubyCopyContent}
-                        />
-                      ) : showManualSentence ? (
-                        <PrimarySubtitle
-                            setMeaning={setMeaning}
-                            currentTime={currentTime}
-                            subtitle={primarySub}
-                            shift={0}
-                            subtitleStyling={primaryStyling}
-                            getLearningStateClass={getLearningStateClass}
-                            changeLearningState={changeLearningState}
-                            setRubyCopyContent={setRubyCopyContent}
-                        />
-                      ) : (
-                        <div className="text-sm text-blue-600 text-center italic">
-                          Waiting for live captions...
-                        </div>
-                      )}
+                      />
                     </div>
                   </div>
                 </div>
 
-                {/* Voice Selection */}
-                <div>
-                  <label className="text-black font-semibold mb-2 block">Voice Selection</label>
+                {liveCaptions.running && (
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400 rounded-lg p-4 shadow-md">
+                    <div className="mb-2 flex items-center justify-between gap-2">
+                      <h3 className="text-black font-bold text-base text-center flex-1">Live Caption</h3>
+                      <Button
+                        type="secondary"
+                        onPress={handleCopyLiveCaptionToAnalyzer}
+                        disabled={!visibleLiveCaption}
+                      >
+                        → Analyzer
+                      </Button>
+                    </div>
+                    <div className="relative flex justify-center items-center min-h-[60px]">
+                      <div className="learn-subtitle-container w-full">
+                        {visibleLiveCaption ? (
+                          <LiveCaptionOverlay
+                            caption={liveCaptions.caption}
+                            subtitleStyling={primaryStyling}
+                            lang={lang}
+                            tokenizeMiteiru={tokenizeMiteiru}
+                            setMeaning={setMeaning}
+                            getLearningStateClass={getLearningStateClass}
+                            changeLearningState={changeLearningState}
+                            setRubyCopyContent={setRubyCopyContent}
+                          />
+                        ) : (
+                          <div className="text-sm text-green-700 text-center italic">
+                            Waiting for live captions...
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Voice + Action Buttons */}
+                <div className="flex flex-wrap gap-2 justify-center items-center">
                   <select
                       value={selectedVoice}
                       onChange={(e) => setSelectedVoice(e.target.value)}
-                      className="text-black p-3 border-2 border-blue-400 rounded-lg w-full focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors cursor-pointer"
+                      title="Voice selection"
+                      className="text-black text-xs py-1.5 px-2 border border-blue-400 rounded-md max-w-[180px] focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-300 transition-colors cursor-pointer"
                   >
                     <option value="">Default Voice</option>
                     {filteredVoices.map((voice) => (
@@ -449,10 +462,6 @@ function Learn() {
                         </option>
                     ))}
                   </select>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex flex-wrap gap-3 justify-center items-center">
                       <Button type={'primary'} onPress={() => handleTranslate(true)}>
                         Translate Now
                       </Button>
