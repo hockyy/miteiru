@@ -26,6 +26,7 @@ export const useLanguageLoader = () => {
   const [isLoadingLanguage, setIsLoadingLanguage] = useState(false);
 
   const {
+    lastLanguageMode,
     hasLastLanguage,
     getLastLanguage,
     setLanguage,
@@ -35,8 +36,24 @@ export const useLanguageLoader = () => {
 
   const [autoLoadEnabled, setAutoLoadEnabled] = useStoreData('app.autoLoadLastLanguage', true);
 
-  const loadLanguage = useCallback(async (modeId: number) => {
-    // Prevent multiple concurrent language loads
+  useEffect(() => {
+    if (lastLanguageMode === null || lastLanguageMode === undefined) {
+      return;
+    }
+    if (languageModes.some((mode) => mode.id === lastLanguageMode)) {
+      setTokenizerMode(lastLanguageMode);
+    }
+  }, [lastLanguageMode, languageModes]);
+
+  const selectTokenizerMode = useCallback((modeId: number) => {
+    setTokenizerMode(modeId);
+    setLanguage(modeId);
+  }, [setLanguage]);
+
+  const loadLanguage = useCallback(async (
+    modeId: number,
+    destination: '/video' | '/learn' | '/flash' = '/video',
+  ) => {
     if (isLoadingLanguage) {
       console.log('[Language Load] Language loading already in progress, ignoring request');
       return;
@@ -53,8 +70,8 @@ export const useLanguageLoader = () => {
       setCheck(res);
 
       if (res.ok === 1) {
-        setLanguage(modeId); // Save the successful language selection
-        await router.push('/video');
+        setLanguage(modeId);
+        await router.push(destination);
       }
     } catch (error) {
       setCheck({
@@ -79,7 +96,15 @@ export const useLanguageLoader = () => {
   }, []); // Remove dependencies to prevent infinite loops - values are captured correctly
 
   const handleLanguageButtonClick = useCallback(async () => {
-    await loadLanguage(tokenizerMode);
+    await loadLanguage(tokenizerMode, '/video');
+  }, [loadLanguage, tokenizerMode]);
+
+  const handleOpenLearn = useCallback(async () => {
+    await loadLanguage(tokenizerMode, '/learn');
+  }, [loadLanguage, tokenizerMode]);
+
+  const handleOpenFlash = useCallback(async () => {
+    await loadLanguage(tokenizerMode, '/flash');
   }, [loadLanguage, tokenizerMode]);
 
   const ableToProceedToVideo = check.ok !== 2 && !isLoadingLanguage;
@@ -88,7 +113,8 @@ export const useLanguageLoader = () => {
     // State
     check,
     tokenizerMode,
-    setTokenizerMode,
+    setTokenizerMode: selectTokenizerMode,
+    lastLanguageMode,
     isAutoLoading,
     isLoadingLanguage,
     autoLoadEnabled,
@@ -99,6 +125,8 @@ export const useLanguageLoader = () => {
     // Actions
     loadLanguage,
     handleLanguageButtonClick,
+    handleOpenLearn,
+    handleOpenFlash,
     performAutoLoad,
     clearLanguage
   };
