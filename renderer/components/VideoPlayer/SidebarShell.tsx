@@ -41,7 +41,7 @@ export const SidebarSection = ({
   title?: string;
   children: ReactNode;
 }) => (
-  <section className="w-full rounded-2xl border border-white/10 bg-white/[0.06] p-4 shadow-xl shadow-black/20 backdrop-blur">
+  <section className="w-full min-w-0 rounded-2xl border border-white/10 bg-white/[0.06] p-4 shadow-xl shadow-black/20 backdrop-blur">
     {title && (
       <div className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-white/50">
         {title}
@@ -62,6 +62,12 @@ export const SidebarSettingRow = ({
     {children}
   </div>
 );
+
+/** Text/password inputs on dark sidebar panels — always light field + dark text. */
+export const SIDEBAR_FIELD_INPUT =
+  'min-w-0 flex-1 rounded-lg border border-white/25 bg-white px-3 py-2 text-sm font-medium text-blue-950 placeholder:text-blue-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-300/50';
+
+/** Show/Hide toggles beside secret fields — use `Button type="secondary" size="small"`. */
 
 /** Right-hand settings / learning panel (slides in from the right). */
 export const SidebarShell = ({

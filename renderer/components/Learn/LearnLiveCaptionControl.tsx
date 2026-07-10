@@ -1,6 +1,14 @@
-/** Live CC toggle for /learn middle column. Hook: hooks/useLiveCaptions.tsx */
+/** Live CC toggle for /learn — uses shared UI kit tokens (see components/UI). */
 import React, {useMemo} from 'react';
 import {liveCaptionRefreshIntervals} from '../../types/liveCaptions';
+import {
+  MiteiruPanel,
+  UI_ACTION_BTN,
+  UI_ACTION_BTN_LIVE,
+  UI_ACTION_BTN_PRIMARY,
+  UI_ERROR_BANNER,
+  UI_HINT_TEXT,
+} from '../UI';
 
 interface LearnLiveCaptionControlProps {
   supported: boolean;
@@ -41,27 +49,27 @@ export const LearnLiveCaptionControl: React.FC<LearnLiveCaptionControlProps> = (
   }
 
   return (
-    <div className="rounded-md border border-blue-300 bg-white px-3 py-2">
+    <MiteiruPanel
+      variant={running ? 'live' : 'default'}
+      label="Live CC"
+      headerAction={
+        <span className={`text-[11px] font-bold normal-case tracking-normal ${error ? 'text-red-600' : running ? 'text-green-800' : 'text-blue-700'}`}>
+          {statusText}
+        </span>
+      }
+    >
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-bold text-blue-900">Live CC</span>
-        <span className={`text-xs ${error ? 'text-red-600' : 'text-blue-600'}`}>{statusText}</span>
         <button
           type="button"
           onClick={onToggle}
           disabled={starting}
-          className={[
-            'ml-auto rounded px-2.5 py-1 text-xs font-bold transition-colors disabled:opacity-60',
-            running
-              ? 'border border-green-500 bg-green-100 text-green-900 hover:bg-green-200'
-              : 'border border-blue-400 bg-blue-100 text-blue-900 hover:bg-blue-200',
-            error ? 'ring-1 ring-red-300' : '',
-          ].join(' ')}
+          className={running ? UI_ACTION_BTN_LIVE : UI_ACTION_BTN_PRIMARY}
         >
           {running ? 'Stop' : starting ? '…' : 'Start'}
         </button>
-        <details className="text-xs text-blue-800">
+        <details className={UI_HINT_TEXT}>
           <summary className="cursor-pointer text-blue-700 hover:text-blue-900">
-            {refreshIntervalMs < 1000 ? `${refreshIntervalMs}ms` : '1s'}
+            Refresh: {refreshIntervalMs < 1000 ? `${refreshIntervalMs}ms` : '1s'}
           </summary>
           <div className="mt-1 flex flex-wrap gap-1">
             {liveCaptionRefreshIntervals.map((interval) => (
@@ -70,10 +78,8 @@ export const LearnLiveCaptionControl: React.FC<LearnLiveCaptionControlProps> = (
                 type="button"
                 onClick={() => onRefreshIntervalChange(interval)}
                 className={[
-                  'rounded px-1.5 py-0.5 text-xs font-bold transition-colors',
-                  refreshIntervalMs === interval
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-blue-50 text-blue-800 hover:bg-blue-100',
+                  UI_ACTION_BTN,
+                  refreshIntervalMs === interval ? '!bg-blue-600 !text-white !border-blue-800' : '',
                 ].join(' ')}
               >
                 {interval < 1000 ? `${interval}ms` : '1s'}
@@ -84,11 +90,7 @@ export const LearnLiveCaptionControl: React.FC<LearnLiveCaptionControlProps> = (
         </details>
       </div>
 
-      {error && (
-        <div className="mt-1.5 rounded border border-red-200 bg-red-50 px-2 py-1 text-[11px] text-red-800">
-          {error}
-        </div>
-      )}
-    </div>
+      {error && <div className={`mt-2 ${UI_ERROR_BANNER}`}>{error}</div>}
+    </MiteiruPanel>
   );
 };

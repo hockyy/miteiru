@@ -34,6 +34,14 @@ import {speechLanguageCodes} from "../languages/manifest";
 import useLiveCaptions from "../hooks/useLiveCaptions";
 import {LiveCaptionOverlay} from "../components/Subtitle/LiveCaptionOverlay";
 import {LearnLiveCaptionControl} from "../components/Learn/LearnLiveCaptionControl";
+import {
+  MiteiruActionBar,
+  MiteiruPanel,
+  MiteiruSubtitleSlot,
+  UI_COLUMN_BG,
+  UI_SELECT,
+  UI_TEXTAREA,
+} from "../components/UI";
 
 function Learn() {
   const {
@@ -355,25 +363,22 @@ function Learn() {
 
             {/* Middle Column - Main Content */}
             <div 
-              className="flex flex-col overflow-y-auto bg-blue-50"
+              className={`flex flex-col overflow-y-auto ${UI_COLUMN_BG}`}
               style={{ width: `${middleColumnWidth}%` }}
             >
-              <div className="flex-1 p-4 space-y-4">
-                {/* Text Input Section */}
-                <div>
-                  <h3 className="text-black font-bold text-lg mb-3">Enter Text (one sentence per line)</h3>
+              <div className="flex-1 space-y-3 p-3">
+                <MiteiruPanel label="Enter text (one sentence per line)">
                   <textarea
-                      className={"text-black w-full p-4 border-2 border-blue-400 rounded-lg min-h-[150px] resize-y focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors"}
-                      value={sentenceInput}
-                      onChange={val => {
-                        setSentenceInput(val.target.value)
-                        setSentences(splitIntoLines(val.target.value))
-                      }}
-                      placeholder="Enter your text here. Each line will be treated as a separate sentence."
+                    className={UI_TEXTAREA}
+                    value={sentenceInput}
+                    onChange={val => {
+                      setSentenceInput(val.target.value)
+                      setSentences(splitIntoLines(val.target.value))
+                    }}
+                    placeholder="Each line becomes a separate sentence."
                   />
-                </div>
+                </MiteiruPanel>
 
-                {/* Current Sentence Display */}
                 <LearnLiveCaptionControl
                   supported={liveCaptions.supported}
                   running={liveCaptions.running}
@@ -385,112 +390,109 @@ function Learn() {
                   onToggle={liveCaptions.toggle}
                 />
 
-                <style dangerouslySetInnerHTML={{__html: `
-                  .learn-subtitle-container > div {
-                    position: relative !important;
-                    width: 100% !important;
-                    top: auto !important;
-                    bottom: auto !important;
-                  }
-                `}} />
-
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-400 rounded-lg p-4 shadow-md">
-                  <h3 className="text-black font-bold text-base mb-2 text-center">Current Sentence</h3>
-                  <div className="relative flex justify-center items-center min-h-[60px]">
-                    <div className="learn-subtitle-container w-full">
-                      <PrimarySubtitle
-                          setMeaning={setMeaning}
-                          currentTime={currentTime}
-                          subtitle={primarySub}
-                          shift={0}
-                          subtitleStyling={primaryStyling}
-                          getLearningStateClass={getLearningStateClass}
-                          changeLearningState={changeLearningState}
-                          setRubyCopyContent={setRubyCopyContent}
-                      />
-                    </div>
-                  </div>
-                </div>
+                <MiteiruPanel>
+                  <MiteiruSubtitleSlot>
+                    <PrimarySubtitle
+                      setMeaning={setMeaning}
+                      currentTime={currentTime}
+                      subtitle={primarySub}
+                      shift={0}
+                      subtitleStyling={primaryStyling}
+                      getLearningStateClass={getLearningStateClass}
+                      changeLearningState={changeLearningState}
+                      setRubyCopyContent={setRubyCopyContent}
+                    />
+                  </MiteiruSubtitleSlot>
+                </MiteiruPanel>
 
                 {liveCaptions.running && (
-                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400 rounded-lg p-4 shadow-md">
-                    <div className="mb-2 flex items-center justify-between gap-2">
-                      <h3 className="text-black font-bold text-base text-center flex-1">Live Caption</h3>
+                  <MiteiruPanel
+                    variant="live"
+                    headerAction={
                       <Button
-                        type="secondary"
+                        type="link"
+                        size="small"
                         onPress={handleCopyLiveCaptionToAnalyzer}
                         disabled={!visibleLiveCaption}
                       >
                         → Analyzer
                       </Button>
-                    </div>
-                    <div className="relative flex justify-center items-center min-h-[60px]">
-                      <div className="learn-subtitle-container w-full">
-                        {visibleLiveCaption ? (
-                          <LiveCaptionOverlay
-                            caption={liveCaptions.caption}
-                            subtitleStyling={primaryStyling}
-                            lang={lang}
-                            tokenizeMiteiru={tokenizeMiteiru}
-                            setMeaning={setMeaning}
-                            getLearningStateClass={getLearningStateClass}
-                            changeLearningState={changeLearningState}
-                            setRubyCopyContent={setRubyCopyContent}
-                          />
-                        ) : (
-                          <div className="text-sm text-green-700 text-center italic">
-                            Waiting for live captions...
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                    }
+                  >
+                    <MiteiruSubtitleSlot padX>
+                      {visibleLiveCaption ? (
+                        <LiveCaptionOverlay
+                          caption={liveCaptions.caption}
+                          subtitleStyling={primaryStyling}
+                          lang={lang}
+                          tokenizeMiteiru={tokenizeMiteiru}
+                          setMeaning={setMeaning}
+                          getLearningStateClass={getLearningStateClass}
+                          changeLearningState={changeLearningState}
+                          setRubyCopyContent={setRubyCopyContent}
+                        />
+                      ) : (
+                        <div className="text-xs italic text-green-700 text-center">
+                          Waiting for live captions…
+                        </div>
+                      )}
+                    </MiteiruSubtitleSlot>
+                  </MiteiruPanel>
                 )}
 
-                {/* Voice + Action Buttons */}
-                <div className="flex flex-wrap gap-2 justify-center items-center">
-                  <select
+                <MiteiruActionBar
+                  top={
+                    <select
                       value={selectedVoice}
                       onChange={(e) => setSelectedVoice(e.target.value)}
                       title="Voice selection"
-                      className="text-black text-xs py-1.5 px-2 border border-blue-400 rounded-md max-w-[180px] focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-300 transition-colors cursor-pointer"
-                  >
-                    <option value="">Default Voice</option>
-                    {filteredVoices.map((voice) => (
+                      className={UI_SELECT}
+                    >
+                      <option value="">Default Voice</option>
+                      {filteredVoices.map((voice) => (
                         <option key={voice.name} value={voice.name}>
                           {`${voice.name} (${voice.lang})`}
                         </option>
-                    ))}
-                  </select>
-                      <Button type={'primary'} onPress={() => handleTranslate(true)}>
-                        Translate Now
-                      </Button>
-                      <Button type={isAutoTranslating ? 'secondary' : 'primary'}
-                                     onPress={toggleAutoTranslate}>
-                        {isAutoTranslating ? 'Stop Auto Translate' : 'Start Auto Translate'}
-                      </Button>
-                      <Button
-                          type={'primary'}
-                          onPress={handleSpeak}
-                          disabled={!supported || speaking}
-                      >
-                        {speaking ? 'Speaking...' : <FaVolumeUp/>}
-                      </Button>
-                      <Button
-                          type={'primary'}
-                          onPress={handleAnalyzeSentence}
-                          disabled={isAnalyzing || !directInput.trim()}
-                      >
-                        {isAnalyzing ? 'Analyzing...' : '🤖 AI Analysis'}
-                      </Button>
-                      <Button
-                          type={'primary'}
-                          onPress={handleBuildAnkiCard}
-                          disabled={isBuildingAnkiCard || !directInput.trim() || !tokenizeMiteiru}
-                      >
-                        {isBuildingAnkiCard ? 'Building...' : '📇 Build Anki Card'}
-                      </Button>
-                    </div>
+                      ))}
+                    </select>
+                  }
+                >
+                  <Button type="primary" size="small" onPress={() => handleTranslate(true)}>
+                    Translate
+                  </Button>
+                  <Button
+                    type={isAutoTranslating ? 'secondary' : 'primary'}
+                    size="small"
+                    onPress={toggleAutoTranslate}
+                  >
+                    {isAutoTranslating ? 'Stop Auto' : 'Auto Translate'}
+                  </Button>
+                  <Button
+                    type="primary"
+                    size="small"
+                    onPress={handleSpeak}
+                    disabled={!supported || speaking}
+                  >
+                    {speaking ? '…' : <FaVolumeUp/>}
+                  </Button>
+                  <Button
+                    type="primary"
+                    size="small"
+                    onPress={handleAnalyzeSentence}
+                    disabled={isAnalyzing || !directInput.trim()}
+                  >
+                    {isAnalyzing ? '…' : '🤖 Analyze'}
+                  </Button>
+                  <Button
+                    type="primary"
+                    size="small"
+                    className="sm:col-span-2"
+                    onPress={handleBuildAnkiCard}
+                    disabled={isBuildingAnkiCard || !directInput.trim() || !tokenizeMiteiru}
+                  >
+                    {isBuildingAnkiCard ? 'Building…' : '📇 Build Anki'}
+                  </Button>
+                </MiteiruActionBar>
 
                 {/* Translation Display */}
                 {translation && (
@@ -533,28 +535,32 @@ function Learn() {
             >
               {/* Sentences Section */}
               <div 
-                className="flex flex-col overflow-hidden"
+                className="flex min-h-0 flex-col overflow-hidden p-2"
                 style={{ height: hasBottomPanel ? `${sentencesSectionHeight}%` : '100%' }}
               >
-                <div className="p-4 border-b-2 border-blue-400 bg-blue-100 flex-shrink-0">
-                  <h3 className="text-black font-bold text-lg">Sentences</h3>
-                  {sentences.length > 0 && (
-                    <p className="text-sm text-blue-600 mt-1">{sentences.length} sentence{sentences.length !== 1 ? 's' : ''}</p>
-                  )}
-                </div>
-                <div className="flex-1 overflow-y-auto">
+                <MiteiruPanel
+                  fill
+                  label="Sentences"
+                  headerAction={
+                    sentences.length > 0 ? (
+                      <span className="text-[11px] font-semibold normal-case tracking-normal text-blue-800">
+                        {sentences.length} line{sentences.length !== 1 ? 's' : ''}
+                      </span>
+                    ) : undefined
+                  }
+                  className="h-full"
+                  bodyClassName="p-2"
+                >
                   {sentences.length > 1 ? (
-                    <div className="p-4">
-                      <SentenceList sentences={sentences} onSentenceClick={handleSentenceClick}/>
-                    </div>
+                    <SentenceList sentences={sentences} onSentenceClick={handleSentenceClick}/>
                   ) : (
-                    <div className="p-8 text-center text-gray-400">
-                      <div className="text-4xl mb-2">📝</div>
+                    <div className="py-8 text-center text-blue-400">
+                      <div className="mb-2 text-4xl">📝</div>
                       <div className="text-sm">No sentences yet</div>
-                      <div className="text-xs mt-1">Enter text with multiple lines</div>
+                      <div className="mt-1 text-xs">Enter text with multiple lines</div>
                     </div>
                   )}
-                </div>
+                </MiteiruPanel>
               </div>
 
               {/* Vertical Divider */}
@@ -574,7 +580,7 @@ function Learn() {
 
               {hasBottomPanel && (
                 <div
-                  className="flex flex-col overflow-hidden"
+                  className="flex min-h-0 flex-col overflow-hidden p-2 pt-0"
                   style={{ height: `${100 - sentencesSectionHeight}%` }}
                 >
                   {hasAnkiBuilderPanel ? (

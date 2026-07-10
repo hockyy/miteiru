@@ -9,7 +9,7 @@ import Toggle from "./Toggle";
 import {Button} from "../Utils/Button";
 import {GistManager} from "../Data/GistManager";
 import {SubtitleMode} from "../../utils/utils";
-import {SidebarSection, SidebarSettingRow, SidebarShell} from "./SidebarShell";
+import {SidebarSection, SidebarSettingRow, SidebarShell, SIDEBAR_FIELD_INPUT} from "./SidebarShell";
 import {useUserNotes} from "../../hooks/useUserNotes";
 import {loadGrammarNotesFromStore} from "../../hooks/useGrammarNotes";
 import {languageCodes} from "../../languages/manifest";
@@ -193,7 +193,7 @@ export const StylingBox = ({
       }
     })
   }, [lang]);
-  return <div className={"w-full flex flex-col content-start gap-3 unselectable text-sm text-white/85"}>
+  return <div className={"w-full min-w-0 flex flex-col content-start gap-3 unselectable text-sm text-white/85"}>
     {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
       <Toggle isChecked={subtitleStyling.showFurigana} onChange={cjkShowFuriganaHandler}/>
       {subtitleName} Show Furigana
@@ -222,14 +222,14 @@ export const StylingBox = ({
       <Toggle isChecked={subtitleStyling.learning} onChange={cjkUseLearningHandler}/>
       {subtitleName} Use learning styling
     </div>}
-    {subtitleName == "CJK" && <div className={"flex flex-row gap-2 w-full"}>
+    {subtitleName == "CJK" && <div className={"flex min-w-0 flex-row gap-2 w-full"}>
       <Button
           type={"primary"}
-          className={"w-full"}
+          className={"miteiru-btn--fill"}
           onPress={saveLearningHandler}>Save Learning</Button>
       <Button
           type={"secondary"}
-          className={"w-full"}
+          className={"miteiru-btn--fill"}
           onPress={loadLearningHandler}>Load Learning</Button>
     </div>}
     {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
@@ -239,7 +239,7 @@ export const StylingBox = ({
     <div className={"flex flex-row items-center gap-3"}>
       Font Family &nbsp;
       <input
-          className={"p-3 text-black"}
+          className={SIDEBAR_FIELD_INPUT}
           value={subtitleStyling.text.fontFamily}
           onChange={subtitleFontFamilyHandler}
       />
@@ -375,14 +375,14 @@ export const StylingBox = ({
           setSubtitleStyling(defaultStyling)
         }}
     >Reset</Button>
-    <div className={"flex flex-row gap-2 w-full"}>
+    <div className={"flex min-w-0 flex-row gap-2 w-full"}>
       <Button
           type={"primary"}
-          className={"w-full"}
+          className={"miteiru-btn--fill"}
           onPress={loadHandler}>Import</Button>
       <Button
           type={"secondary"}
-          className={"w-full"}
+          className={"miteiru-btn--fill"}
           onPress={saveHandler}>Export
       </Button>
     </div>
@@ -547,7 +547,7 @@ export const Sidebar = ({
       </div>
       <Button
             type={"secondary"}
-            className={"w-full"}
+            className={"w-full min-w-0 max-w-full"}
             onPress={exportHufHandler}>Export Primary as HUF</Button>
     </SidebarSection>
 
@@ -563,7 +563,7 @@ export const Sidebar = ({
     <SidebarSection title="Cloud Sync">
       <Button
           type={"secondary"}
-          className={"w-full"}
+          className={"w-full min-w-0 max-w-full"}
           onPress={exportAllAnkiCardsHandler}
       >
         Export All Anki Cards
