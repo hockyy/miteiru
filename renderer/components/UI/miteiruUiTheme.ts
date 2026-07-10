@@ -37,6 +37,9 @@ export const UI_PAGE_BG =
 /** Learn / workspace column backdrop. */
 export const UI_COLUMN_BG = 'bg-blue-100';
 
+/** Learn left column (AI translation + grammar). */
+export const UI_STUDY_COLUMN_BG = 'bg-gradient-to-br from-purple-50 to-pink-50';
+
 /** Top-level card (home menu shell). */
 export const UI_SHELL =
   'w-full overflow-hidden rounded-2xl border-2 border-blue-700 bg-blue-100 shadow-[3px_3px_0_0_#1d4ed8]';

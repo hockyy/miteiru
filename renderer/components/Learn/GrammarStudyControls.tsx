@@ -2,6 +2,7 @@
 import React, { useCallback } from 'react';
 import { Button } from '../Utils/Button';
 import { GrammarLevelFilter, JLPT_LEVELS } from '../../types/jpGrammar';
+import { MiteiruPanel, UI_SELECT } from '../UI';
 
 interface GrammarStudyControlsProps {
   levelFilter: GrammarLevelFilter;
@@ -28,24 +29,22 @@ export const GrammarStudyControls: React.FC<GrammarStudyControlsProps> = ({
   );
 
   return (
-    <div className="space-y-3 rounded-lg border-2 border-indigo-200 bg-indigo-50/60 p-3">
-      <div className="flex items-center justify-between gap-2">
-        <h4 className="text-sm font-bold text-indigo-900">Grammar study</h4>
-        <span className="text-xs text-indigo-600">
+    <MiteiruPanel
+      label="Grammar study"
+      headerAction={
+        <span className="text-[11px] font-semibold normal-case tracking-normal text-blue-800">
           {isCatalogLoading ? 'Loading…' : `${filteredCount} points`}
         </span>
-      </div>
-
+      }
+    >
       <div className="flex flex-wrap items-center gap-2">
-        <label className="text-xs font-semibold text-indigo-800" htmlFor="grammar-level-filter">
-          Level
-        </label>
         <select
           id="grammar-level-filter"
           value={levelFilter}
           onChange={handleLevelChange}
           disabled={isCatalogLoading}
-          className="rounded border-2 border-indigo-300 bg-white px-2 py-1 text-xs text-black focus:border-indigo-500 focus:outline-none"
+          className={UI_SELECT}
+          aria-label="JLPT level"
         >
           <option value="all">All levels</option>
           {JLPT_LEVELS.map((level) => (
@@ -57,12 +56,13 @@ export const GrammarStudyControls: React.FC<GrammarStudyControlsProps> = ({
 
         <Button
           type="primary"
+          size="small"
           onPress={onPickRandom}
           disabled={isCatalogLoading || isPicking || filteredCount === 0}
         >
           {isPicking ? 'Picking…' : 'Random grammar'}
         </Button>
       </div>
-    </div>
+    </MiteiruPanel>
   );
 };
