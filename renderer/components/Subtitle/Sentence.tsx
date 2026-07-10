@@ -1,6 +1,7 @@
 import parse from "html-react-parser";
 import styled from "styled-components";
 import { CJKStyling, defaultLearningColorStyling } from "../../utils/CJKStyling";
+import { getTextShadowFromStroke } from "../../utils/subtitleStroke";
 import React, { ReactNode, useCallback, useEffect, useState } from "react";
 import { isMixed, toRomaji } from "wanakana"
 import { v4 as uuidv4 } from 'uuid';
@@ -11,7 +12,21 @@ const writeClipboardText = (value: string) => {
   });
 };
 
+const strokeShadow = (width: string, color: string) => getTextShadowFromStroke(width, color);
+
+const disableWebkitStroke = `
+  -webkit-text-stroke-width: 0;
+  -webkit-text-stroke-color: transparent;
+`;
+
 const StyledSentence = styled.button<{ subtitleStyling: CJKStyling }>`
+  ${disableWebkitStroke}
+  text-shadow: ${props => strokeShadow(props.subtitleStyling.stroke.width, props.subtitleStyling.stroke.color)};
+
+  ruby, rt {
+    ${disableWebkitStroke}
+  }
+
   ruby {
     -webkit-text-fill-color: ${props => props.subtitleStyling.text.color};
   }
@@ -50,16 +65,23 @@ const StyledSentence = styled.button<{ subtitleStyling: CJKStyling }>`
 
   &:hover, &:hover ruby {
     -webkit-text-fill-color: ${props => props.subtitleStyling.text.hoverColor};
-    -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
+    text-shadow: ${props => strokeShadow(props.subtitleStyling.stroke.width, props.subtitleStyling.stroke.hoverColor)};
   }
 
   &:hover rt.internalMeaning {
     -webkit-text-fill-color: ${props => props.subtitleStyling.textMeaning?.hoverColor ?? props.subtitleStyling.text.hoverColor};
-    -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
+    text-shadow: ${props => strokeShadow(props.subtitleStyling.stroke.width, props.subtitleStyling.stroke.hoverColor)};
   }
 `
 
 const StyledChineseSentence = styled.button<{ subtitleStyling: CJKStyling }>`
+  ${disableWebkitStroke}
+  text-shadow: ${props => strokeShadow(props.subtitleStyling.stroke.width, props.subtitleStyling.stroke.color)};
+
+  ruby, rt {
+    ${disableWebkitStroke}
+  }
+
   ruby {
     -webkit-text-fill-color: ${props => props.subtitleStyling.text.color};
   }
@@ -98,39 +120,30 @@ const StyledChineseSentence = styled.button<{ subtitleStyling: CJKStyling }>`
 
   &:hover ruby, &:hover rt {
     -webkit-text-fill-color: ${props => props.subtitleStyling.text.hoverColor};
-    -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
+    text-shadow: ${props => strokeShadow(props.subtitleStyling.stroke.width, props.subtitleStyling.stroke.hoverColor)};
   }
 
   &:hover .state0 {
     -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[0].hoverColor};
-    -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
+    text-shadow: ${props => strokeShadow(props.subtitleStyling.stroke.width, props.subtitleStyling.stroke.hoverColor)};
   }
 
   &:hover .state1 {
     -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[1].hoverColor};
-    -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
+    text-shadow: ${props => strokeShadow(props.subtitleStyling.stroke.width, props.subtitleStyling.stroke.hoverColor)};
   }
 
   &:hover .state2 {
     -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[2].hoverColor};
-    -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
+    text-shadow: ${props => strokeShadow(props.subtitleStyling.stroke.width, props.subtitleStyling.stroke.hoverColor)};
   }
 
   &:hover rt.internalMeaning {
     -webkit-text-fill-color: ${props => props.subtitleStyling.textMeaning?.hoverColor ?? props.subtitleStyling.text.hoverColor};
-    -webkit-text-stroke-color: ${props => props.subtitleStyling.stroke.hoverColor};
+    text-shadow: ${props => strokeShadow(props.subtitleStyling.stroke.width, props.subtitleStyling.stroke.hoverColor)};
   }
 
 `
-
-const getTextShadowFromStroke = (strokeWidth: string, color: string) => {
-  const sw = parseFloat(strokeWidth);
-  if (!Number.isFinite(sw) || sw <= 0) {
-    return 'none';
-  }
-  const scale = Math.max(0.5, sw / 0.22);
-  return `0 ${scale}px ${2 * scale}px ${color}, 0 0 ${4 * scale}px ${color}, 0 ${2 * scale}px ${4 * scale}px ${color}`;
-};
 
 interface SentenceParam {
   origin: string,
@@ -223,9 +236,6 @@ export const JapaneseSentence = ({
     <ruby style={{
       rubyPosition: subtitleStyling.positionMeaningTop ? "over" : "under",
       WebkitTextFillColor: wordMeaning ? subtitleStyling.textMeaning.color : '',
-      WebkitTextStrokeColor: subtitleStyling.stroke.color,
-      WebkitTextStrokeWidth: subtitleStyling.stroke.width,
-      textShadow: getTextShadowFromStroke(subtitleStyling.stroke.width, subtitleStyling.stroke.color),
     }}>
       {/* @ts-expect-error rb wtf eslint*/}
       <rb>{separationContent}</rb>
@@ -395,9 +405,6 @@ export const ChineseSentence = ({
     <ruby style={{
       rubyPosition: subtitleStyling.positionMeaningTop ? "over" : "under",
       WebkitTextFillColor: wordMeaning ? subtitleStyling.textMeaning.color : '',
-      WebkitTextStrokeColor: subtitleStyling.stroke.color,
-      WebkitTextStrokeWidth: subtitleStyling.stroke.width,
-      textShadow: getTextShadowFromStroke(subtitleStyling.stroke.width, subtitleStyling.stroke.color),
     }}>
       {/* @ts-expect-error rb wtf eslint*/}
       <rb>{separationContent}</rb>
