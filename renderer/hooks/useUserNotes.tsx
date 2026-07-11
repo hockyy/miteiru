@@ -80,6 +80,20 @@ export const normalizeUserNoteEntry = (value: unknown): MiteiruUserEntry => {
   };
 };
 
+/** True when a saved note has any exportable study content. */
+export const hasUserNoteContent = (entry: MiteiruUserEntry | null | undefined): boolean => {
+  if (!entry) {
+    return false;
+  }
+  return Boolean(
+    entry.definition?.trim()
+    || entry.usageNote?.trim()
+    || entry.funFact?.trim()
+    || entry.examples?.length
+    || entry.relatedTerms?.length,
+  );
+};
+
 export const useUserNotes = () => {
   const [userNotes, setUserNotes] = useState<UserNotesDatabase>({});
   const [isLoading, setIsLoading] = useState(true);
