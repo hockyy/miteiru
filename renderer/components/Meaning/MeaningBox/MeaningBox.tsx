@@ -120,7 +120,6 @@ const MeaningBox = ({
     tokenizeMiteiru,
     meaningContent,
     romajiedData,
-    rubyHtmlContent,
     userNote,
   });
 

@@ -57,7 +57,7 @@ export const useExportAllAnkiCards = ({ lang, tokenizeMiteiru }: UseExportAllAnk
           loadGrammarNotesFromStore(),
         ]);
         const grammarCards = collectGrammarAnkiCards(catalog.entries, grammarNotes, lang);
-        grammarPointCount = grammarCards.length / 2;
+        grammarPointCount = grammarCards.length;
         cards.push(...grammarCards);
       }
 

@@ -83,6 +83,14 @@ export const getReadingsFromRomajiedData = (romajiedData) => {
   }));
 };
 
+/** When MeaningBox shows multiple headword variants, Anki export uses the first only. */
+export const getPrimaryRomajiedVariant = (romajiedData) => {
+  if (!Array.isArray(romajiedData) || romajiedData.length === 0) {
+    return [];
+  }
+  return [romajiedData[0]];
+};
+
 export const buildRubyHtmlFromRomajiedData = (romajiedData) => {
   let rubyHtml = '';
   romajiedData.forEach(({ romajied }) => {
@@ -115,12 +123,14 @@ export const buildRubyHtmlFromRomajiedData = (romajiedData) => {
 
 export const getRomajiedDataForMeaningContent = async (term, meaningContent, lang, tokenizeMiteiru) => {
   if (lang === videoConstants.japaneseLang) {
-    return await Promise.all(
-      meaningContent.single.map(async (val) => ({
-        key: val.key || val.text,
-        romajied: await tokenizeMiteiru(val.text)
-      }))
-    );
+    const first = meaningContent.single?.[0];
+    if (!first?.text) {
+      return [];
+    }
+    return [{
+      key: first.key || first.text,
+      romajied: await tokenizeMiteiru(first.text),
+    }];
   }
 
   if (lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang || lang === videoConstants.vietnameseLang) {

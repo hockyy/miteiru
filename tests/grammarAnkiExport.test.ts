@@ -38,14 +38,13 @@ describe('grammarAnkiExport', () => {
     assert.equal(getGrammarDeckName('ja'), 'Miteiru::Japanese::Grammar');
   });
 
-  it('builds reading and recall cards per grammar point', () => {
+  it('builds one Japanese-to-English card per grammar point', () => {
     const cards = buildAnkiCardsForGrammarEntry(sampleEntry, sampleNotes['N5-3'], 'ja');
-    assert.equal(cards.length, 2);
+    assert.equal(cards.length, 1);
     assert.equal(cards[0].deckName, 'Miteiru::Japanese::Grammar');
     assert.match(cards[0].front, /だけ/);
     assert.match(cards[0].back, /only; just/);
-    assert.match(cards[1].front, /only; just/);
-    assert.match(cards[1].back, /だけ/);
+    assert.doesNotMatch(cards[0].front, /only; just/);
   });
 
   it('collects cards only for grammar ids with AI notes in catalog', () => {
@@ -55,6 +54,6 @@ describe('grammarAnkiExport', () => {
       'N4-1': sampleNotes['N5-3'],
     }, 'ja');
 
-    assert.equal(cards.length, 2);
+    assert.equal(cards.length, 1);
   });
 });

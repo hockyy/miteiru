@@ -15,7 +15,6 @@ type UseMeaningAnkiExportParams = {
   tokenizeMiteiru: (text: string) => Promise<unknown>;
   meaningContent: MeaningContentState;
   romajiedData: RomajiedGroup[];
-  rubyHtmlContent: string;
   userNote: MiteiruUserEntry | null;
 };
 
@@ -26,7 +25,6 @@ export const useMeaningAnkiExport = ({
   tokenizeMiteiru,
   meaningContent,
   romajiedData,
-  rubyHtmlContent,
   userNote,
 }: UseMeaningAnkiExportParams) => {
   const [isExportingAnki, setIsExportingAnki] = useState(false);
@@ -42,7 +40,6 @@ export const useMeaningAnkiExport = ({
         userNote,
         meaningContent,
         romajiedData,
-        rubyHtml: rubyHtmlContent,
       });
       const result = await openAnkiCards(cards, safeAnkiFilename(meaning), confirmExport);
 
@@ -76,7 +73,6 @@ export const useMeaningAnkiExport = ({
     meaning,
     meaningContent,
     romajiedData,
-    rubyHtmlContent,
     tokenizeMiteiru,
     userNote,
   ]);

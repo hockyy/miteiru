@@ -5,6 +5,10 @@ import {
   getAnkiDeckNames,
   hasAnkiNoteContent,
 } from '../renderer/components/Meaning/ankiExport';
+import {
+  buildRubyHtmlFromRomajiedData,
+  getPrimaryRomajiedVariant,
+} from '../renderer/components/Meaning/meaningEntries';
 
 const meaningContent = {
   content: '食べる',
@@ -13,7 +17,13 @@ const meaningContent = {
 
 const romajiedData = [{
   key: 0,
-  romajied: [{ origin: '食べる', hiragana: 'たべる' }],
+  romajied: [{
+    hiragana: 'たべる',
+    separation: [
+      { main: '食', hiragana: 'た' },
+      { main: 'べる', hiragana: 'べる' },
+    ],
+  }],
 }];
 
 const userNote = {
@@ -53,7 +63,6 @@ describe('ankiExport', () => {
       userNote,
       meaningContent,
       romajiedData,
-      rubyHtml: '<ruby>食<rt>た</rt>べる</ruby>',
     });
 
     assert.equal(cards.length, 1);
@@ -72,7 +81,6 @@ describe('ankiExport', () => {
       userNote: null,
       meaningContent,
       romajiedData,
-      rubyHtml: '<ruby>食<rt>た</rt>べる</ruby>',
     });
 
     assert.equal(cards.length, 2);
@@ -81,4 +89,41 @@ describe('ankiExport', () => {
     assert.match(cards[0].front, /<ruby>/);
     assert.doesNotMatch(cards[1].front, /<ruby>/);
   });
+
+  it('uses only the first MeaningBox headword variant for ruby front', async () => {
+    const multiVariantRomajiedData = [
+      {
+        key: 0,
+        romajied: [{
+          separation: [{ main: '抑', hiragana: 'そもそも' }],
+        }],
+      },
+      {
+        key: 1,
+        romajied: [{
+          separation: [
+            { main: '抑', hiragana: 'そもそも' },
+            { main: '々', hiragana: '々' },
+          ],
+        }],
+      },
+    ];
+
+    const cards = await createAnkiCardsForTerm({
+      term: '抑',
+      lang: 'ja',
+      tokenizeMiteiru: async () => [],
+      userNote: null,
+      meaningContent: {
+        content: '抑',
+        single: [{ text: '抑' }, { text: '抑々' }],
+      },
+      romajiedData: multiVariantRomajiedData,
+    });
+
+    const expectedRuby = buildRubyHtmlFromRomajiedData(getPrimaryRomajiedVariant(multiVariantRomajiedData));
+    assert.match(cards[0].front, new RegExp(expectedRuby.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+    assert.doesNotMatch(cards[0].front, /々/);
+  });
 });
+ 
