@@ -1,8 +1,12 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { LearningStateType } from '../types';
 import { LeftSidebarShell } from './SidebarShell';
 import { VocabWordCard } from './VocabWordCard';
 import { getVocabReadingPreview } from './vocabReadingPreview';
+import { getVocabNotePreview } from './vocabNotePreview';
+import { hasUserNoteContent, useUserNotes } from '../../hooks/useUserNotes';
+import { useStoreData } from '../../hooks/useStoreData';
+import { generateUserNoteWithAI } from '../../utils/generateUserNoteWithAI';
 
 type VocabEntry = [string, LearningStateType];
 
@@ -30,7 +34,11 @@ const VocabSidebar = ({
   const [sortedVocab, setSortedVocab] = useState<VocabEntry[]>([]);
   const [hoveredWord, setHoveredWord] = useState<string | null>(null);
   const [tokenizedWord, setTokenizedWord] = useState<Record<string, unknown>[] | null>(null);
+  const [generatingWord, setGeneratingWord] = useState<string | null>(null);
   const containerRef = useRef<HTMLElement>(null);
+  const { userNotes, setUserNote } = useUserNotes();
+  const [openRouterApiKey] = useStoreData('openrouter.apiKey', '');
+  const [openRouterModel] = useStoreData('openrouter.model', 'z-ai/glm-5.2:nitro');
 
   const scrollToTop = useCallback(() => {
     containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
@@ -61,6 +69,11 @@ const VocabSidebar = ({
   useEffect(() => {
     loadVocabulary();
   }, [lang, loadVocabulary, refreshTrigger]);
+
+  const notesCount = useMemo(
+    () => sortedVocab.filter(([word]) => hasUserNoteContent(userNotes[word])).length,
+    [sortedVocab, userNotes],
+  );
 
   const findClosestWord = useCallback(() => {
     const now = Date.now();
@@ -95,6 +108,24 @@ const VocabSidebar = ({
     setTokenizedWord(null);
   }, []);
 
+  const handleGenerateNote = useCallback(async (word: string) => {
+    setGeneratingWord(word);
+    try {
+      const entry = await generateUserNoteWithAI({
+        term: word,
+        lang,
+        openRouterApiKey,
+        openRouterModel,
+      });
+      await setUserNote(word, entry);
+    } catch (error) {
+      console.error('AI note generation failed:', error);
+      alert(`Failed to generate note: ${(error as Error).message}`);
+    } finally {
+      setGeneratingWord(null);
+    }
+  }, [lang, openRouterApiKey, openRouterModel, setUserNote]);
+
   const renderReadingPreview = useCallback(() => {
     if (!tokenizedWord || !Array.isArray(tokenizedWord)) {
       return null;
@@ -110,6 +141,14 @@ const VocabSidebar = ({
     {} as Record<number, number>,
   );
 
+  const subtitleParts = [
+    lang,
+    `${sortedVocab.length} word${sortedVocab.length === 1 ? '' : 's'}`,
+  ];
+  if (notesCount > 0) {
+    subtitleParts.push(`${notesCount} with AI notes`);
+  }
+
   return (
     <LeftSidebarShell
       showSidebar={showVocabSidebar}
@@ -118,7 +157,7 @@ const VocabSidebar = ({
       onScrollTop={scrollToTop}
       onScrollBottom={scrollToBottom}
       title="Vocabulary"
-      subtitle={`${lang} · ${sortedVocab.length} word${sortedVocab.length === 1 ? '' : 's'}`}
+      subtitle={subtitleParts.join(' · ')}
     >
       {sortedVocab.length > 0 && (
         <div className="mb-4 flex flex-wrap gap-1.5">
@@ -136,6 +175,11 @@ const VocabSidebar = ({
               </span>
             );
           })}
+          {notesCount > 0 && (
+            <span className="rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-200">
+              {notesCount} AI notes
+            </span>
+          )}
         </div>
       )}
 
@@ -147,19 +191,28 @@ const VocabSidebar = ({
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-1 pb-6">
-          {sortedVocab.map(([word, state]) => (
-            <VocabWordCard
-              key={word}
-              word={word}
-              state={state}
-              isHovered={hoveredWord === word}
-              readingPreview={hoveredWord === word ? renderReadingPreview() : null}
-              onClick={() => setMeaning(word)}
-              onMouseEnter={() => handleMouseEnter(word)}
-              onMouseLeave={handleMouseLeave}
-            />
-          ))}
+        <div className="flex flex-col gap-2 pb-6">
+          {sortedVocab.map(([word, state]) => {
+            const userNote = userNotes[word] ?? null;
+            const hasNotes = hasUserNoteContent(userNote);
+
+            return (
+              <VocabWordCard
+                key={word}
+                word={word}
+                state={state}
+                isHovered={hoveredWord === word}
+                readingPreview={hoveredWord === word ? renderReadingPreview() : null}
+                hasNotes={hasNotes}
+                notePreview={getVocabNotePreview(userNote)}
+                isGeneratingNote={generatingWord === word}
+                onClick={() => setMeaning(word)}
+                onGenerateNote={() => handleGenerateNote(word)}
+                onMouseEnter={() => handleMouseEnter(word)}
+                onMouseLeave={handleMouseLeave}
+              />
+            );
+          })}
         </div>
       )}
     </LeftSidebarShell>

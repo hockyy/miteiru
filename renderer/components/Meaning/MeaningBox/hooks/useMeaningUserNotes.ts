@@ -1,10 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useStoreData } from '../../../../hooks/useStoreData';
-import {
-  buildUserNoteSystemPrompt,
-  buildUserNoteUserPrompt,
-  parseUserNoteAiResponse,
-} from '../../../../utils/aiUserNotePrompts';
+import { generateUserNoteWithAI } from '../../../../utils/generateUserNoteWithAI';
 import type { MiteiruUserEntry } from '../../../../hooks/useUserNotes';
 
 export type UserNotesApi = Pick<
@@ -52,30 +48,12 @@ export const useMeaningUserNotes = (
 
     setIsGeneratingNote(true);
     try {
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${openRouterApiKey}`,
-          'HTTP-Referer': 'https://github.com/hockyy/miteiru',
-          'X-Title': 'Miteiru',
-        },
-        body: JSON.stringify({
-          model: openRouterModel,
-          messages: [
-            { role: 'system', content: buildUserNoteSystemPrompt(lang) },
-            { role: 'user', content: buildUserNoteUserPrompt(meaning, lang) },
-          ],
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`API request failed: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const content = data.choices?.[0]?.message?.content || '';
-      await setUserNote(meaning, parseUserNoteAiResponse(content));
+      await setUserNote(meaning, await generateUserNoteWithAI({
+        term: meaning,
+        lang,
+        openRouterApiKey,
+        openRouterModel,
+      }));
     } catch (error) {
       console.error('AI note generation failed:', error);
       alert(`Failed to generate note: ${(error as Error).message}`);
