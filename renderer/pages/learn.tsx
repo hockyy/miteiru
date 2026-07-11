@@ -198,7 +198,7 @@ function Learn() {
     updateDraft: updateAnkiDraft,
     openAnkiCard,
     clearAnkiCard,
-  } = useSentenceAnki({ openRouterApiKey, openRouterModel, lang, tokenizeMiteiru });
+  } = useSentenceAnki({ openRouterApiKey, openRouterModel, lang });
 
   const hasBottomPanel = hasAnalysisPanel || hasAnkiBuilderPanel;
 
@@ -488,7 +488,7 @@ function Learn() {
                     size="small"
                     className="sm:col-span-2"
                     onPress={handleBuildAnkiCard}
-                    disabled={isBuildingAnkiCard || !directInput.trim() || !tokenizeMiteiru}
+                    disabled={isBuildingAnkiCard || !directInput.trim()}
                   >
                     {isBuildingAnkiCard ? 'Building…' : '📇 Build Anki'}
                   </Button>

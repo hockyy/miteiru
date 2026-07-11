@@ -2,11 +2,13 @@
 export interface SentenceAnkiBackContent {
   translation: string;
   note: string;
+  rubyHtml: string;
 }
 
 export const emptySentenceAnkiBackContent = (): SentenceAnkiBackContent => ({
   translation: '',
   note: '',
+  rubyHtml: '',
 });
 
 /** Editable sentence card draft shown in the Anki builder panel before export. */

@@ -114,7 +114,6 @@ const buildAnkiCardsForTerm = ({
   meaningContent,
   lang,
   userNote,
-  readings,
   rubyHtml
 }) => {
   const dictionaryDefinitions = getDictionaryDefinitions(meaningContent, lang);
@@ -123,7 +122,6 @@ const buildAnkiCardsForTerm = ({
   const funFact = userNote?.funFact?.trim() ? escapeHtml(userNote.funFact.trim()) : '';
   const examples = buildExamplesHtml(userNote?.examples || []);
   const relatedTerms = buildHtmlList(userNote?.relatedTerms || []);
-  const readingText = readings.length > 0 ? escapeHtml(readings.join(' / ')) : '';
   const usesNotes = hasAnkiNoteContent(userNote);
   const { readingDeckName, hardDeckName } = getAnkiDeckNames(lang, usesNotes);
 
@@ -140,16 +138,10 @@ const buildAnkiCardsForTerm = ({
   ].filter(Boolean).join('<hr>');
 
   const normalFront = [
-    `<div style="font-size: 2em;">${rubyHtml || escapeHtml(term)}</div>`,
-    readingText ? `<div>${readingText}</div>` : ''
+    `<div style="font-size: 2em;">${rubyHtml || escapeHtml(term)}</div>`
   ].filter(Boolean).join('<br>');
 
   const normalBack = studySections;
-
-  const hardBack = [
-    buildHtmlSection('Readings', readingText),
-    studySections,
-  ].filter(Boolean).join('<hr>');
 
   const readingCard = {
     cardId: getVariantAnkiCardId(term, meaningContent, lang, usesNotes ? 'notes' : 'reading'),
@@ -168,7 +160,7 @@ const buildAnkiCardsForTerm = ({
     {
       cardId: getVariantAnkiCardId(term, meaningContent, lang, 'hard'),
       front: `<div style="font-size: 2em;">${escapeHtml(term)}</div>`,
-      back: hardBack,
+      back: studySections,
       deckName: hardDeckName,
       tags: uniqueNonEmpty(['miteiru', lang, '', 'hard']).join(' ')
     }
@@ -191,36 +183,13 @@ const buildAnkiImportFile = (cards) => [
   }) => [cardId, front, back, deckName, tags].map(toAnkiTsvField).join('\t'))
 ].join('\n') + '\n';
 
-const previewHtml = (value) => String(value ?? '')
-  .replace(/<br\s*\/?>/gi, '\n')
-  .replace(/<hr\s*\/?>/gi, '\n---\n')
-  .replace(/<\/li>/gi, '\n')
-  .replace(/<li>/gi, '- ')
-  .replace(/<rt>(.*?)<\/rt>/gi, '($1)')
-  .replace(/<[^>]+>/g, '')
-  .replace(/&amp;/g, '&')
-  .replace(/&lt;/g, '<')
-  .replace(/&gt;/g, '>')
-  .replace(/&quot;/g, '"')
-  .replace(/&#39;/g, "'")
-  .replace(/\n{3,}/g, '\n\n')
-  .trim();
-
-const truncatePreview = (value, maxLength = 160) => {
-  const text = previewHtml(value).replace(/\s+/g, ' ').trim();
-  if (text.length <= maxLength) {
-    return text;
-  }
-  return `${text.slice(0, maxLength - 1)}…`;
-};
-
 export type AnkiExportMode = 'save' | 'open';
 
 export type AnkiCardPreview = {
   deckName: string;
   tags: string;
-  frontPreview: string;
-  backPreview: string;
+  frontHtml: string;
+  backHtml: string;
 };
 
 export type AnkiExportPreview = {
@@ -237,8 +206,8 @@ export const buildAnkiExportPreview = (cards, mode: AnkiExportMode = 'save'): An
   const previewCards = cards.slice(0, PREVIEW_CARD_LIMIT).map((card) => ({
     deckName: card.deckName,
     tags: card.tags,
-    frontPreview: truncatePreview(card.front, 120),
-    backPreview: truncatePreview(card.back, 180),
+    frontHtml: card.front || '',
+    backHtml: card.back || '',
   }));
 
   return {
@@ -260,11 +229,16 @@ export const safeAnkiSentenceFilename = (sentence) => {
   return `miteiru_anki_sentence_${snippet || 'sentence'}.tsv`;
 };
 
+export const getSentenceDeckName = (lang) => {
+  const languageName = getLanguageDisplayName(lang);
+  return `Miteiru::${languageName}::Sentence`;
+};
+
 const getSentenceAnkiCardId = (sentence, lang) => {
   const source = [
     lang,
     String(sentence).normalize('NFKC').trim(),
-    'sentence-hard',
+    'sentence',
   ].join('\u001f');
 
   return `miteiru:${lang || 'unknown'}:${uuidv5(`https://miteiru.hocky.id/anki/${source}`, uuidv5.URL)}`;
@@ -290,7 +264,6 @@ export const createInitialSentenceAnkiDraft = ({
   translation,
   note,
 }) => {
-  const languageName = getLanguageDisplayName(lang);
   return {
     sourceSentence,
     frontText: sourceSentence,
@@ -298,7 +271,7 @@ export const createInitialSentenceAnkiDraft = ({
     translation,
     note,
     lang,
-    deckName: `Miteiru::${languageName}::Hard`,
+    deckName: getSentenceDeckName(lang),
     cardId: getSentenceAnkiCardId(sourceSentence, lang),
   };
 };
@@ -308,7 +281,7 @@ export const createSentenceAnkiCardFromDraft = (draft) => ({
   front: buildSentenceAnkiFrontHtml(draft.frontText),
   back: buildSentenceAnkiBackHtml(draft),
   deckName: draft.deckName,
-  tags: uniqueNonEmpty(['miteiru', draft.lang, 'sentence', 'hard']).join(' '),
+  tags: uniqueNonEmpty(['miteiru', draft.lang, 'sentence']).join(' '),
 });
 
 export const createSentenceAnkiCard = ({
@@ -336,14 +309,12 @@ export const createAnkiCardsForTerm = async ({
   const resolvedMeaningContent = meaningContent || (await getMeaningEntries(term, lang))[0];
   const resolvedRomajiedData = romajiedData || await getRomajiedDataForMeaningContent(term, resolvedMeaningContent, lang, tokenizeMiteiru);
   const primaryRomajiedData = getPrimaryRomajiedVariant(resolvedRomajiedData);
-  const readings = getReadingsFromRomajiedData(primaryRomajiedData);
 
   return buildAnkiCardsForTerm({
     term,
     meaningContent: resolvedMeaningContent,
     lang,
     userNote,
-    readings,
     rubyHtml: buildRubyHtmlFromRomajiedData(primaryRomajiedData),
   });
 };
