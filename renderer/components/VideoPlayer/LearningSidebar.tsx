@@ -9,13 +9,15 @@ import {defaultLearningStyling} from "../../utils/CJKStyling";
 import {StylingBox} from "./Sidebar";
 import {useStoreData} from "../../hooks/useStoreData";
 import {SidebarSection, SidebarShell, SIDEBAR_FIELD_INPUT} from "./SidebarShell";
+import {useExportAllAnkiCards} from "../../hooks/useExportAllAnkiCards";
 
 export const LearningSidebar = ({
                                   showSidebar,
                                   setShowSidebar,
                                   primaryStyling,
                                   setPrimaryStyling,
-                                  lang
+                                  lang,
+                                  tokenizeMiteiru,
                                 }) => {
   const [openRouterApiKey, setOpenRouterApiKey] = useStoreData('openrouter.apiKey', '');
   const [openRouterModel, setOpenRouterModel] = useStoreData('openrouter.model', 'z-ai/glm-5.2:nitro');
@@ -38,7 +40,11 @@ export const LearningSidebar = ({
     [modelDraft, openRouterModel],
   );
 
-  return <SidebarShell
+  const { exportAllAnkiCards, ankiExportModal } = useExportAllAnkiCards({ lang, tokenizeMiteiru });
+
+  return <>
+  {ankiExportModal}
+  <SidebarShell
       showSidebar={showSidebar}
       setShowSidebar={setShowSidebar}
       title="Learning Settings"
@@ -120,5 +126,16 @@ export const LearningSidebar = ({
     <StylingBox subtitleStyling={primaryStyling} setSubtitleStyling={setPrimaryStyling}
                 subtitleName={"CJK"} defaultStyling={defaultLearningStyling} lang={lang}/>
     </SidebarSection>
+
+    <SidebarSection title="Anki Export">
+      <Button
+          type={"secondary"}
+          className={"w-full min-w-0 max-w-full"}
+          onPress={exportAllAnkiCards}
+      >
+        Export All Anki Cards
+      </Button>
+    </SidebarSection>
   </SidebarShell>
+  </>;
 }

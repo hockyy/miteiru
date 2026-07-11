@@ -620,6 +620,7 @@ function Learn() {
               primaryStyling={primaryStyling}
               setPrimaryStyling={setPrimaryStyling}
               lang={lang}
+              tokenizeMiteiru={tokenizeMiteiru}
           />
         </div>
       </React.Fragment>
