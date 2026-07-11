@@ -62,30 +62,6 @@ const buildGrammarBackHtml = (entry: JpGrammarEntry, userData: GrammarUserData):
   ].filter(Boolean).join('<hr>');
 };
 
-const buildGrammarRecallFrontHtml = (entry: JpGrammarEntry, userData: GrammarUserData): string => {
-  const usageHint = userData.usageNote?.trim()
-    ? `<div style="font-size:0.9em;color:#555;margin-top:0.5em;">${escapeHtml(userData.usageNote.trim())}</div>`
-    : '';
-
-  return [
-    `<div style="font-size: 1.6em;">${escapeHtml(entry.meaning)}</div>`,
-    usageHint,
-  ].filter(Boolean).join('');
-};
-
-const buildGrammarRecallBackHtml = (entry: JpGrammarEntry, userData: GrammarUserData): string => {
-  const readingLine = entry.reading ? escapeHtml(entry.reading) : '';
-  const examples = buildExamplesHtml(userData.examples || []);
-  const relatedGrammar = buildHtmlList(userData.relatedGrammar || []);
-
-  return [
-    `<div style="font-size: 2em;">${escapeHtml(entry.form)}</div>`,
-    readingLine ? `<div style="color:#4338ca;">${readingLine}</div>` : '',
-    buildHtmlSection('Examples', examples),
-    buildHtmlSection('Related Grammar', relatedGrammar),
-  ].filter(Boolean).join('<hr>');
-};
-
 export const buildAnkiCardsForGrammarEntry = (
   entry: JpGrammarEntry,
   userData: GrammarUserData,
@@ -94,22 +70,13 @@ export const buildAnkiCardsForGrammarEntry = (
   const deckName = getGrammarDeckName(lang);
   const levelTag = entry.level.toLowerCase();
 
-  return [
-    {
-      cardId: getGrammarAnkiCardId(entry.id, lang, 'reading'),
-      front: buildGrammarFrontHtml(entry),
-      back: buildGrammarBackHtml(entry, userData),
-      deckName,
-      tags: uniqueNonEmpty(['miteiru', lang, 'grammar', levelTag, 'reading']).join(' '),
-    },
-    {
-      cardId: getGrammarAnkiCardId(entry.id, lang, 'recall'),
-      front: buildGrammarRecallFrontHtml(entry, userData),
-      back: buildGrammarRecallBackHtml(entry, userData),
-      deckName,
-      tags: uniqueNonEmpty(['miteiru', lang, 'grammar', levelTag, 'recall']).join(' '),
-    },
-  ];
+  return [{
+    cardId: getGrammarAnkiCardId(entry.id, lang, 'reading'),
+    front: buildGrammarFrontHtml(entry),
+    back: buildGrammarBackHtml(entry, userData),
+    deckName,
+    tags: uniqueNonEmpty(['miteiru', lang, 'grammar', levelTag, 'reading']).join(' '),
+  }];
 };
 
 export const collectGrammarAnkiCards = (

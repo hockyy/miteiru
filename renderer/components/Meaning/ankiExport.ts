@@ -3,6 +3,7 @@ import {
   buildRubyHtmlFromRomajiedData,
   getDictionaryDefinitions,
   getMeaningEntries,
+  getPrimaryRomajiedVariant,
   getReadingsFromRomajiedData,
   getRomajiedDataForMeaningContent
 } from "./meaningEntries";
@@ -331,11 +332,11 @@ export const createAnkiCardsForTerm = async ({
   userNote,
   meaningContent = null,
   romajiedData = null,
-  rubyHtml = null
 }) => {
   const resolvedMeaningContent = meaningContent || (await getMeaningEntries(term, lang))[0];
   const resolvedRomajiedData = romajiedData || await getRomajiedDataForMeaningContent(term, resolvedMeaningContent, lang, tokenizeMiteiru);
-  const readings = getReadingsFromRomajiedData(resolvedRomajiedData);
+  const primaryRomajiedData = getPrimaryRomajiedVariant(resolvedRomajiedData);
+  const readings = getReadingsFromRomajiedData(primaryRomajiedData);
 
   return buildAnkiCardsForTerm({
     term,
@@ -343,7 +344,7 @@ export const createAnkiCardsForTerm = async ({
     lang,
     userNote,
     readings,
-    rubyHtml: rubyHtml ?? buildRubyHtmlFromRomajiedData(resolvedRomajiedData)
+    rubyHtml: buildRubyHtmlFromRomajiedData(primaryRomajiedData),
   });
 };
 
