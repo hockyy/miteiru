@@ -10,19 +10,7 @@ import {Button} from "../Utils/Button";
 import {GistManager} from "../Data/GistManager";
 import {SubtitleMode} from "../../utils/utils";
 import {SidebarSection, SidebarSettingRow, SidebarShell, SIDEBAR_FIELD_INPUT} from "./SidebarShell";
-import {useUserNotes} from "../../hooks/useUserNotes";
-import {loadGrammarNotesFromStore} from "../../hooks/useGrammarNotes";
-import {languageCodes} from "../../languages/manifest";
-import {fetchJpGrammarCatalog} from "../../utils/jpGrammarCatalog";
-import {
-  buildDeckList,
-  createAnkiCardsForTerm,
-  hasAnkiNoteContent,
-  safeAnkiAllFilename,
-  saveAnkiCards
-} from "../Meaning/ankiExport";
-import {collectGrammarAnkiCards} from "../Meaning/grammarAnkiExport";
-import {useAnkiExportConfirm} from "../../hooks/useAnkiExportConfirm";
+import {useExportAllAnkiCards} from "../../hooks/useExportAllAnkiCards";
 
 export const StylingBox = ({
                              subtitleStyling,
@@ -408,8 +396,7 @@ export const Sidebar = ({
                           subtitleMode,
                           setSubtitleMode
                         }) => {
-  const {userNotes} = useUserNotes();
-  const { confirmExport, modal: ankiExportModal } = useAnkiExportConfirm();
+  const { exportAllAnkiCards, ankiExportModal } = useExportAllAnkiCards({ lang, tokenizeMiteiru });
   const learningPercentageHandler = useCallback(event => {
     setLearningPercentage(parseFloat(event.target.value));
   }, [setLearningPercentage])
@@ -436,81 +423,6 @@ export const Sidebar = ({
       alert(`Failed to export HUF: ${error.message || 'Unknown error'}`);
     }
   }, [primarySub]);
-  const exportAllAnkiCardsHandler = useCallback(async () => {
-    try {
-      if (!lang) {
-        alert('Please select a language before exporting Anki cards.');
-        return;
-      }
-
-      const learningState = await window.ipc.invoke('loadLearningState', lang);
-      const terms = Object.keys(learningState || {}).filter(Boolean);
-
-      const cards = [];
-      let notesTermCount = 0;
-
-      // My Notes (AI) only — dictionary Easy/Hard bulk export disabled for now.
-      for (const term of terms) {
-        const userNote = userNotes[term] || null;
-        if (!hasAnkiNoteContent(userNote)) {
-          continue;
-        }
-        notesTermCount += 1;
-        cards.push(...await createAnkiCardsForTerm({
-          term,
-          lang,
-          tokenizeMiteiru,
-          userNote,
-        }));
-      }
-
-      /* Easy / Hard dictionary export disabled for now.
-      for (const term of terms) {
-        const userNote = userNotes[term] || null;
-        if (hasAnkiNoteContent(userNote)) {
-          continue;
-        }
-        cards.push(...await createAnkiCardsForTerm({
-          term,
-          lang,
-          tokenizeMiteiru,
-          userNote: null,
-        }));
-      }
-      */
-
-      let grammarPointCount = 0;
-      if (lang === languageCodes.japanese) {
-        const [catalog, grammarNotes] = await Promise.all([
-          fetchJpGrammarCatalog(),
-          loadGrammarNotesFromStore(),
-        ]);
-        const grammarCards = collectGrammarAnkiCards(catalog.entries, grammarNotes, lang);
-        grammarPointCount = grammarCards.length / 2;
-        cards.push(...grammarCards);
-      }
-
-      if (cards.length === 0) {
-        alert('No saved My Notes or grammar notes found for this language.');
-        return;
-      }
-
-      const saved = await saveAnkiCards(cards, safeAnkiAllFilename(lang), confirmExport);
-      if (saved) {
-        const notesSummary = notesTermCount > 0
-          ? `${notesTermCount} noted vocabulary term${notesTermCount !== 1 ? 's' : ''}`
-          : '';
-        const grammarSummary = grammarPointCount > 0
-          ? `${grammarPointCount} grammar point${grammarPointCount !== 1 ? 's' : ''}`
-          : '';
-        const sourceSummary = [notesSummary, grammarSummary].filter(Boolean).join(' and ');
-        alert(`Saved ${cards.length} Anki cards from ${sourceSummary} for ${buildDeckList(cards)}.`);
-      }
-    } catch (error) {
-      console.error('Failed to export all Anki cards:', error);
-      alert(`Failed to export all Anki cards: ${error.message}`);
-    }
-  }, [confirmExport, lang, tokenizeMiteiru, userNotes]);
   return <>
   {ankiExportModal}
   <SidebarShell
@@ -564,7 +476,7 @@ export const Sidebar = ({
       <Button
           type={"secondary"}
           className={"w-full min-w-0 max-w-full"}
-          onPress={exportAllAnkiCardsHandler}
+          onPress={exportAllAnkiCards}
       >
         Export All Anki Cards
       </Button>

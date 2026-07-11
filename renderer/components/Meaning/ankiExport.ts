@@ -150,20 +150,26 @@ const buildAnkiCardsForTerm = ({
     studySections,
   ].filter(Boolean).join('<hr>');
 
+  const readingCard = {
+    cardId: getVariantAnkiCardId(term, meaningContent, lang, usesNotes ? 'notes' : 'reading'),
+    front: normalFront,
+    back: normalBack,
+    deckName: readingDeckName,
+    tags: uniqueNonEmpty(['miteiru', lang, usesNotes ? 'notes' : '', 'reading']).join(' ')
+  };
+
+  if (usesNotes) {
+    return [readingCard];
+  }
+
   return [
+    readingCard,
     {
-      cardId: getVariantAnkiCardId(term, meaningContent, lang, usesNotes ? 'notes-reading' : 'reading'),
-      front: normalFront,
-      back: normalBack,
-      deckName: readingDeckName,
-      tags: uniqueNonEmpty(['miteiru', lang, usesNotes ? 'notes' : '', 'reading']).join(' ')
-    },
-    {
-      cardId: getVariantAnkiCardId(term, meaningContent, lang, usesNotes ? 'notes-hard' : 'hard'),
+      cardId: getVariantAnkiCardId(term, meaningContent, lang, 'hard'),
       front: `<div style="font-size: 2em;">${escapeHtml(term)}</div>`,
       back: hardBack,
       deckName: hardDeckName,
-      tags: uniqueNonEmpty(['miteiru', lang, usesNotes ? 'notes' : '', 'hard']).join(' ')
+      tags: uniqueNonEmpty(['miteiru', lang, '', 'hard']).join(' ')
     }
   ];
 };
