@@ -38,7 +38,7 @@
     "dev": "nextron --electron-options=\"--no-sandbox\"",
     "build": "npm run script:clean-next && nextron build",
     "build:macos": "npm run script:clean-next && nextron build --config=buildConfig/macos.config.json",
-    "build:nsis": "npm run build:live-captions && npm run script:clean-next && nextron build --config=buildConfig/nsis.config.json",
+    "build:nsis": "npm run build:live-captions && nextron build --config=buildConfig/nsis.config.json",
     "build:portable": "npm run build:live-captions && npm run script:clean-next && nextron build --config=buildConfig/portable.config.json",
     "build:linux20": "npm run script:clean-next && nextron build --config=buildConfig/linux20.config.json",
     "build:linux22": "npm run script:clean-next && nextron build --config=buildConfig/linux22.config.json",

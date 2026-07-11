@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
+  buildAnkiExportPreview,
   createAnkiCardsForTerm,
   getAnkiDeckNames,
   hasAnkiNoteContent,
@@ -124,6 +125,22 @@ describe('ankiExport', () => {
     const expectedRuby = buildRubyHtmlFromRomajiedData(getPrimaryRomajiedVariant(multiVariantRomajiedData));
     assert.match(cards[0].front, new RegExp(expectedRuby.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
     assert.doesNotMatch(cards[0].front, /々/);
+  });
+
+  it('keeps HTML ruby in export preview cards', async () => {
+    const cards = await createAnkiCardsForTerm({
+      term: '食べる',
+      lang: 'ja',
+      tokenizeMiteiru: async () => [],
+      userNote,
+      meaningContent,
+      romajiedData,
+    });
+    const preview = buildAnkiExportPreview(cards);
+
+    assert.match(preview.cards[0].frontHtml, /<ruby>/);
+    assert.match(preview.cards[0].frontHtml, /<rt>/);
+    assert.match(preview.cards[0].backHtml, /to eat/);
   });
 });
  

@@ -1,6 +1,6 @@
 /**
- * Learn-page sentence → Anki Hard deck builder state.
- * Ruby from local tokenizer; translation/note from OpenRouter.
+ * Learn-page sentence → Anki Sentence deck builder state.
+ * Ruby readings from AI JSON segments; translation/note from OpenRouter.
  * UI: components/Learn/AnkiCardBuilderPanel.tsx
  */
 import { useCallback, useState } from 'react';
@@ -18,20 +18,17 @@ import {
 } from '../utils/aiAnkiPrompts';
 import { openRouterMessages, streamOpenRouterCompletion } from '../utils/openRouterClient';
 import { parseSentenceAnkiBack } from '../utils/parseSentenceAnkiBack';
-import { getSentenceRubyData } from '../utils/sentenceRuby';
 
 interface UseSentenceAnkiOptions {
   openRouterApiKey: string;
   openRouterModel: string;
   lang: string;
-  tokenizeMiteiru?: (text: string) => Promise<unknown[]>;
 }
 
 export function useSentenceAnki({
   openRouterApiKey,
   openRouterModel,
   lang,
-  tokenizeMiteiru,
 }: UseSentenceAnkiOptions) {
   const [draft, setDraft] = useState<SentenceAnkiDraft | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -65,23 +62,14 @@ export function useSentenceAnki({
       return;
     }
 
-    if (!tokenizeMiteiru) {
-      setDraft(null);
-      setErrorMessage('Tokenizer is not ready yet. Wait a moment and try again.');
-      return;
-    }
-
     setIsBuilding(true);
     setDraft(null);
     setErrorMessage(null);
 
     try {
-      const [{ rubyHtml }, rawResponse] = await Promise.all([
-        getSentenceRubyData(trimmed, tokenizeMiteiru),
-        streamOpenRouterCompletion(openRouterApiKey, openRouterModel, [
-          { role: 'system', content: buildSentenceAnkiSystemPrompt(lang) },
-          { role: 'user', content: buildSentenceAnkiUserPrompt(trimmed, lang) },
-        ]),
+      const rawResponse = await streamOpenRouterCompletion(openRouterApiKey, openRouterModel, [
+        { role: 'system', content: buildSentenceAnkiSystemPrompt(lang) },
+        { role: 'user', content: buildSentenceAnkiUserPrompt(trimmed, lang) },
       ]);
 
       const parsedBack = parseSentenceAnkiBack(rawResponse);
@@ -93,7 +81,7 @@ export function useSentenceAnki({
       setDraft(createInitialSentenceAnkiDraft({
         sourceSentence: trimmed,
         lang,
-        rubyHtml,
+        rubyHtml: parsedBack.rubyHtml,
         translation: parsedBack.translation,
         note: parsedBack.note,
       }));
@@ -103,7 +91,7 @@ export function useSentenceAnki({
     } finally {
       setIsBuilding(false);
     }
-  }, [lang, openRouterApiKey, openRouterModel, tokenizeMiteiru]);
+  }, [lang, openRouterApiKey, openRouterModel]);
 
   const openAnkiCard = useCallback(async () => {
     if (!draft) {
@@ -170,4 +158,4 @@ export function useSentenceAnki({
     openAnkiCard,
     clearAnkiCard,
   };
-};
+}

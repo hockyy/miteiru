@@ -9,6 +9,41 @@ interface AnkiExportConfirmModalProps {
   onCancel: () => void;
 }
 
+const previewPanelClassName = [
+  'rounded-lg border border-white/10 bg-white px-3 py-2 text-blue-950 leading-relaxed',
+  '[&_ruby]:ruby-position-over',
+  '[&_ruby_rt]:text-[0.55em] [&_ruby_rt]:text-blue-700',
+  '[&_hr]:my-2 [&_hr]:border-blue-200',
+  '[&_ul]:my-1 [&_ul]:list-disc [&_ul]:pl-4',
+  '[&_strong]:font-semibold',
+  '[&_span]:leading-snug',
+].join(' ');
+
+const AnkiExportPreviewField = ({
+  label,
+  html,
+  compact = false,
+}: {
+  label: string;
+  html: string;
+  compact?: boolean;
+}) => (
+  <div>
+    <span className="text-[11px] font-bold uppercase tracking-wide text-white/35">{label}</span>
+    {html ? (
+      <div
+        className={[
+          previewPanelClassName,
+          compact ? 'mt-1 max-h-36 overflow-y-auto text-sm' : 'mt-1',
+        ].join(' ')}
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+    ) : (
+      <p className="mt-1 text-sm italic text-white/45">(empty)</p>
+    )}
+  </div>
+);
+
 export const AnkiExportConfirmModal: React.FC<AnkiExportConfirmModalProps> = ({
   preview,
   onConfirm,
@@ -47,15 +82,9 @@ export const AnkiExportConfirmModal: React.FC<AnkiExportConfirmModalProps> = ({
                 </span>
                 <span className="text-[11px] text-white/40">{card.tags}</span>
               </div>
-              <div className="space-y-1 text-sm">
-                <div>
-                  <span className="text-[11px] font-bold uppercase tracking-wide text-white/35">Front</span>
-                  <p className="text-white/90">{card.frontPreview || '(empty)'}</p>
-                </div>
-                <div>
-                  <span className="text-[11px] font-bold uppercase tracking-wide text-white/35">Back</span>
-                  <p className="line-clamp-3 text-white/70">{card.backPreview || '(empty)'}</p>
-                </div>
+              <div className="space-y-2 text-sm">
+                <AnkiExportPreviewField label="Front" html={card.frontHtml} />
+                <AnkiExportPreviewField label="Back" html={card.backHtml} compact />
               </div>
             </div>
           ))}

@@ -58,7 +58,7 @@ export const AnkiCardBuilderDisplay: React.FC<AnkiCardBuilderDisplayProps> = ({
     return (
       <CuteLoadingAnimation
         message="Building your Anki card..."
-        subMessage="Ruby markup, translation, and notes on the way"
+        subMessage="Translation, readings, and notes on the way"
       />
     );
   }
