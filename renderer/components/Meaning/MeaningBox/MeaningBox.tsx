@@ -73,7 +73,6 @@ const MeaningBox = ({
   useMeaningCopyShortcuts(isOpen, meaning, rubyHtmlContent);
 
   const { table: inflectionTable } = useMeaningInflection(meaning, lang, meaningContent);
-  const noteTerm = inflectionTable?.dictionaryForm || meaning;
   const notesApi = useUserNotes();
   const { getUserNote, setUserNote, userNotes } = notesApi;
 
@@ -83,7 +82,7 @@ const MeaningBox = ({
     saveNote,
     deleteNote,
     generateNoteWithAI,
-  } = useMeaningUserNotes(noteTerm, lang, notesApi);
+  } = useMeaningUserNotes(meaning, lang, notesApi);
 
   const wordMeaning = useMemo(() => {
     const definitions = getDictionaryDefinitions(meaningContent, lang);
@@ -98,7 +97,7 @@ const MeaningBox = ({
   } = useMeaningInflectionAi({
     openRouterApiKey,
     openRouterModel,
-    noteTerm,
+    noteTerm: meaning,
     getUserNote,
     setUserNote,
     userNotes,
@@ -199,7 +198,7 @@ const MeaningBox = ({
         />
 
         <UserNotesSection
-          term={noteTerm}
+          term={meaning}
           lang={lang}
           tokenizeMiteiru={tokenizeMiteiru}
           userNote={userNote}

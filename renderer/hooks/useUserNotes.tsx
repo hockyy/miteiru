@@ -1,5 +1,14 @@
-import { useCallback, useEffect, useRef } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  type ReactNode,
+} from 'react';
 import { useStoreData } from './useStoreData';
+
+const USER_NOTES_STORE_KEY = 'user.notes';
 
 export interface UserNoteExample {
   sentence: string;
@@ -95,12 +104,25 @@ export const hasUserNoteContent = (entry: MiteiruUserEntry | null | undefined): 
   );
 };
 
-export const useUserNotes = () => {
-  const [userNotes, setUserNotesRaw, isLoaded] = useStoreData<UserNotesDatabase>('user.notes', {});
+type UserNotesContextValue = {
+  userNotes: UserNotesDatabase;
+  isLoading: boolean;
+  getUserNote: (term: string) => MiteiruUserEntry | null;
+  setUserNote: (term: string, entry: MiteiruUserEntry) => Promise<void>;
+  deleteUserNote: (term: string) => Promise<void>;
+  hasUserNote: (term: string) => boolean;
+};
+
+const UserNotesContext = createContext<UserNotesContextValue | null>(null);
+
+const useUserNotesState = (): UserNotesContextValue => {
+  const [userNotes, setUserNotesRaw, isLoaded] = useStoreData<UserNotesDatabase>(USER_NOTES_STORE_KEY, {});
+  const userNotesRef = useRef(userNotes);
+  userNotesRef.current = userNotes;
   const hasCleanedRef = useRef(false);
   const isLoading = !isLoaded;
 
-  // Normalize once after the shared store loads (first subscriber wins).
+  // Normalize once after the shared store loads.
   useEffect(() => {
     if (!isLoaded || hasCleanedRef.current) {
       return;
@@ -150,29 +172,32 @@ export const useUserNotes = () => {
   // Set note for a specific term
   const setUserNote = useCallback(async (term: string, entry: MiteiruUserEntry) => {
     try {
-      const newNotes = { ...userNotes, [term]: normalizeUserNoteEntry(entry) };
+      const newNotes = {
+        ...userNotesRef.current,
+        [term]: normalizeUserNoteEntry(entry),
+      };
       await saveUserNotes(newNotes);
     } catch (error) {
       console.error('Failed to set user note, removing it:', error);
       // If save fails, remove the note immediately
-      const cleanedNotes = { ...userNotes };
+      const cleanedNotes = { ...userNotesRef.current };
       delete cleanedNotes[term];
       await setUserNotesRaw(cleanedNotes);
       throw error; // Re-throw so caller knows it failed
     }
-  }, [userNotes, saveUserNotes]);
+  }, [saveUserNotes, setUserNotesRaw]);
 
   // Delete note for a specific term
   const deleteUserNote = useCallback(async (term: string) => {
     try {
-      const newNotes = { ...userNotes };
+      const newNotes = { ...userNotesRef.current };
       delete newNotes[term];
       await saveUserNotes(newNotes);
     } catch (error) {
       console.error('Failed to delete user note:', error);
       throw error; // Re-throw so caller knows it failed
     }
-  }, [userNotes, saveUserNotes]);
+  }, [saveUserNotes]);
 
   // Check if a term has a note
   const hasUserNote = useCallback((term: string): boolean => {
@@ -187,4 +212,21 @@ export const useUserNotes = () => {
     deleteUserNote,
     hasUserNote,
   };
+};
+
+export const UserNotesProvider = ({ children }: { children: ReactNode }) => {
+  const value = useUserNotesState();
+  return (
+    <UserNotesContext.Provider value={value}>
+      {children}
+    </UserNotesContext.Provider>
+  );
+};
+
+export const useUserNotes = (): UserNotesContextValue => {
+  const context = useContext(UserNotesContext);
+  if (!context) {
+    throw new Error('useUserNotes must be used within UserNotesProvider');
+  }
+  return context;
 };
