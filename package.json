@@ -2,6 +2,7 @@
   "private": true,
   "name": "miteiru",
   "description": "Miteiru",
+  "desktopName": "miteiru.desktop",
   "version": "7.4.3",
   "author": "Hocky Yudhiono <hocky.yudhiono@gmail.com>",
   "main": "app/main.js",
@@ -14,6 +15,9 @@
       "!renderer/.next",
       "!renderer/.next/**"
     ],
+    "linux": {
+      "syncDesktopName": true
+    },
     "mac": {
       "icon": "resources/icon.icns",
       "target": [
