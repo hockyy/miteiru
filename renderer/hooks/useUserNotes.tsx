@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
+import { useStoreData } from './useStoreData';
 
 export interface UserNoteExample {
   sentence: string;
@@ -95,68 +96,51 @@ export const hasUserNoteContent = (entry: MiteiruUserEntry | null | undefined): 
 };
 
 export const useUserNotes = () => {
-  const [userNotes, setUserNotes] = useState<UserNotesDatabase>({});
-  const [isLoading, setIsLoading] = useState(true);
+  const [userNotes, setUserNotesRaw, isLoaded] = useStoreData<UserNotesDatabase>('user.notes', {});
+  const hasCleanedRef = useRef(false);
+  const isLoading = !isLoaded;
 
-  // Load user notes from electron store
+  // Normalize once after the shared store loads (first subscriber wins).
   useEffect(() => {
-    const loadNotes = async () => {
-      try {
-        const notes = await window.electronStore.get('user.notes', {});
-        
-        // Validate loaded notes structure
-        if (typeof notes !== 'object' || notes === null) {
-          console.error('Invalid user notes format, resetting to empty');
-          setUserNotes({});
-          await window.electronStore.set('user.notes', {});
-          return;
-        }
-        
-        // Clean up any corrupted entries
-        const cleanedNotes: UserNotesDatabase = {};
-        for (const [key, value] of Object.entries(notes)) {
-          if (value && typeof value === 'object' && 
-              ('definition' in value || 'usageNote' in value || 'funFact' in value || 'examples' in value || 'relatedTerms' in value)) {
-            cleanedNotes[key] = normalizeUserNoteEntry(value);
-          } else {
-            console.warn(`Removing corrupted note for term: ${key}`);
-          }
-        }
-        
-        setUserNotes(cleanedNotes);
-        
-        // If we cleaned up entries, save the cleaned version
-        if (Object.keys(cleanedNotes).length !== Object.keys(notes).length) {
-          await window.electronStore.set('user.notes', cleanedNotes);
-        }
-      } catch (error) {
-        console.error('Failed to load user notes, resetting:', error);
-        setUserNotes({});
-        try {
-          await window.electronStore.set('user.notes', {});
-        } catch (e) {
-          console.error('Failed to reset user notes store:', e);
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadNotes();
-  }, []);
-
-  // Save user notes to electron store
-  const saveUserNotes = useCallback(async (notes: UserNotesDatabase) => {
-    try {
-      await window.electronStore.set('user.notes', notes);
-      setUserNotes(notes);
-    } catch (error) {
-      console.error('Failed to save user notes:', error);
-      // Reset to previous state on failure
-      const currentNotes = await window.electronStore.get('user.notes', {});
-      setUserNotes(currentNotes);
-      throw error; // Re-throw so caller knows it failed
+    if (!isLoaded || hasCleanedRef.current) {
+      return;
     }
-  }, []);
+    hasCleanedRef.current = true;
+
+    if (typeof userNotes !== 'object' || userNotes === null) {
+      console.error('Invalid user notes format, resetting to empty');
+      void setUserNotesRaw({});
+      return;
+    }
+
+    const cleanedNotes: UserNotesDatabase = {};
+    let removedCorrupted = false;
+
+    for (const [key, value] of Object.entries(userNotes)) {
+      if (
+        value
+        && typeof value === 'object'
+        && ('definition' in value
+          || 'usageNote' in value
+          || 'funFact' in value
+          || 'examples' in value
+          || 'relatedTerms' in value)
+      ) {
+        cleanedNotes[key] = normalizeUserNoteEntry(value);
+      } else {
+        console.warn(`Removing corrupted note for term: ${key}`);
+        removedCorrupted = true;
+      }
+    }
+
+    if (removedCorrupted || Object.keys(cleanedNotes).length !== Object.keys(userNotes).length) {
+      void setUserNotesRaw(cleanedNotes);
+    }
+  }, [isLoaded, setUserNotesRaw, userNotes]);
+
+  const saveUserNotes = useCallback(async (notes: UserNotesDatabase) => {
+    await setUserNotesRaw(notes);
+  }, [setUserNotesRaw]);
 
   // Get note for a specific term
   const getUserNote = useCallback((term: string): MiteiruUserEntry | null => {
@@ -173,7 +157,7 @@ export const useUserNotes = () => {
       // If save fails, remove the note immediately
       const cleanedNotes = { ...userNotes };
       delete cleanedNotes[term];
-      setUserNotes(cleanedNotes);
+      await setUserNotesRaw(cleanedNotes);
       throw error; // Re-throw so caller knows it failed
     }
   }, [userNotes, saveUserNotes]);
