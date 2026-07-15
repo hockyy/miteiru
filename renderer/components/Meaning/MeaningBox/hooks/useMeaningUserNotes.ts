@@ -1,7 +1,10 @@
 import { useCallback, useState } from 'react';
 import { useStoreData } from '../../../../hooks/useStoreData';
 import { generateUserNoteWithAI } from '../../../../utils/generateUserNoteWithAI';
-import type { MiteiruUserEntry } from '../../../../hooks/useUserNotes';
+import {
+  getUserNoteKey,
+  type MiteiruUserEntry,
+} from '../../../../hooks/useUserNotes';
 
 export type UserNotesApi = Pick<
   ReturnType<typeof import("../../../../hooks/useUserNotes").useUserNotes>,
@@ -16,29 +19,32 @@ export const useMeaningUserNotes = (
 ) => {
   const [isGeneratingNote, setIsGeneratingNote] = useState(false);
   const { getUserNote, setUserNote, deleteUserNote } = notesApi;
+  const noteKey = getUserNoteKey(meaning, lang);
+  const localizedNote = getUserNote(noteKey);
+  const userNote = localizedNote ?? getUserNote(meaning);
   const [openRouterApiKey] = useStoreData('openrouter.apiKey', '');
   const [openRouterModel] = useStoreData('openrouter.model', 'z-ai/glm-5.2:nitro');
 
   const saveNote = useCallback(
     async (entry: MiteiruUserEntry) => {
       try {
-        await setUserNote(meaning, entry);
+        await setUserNote(noteKey, entry);
       } catch (error) {
         console.error('Failed to save user note:', error);
         alert('Failed to save note. The note has been removed. Please try again.');
       }
     },
-    [meaning, setUserNote],
+    [noteKey, setUserNote],
   );
 
   const deleteNote = useCallback(async () => {
     try {
-      await deleteUserNote(meaning);
+      await deleteUserNote(localizedNote ? noteKey : meaning);
     } catch (error) {
       console.error('Failed to delete user note:', error);
       alert('Failed to delete note. Please try again.');
     }
-  }, [deleteUserNote, meaning]);
+  }, [deleteUserNote, localizedNote, meaning, noteKey]);
 
   const generateNoteWithAI = useCallback(async () => {
     if (!openRouterApiKey) {
@@ -48,7 +54,7 @@ export const useMeaningUserNotes = (
 
     setIsGeneratingNote(true);
     try {
-      await setUserNote(meaning, await generateUserNoteWithAI({
+      await setUserNote(noteKey, await generateUserNoteWithAI({
         term: meaning,
         lang,
         openRouterApiKey,
@@ -60,10 +66,11 @@ export const useMeaningUserNotes = (
     } finally {
       setIsGeneratingNote(false);
     }
-  }, [lang, meaning, openRouterApiKey, openRouterModel, setUserNote]);
+  }, [lang, meaning, noteKey, openRouterApiKey, openRouterModel, setUserNote]);
 
   return {
-    userNote: getUserNote(meaning),
+    noteKey,
+    userNote,
     isGeneratingNote,
     saveNote,
     deleteNote,

@@ -81,6 +81,7 @@ const MeaningBox = ({
   const { getUserNote, setUserNote, userNotes } = notesApi;
 
   const {
+    noteKey,
     userNote,
     isGeneratingNote,
     saveNote,
@@ -101,7 +102,8 @@ const MeaningBox = ({
   } = useMeaningInflectionAi({
     openRouterApiKey,
     openRouterModel,
-    noteTerm: meaning,
+    noteTerm: noteKey,
+    legacyNoteTerm: meaning,
     getUserNote,
     setUserNote,
     userNotes,
