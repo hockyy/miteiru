@@ -5,6 +5,7 @@ type ExternalLinkProps = {
   displayText: string;
   query: string;
   style?: React.CSSProperties;
+  className?: string;
 };
 
 /** Opens an external dictionary URL via the Electron shell. */
@@ -13,14 +14,22 @@ export const ExternalLink = ({
   displayText,
   query,
   style = {},
+  className = '',
 }: ExternalLinkProps) => {
+  const url = `${urlBase}${query}`;
+
   const handleClick = (event: React.MouseEvent) => {
     event.preventDefault();
-    window.electronAPI.openExternal(`${urlBase}${query}`);
+    window.electronAPI.openExternal(url);
   };
 
   return (
-    <a style={style} className="url-bubble" onClick={handleClick}>
+    <a
+      href={url}
+      style={style}
+      className={['url-bubble', className].filter(Boolean).join(' ')}
+      onClick={handleClick}
+    >
       {displayText}
     </a>
   );

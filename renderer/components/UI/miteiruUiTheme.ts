@@ -49,7 +49,7 @@ export const MEANING_SHELL =
   'overflow-auto rounded-2xl border-2 border-blue-700 bg-blue-100 shadow-[3px_3px_0_0_#1d4ed8] w-full max-w-[1200px] h-[80vh] max-h-[90vh] transition-[width,max-width] duration-300 ease-out';
 
 export const MEANING_HEADER =
-  'sticky top-0 z-[100] flex flex-row items-center justify-between gap-3 border-b-2 border-blue-700 bg-blue-200 px-4 py-4';
+  'sticky top-0 z-[100] flex flex-col items-center gap-3 border-b-2 border-blue-700 bg-blue-100/95 px-4 py-3 shadow-[0_2px_0_0_rgba(29,78,216,0.12)] backdrop-blur-sm';
 
 export const MEANING_BODY = 'space-y-4 px-4 py-4 text-blue-950';
 
@@ -107,7 +107,7 @@ export const MEANING_TAG_CHARACTER =
   'rounded-lg bg-red-600 px-2 py-1 text-xs font-bold text-white unselectable';
 
 export const MEANING_WORD_DISPLAY =
-  'w-fit rounded-xl border-2 border-blue-700 bg-white p-3 unselectable hovery shadow-[1px_1px_0_0_#1d4ed8]';
+  'inline-flex h-fit w-fit items-center justify-center rounded-xl border-2 border-blue-700 bg-white px-[0.35em] pb-[0.25em] pt-[0.45em] unselectable hovery shadow-[1px_1px_0_0_#1d4ed8] transition-transform duration-150 hover:-translate-y-0.5';
 
 export const MEANING_GLOSS = 'px-4 py-3 text-base font-semibold leading-relaxed text-red-700';
 
@@ -159,7 +159,8 @@ export const UI_ERROR_BANNER =
 /** Home menu aliases (re-exported via homeMenuTheme.ts). */
 export const HOME_PAGE_BG = UI_PAGE_BG;
 export const HOME_SHELL = `${UI_SHELL} max-w-4xl rounded-3xl shadow-[0_6px_0_0_#1d4ed8]`;
-export const HOME_HEADER = MEANING_HEADER.replace('sticky top-0 z-[100] ', '');
+export const HOME_HEADER =
+  'flex flex-row items-center justify-between gap-3 border-b-2 border-blue-700 bg-blue-200 px-4 py-4';
 export const HOME_BODY = MEANING_BODY;
 export const HOME_SECTION = `${UI_SECTION} rounded-2xl shadow-[0_4px_0_0_#2563eb]`;
 export const HOME_SECTION_LABEL = `${UI_SECTION_LABEL} py-2.5`;
