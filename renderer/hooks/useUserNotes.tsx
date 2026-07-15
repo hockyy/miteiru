@@ -29,6 +29,17 @@ export interface UserNotesDatabase {
   [term: string]: MiteiruUserEntry;
 }
 
+/** Stable storage key that keeps identical terms isolated by source language. */
+export const getUserNoteKey = (term: string, lang: string): string =>
+  `localized:${encodeURIComponent(lang)}:${encodeURIComponent(term)}`;
+
+/** Reads a localized note, with legacy term-only notes as a compatibility fallback. */
+export const getLocalizedUserNote = (
+  notes: UserNotesDatabase,
+  term: string,
+  lang: string,
+): MiteiruUserEntry | null => notes[getUserNoteKey(term, lang)] ?? notes[term] ?? null;
+
 export const normalizeUserNoteExample = (value: unknown): UserNoteExample | null => {
   if (typeof value === 'string') {
     const sentence = value.trim();

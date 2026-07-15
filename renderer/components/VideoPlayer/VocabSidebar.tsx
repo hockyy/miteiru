@@ -4,7 +4,12 @@ import { LeftSidebarShell } from './SidebarShell';
 import { VocabWordCard } from './VocabWordCard';
 import { getVocabReadingPreview } from './vocabReadingPreview';
 import { getVocabNotePreview } from './vocabNotePreview';
-import { hasUserNoteContent, useUserNotes } from '../../hooks/useUserNotes';
+import {
+  getLocalizedUserNote,
+  getUserNoteKey,
+  hasUserNoteContent,
+  useUserNotes,
+} from '../../hooks/useUserNotes';
 import { useStoreData } from '../../hooks/useStoreData';
 import { generateUserNoteWithAI } from '../../utils/generateUserNoteWithAI';
 
@@ -71,8 +76,10 @@ const VocabSidebar = ({
   }, [lang, loadVocabulary, refreshTrigger]);
 
   const notesCount = useMemo(
-    () => sortedVocab.filter(([word]) => hasUserNoteContent(userNotes[word])).length,
-    [sortedVocab, userNotes],
+    () => sortedVocab.filter(
+      ([word]) => hasUserNoteContent(getLocalizedUserNote(userNotes, word, lang)),
+    ).length,
+    [lang, sortedVocab, userNotes],
   );
 
   const findClosestWord = useCallback(() => {
@@ -117,7 +124,7 @@ const VocabSidebar = ({
         openRouterApiKey,
         openRouterModel,
       });
-      await setUserNote(word, entry);
+      await setUserNote(getUserNoteKey(word, lang), entry);
     } catch (error) {
       console.error('AI note generation failed:', error);
       alert(`Failed to generate note: ${(error as Error).message}`);
@@ -193,7 +200,7 @@ const VocabSidebar = ({
       ) : (
         <div className="flex flex-col gap-2 pb-6">
           {sortedVocab.map(([word, state]) => {
-            const userNote = userNotes[word] ?? null;
+            const userNote = getLocalizedUserNote(userNotes, word, lang);
             const hasNotes = hasUserNoteContent(userNote);
 
             return (

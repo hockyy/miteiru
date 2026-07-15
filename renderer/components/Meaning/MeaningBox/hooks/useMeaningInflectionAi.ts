@@ -35,6 +35,7 @@ export const useMeaningInflectionAi = ({
   openRouterApiKey,
   openRouterModel,
   noteTerm,
+  legacyNoteTerm,
   getUserNote,
   setUserNote,
   userNotes,
@@ -42,6 +43,7 @@ export const useMeaningInflectionAi = ({
   openRouterApiKey: string;
   openRouterModel: string;
   noteTerm: string;
+  legacyNoteTerm?: string;
   getUserNote: (term: string) => MiteiruUserEntry | null;
   setUserNote: (term: string, entry: MiteiruUserEntry) => Promise<void>;
   userNotes: Record<string, MiteiruUserEntry>;
@@ -51,8 +53,10 @@ export const useMeaningInflectionAi = ({
   const [inflectionExamples, setInflectionExamples] = useState<UserNoteExample[]>([]);
 
   useEffect(() => {
-    setInflectionExamples(filterInflectionExamples(getUserNote(noteTerm)?.examples ?? []));
-  }, [getUserNote, noteTerm, userNotes]);
+    const note = getUserNote(noteTerm)
+      ?? (legacyNoteTerm ? getUserNote(legacyNoteTerm) : null);
+    setInflectionExamples(filterInflectionExamples(note?.examples ?? []));
+  }, [getUserNote, legacyNoteTerm, noteTerm, userNotes]);
 
   const generateExamples = useCallback(
     async (table: InflectionTable, rows: InflectionRow[], wordMeaning: string) => {
@@ -98,7 +102,9 @@ export const useMeaningInflectionAi = ({
           return null;
         }
 
-        const existing = getUserNote(noteTerm) ?? emptyUserNote();
+        const existing = getUserNote(noteTerm)
+          ?? (legacyNoteTerm ? getUserNote(legacyNoteTerm) : null)
+          ?? emptyUserNote();
         const mergedExamples = mergeInflectionExamples(existing.examples, incoming);
 
         await setUserNote(noteTerm, {
@@ -117,7 +123,14 @@ export const useMeaningInflectionAi = ({
         setIsGenerating(false);
       }
     },
-    [getUserNote, noteTerm, openRouterApiKey, openRouterModel, setUserNote],
+    [
+      getUserNote,
+      legacyNoteTerm,
+      noteTerm,
+      openRouterApiKey,
+      openRouterModel,
+      setUserNote,
+    ],
   );
 
   const clearError = useCallback(() => {

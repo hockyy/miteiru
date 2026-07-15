@@ -11,7 +11,7 @@ import { languageCodes } from '../languages/manifest';
 import { fetchJpGrammarCatalog } from '../utils/jpGrammarCatalog';
 import { loadGrammarNotesFromStore } from './useGrammarNotes';
 import { useAnkiExportConfirm } from './useAnkiExportConfirm';
-import { useUserNotes } from './useUserNotes';
+import { getLocalizedUserNote, useUserNotes } from './useUserNotes';
 
 type UseExportAllAnkiCardsParams = {
   lang: string;
@@ -37,7 +37,7 @@ export const useExportAllAnkiCards = ({ lang, tokenizeMiteiru }: UseExportAllAnk
       let notesTermCount = 0;
 
       for (const term of terms) {
-        const userNote = userNotes[term] || null;
+        const userNote = getLocalizedUserNote(userNotes, term, lang);
         if (!hasAnkiNoteContent(userNote)) {
           continue;
         }
