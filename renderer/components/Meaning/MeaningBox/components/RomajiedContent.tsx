@@ -28,7 +28,7 @@ export const RomajiedContent = ({
   const queryText = romajied.reduce((acc, token) => acc + token.origin, '');
 
   return (
-    <div className="flex flex-col items-center justify-between gap-2">
+    <div className="flex min-w-0 flex-col items-center justify-between gap-2.5">
       <div className={MEANING_WORD_DISPLAY}>
         {lang === videoConstants.japaneseLang &&
           romajied.map((token, idx) => (

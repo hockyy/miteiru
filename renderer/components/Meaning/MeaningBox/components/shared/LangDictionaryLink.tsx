@@ -12,10 +12,10 @@ export const LangDictionaryLink = ({ lang, queryText }: LangDictionaryLinkProps)
   if (lang === videoConstants.japaneseLang) {
     return (
       <ExternalLink
-        style={{ color: 'black' }}
         urlBase="https://jisho.org/search/"
         displayText="Jisho"
         query={queryText}
+        className="border border-blue-300 bg-blue-50 px-2.5 py-0.5 text-xs! font-bold text-blue-800 hover:bg-yellow-100"
       />
     );
   }
@@ -23,10 +23,10 @@ export const LangDictionaryLink = ({ lang, queryText }: LangDictionaryLinkProps)
   if (lang === videoConstants.cantoneseLang) {
     return (
       <ExternalLink
-        style={{ color: 'black' }}
         urlBase="https://cantonese.org/search.php?q="
         displayText="Cantonese.org"
         query={queryText}
+        className="border border-blue-300 bg-blue-50 px-2.5 py-0.5 text-xs! font-bold text-blue-800 hover:bg-yellow-100"
       />
     );
   }

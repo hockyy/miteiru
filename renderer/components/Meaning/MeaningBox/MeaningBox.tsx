@@ -69,6 +69,10 @@ const MeaningBox = ({
     meaningContent,
     tokenizeMiteiru,
   );
+  const speechText = useMemo(
+    () => romajiedData[0]?.romajied.map((token) => token.origin).join('') || meaning,
+    [meaning, romajiedData],
+  );
 
   useMeaningCopyShortcuts(isOpen, meaning, rubyHtmlContent);
 
@@ -126,9 +130,9 @@ const MeaningBox = ({
     if (speaking) {
       stop();
     } else {
-      speak(meaning, { lang, voice: selectedVoice });
+      speak(speechText, { lang, voice: selectedVoice });
     }
-  }, [lang, meaning, selectedVoice, speak, speaking, stop]);
+  }, [lang, selectedVoice, speak, speaking, speechText, stop]);
 
   const handleClose = useCallback(() => setMeaning(''), [setMeaning]);
 
