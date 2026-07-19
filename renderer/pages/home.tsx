@@ -8,6 +8,7 @@ import { useCacheManager } from "../hooks/useCacheManager";
 import { MainMenu } from "../components/Home/MainMenu";
 import { HomeSystemPanel } from "../components/Home/HomeSystemPanel";
 import { HOME_PAGE_BG } from "../components/Home/homeMenuTheme";
+import { getMiteiruAppName } from "../utils/utils";
 
 const DICT_CACHE_CONFIRM_STEPS = [
   'Remove all dictionary caches?\n\nThis deletes locally stored dictionary data.',
@@ -123,7 +124,7 @@ function Home() {
   return (
     <React.Fragment>
       <Head>
-        <title>Miteiru v{miteiruVersion}</title>
+        <title>{getMiteiruAppName()} v{miteiruVersion}</title>
       </Head>
       <div className={HOME_PAGE_BG}>
         <div className="mx-auto flex min-h-full w-full max-w-4xl flex-col gap-4">
