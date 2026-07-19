@@ -13,7 +13,7 @@ import useReadyPlayerCallback from "../hooks/useReadyPlayerCallback";
 import useMiteiruToast from "../hooks/useMiteiruToast";
 import useMeaning from "../hooks/useMeaning";
 import Head from "next/head";
-import {getMiteiruVideoTitle} from "../utils/utils";
+import {getMiteiruAppName, getMiteiruVideoTitle} from "../utils/utils";
 import {
   useVideoKeyboardControls,
   useVideoPlayingToggle,
@@ -285,7 +285,7 @@ function Video() {
         <Head>
           <title>{hasVideo
               ? getMiteiruVideoTitle(videoSrc.path, primarySub.path, secondarySub.path, showPrimarySub, showSecondarySub)
-              : "Miteiru - Word of the Day"}</title>
+              : `${getMiteiruAppName()} - Word of the Day`}</title>
         </Head>
         <div>
           <Toast info={toastInfo}/>

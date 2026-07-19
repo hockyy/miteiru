@@ -61,8 +61,11 @@ const getFormattedNameFromPath = (path) => {
 
 }
 
+export const getMiteiruAppName = () =>
+  process.env.NODE_ENV === 'development' ? 'Miteiru (dev)' : 'Miteiru';
+
 export const getMiteiruVideoTitle = (videoPath = '', primarySub = '', secondarySub = '', showPrimarySub: boolean, showSecondarySub: boolean) => {
-  let tmpTitle = `Miteiru${getFormattedNameFromPath(videoPath)}${getFormattedNameFromPath(primarySub)}${getFormattedNameFromPath(secondarySub)}`
+  let tmpTitle = `${getMiteiruAppName()}${getFormattedNameFromPath(videoPath)}${getFormattedNameFromPath(primarySub)}${getFormattedNameFromPath(secondarySub)}`
   tmpTitle += `-CJK${showPrimarySub ? '✅' : '❌'}-Other${showSecondarySub ? '✅' : '❌'}`
   return tmpTitle
 }

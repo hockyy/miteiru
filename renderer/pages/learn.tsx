@@ -16,6 +16,7 @@ import {useStoreData} from "../hooks/useStoreData";
 import useLearningKeyBind from "../hooks/useLearningKeyBind";
 import {isLearningSubtitleLanguage} from "../components/Subtitle/subtitleLanguageSupport";
 import useLearningState from "../hooks/useLearningState";
+import {getMiteiruAppName} from "../utils/utils";
 import useGoogleTranslator from "../hooks/useGoogleTranslator";
 import TranslationDisplay from "../components/Subtitle/TranslationDisplay";
 import useRubyCopy from "../hooks/useRubyCopy";
@@ -315,7 +316,7 @@ function Learn() {
       <React.Fragment>
         {ankiExportModal}
         <Head>
-          <title>Miteiru</title>
+          <title>{getMiteiruAppName()}</title>
         </Head>
         <div
             className={"flex flex-col justify-center items-center bg-white min-h-screen w-[100vw]"}>

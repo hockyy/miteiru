@@ -3,7 +3,7 @@ import Head from 'next/head';
 import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
 import MeaningBox from '../components/Meaning/MeaningBox';
 import {Button} from "../components/Utils/Button";
-import {getRelativeTime} from "../utils/utils";
+import {getMiteiruAppName, getRelativeTime} from "../utils/utils";
 import useLearningState from "../hooks/useLearningState";
 import useLearningKeyBind from "../hooks/useLearningKeyBind";
 
@@ -144,7 +144,7 @@ const VocabFlashCards: React.FC = () => {
   return (
       <React.Fragment>
         <Head>
-          <title>Vocabulary Flash Cards</title>
+          <title>{getMiteiruAppName()} - Vocabulary Flash Cards</title>
         </Head>
         <div
             className="flex flex-col items-center justify-center bg-blue-50 text-black min-h-screen p-6 gap-3">
