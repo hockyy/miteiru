@@ -112,7 +112,13 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
   }, [primaryStyling.removeHearingImpaired])
 
   const loadVideoFile = useCallback((currentPath: string, pathUri: string) => {
-    setVideoSrc(buildVideoSource(currentPath, pathUri));
+    const source = buildVideoSource(currentPath, pathUri);
+    console.log('[video-load] source created', {
+      currentPath,
+      pathUri,
+      source
+    });
+    setVideoSrc(source);
     resetSub(setPrimarySub);
     resetSub(setSecondarySub);
   }, [resetSub, setPrimarySub, setSecondarySub]);
@@ -175,6 +181,13 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       if (!droppedPath) return;
 
       const {currentPath, pathUri} = normalizeDroppedPath(droppedPath);
+      console.log('[video-load] path normalized', {
+        droppedPath,
+        currentPath,
+        pathUri,
+        isVideo: isVideo(currentPath),
+        isYoutube: isYoutube(currentPath)
+      });
       if (isVideo(currentPath) || isYoutube(currentPath)) {
         loadVideoFile(currentPath, pathUri);
       }
@@ -225,6 +238,10 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
   useEffect(() => {
     if (player) {
       const enableSeeker = () => {
+        console.log('[video-load] loadedmetadata', {
+          currentSrc: player.currentSrc(),
+          duration: player.duration()
+        });
         setEnableSeeker(true);
         changeTimeTo(0);
       }
