@@ -1,7 +1,8 @@
-import {app, protocol, session} from 'electron';
+import {app, session} from 'electron';
 import {createWindow} from './helpers';
 import fs from "node:fs";
 import path from "path";
+import {registerMiteiruScheme, setupMiteiruProtocol} from "./miteiruProtocol";
 import {registerCommonHandlers} from "./handler/common";
 import {registerStartupHandlers} from "./handler/startup";
 import Japanese from "./handler/japanese";
@@ -14,6 +15,8 @@ import {getStore} from "./handler/common/storeHandlers";
 
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
+registerMiteiruScheme();
+
 const loadElectronServe = () => {
   return Function("specifier", "return import(specifier)")("electron-serve") as Promise<typeof import("electron-serve")>;
 };
@@ -55,6 +58,7 @@ if (!isProd) {
 (async () => {
   await serveReady;
   await app.whenReady();
+  setupMiteiruProtocol();
   registerYouTubeHeaderWorkaround();
   const appDataDirectory = app.getPath('userData');
   let tokenizerCommand = ''
@@ -103,14 +107,6 @@ if (!isProd) {
   });
   console.log(`[AnalyzerServer] Listening on ${analyzerServer.registration.host}:${analyzerServer.registration.port}`);
 
-  protocol.registerFileProtocol('miteiru', (request, callback) => {
-    const url = request.url.replace('miteiru://', '');
-    try {
-      return callback(decodeURIComponent(path.normalize(url)));
-    } catch (error) {
-      console.error(error);
-    }
-  });
   if (isProd) {
     await mainWindow.loadURL('app://./home');
   } else {

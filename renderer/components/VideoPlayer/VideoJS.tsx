@@ -12,6 +12,32 @@ export const VideoJS = ({options, onReady, setCurrentTime, pitchValue}) => {
   const pitchControlRef = useRef<PitchControl>(new PitchControl());
   const youtubeObserverRef = useRef<MutationObserver | null>(null);
 
+  const logPlayerState = useCallback((player, eventName: string) => {
+    const mediaElement = player.el()?.querySelector('video') as HTMLVideoElement | null;
+    const details = {
+      event: eventName,
+      currentSrc: player.currentSrc(),
+      readyState: mediaElement?.readyState,
+      networkState: mediaElement?.networkState,
+      paused: player.paused(),
+      currentTime: player.currentTime(),
+      duration: player.duration(),
+      mediaError: mediaElement?.error ? {
+        code: mediaElement.error.code,
+        message: mediaElement.error.message
+      } : null,
+      videoJsError: player.error()
+    };
+
+    if (eventName === 'error') {
+      console.error('[video-load] player error', details);
+    } else if (eventName === 'waiting' || eventName === 'stalled') {
+      console.warn('[video-load] player event', details);
+    } else {
+      console.log('[video-load] player event', details);
+    }
+  }, []);
+
   const handle = useCallback(() => {
     setCurrentTime(playerRef.current.currentTime())
   }, [setCurrentTime])
@@ -23,11 +49,21 @@ export const VideoJS = ({options, onReady, setCurrentTime, pitchValue}) => {
   useEffect(() => {
     // Make sure Video.js player is only initialized once
     if (!playerRef.current) {
+      console.log('[video-load] initializing player', {sources: options.sources});
       const videoElement = document.createElement("video-js");
       videoElement.classList.add('vjs-big-play-centered');
       videoRef.current.appendChild(videoElement);
 
       const player = playerRef.current = videojs(videoElement, options, () => {
+        console.log('[video-load] player ready', {
+          currentSrc: player.currentSrc(),
+          sources: options.sources
+        });
+        ['loadstart', 'loadeddata', 'canplay', 'playing', 'waiting', 'stalled', 'error']
+          .forEach((eventName) => {
+            player.on(eventName, () => logPlayerState(player, eventName));
+          });
+
         const applyYouTubeIframeAttributes = () => {
           const iframe = player.el()?.querySelector("iframe");
           if (iframe) {
@@ -54,10 +90,14 @@ export const VideoJS = ({options, onReady, setCurrentTime, pitchValue}) => {
       });
     } else {
       if (options.sources[0].src !== playerRef.current.currentSrc()) {
+        console.log('[video-load] changing source', {
+          from: playerRef.current.currentSrc(),
+          to: options.sources[0]
+        });
         playerRef.current.src(options.sources);
       }
     }
-  }, [onReady, options, videoRef]);
+  }, [logPlayerState, onReady, options, videoRef]);
 
   useEffect(() => {
     const interval = setInterval(() => {
