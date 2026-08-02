@@ -19,6 +19,13 @@ const parseSRT = async (text: string) => {
   return parse(text);
 };
 
+const normalizeFileSystemPath = (filePath: string) => {
+  const withoutUriSlash = process.platform === "win32" && /^\/[A-Za-z]:[\\/]/.test(filePath)
+    ? filePath.slice(1)
+    : filePath;
+  return path.normalize(withoutUriSlash);
+};
+
 interface SubtitleEntry {
   id?: string;
   from: number;
@@ -253,10 +260,12 @@ export function registerMediaHandlers() {
 
   ipcMain.handle("parse-subtitle", async (event, filename) => {
     try {
-      const buffer = await fsPromises.readFile(filename);
+      const resolvedFilename = normalizeFileSystemPath(filename);
+      console.log("[IPC] parse-subtitle", {filename, resolvedFilename});
+      const buffer = await fsPromises.readFile(resolvedFilename);
       const currentData = await languageEncoding(buffer);
       const text = iconv.decode(buffer, currentData.encoding);
-      const lowerFilename = filename.toLowerCase();
+      const lowerFilename = resolvedFilename.toLowerCase();
 
       const isLikelyHuf = () => {
         if (lowerFilename.endsWith(".huf")) return true;
@@ -297,11 +306,13 @@ export function registerMediaHandlers() {
 
   ipcMain.handle("preprocess-subtitle-capitalization", async (event, filename) => {
     try {
-      const buffer = await fsPromises.readFile(filename);
+      const resolvedFilename = normalizeFileSystemPath(filename);
+      console.log("[IPC] preprocess-subtitle-capitalization", {filename, resolvedFilename});
+      const buffer = await fsPromises.readFile(resolvedFilename);
       const currentData = await languageEncoding(buffer);
       const text = iconv.decode(buffer, currentData.encoding);
-      const entries = await getSubtitleEntries(filename, text);
-      const safeBaseName = path.basename(filename, path.extname(filename)).replace(/[^a-zA-Z0-9._-]/g, "_");
+      const entries = await getSubtitleEntries(resolvedFilename, text);
+      const safeBaseName = path.basename(resolvedFilename, path.extname(resolvedFilename)).replace(/[^a-zA-Z0-9._-]/g, "_");
       const outputPath = path.join(os.tmpdir(), `miteiru_normalized_${safeBaseName}_${Date.now()}.srt`);
 
       await fsPromises.writeFile(outputPath, entriesToSrt(entries), "utf8");

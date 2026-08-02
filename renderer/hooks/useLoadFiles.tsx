@@ -62,6 +62,9 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       : filePath;
 
     const tmpSub = await SubtitleContainer.create(subtitlePath, lang, primaryStyling.forceSimplified);
+    if (!tmpSub) {
+      throw new Error(`Subtitle parser returned no data for: ${subtitlePath}`);
+    }
     return {tmpSub, subtitlePath};
   }, [lang, primaryStyling.forceSimplified]);
 
@@ -158,6 +161,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     let toastSetter = null;
 
     try {
+      console.log('[subtitle-load] loading external subtitle', {currentPath});
       toastSetter = setInterval(() => {
         showToast('Still loading subtitle, please wait!');
       }, TOAST_TIMEOUT);
@@ -178,7 +182,11 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
 
     try {
       const droppedPath = await acceptedFiles[0]?.path;
-      if (!droppedPath) return;
+      if (!droppedPath) {
+        console.error('[file-load] dropped file has no filesystem path', acceptedFiles[0]);
+        showToast('Could not read the dropped file path');
+        return;
+      }
 
       const {currentPath, pathUri} = normalizeDroppedPath(droppedPath);
       console.log('[video-load] path normalized', {

@@ -24,7 +24,10 @@ export const MiteiruDropzone = ({
     if (isYoutube(url)) {
       onDrop([{path: url}]);
     } else if (files.length) {
-      const filesWithPath = files.map(file => ({path: file.path}));
+      const filesWithPath = files.map(file => ({
+        path: window.electronAPI.getPath(file)
+      }));
+      console.log('[file-drop] resolved files', filesWithPath);
       const videoFile = files.find(file => isVideo(file.name));
       if (videoFile) {
         const videoFilePath = window.electronAPI.getPath(videoFile);
