@@ -321,7 +321,7 @@ export class SubtitleContainer {
       return subtitleContainer;
     } catch (error) {
       console.error('Error parsing subtitle:', error);
-      return null;
+      throw error;
     }
   }
 
