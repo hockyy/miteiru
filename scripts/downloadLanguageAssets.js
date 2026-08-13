@@ -19,7 +19,7 @@ const getPluginIdFromAssetName = (assetName) => {
   return match ? match[1] : null;
 };
 
-const getReleaseAssets = async () => {
+const getReleaseAssets = async () => withRetry(async () => {
   const response = await axios.get(releaseApiUrl, {
     headers: {
       Accept: 'application/vnd.github+json',
@@ -28,7 +28,7 @@ const getReleaseAssets = async () => {
   });
 
   return response.data.assets ?? [];
-};
+}, 'Fetch asset list');
 
 const getLanguageAssetDownloads = async () => {
   const assets = await getReleaseAssets();
@@ -45,6 +45,65 @@ const getLanguageAssetDownloads = async () => {
   .sort((a, b) => a.pluginId.localeCompare(b.pluginId));
 };
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const withRetry = async (fn, label, attempts = 3) => {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (attempt >= attempts) throw error;
+      const delaySeconds = attempt * 5;
+      console.warn(
+        `${label} failed (attempt ${attempt}/${attempts}): ${error.message}. `
+        + `Retrying in ${delaySeconds}s...`
+      );
+      await sleep(delaySeconds * 1000);
+    }
+  }
+};
+
+const downloadAssetOnce = async ({name, size, url, targetPath}) => {
+  const temporaryPath = `${targetPath}.download`;
+  fs.rmSync(temporaryPath, {force: true});
+  console.log(`Downloading ${name}${size ? ` (${(size / 1024 / 1024).toFixed(1)} MB)` : ''}...`);
+
+  try {
+    const response = await axios({
+      method: 'GET',
+      url,
+      responseType: 'stream'
+    });
+
+    const writer = fs.createWriteStream(temporaryPath);
+    const totalLength = Number(response.headers['content-length'] ?? size ?? 0);
+    let downloadedLength = 0;
+
+    response.data.on('data', (chunk) => {
+      downloadedLength += chunk.length;
+      if (!totalLength) return;
+
+      const progress = (downloadedLength / totalLength * 100).toFixed(1);
+      process.stdout.write(`Downloading ${name}: ${progress}%\r`);
+    });
+
+    response.data.pipe(writer);
+
+    await new Promise((resolve, reject) => {
+      writer.on('finish', resolve);
+      writer.on('error', reject);
+      response.data.on('error', reject);
+    });
+  } catch (error) {
+    fs.rmSync(temporaryPath, {force: true});
+    throw error;
+  }
+
+  fs.renameSync(temporaryPath, targetPath);
+  process.stdout.write('\n');
+  console.log(`Saved ${targetPath}`);
+};
+
 const downloadAsset = async ({name, size, url}) => {
   const targetPath = path.join(archiveRoot, name);
   if (!forceDownload && fs.existsSync(targetPath)) {
@@ -52,38 +111,10 @@ const downloadAsset = async ({name, size, url}) => {
     return;
   }
 
-  const temporaryPath = `${targetPath}.download`;
-  fs.rmSync(temporaryPath, {force: true});
-  console.log(`Downloading ${name}${size ? ` (${(size / 1024 / 1024).toFixed(1)} MB)` : ''}...`);
-
-  const response = await axios({
-    method: 'GET',
-    url,
-    responseType: 'stream'
-  });
-
-  const writer = fs.createWriteStream(temporaryPath);
-  const totalLength = Number(response.headers['content-length'] ?? size ?? 0);
-  let downloadedLength = 0;
-
-  response.data.on('data', (chunk) => {
-    downloadedLength += chunk.length;
-    if (!totalLength) return;
-
-    const progress = (downloadedLength / totalLength * 100).toFixed(1);
-    process.stdout.write(`Downloading ${name}: ${progress}%\r`);
-  });
-
-  response.data.pipe(writer);
-
-  await new Promise((resolve, reject) => {
-    writer.on('finish', resolve);
-    writer.on('error', reject);
-  });
-
-  fs.renameSync(temporaryPath, targetPath);
-  process.stdout.write('\n');
-  console.log(`Saved ${targetPath}`);
+  await withRetry(
+    () => downloadAssetOnce({name, size, url, targetPath}),
+    `Download ${name}`
+  );
 };
 
 const run = async () => {
