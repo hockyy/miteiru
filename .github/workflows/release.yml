@@ -51,6 +51,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Language asset payloads (dictionaries, tokenizers, SVGs) are gitignored;
+      # fetch them from the `assets` release so installers bundle them.
+      - name: Download language assets
+        run: npm run script:download-language-assets
+
       - name: Build artifacts
         run: ${{ matrix.build }}
         env:
