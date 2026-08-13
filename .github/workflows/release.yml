@@ -53,8 +53,12 @@ jobs:
 
       # Language asset payloads (dictionaries, tokenizers, SVGs) are gitignored;
       # fetch them from the `assets` release so installers bundle them.
+      # GITHUB_TOKEN authenticates the release-list API call (unauthenticated
+      # calls share a 60 req/hr pool per runner IP and often 403).
       - name: Download language assets
         run: npm run script:download-language-assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build artifacts
         run: ${{ matrix.build }}

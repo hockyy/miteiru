@@ -20,10 +20,14 @@ const getPluginIdFromAssetName = (assetName) => {
 };
 
 const getReleaseAssets = async () => withRetry(async () => {
+  // Authenticate when possible: unauthenticated GitHub API calls share a
+  // 60 req/hr pool per runner IP, which CI runners exhaust easily (403).
+  const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
   const response = await axios.get(releaseApiUrl, {
     headers: {
       Accept: 'application/vnd.github+json',
-      'User-Agent': 'miteiru-language-assets'
+      'User-Agent': 'miteiru-language-assets',
+      ...(token ? {Authorization: `Bearer ${token}`} : {})
     }
   });
 
