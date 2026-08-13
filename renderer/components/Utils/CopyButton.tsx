@@ -5,6 +5,8 @@ import {FaCheck, FaCopy} from 'react-icons/fa';
 interface CopyButtonProps {
   text: string;
   label?: string;
+  /** Keyboard shortcut hint rendered inside the button (e.g. "W"). */
+  shortcut?: string;
   /** Tailwind classes for border/text/hover — defaults to purple (Learn panel) */
   className?: string;
 }
@@ -15,6 +17,7 @@ const defaultClassName =
 export const CopyButton: React.FC<CopyButtonProps> = ({
   text,
   label = 'Copy',
+  shortcut,
   className = defaultClassName,
 }) => {
   const [copied, setCopied] = useState(false);
@@ -41,6 +44,11 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
       className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded border px-2.5 py-1 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${className}`}
     >
       {copied ? <FaCheck className="h-3 w-3 shrink-0" /> : <FaCopy className="h-3 w-3 shrink-0" />}
+      {shortcut && !copied ? (
+        <kbd className="rounded border border-current px-1 text-[10px] font-bold opacity-70">
+          {shortcut}
+        </kbd>
+      ) : null}
       <span>{copied ? 'Copied' : label}</span>
     </button>
   );
