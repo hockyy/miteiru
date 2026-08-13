@@ -1,0 +1,96 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to build and upload to (e.g. v7.4.5)'
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            build: npm run build:nsis && npm run build:portable
+            extensions: exe
+          - os: macos-latest
+            build: npm run build:macos
+            extensions: pkg
+          - os: ubuntu-22.04
+            build: npm run build:linux22
+            extensions: deb,AppImage
+          - os: ubuntu-24.04
+            build: npm run build:linux24
+            extensions: deb,AppImage
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build artifacts
+        run: ${{ matrix.build }}
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve tag
+        id: meta
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create release if missing
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view "${{ steps.meta.outputs.tag }}" --repo "${{ github.repository }}" >/dev/null 2>&1 \
+            || gh release create "${{ steps.meta.outputs.tag }}" \
+                 --repo "${{ github.repository }}" \
+                 --title "${{ steps.meta.outputs.tag }}" \
+                 --generate-notes
+
+      - name: Upload artifacts to release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          shopt -s nullglob
+          files=()
+          IFS=',' read -ra exts <<< "${{ matrix.extensions }}"
+          for ext in "${exts[@]}"; do
+            files+=(dist/*."${ext}")
+          done
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No artifacts found in dist/"; ls -la dist/; exit 1
+          fi
+          gh release upload "${{ steps.meta.outputs.tag }}" "${files[@]}" \
+            --repo "${{ github.repository }}" --clobber
