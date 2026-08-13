@@ -19,8 +19,8 @@ export const useMeaningRomajied = (
     const fetchRomajiedData = async () => {
       if (lang === videoConstants.japaneseLang) {
         const data = await Promise.all(
-          meaningContent.single.map(async (entry) => ({
-            key: entry.key,
+          meaningContent.single.map(async (entry, index) => ({
+            key: entry.key ?? index,
             romajied: (await tokenizeMiteiru(entry.text)) as RomajiedGroup['romajied'],
           })),
         );
