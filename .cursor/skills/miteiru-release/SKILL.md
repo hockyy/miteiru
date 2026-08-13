@@ -64,7 +64,12 @@ description: Bump Miteiru version, write docs/whats-new release notes, commit, a
    git push origin vX.Y.Z
    gh workflow run release.yml -f tag=vX.Y.Z
    ```
-   The workflow builds Windows/macOS/Linux installers from `main` and attaches them to the GitHub release for that tag (creating the release if missing, publishing it when done).
+   The workflow builds Windows/macOS/Linux installers from `main` and attaches them to the GitHub release for that tag (creating the release if missing — with `docs/whats-new/X.Y.Z.md` as the body when present — and publishing it when done).
+
+8. **Format the release title** — after the build finishes, set the pretty title matching previous releases (`[X.Y.Z] Short summary`):
+   ```bash
+   gh release edit vX.Y.Z --title "[X.Y.Z] <short summary of highlights>"
+   ```
 
 ## Conventions
 
