@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   classifyAccent,
   isMoraHigh,
+  isParticleHigh,
   lookupPitchAccent,
   splitIntoMorae,
   toHiraganaSafe,
@@ -36,6 +37,12 @@ test('classifyAccent maps accent number + mora count to pattern', () => {
   assert.equal(classifyAccent(4, 4), 'odaka');
   assert.equal(classifyAccent(1, 1), 'atamadaka');
   assert.equal(classifyAccent(0, 1), 'heiban');
+});
+
+test('isParticleHigh only keeps the particle high for heiban words', () => {
+  assert.equal(isParticleHigh(0), true);
+  assert.equal(isParticleHigh(1), false);
+  assert.equal(isParticleHigh(3), false);
 });
 
 test('isMoraHigh reproduces Tokyo pitch contours', () => {

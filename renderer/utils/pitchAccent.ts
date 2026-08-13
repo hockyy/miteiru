@@ -27,6 +27,16 @@ export const PITCH_PATTERN_LABEL: Record<PitchPattern, string> = {
   odaka: '尾高',
 };
 
+export const PITCH_PATTERN_EN: Record<PitchPattern, string> = {
+  heiban: 'heiban (flat)',
+  atamadaka: 'atamadaka (head-high)',
+  nakadaka: 'nakadaka (middle-high)',
+  odaka: 'odaka (tail-high)',
+};
+
+/** Whether a following particle stays high — only heiban keeps it high. */
+export const isParticleHigh = (accent: number): boolean => accent === 0;
+
 const SMALL_KANA = new Set([
   ...'ぁぃぅぇぉゃゅょゎゕゖ',
   ...'ァィゥェォャュョヮヵヶ',
