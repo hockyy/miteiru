@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
+import { FaChevronDown } from "react-icons/fa";
 import { Button } from "../../../Utils/Button";
 import type { UserNoteExample } from "../../../../hooks/useUserNotes";
 import {
@@ -40,6 +41,7 @@ export const InflectionSection = ({
   isGenerating,
   errorMessage = null,
 }: InflectionSectionProps) => {
+  const [open, setOpen] = useState(false);
   const [showExtended, setShowExtended] = useState(false);
 
   const essentialRows = useMemo(
@@ -63,25 +65,41 @@ export const InflectionSection = ({
   );
 
   const handleGenerate = useCallback(async () => {
+    setOpen(true);
     await onGenerateExamples(visibleRows);
   }, [onGenerateExamples, visibleRows]);
 
   return (
     <section className={MEANING_SECTION}>
-      <div className={MEANING_SECTION_HEADER}>
-        <div className="min-w-0">
-          <h3 className={MEANING_SECTION_TITLE}>
-            Inflection · {KIND_LABELS[table.kind]}
-            {table.dictionaryForm !== table.clickedForm ? (
-              <span className="ml-2 font-normal normal-case text-blue-800">
-                from {table.dictionaryForm}
-              </span>
-            ) : null}
-          </h3>
-          <p className="mt-0.5 text-xs font-medium text-blue-700">
-            AI examples appear in the table below and are saved to My Notes
-          </p>
-        </div>
+      <div
+        className={`${MEANING_SECTION_HEADER} ${open ? "" : "border-b-0"}`}
+      >
+        <button
+          type="button"
+          onClick={() => setOpen((current) => !current)}
+          aria-expanded={open}
+          className="flex min-w-0 flex-1 items-center gap-2 text-left"
+        >
+          <FaChevronDown
+            aria-hidden="true"
+            className={`shrink-0 text-blue-900 transition-transform ${open ? "rotate-180" : ""}`}
+          />
+          <div className="min-w-0">
+            <h3 className={MEANING_SECTION_TITLE}>
+              Inflection · {KIND_LABELS[table.kind]}
+              {table.dictionaryForm !== table.clickedForm ? (
+                <span className="ml-2 font-normal normal-case text-blue-800">
+                  from {table.dictionaryForm}
+                </span>
+              ) : null}
+            </h3>
+            <p className="mt-0.5 text-xs font-medium text-blue-700">
+              {open
+                ? "AI examples appear in the table below and are saved to My Notes"
+                : `${table.rows.length} forms`}
+            </p>
+          </div>
+        </button>
         <Button
           type="secondary"
           size="small"
@@ -92,6 +110,7 @@ export const InflectionSection = ({
         </Button>
       </div>
 
+      {open ? (
       <div className="space-y-4 px-4 py-3 text-sm">
         {errorMessage ? (
           <p className="rounded-lg border border-red-400 bg-red-50 px-3 py-2 text-sm text-red-800">
@@ -179,6 +198,7 @@ export const InflectionSection = ({
           </button>
         ) : null}
       </div>
+      ) : null}
     </section>
   );
 };
