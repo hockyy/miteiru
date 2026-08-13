@@ -103,3 +103,6 @@ jobs:
           fi
           gh release upload "${{ steps.meta.outputs.tag }}" "${files[@]}" \
             --repo "${{ github.repository }}" --clobber
+          # Safety net: ensure the release ends up published + latest.
+          gh release edit "${{ steps.meta.outputs.tag }}" \
+            --repo "${{ github.repository }}" --draft=false --latest
