@@ -197,18 +197,9 @@ export const JapaneseSentence = ({
   useEffect(() => {
     setSeparationContent(() => {
       return separation.map((val, index) => {
-        const hiragana = (<>
-          <rp>(</rp>
-          <rt>{val.hiragana ?? ''}</rt>
-          <rp>)</rp>
-        </>
-        )
-        const romaji = (<>
-          <rp>(</rp>
-          <rt>{val.romaji != '' ? val.romaji : toRomaji(val.main)}</rt>
-          <rp>)</rp>
-        </>
-        )
+        // Plain text only: these render inside an <rt>, and nested <rt>/<rp> is invalid HTML.
+        const hiragana = val.hiragana ?? '';
+        const romaji = val.romaji != '' ? val.romaji : toRomaji(val.main);
         const showHelp = val.isKanji || val.isMixed || isMixed(origin);
         const showRomaji = (val.isKana || showHelp);
         const showFurigana = ((val.isKana && subtitleStyling.showFuriganaOnKana) || showHelp);
@@ -265,12 +256,6 @@ export const KanjiSentence = ({
   }, [setMeaning]);
   return <>
     {separation.map((val, index) => {
-      const hiragana = (<>
-        <rp>(</rp>
-        <rt>{val.hiragana ?? ''}</rt>
-        <rp>)</rp>
-      </>
-      )
       return <ruby style={{
         rubyPosition: "under",
         WebkitTextFillColor: subtitleStyling.text.color,
@@ -286,7 +271,7 @@ export const KanjiSentence = ({
               }}><>{char as ReactNode}</>
             </StyledSentence>
           })}
-          <rt className={"unselectable"}>{hiragana}</rt>
+          <rt className={"unselectable"}>{val.hiragana ?? ''}</rt>
         </ruby>
       </ruby>
     })}

@@ -17,17 +17,18 @@ export const getMeaningEntries = async (term, lang) => {
   if (lang === videoConstants.japaneseLang) {
     entries = await window.ipc.invoke('queryJapanese', term, 5);
     entries.forEach(entry => {
-      entry.single = entry.kanji.length ? entry.kanji : [{text: term}];
+      const variants = entry.kanji.length ? entry.kanji : [{text: term}];
+      entry.single = variants.map((item, index) => ({...item, key: item.key ?? index}));
     });
   } else if (lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang) {
     entries = await window.ipc.invoke('queryChinese', term, 5);
     entries.forEach(entry => {
-      entry.single = entry.content.split('，').map(text => ({text}));
+      entry.single = entry.content.split('，').map((text, index) => ({key: index, text}));
     });
   } else if (lang === videoConstants.vietnameseLang) {
     entries = await window.ipc.invoke('queryVietnamese', term, 5);
     entries.forEach(entry => {
-      entry.single = entry.content.split(' ').map(text => ({text}));
+      entry.single = entry.content.split(' ').map((text, index) => ({key: index, text}));
     });
   }
 
@@ -35,7 +36,7 @@ export const getMeaningEntries = async (term, lang) => {
     if (lang === videoConstants.japaneseLang) {
       entries.push({
         id: "0",
-        single: [{text: term}],
+        single: [{key: 0, text: term}],
         sense: []
       });
     } else {
@@ -46,7 +47,7 @@ export const getMeaningEntries = async (term, lang) => {
         pinyin: [],
         jyutping: [],
         meaning: [],
-        single: [{text: term}]
+        single: [{key: 0, text: term}]
       });
     }
   }
@@ -136,7 +137,7 @@ export const getRomajiedDataForMeaningContent = async (term, meaningContent, lan
       return [];
     }
     return [{
-      key: first.key || first.text,
+      key: first.key ?? 0,
       romajied: await tokenizeMiteiru(first.text),
     }];
   }
