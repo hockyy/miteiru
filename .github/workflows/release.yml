@@ -78,11 +78,18 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release view "${{ steps.meta.outputs.tag }}" --repo "${{ github.repository }}" >/dev/null 2>&1 \
-            || gh release create "${{ steps.meta.outputs.tag }}" \
-                 --repo "${{ github.repository }}" \
-                 --title "${{ steps.meta.outputs.tag }}" \
-                 --generate-notes
+          tag="${{ steps.meta.outputs.tag }}"
+          if gh release view "$tag" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            exit 0
+          fi
+          notes="docs/whats-new/${tag#v}.md"
+          if [ -f "$notes" ]; then
+            gh release create "$tag" --repo "${{ github.repository }}" \
+              --title "$tag" --notes-file "$notes"
+          else
+            gh release create "$tag" --repo "${{ github.repository }}" \
+              --title "$tag" --generate-notes
+          fi
 
       - name: Upload artifacts to release
         shell: bash
