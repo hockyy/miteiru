@@ -1,8 +1,9 @@
 import {videoConstants} from "./constants";
 
 export const isArrayEndsWithMatcher = (path, arrayMatcher) => {
+  const lowerPath = path.toLowerCase();
   for (const videoFormat of arrayMatcher) {
-    if (path.endsWith('.' + videoFormat)) {
+    if (lowerPath.endsWith('.' + videoFormat)) {
       return true
     }
   }
@@ -22,7 +23,7 @@ export const isYoutube = (url) => {
   //  - http://youtu.be/VIDEO_ID
   //  - youtube.com/embed/VIDEO_ID
   //  - https://www.youtube.com/shorts/VIDEO_ID
-  const pattern = /^(http(s)?:\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/(watch|embed|v|shorts)?(\?v=)?(\?embed)?\/?(\S+)?$/;
+  const pattern = /^(https?:\/\/)?((www|m)\.)?(youtube\.com\/(watch\?v=|embed\/|v\/|shorts\/)?|youtu\.be\/)\S+$/;
   return pattern.test(url);
 }
 
@@ -47,12 +48,12 @@ export const isSubtitle = (path) => {
 }
 
 export const extractVideoId = (url) => {
-  const regex = /(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/(watch\?v=)?([^&]+)/;
+  const regex = /(?:youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\/)([^&?#\s/]+)/;
   const results = regex.exec(url);
   if (!results) {
     return null;
   }
-  return results[5];
+  return results[1];
 }
 
 const getFormattedNameFromPath = (path) => {
@@ -71,7 +72,7 @@ export const getMiteiruVideoTitle = (videoPath = '', primarySub = '', secondaryS
 }
 
 export const toTime = (time: number) => {
-  time = Math.trunc(time)
+  time = Math.max(0, Math.trunc(time))
   const seconds = time % 60;
   time -= seconds;
   time /= 60;
@@ -138,7 +139,7 @@ export const getColorGradient = (timestamp) => {
   const now = new Date().getTime();
   const diff = now - timestamp;
   const maxDiff = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
-  const ratio = Math.min(diff / maxDiff, 1);
+  const ratio = Math.min(Math.max(diff / maxDiff, 0), 1);
 
   // Pastel green (newest) to pastel red (oldest)
   const red = Math.round(255 * (0.5 + ratio * 0.5));

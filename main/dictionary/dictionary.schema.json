@@ -1,0 +1,306 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miteiru.hocky.id/schemas/dictionary.schema.json",
+  "title": "Miteiru Universal Dictionary",
+  "description": "Language-agnostic dictionary document. The common entry shape works for any language (BCP-47); language-specific data lives in a dedicated sub-object (japanese / mandarin / cantonese) that is validated against that language's subschema.",
+  "type": "object",
+  "required": ["version", "language", "entries"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the dictionary data, e.g. \"1.0.0\"."
+    },
+    "language": {"$ref": "#/$defs/languageCode"},
+    "name": {"type": "string"},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {"type": "string"},
+        "url": {"type": "string", "format": "uri"},
+        "license": {"type": "string"}
+      }
+    },
+    "entries": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/entry"}
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"language": {"$ref": "#/$defs/japaneseLanguageCode"}}},
+      "then": {"properties": {"entries": {"items": {"$ref": "#/$defs/japaneseEntry"}}}}
+    },
+    {
+      "if": {"properties": {"language": {"$ref": "#/$defs/mandarinLanguageCode"}}},
+      "then": {"properties": {"entries": {"items": {"$ref": "#/$defs/mandarinEntry"}}}}
+    },
+    {
+      "if": {"properties": {"language": {"$ref": "#/$defs/cantoneseLanguageCode"}}},
+      "then": {"properties": {"entries": {"items": {"$ref": "#/$defs/cantoneseEntry"}}}}
+    },
+    {
+      "if": {
+        "properties": {
+          "language": {
+            "not": {"anyOf": [
+              {"$ref": "#/$defs/japaneseLanguageCode"},
+              {"$ref": "#/$defs/mandarinLanguageCode"},
+              {"$ref": "#/$defs/cantoneseLanguageCode"}
+            ]}
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "entries": {
+            "items": {
+              "not": {"anyOf": [
+                {"required": ["japanese"]},
+                {"required": ["mandarin"]},
+                {"required": ["cantonese"]}
+              ]}
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "languageCode": {
+      "type": "string",
+      "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$",
+      "description": "BCP-47-ish code, e.g. en, ja, zh-CN, zh-Hans, yue, vi."
+    },
+    "japaneseLanguageCode": {
+      "enum": ["ja", "jpn"]
+    },
+    "mandarinLanguageCode": {
+      "enum": ["zh", "zh-CN", "zh-Hans", "zh-TW", "zh-Hant", "cmn"]
+    },
+    "cantoneseLanguageCode": {
+      "enum": ["yue", "zh-HK", "zh-Hant-HK"]
+    },
+    "gloss": {
+      "description": "A gloss is either a plain string or an object carrying the text plus the gloss language.",
+      "oneOf": [
+        {"type": "string", "minLength": 1},
+        {
+          "type": "object",
+          "required": ["text"],
+          "additionalProperties": false,
+          "properties": {
+            "text": {"type": "string", "minLength": 1},
+            "lang": {"$ref": "#/$defs/languageCode"}
+          }
+        }
+      ]
+    },
+    "sense": {
+      "type": "object",
+      "required": ["gloss"],
+      "additionalProperties": false,
+      "properties": {
+        "gloss": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/gloss"}
+        },
+        "partOfSpeech": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "description": "Free-form POS tags; each dictionary source has its own tagset (e.g. JMdict \"v1\", \"adj-i\")."
+        },
+        "examples": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["text"],
+            "additionalProperties": false,
+            "properties": {
+              "text": {"type": "string", "minLength": 1},
+              "translation": {"type": "string"}
+            }
+          }
+        },
+        "info": {"type": "array", "items": {"type": "string"}},
+        "related": {"type": "array", "items": {"type": "string"}},
+        "dialect": {"type": "array", "items": {"type": "string"}},
+        "field": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "entry": {
+      "type": "object",
+      "required": ["id", "headword"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "oneOf": [{"type": "string", "minLength": 1}, {"type": "integer", "minimum": 0}],
+          "description": "Stable identifier from the source dictionary."
+        },
+        "headword": {"type": "string", "minLength": 1},
+        "readings": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "description": "Generic reading aids (transliteration/pronunciation) for languages without a dedicated subschema."
+        },
+        "senses": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/sense"}
+        },
+        "tags": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "frequency": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Frequency rank; lower means more frequent."
+        },
+        "japanese": {"$ref": "#/$defs/japaneseExtension"},
+        "mandarin": {"$ref": "#/$defs/mandarinExtension"},
+        "cantonese": {"$ref": "#/$defs/cantoneseExtension"}
+      }
+    },
+    "japaneseEntry": {
+      "allOf": [
+        {"$ref": "#/$defs/entry"},
+        {
+          "not": {"anyOf": [
+            {"required": ["mandarin"]},
+            {"required": ["cantonese"]}
+          ]}
+        },
+        {
+          "properties": {
+            "japanese": {"$ref": "#/$defs/japaneseExtension"},
+            "senses": {
+              "type": "array",
+              "items": {
+                "allOf": [
+                  {"$ref": "#/$defs/sense"},
+                  {"required": ["partOfSpeech"]}
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "mandarinEntry": {
+      "allOf": [
+        {"$ref": "#/$defs/entry"},
+        {
+          "not": {"anyOf": [
+            {"required": ["japanese"]},
+            {"required": ["cantonese"]}
+          ]}
+        },
+        {"required": ["mandarin"]}
+      ]
+    },
+    "cantoneseEntry": {
+      "allOf": [
+        {"$ref": "#/$defs/entry"},
+        {
+          "not": {"anyOf": [
+            {"required": ["japanese"]},
+            {"required": ["mandarin"]}
+          ]}
+        },
+        {"required": ["cantonese"]}
+      ]
+    },
+    "japaneseExtension": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kanji": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["text"],
+            "additionalProperties": false,
+            "properties": {
+              "text": {"type": "string", "minLength": 1},
+              "common": {"type": "boolean"},
+              "tags": {"type": "array", "items": {"type": "string"}}
+            }
+          }
+        },
+        "kana": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["text"],
+            "additionalProperties": false,
+            "properties": {
+              "text": {"type": "string", "minLength": 1},
+              "common": {"type": "boolean"},
+              "tags": {"type": "array", "items": {"type": "string"}},
+              "appliesToKanji": {
+                "type": "array",
+                "items": {"type": "string", "minLength": 1},
+                "description": "Which kanji forms this kana applies to; [\"*\"] means all."
+              }
+            }
+          }
+        },
+        "kanjiInfo": {
+          "type": "array",
+          "description": "KANJIDIC-style per-character data.",
+          "items": {
+            "type": "object",
+            "required": ["literal"],
+            "additionalProperties": false,
+            "properties": {
+              "literal": {"type": "string", "minLength": 1, "maxLength": 2},
+              "strokeCount": {"type": "integer", "minimum": 1},
+              "onYomi": {"type": "array", "items": {"type": "string"}},
+              "kunYomi": {"type": "array", "items": {"type": "string"}},
+              "meanings": {"type": "array", "items": {"type": "string"}},
+              "jlpt": {"type": "integer", "minimum": 1, "maximum": 5}
+            }
+          }
+        }
+      }
+    },
+    "mandarinExtension": {
+      "type": "object",
+      "required": ["simplified", "pinyin"],
+      "additionalProperties": false,
+      "properties": {
+        "simplified": {"type": "string", "minLength": 1},
+        "traditional": {"type": "string", "minLength": 1},
+        "pinyin": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/pinyinString"}
+        }
+      }
+    },
+    "cantoneseExtension": {
+      "type": "object",
+      "required": ["jyutping"],
+      "additionalProperties": false,
+      "properties": {
+        "jyutping": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/jyutpingString"}
+        },
+        "simplified": {"type": "string", "minLength": 1},
+        "traditional": {"type": "string", "minLength": 1}
+      }
+    },
+    "pinyinString": {
+      "type": "string",
+      "pattern": "^[a-züāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]+'?[a-züāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]*[1-5]?( [a-züāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]+'?[a-züāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]*[1-5]?)*$",
+      "description": "Space-separated pinyin syllables, tone marks or tone numbers 1-5."
+    },
+    "jyutpingString": {
+      "type": "string",
+      "pattern": "^[a-z]+[1-6]?( [a-z]+[1-6]?)*$",
+      "description": "Space-separated Jyutping syllables with optional LSHK tone number 1-6."
+    }
+  }
+}

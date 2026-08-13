@@ -62,7 +62,7 @@ export const getDictionaryDefinitions = (meaningContent, lang) => {
   if (meaningContent?.sense?.length) {
     return meaningContent.sense.flatMap((sense) => (
       sense?.gloss || []
-    ).map((gloss) => gloss?.text));
+    ).map((gloss) => gloss?.text).filter((text) => typeof text === 'string' && text.length > 0));
   }
 
   return [];
@@ -91,6 +91,14 @@ export const getPrimaryRomajiedVariant = (romajiedData) => {
   return [romajiedData[0]];
 };
 
+// Local copy: importing escapeHtml from ankiExport would create a circular import.
+const escapeHtml = (value) => String(value ?? '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
 export const buildRubyHtmlFromRomajiedData = (romajiedData) => {
   let rubyHtml = '';
   romajiedData.forEach(({ romajied }) => {
@@ -110,10 +118,10 @@ export const buildRubyHtmlFromRomajiedData = (romajiedData) => {
             } else if (isVietnameseSentence) {
               reading = part.meaning || '';
             }
-            rubyHtml += `<ruby>${part.main}<rt>${reading}</rt></ruby>`;
+            rubyHtml += `<ruby>${escapeHtml(part.main)}<rt>${escapeHtml(reading)}</rt></ruby>`;
           });
         } else {
-          rubyHtml += token.origin || token;
+          rubyHtml += escapeHtml(typeof token === 'string' ? token : (token.origin ?? ''));
         }
       });
     }
