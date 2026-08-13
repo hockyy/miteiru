@@ -1,4 +1,5 @@
 import React, { useCallback, useState, useEffect, useMemo } from 'react';
+import { FaChevronDown } from 'react-icons/fa';
 import { Button } from '../Utils/Button';
 import { MiteiruUserEntry, UserNoteExample } from '../../hooks/useUserNotes';
 import { emptyUserNote } from '../../utils/aiUserNotePrompts';
@@ -80,10 +81,18 @@ export const UserNotesSection: React.FC<UserNotesSectionProps> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState<MiteiruUserEntry>(emptyUserNote());
+  const [open, setOpen] = useState(false);
+  const [toggled, setToggled] = useState(false);
 
   useEffect(() => {
     setDraft(userNote ? cloneEntry(userNote) : emptyUserNote());
   }, [userNote, term]);
+
+  useEffect(() => {
+    setOpen(false);
+    setToggled(false);
+    setIsEditing(false);
+  }, [term]);
 
   const handleSave = useCallback(async () => {
     await onSave({
@@ -166,6 +175,26 @@ export const UserNotesSection: React.FC<UserNotesSectionProps> = ({
     )
   );
 
+  // Default open when a note exists, closed when empty — until the user toggles.
+  useEffect(() => {
+    if (!toggled && hasSavedNote) setOpen(true);
+  }, [hasSavedNote, toggled]);
+
+  const toggleOpen = useCallback(() => {
+    setToggled(true);
+    setOpen((current) => !current);
+  }, []);
+
+  const startEditing = useCallback(() => {
+    setOpen(true);
+    setIsEditing(true);
+  }, []);
+
+  const handleAIGenerate = useCallback(() => {
+    setOpen(true);
+    onAIGenerate();
+  }, [onAIGenerate]);
+
   const showFunFact = Boolean(draft.funFact?.trim() || isEditing);
 
   const visibleExamples = useMemo(
@@ -175,39 +204,50 @@ export const UserNotesSection: React.FC<UserNotesSectionProps> = ({
 
   return (
     <section className={MEANING_SECTION}>
-      <div className={MEANING_SECTION_HEADER}>
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className={MEANING_SECTION_TITLE}>My Notes</h3>
-            {hasSavedNote && !isEditing && (
-              <span className="rounded-full border-2 border-green-700 bg-green-400 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white">
-                Saved
-              </span>
-            )}
-            {isEditing && (
-              <span className="rounded-full border-2 border-blue-700 bg-blue-500 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white">
-                Editing
-              </span>
-            )}
+      <div className={`${MEANING_SECTION_HEADER} ${open ? '' : 'border-b-0'}`}>
+        <button
+          type="button"
+          onClick={toggleOpen}
+          aria-expanded={open}
+          className="flex min-w-0 flex-1 items-center gap-2 text-left"
+        >
+          <FaChevronDown
+            aria-hidden="true"
+            className={`shrink-0 text-blue-900 transition-transform ${open ? 'rotate-180' : ''}`}
+          />
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className={MEANING_SECTION_TITLE}>My Notes</h3>
+              {hasSavedNote && !isEditing && (
+                <span className="rounded-full border-2 border-green-700 bg-green-400 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white">
+                  Saved
+                </span>
+              )}
+              {isEditing && (
+                <span className="rounded-full border-2 border-blue-700 bg-blue-500 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white">
+                  Editing
+                </span>
+              )}
+            </div>
+            <p className="mt-0.5 text-xs font-medium text-blue-700">
+              Used for Anki export when filled in
+            </p>
           </div>
-          <p className="mt-0.5 text-xs font-medium text-blue-700">
-            Used for Anki export when filled in
-          </p>
-        </div>
+        </button>
         <div className="flex flex-wrap gap-2">
           {!isEditing ? (
             <>
               <Button
                 type="primary"
                 size="small"
-                onPress={() => setIsEditing(true)}
+                onPress={startEditing}
               >
                 {hasSavedNote ? 'Edit' : 'Add note'}
               </Button>
               <Button
                 type="secondary"
                 size="small"
-                onPress={onAIGenerate}
+                onPress={handleAIGenerate}
                 disabled={isGenerating}
               >
                 {isGenerating ? 'Generating…' : 'AI generate'}
@@ -226,17 +266,18 @@ export const UserNotesSection: React.FC<UserNotesSectionProps> = ({
         </div>
       </div>
 
-      {!hasSavedNote && !isEditing ? (
+      {open || isEditing ? (
+        !hasSavedNote && !isEditing ? (
         <div className="px-4 py-8 text-center">
           <p className="text-sm font-bold text-blue-900">No notes for “{term}” yet</p>
           <p className="mx-auto mt-1 max-w-md text-xs font-medium leading-relaxed text-blue-700">
             Generate with AI or write your own definition, usage tip, examples, and related terms.
           </p>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
-            <Button type="primary" onPress={() => setIsEditing(true)}>
+            <Button type="primary" onPress={startEditing}>
               Write manually
             </Button>
-            <Button type="secondary" onPress={onAIGenerate} disabled={isGenerating}>
+            <Button type="secondary" onPress={handleAIGenerate} disabled={isGenerating}>
               {isGenerating ? 'Generating…' : 'AI generate'}
             </Button>
           </div>
@@ -418,7 +459,8 @@ export const UserNotesSection: React.FC<UserNotesSectionProps> = ({
             </div>
           )}
         </>
-      )}
+        )
+      ) : null}
     </section>
   );
 };
