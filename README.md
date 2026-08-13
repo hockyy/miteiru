@@ -1,7 +1,5 @@
 # Miteiru (見ている) / zai⁴kan⁴ (在看) / tai²gan² (睇緊) / đang xem
 
-![Stargazers repo roster for @hocky/miteiru](https://bytecrank.com/nastyox/reporoster/php/stargazersSVG.php?user=hockyy&repo=miteiru)
-[![Star History Chart](https://api.star-history.com/svg?repos=hockyy/miteiru&type=Date)](https://star-history.com/#hockyy/miteiru&Date)
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-blue.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 ![GitHub release](https://img.shields.io/github/release/hockyy/miteiru.svg?color=purple)
 ![Open Issues](https://img.shields.io/github/issues/hockyy/miteiru?color=green)
@@ -38,7 +36,7 @@ While I strive to maintain a safe and secure application, I cannot be held respo
 <table style="border: none;">
   <tr>
     <td><img src="renderer/public/images/logo.png" alt="Miteiru Logo" /></td>
-    <td> Miteiru is an open source Electron video player to learn Chinese, Japanese, Cantonese, and Vietnamese. It has modular main language dictionary and tokenizer (morphological analyzer), heavily based on External software <a href="https://taku910.github.io/mecab/">MeCab</a>, and optinally needs <a href="https://github.com/scriptin/jmdict-simplified">JMDict</a> to give language info box. This software is heavily inspired by <a href="https://ookii-tsuki.github.io/Anisubber/">Anisubber</a>. 
+    <td> Miteiru is an open source Electron video player to learn Chinese, Japanese, Cantonese, and Vietnamese. It has a modular per-language dictionary and tokenizer (morphological analyzer), with built-in tokenizers (Kuromoji, Jieba) and optional external <a href="https://taku910.github.io/mecab/">MeCab</a> support, and bundles <a href="https://github.com/scriptin/jmdict-simplified">JMDict</a>, CC-CEDICT, and VNEDict to give language info boxes. This software is heavily inspired by <a href="https://ookii-tsuki.github.io/Anisubber/">Anisubber</a>. 
     
 📚 **For detailed language support information, see [Language Documentation](README_LANGUAGES.md)**</td>
   </tr>
@@ -52,8 +50,7 @@ While I strive to maintain a safe and secure application, I cannot be held respo
   OS's, it supports **x265**.
 - On-The-Fly Furigana generation! blazing-fast and no severe cache build needed.
 - **Smart Subtitle Language Detection**: Automatically processes subtitles based on filename
-- **Comprehensive Dictionaries**: JMDict, CC-CEDICT, VNEDict, and more
-- Instant definition of any terms that uses LevelDB on first start only!
+- **Comprehensive Dictionaries**: JMDict, CC-CEDICT, VNEDict, and more — bundled with the installer
 - Instant definition of any word in the subtitles.
 - Instant definition on Kanji
 - Translation subtitles alongside the Japanese subtitles.
@@ -62,8 +59,8 @@ While I strive to maintain a safe and secure application, I cannot be held respo
 
 ## How to start immersing
 
-- For the first run, you can press this button, and wait for about 2 minutes because it is caching
-  the japanese dictionary..
+- For the first run, you can press this button, and wait a moment while it loads
+  the Japanese dictionary.
 - ![image](https://github.com/hockyy/miteiru/assets/19528709/6d8bcf4f-73dd-4cfb-8a6f-4bbf7e10a25a)
 - You can start by dragging:
     - Any videos (Anime is good) you can get subtitle at https://kitsunekko.net/
@@ -113,12 +110,12 @@ While I strive to maintain a safe and secure application, I cannot be held respo
 - I made the .deb and .AppImage, currently no other build is provided because I'm too lazy
 
 ## How to integrate with Whisper
-> As per February 3rd, 2024 [MacWhisper](https://goodsnooze.gumroad.com/l/macwhisper) is a really good UI for Whisper in mac, anyway if you want to run whisper on other OS or for free:
+> If you're on a Mac, [MacWhisper](https://goodsnooze.gumroad.com/l/macwhisper) is a really good UI for Whisper. Anyway, if you want to run whisper on other OS or for free:
 
 - clone this
   repo [git@github.com:ggerganov/whisper.cpp.git](https://github.com/ggerganov/whisper.cpp)
 - install ffmpeg
-- `cd whisper.cpp && bash ./models/download-ggml-model.sh large`
+- `cd whisper.cpp && bash ./models/download-ggml-model.sh large-v3 && cmake -B build && cmake --build build -j`
 
 put this in your ~/.bashrc or ~/.zshrc or any rc your os use
 
@@ -131,7 +128,7 @@ whisper() {
 
   # All remaining arguments will be treated as an array
   local -a extra_args=("$@")
-  "$WHISPERPATH/main" -f "$input" -of "$input.w" --model "$WHISPERPATH/models/ggml-medium.bin" -l ja "${extra_args[@]}" -osrt
+  "$WHISPERPATH/build/bin/whisper-cli" -f "$input" -of "$input.w" --model "$WHISPERPATH/models/ggml-large-v3.bin" -l ja "${extra_args[@]}" -osrt
 }
 
 prepwhisper() {
@@ -214,11 +211,10 @@ which mecab
 or in Windows, you can directly download the binary file
 from [SourceForge](https://sourceforge.net/projects/mecab/)
 
-to show your default mecab binary file. Use it as the path when asked in Miteiru. Then, you can get
-JMDict Dictionary
-in [https://github.com/scriptin/jmdict-simplified/releases](https://github.com/scriptin/jmdict-simplified/releases).
-Use it as the path when asked in Miteiru as well. Miteiru will build a LevelDB cache locally. Then,
-you can enjoy the app!
+to show your default mecab binary file. Use it as the path when asked in Miteiru. JMDict is already
+bundled with Miteiru, but you can point it to a custom dictionary from
+[https://github.com/scriptin/jmdict-simplified/releases](https://github.com/scriptin/jmdict-simplified/releases)
+if you want. Then, you can enjoy the app!
 
 ## MeCab Dictionary Customization
 
@@ -274,16 +270,11 @@ dicdir =  $(rcpath)\..\dic\unidic
 
 ## Future Enhancements
 
-- Verb inflections
 - Miteiru will be ported to a dedicated media player, like LibVLC or MPV.
 - Kanji explanation in the subtitles with animated diagrams.
-- Pronounciation audio
-- Customizable subtitle style.
 - Online hosted videos.
 - Will support Android.
-- Miteiru will have built-in Tokenizer and Dictionary, and supports French, German, Bahasa
-  Indonesia, and many more.
-- Miteiru will support Korean too!
+- Miteiru will support more languages: French, German, Bahasa Indonesia, Korean, and many more.
 
 https://user-images.githubusercontent.com/19528709/236619520-076c863a-6c14-4f6e-8f9b-5d1e660fd646.mp4
 
