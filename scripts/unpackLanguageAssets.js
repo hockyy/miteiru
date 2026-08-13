@@ -74,7 +74,9 @@ const getAssetArchives = (requestedPluginIds = []) => {
 const unpackPluginAssets = async ({pluginId, archivePath}) => {
   const targetDirectory = path.join(languageAssetsRoot, pluginId);
 
-  fs.rmSync(targetDirectory, {recursive: true, force: true});
+  // Do NOT wipe the target directory first: the plugin dir also contains
+  // git-tracked files that may not exist in the archive (e.g. grammar data,
+  // pitch accents), and wiping deletes them. Overwrite-extract instead.
   ensureDirectory(targetDirectory);
   await unpackArchive(archivePath, targetDirectory);
   assertManifestFilesExist(targetDirectory);
