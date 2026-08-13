@@ -58,11 +58,13 @@ description: Bump Miteiru version, write docs/whats-new release notes, commit, a
    git status
    ```
 
-7. **Tag the release** — pushing a `v*` tag triggers the GitHub Actions release workflow, which builds Windows/macOS/Linux installers and attaches them to the GitHub release:
+7. **Tag the release and trigger the build manually** — the release workflow is manual-only (no automatic builds on tag push). Push the tag, then dispatch the workflow:
    ```bash
    git tag vX.Y.Z
    git push origin vX.Y.Z
+   gh workflow run release.yml -f tag=vX.Y.Z
    ```
+   The workflow builds Windows/macOS/Linux installers from `main` and attaches them to the GitHub release for that tag (creating the release if missing, publishing it when done).
 
 ## Conventions
 
