@@ -11,6 +11,7 @@ import { DictionarySection } from './components/DictionarySection';
 import { InflectionSection } from './components/InflectionSection';
 import { MeaningBoxHeader } from './components/MeaningBoxHeader';
 import { MeaningBoxShell } from './components/MeaningBoxShell';
+import { PitchAccentSection } from './components/PitchAccentSection';
 import { QuickActionsSection } from './components/QuickActionsSection';
 import { useMeaningAnkiExport } from './hooks/useMeaningAnkiExport';
 import { useMeaningCopyShortcuts } from './hooks/useMeaningCopyShortcuts';
@@ -32,7 +33,9 @@ import type { MeaningBoxProps } from './types';
  * - {@link MeaningBoxHeader} — navigation, TTS, headword ruby
  * - {@link QuickActionsSection} — clipboard + Anki export
  * - {@link UserNotesSection} — personal notes (also used for Anki backs)
+ * - {@link PitchAccentSection} — Japanese pitch contour per headword variant
  * - {@link DictionarySection} — kanji/hanzi + word senses
+ * - {@link InflectionSection} — collapsible conjugation table (Japanese)
  */
 const MeaningBox = ({
   meaning,
@@ -215,6 +218,13 @@ const MeaningBox = ({
           onNavigateToTerm={handleNavigateToTerm}
         />
 
+        <PitchAccentSection romajiedData={romajiedData} lang={lang} />
+
+        <DictionarySection
+          characterContent={characterPanel}
+          meaningContent={meaningPanel}
+        />
+
         {lang === videoConstants.japaneseLang && inflectionTable ? (
           <InflectionSection
             table={inflectionTable}
@@ -227,11 +237,6 @@ const MeaningBox = ({
             errorMessage={inflectionAiError}
           />
         ) : null}
-
-        <DictionarySection
-          characterContent={characterPanel}
-          meaningContent={meaningPanel}
-        />
       </MeaningBoxShell>
     </>
   );

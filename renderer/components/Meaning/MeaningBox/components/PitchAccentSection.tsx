@@ -9,8 +9,12 @@ import {
   PITCH_PATTERN_LABEL,
   splitIntoMorae,
   toHiraganaSafe,
+  type PitchAccentMap,
   type PitchPattern,
 } from '../../../../utils/pitchAccent';
+import { videoConstants } from '../../../../utils/constants';
+import { MEANING_SECTION, MEANING_SECTION_LABEL } from '../../meaningBoxTheme';
+import type { RomajiedGroup } from '../types';
 
 const PILL_CLASS: Record<PitchPattern, string> = {
   heiban: 'border-emerald-300 bg-emerald-50 text-emerald-700',
@@ -102,46 +106,51 @@ export const PitchContour = ({ morae, accent }: PitchContourProps) => {
   );
 };
 
-type PitchAccentBadgeProps = {
+type PitchVariant = {
+  key: number;
   surface: string;
   reading: string;
 };
 
-/** Pitch accent indicator for Japanese headwords: contour graph + pattern pill. */
-export const PitchAccentBadge = ({ surface, reading }: PitchAccentBadgeProps) => {
-  const [accents, setAccents] = useState<number[] | null>(null);
+const extractVariant = (group: RomajiedGroup): PitchVariant => ({
+  key: group.key,
+  surface: group.romajied.reduce((acc, token) => acc + token.origin, ''),
+  reading: group.romajied
+    .flatMap((token) =>
+      Array.isArray(token?.separation)
+        ? token.separation.map((part) => part?.hiragana ?? '')
+        : [],
+    )
+    .join(''),
+});
+
+type PitchAccentRowProps = {
+  variant: PitchVariant;
+  accents: number[];
+  showSurface: boolean;
+};
+
+/** One slim row: optional surface label + contour + pattern pills. */
+const PitchAccentRow = ({ variant, accents, showSurface }: PitchAccentRowProps) => {
   const [selected, setSelected] = useState(0);
+  const morae = useMemo(
+    () => splitIntoMorae(toHiraganaSafe(variant.reading)),
+    [variant.reading],
+  );
 
-  useEffect(() => {
-    let cancelled = false;
-    setSelected(0);
-    if (!surface || !reading) {
-      setAccents(null);
-      return;
-    }
-    loadPitchAccentMap().then((map) => {
-      if (cancelled) return;
-      setAccents(map ? lookupPitchAccent(map, surface, reading) : null);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [surface, reading]);
-
-  const morae = useMemo(() => splitIntoMorae(toHiraganaSafe(reading)), [reading]);
-
-  if (!accents?.length || morae.length === 0) return null;
+  if (morae.length === 0) return null;
 
   const accent = accents[Math.min(selected, accents.length - 1)];
-  const pattern = classifyAccent(accent, morae.length);
 
   return (
-    <div className="flex flex-col items-center gap-1.5 rounded-xl border border-blue-100 bg-white/80 px-3 py-2 shadow-sm">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+      {showSurface && (
+        <span className="text-sm font-semibold text-blue-950">{variant.surface}</span>
+      )}
       <div className="max-w-full overflow-x-auto">
         <PitchContour morae={morae} accent={accent} />
       </div>
-
-      <div className="flex flex-wrap items-center justify-center gap-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
         {accents.map((value, idx) => {
           const variantPattern = classifyAccent(value, morae.length);
           const active = idx === selected;
@@ -161,5 +170,59 @@ export const PitchAccentBadge = ({ surface, reading }: PitchAccentBadgeProps) =>
         })}
       </div>
     </div>
+  );
+};
+
+type PitchAccentSectionProps = {
+  romajiedData: RomajiedGroup[];
+  lang: string;
+};
+
+/** Scrollable-body section with pitch contours for each headword variant. */
+export const PitchAccentSection = ({ romajiedData, lang }: PitchAccentSectionProps) => {
+  const [map, setMap] = useState<PitchAccentMap | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (lang !== videoConstants.japaneseLang) return;
+    loadPitchAccentMap().then((loaded) => {
+      if (!cancelled) setMap(loaded);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [lang]);
+
+  const rows = useMemo(() => {
+    if (!map) return [];
+    return romajiedData
+      .map(extractVariant)
+      .map((variant) => ({
+        variant,
+        accents: variant.reading
+          ? lookupPitchAccent(map, variant.surface, variant.reading)
+          : null,
+      }))
+      .filter((row): row is { variant: PitchVariant; accents: number[] } =>
+        Boolean(row.accents?.length),
+      );
+  }, [map, romajiedData]);
+
+  if (lang !== videoConstants.japaneseLang || rows.length === 0) return null;
+
+  return (
+    <section className={MEANING_SECTION}>
+      <div className={MEANING_SECTION_LABEL}>Pitch accent</div>
+      <div className="space-y-2 px-4 py-3">
+        {rows.map(({ variant, accents }) => (
+          <PitchAccentRow
+            key={variant.key}
+            variant={variant}
+            accents={accents}
+            showSurface={rows.length > 1}
+          />
+        ))}
+      </div>
+    </section>
   );
 };
