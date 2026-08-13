@@ -3,7 +3,7 @@
   "name": "miteiru",
   "description": "Miteiru",
   "desktopName": "miteiru.desktop",
-  "version": "7.4.8",
+  "version": "7.4.9",
   "author": "Hocky Yudhiono <hocky.yudhiono@gmail.com>",
   "main": "app/main.js",
   "homepage": "https://miteiru.hocky.id",
