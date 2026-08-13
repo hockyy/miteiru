@@ -1,11 +1,8 @@
 name: Release
 
+# Manual-only: run via `gh workflow run release.yml -f tag=vX.Y.Z` or the
+# Actions tab. Intentionally not triggered by tag pushes to avoid CI spam.
 on:
-  push:
-    tags:
-      - 'v*'
-  release:
-    types: [published]
   workflow_dispatch:
     inputs:
       tag:
