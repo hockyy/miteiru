@@ -58,6 +58,12 @@ description: Bump Miteiru version, write docs/whats-new release notes, commit, a
    git status
    ```
 
+7. **Tag the release** — pushing a `v*` tag triggers the GitHub Actions release workflow, which builds Windows/macOS/Linux installers and attaches them to the GitHub release:
+   ```bash
+   git tag vX.Y.Z
+   git push origin vX.Y.Z
+   ```
+
 ## Conventions
 
 | Item | Location |
