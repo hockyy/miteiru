@@ -26,7 +26,7 @@ export const parseRangeHeader = (rangeHeader: string, fileSize: number) => {
   const suffixMatch = /^bytes=-(\d+)$/i.exec(trimmed);
   if (suffixMatch) {
     const length = Number(suffixMatch[1]);
-    if (!Number.isFinite(length) || length <= 0) return null;
+    if (!Number.isFinite(length) || length <= 0 || fileSize <= 0) return null;
     const start = Math.max(fileSize - length, 0);
     return {start, end: fileSize - 1};
   }

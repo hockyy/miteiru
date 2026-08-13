@@ -137,7 +137,7 @@ export function registerBasicHandlers({
       const filesMatched = fs.readdirSync(folderPath)
         .map(fileName => join(folderPath, fileName))
         .filter(filePattern => isArrayEndsWithMatcher(filePattern, matcher))
-        .sort();
+        .sort((a, b) => a.localeCompare(b, undefined, {numeric: true, sensitivity: "base"}));
       filePath = path.normalize(filePath);
       const currentIndex = filesMatched.indexOf(filePath);
       if (currentIndex === -1) {

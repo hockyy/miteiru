@@ -1,4 +1,4 @@
-import {MediaTrack} from "../types/media";
+import type {MediaTrack} from "../types/media";
 import {getLanguageDisplayName as getManifestLanguageDisplayName} from "../languages/manifest";
 import {isLocalPath, isYoutube} from "./utils";
 
@@ -38,7 +38,7 @@ export const getEmbeddedSubtitleTarget = (filePath: string): SubtitleTarget => (
 );
 
 export const getFileNameFromPath = (filePath: string) => (
-  filePath.split("/").pop() || filePath.split("\\").pop() || "Unknown file"
+  filePath.split(/[\\/]/).pop() || "Unknown file"
 );
 
 export const getYoutubeVideoId = (videoPath: string): string | null => {

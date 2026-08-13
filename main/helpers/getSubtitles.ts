@@ -45,7 +45,7 @@ async function checkYtDlpAvailable(): Promise<boolean> {
 }
 
 // Parse SRT subtitle content to SubtitleEntry array
-function parseSrtContent(srtContent: string): SubtitleEntry[] {
+export function parseSrtContent(srtContent: string): SubtitleEntry[] {
   const entries: SubtitleEntry[] = [];
   const blocks = srtContent.split(/\n\s*\n/).filter(block => block.trim());
   
@@ -93,7 +93,7 @@ function parseSrtContent(srtContent: string): SubtitleEntry[] {
 }
 
 // Convert timestamp string to seconds
-function timeToSeconds(timeStr: string): number {
+export function timeToSeconds(timeStr: string): number {
   const parts = timeStr.split(':');
   const hours = parseInt(parts[0], 10);
   const minutes = parseInt(parts[1], 10);
@@ -102,7 +102,7 @@ function timeToSeconds(timeStr: string): number {
 }
 
 // Parse available languages from yt-dlp output
-function parseAvailableLanguages(ytDlpOutput: string): string[] {
+export function parseAvailableLanguages(ytDlpOutput: string): string[] {
   const languages = new Set<string>();
   const lines = ytDlpOutput.split('\n');
   
@@ -140,7 +140,7 @@ function parseAvailableLanguages(ytDlpOutput: string): string[] {
 }
 
 // Find the best matching language from available options
-function findBestLanguageMatch(requestedLang: string, availableLanguages: string[]): string | null {
+export function findBestLanguageMatch(requestedLang: string, availableLanguages: string[]): string | null {
   // Direct exact match
   if (availableLanguages.includes(requestedLang)) {
     return requestedLang;
