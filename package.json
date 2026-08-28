@@ -7,6 +7,9 @@
   "author": "Hocky Yudhiono <hocky.yudhiono@gmail.com>",
   "main": "app/main.js",
   "homepage": "https://miteiru.hocky.id",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "build": {
     "appId": "id.hocky.miteiru",
     "artifactName": "miteiru-${version}-${os}-${arch}.${ext}",
@@ -45,7 +48,6 @@
     "build:macos": "npm run script:clean-next && nextron build --config=buildConfig/macos.config.json",
     "build:nsis": "npm run build:live-captions && nextron build --config=buildConfig/nsis.config.json",
     "build:portable": "npm run build:live-captions && npm run script:clean-next && nextron build --config=buildConfig/portable.config.json",
-    "build:linux20": "npm run script:clean-next && nextron build --config=buildConfig/linux20.config.json",
     "build:linux22": "npm run script:clean-next && nextron build --config=buildConfig/linux22.config.json",
     "build:linux24": "npm run script:clean-next && nextron build --config=buildConfig/linux24.config.json",
     "build:linux26": "npm run script:clean-next && nextron build --config=buildConfig/linux26.config.json",
@@ -96,7 +98,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.2",
-    "@types/node": "^20.19.17",
+    "@types/node": "^22.18.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@typescript-eslint/eslint-plugin": "^8.44.0",

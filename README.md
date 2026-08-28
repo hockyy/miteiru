@@ -152,6 +152,7 @@ whisper video.wav
 You can run the followings on the cloned repository. `script:initrepo` downloads the language asset
 packages from the [assets release](https://github.com/hockyy/miteiru/releases/tag/assets) and
 extracts them into `renderer/public/language-assets`.
+Development requires **Node.js 22.12+** (Electron 41). Ubuntu 20.04 installers are no longer built.
 
 ```bash
 npm install
@@ -159,7 +160,6 @@ npm run script:initrepo
 npm run dev # This to run dev
 npm run build:nsis # This to build for Windows with Live Captions helper
 npm run build:portable # This to build for Windows Portable with Live Captions helper
-npm run build:linux20 # This to build for Linux 20.04
 npm run build:linux22 # This to build for Linux 22.04
 npm run build:linux24 # This to build for Linux 24.04
 npm run build:linux26 # This to build for Linux 26.04
