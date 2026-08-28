@@ -5,6 +5,7 @@ import fs from "node:fs";
 import {pinyin} from "pinyin-pro";
 import ToJyutping from "to-jyutping";
 import {Jieba} from '@node-rs/jieba'
+import {formatPinyinReading} from "./pinyinTones";
 
 
 interface JyutpingResult {
@@ -93,16 +94,16 @@ class Chinese {
 
     return tokens.map(word => {
       const pinyinInfo = pinyin(word, {
-        toneType: toneType,
+        toneType: 'num',
         type: 'all'
       });
 
       return {
         origin: word,
-        pinyin: pinyinInfo.map(info => info.pinyin).join(' '),
+        pinyin: pinyinInfo.map(info => formatPinyinReading(info.pinyin, toneType)).join(' '),
         separation: pinyinInfo.map(info => ({
           main: info.origin,
-          pinyin: info.pinyin
+          pinyin: formatPinyinReading(info.pinyin, toneType)
         }))
       };
     });
