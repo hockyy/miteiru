@@ -1,8 +1,0 @@
-{
-  "linux": {
-    "category": "Education",
-    "icon": "resources/icon.png",
-    "target": ["deb", "AppImage"],
-    "artifactName": "miteiru-${version}-${os}-20.04-${arch}.${ext}"
-  }
-}
