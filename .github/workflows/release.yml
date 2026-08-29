@@ -2,12 +2,23 @@ name: Release
 
 # Manual-only: run via `gh workflow run release.yml -f tag=vX.Y.Z` or the
 # Actions tab. Intentionally not triggered by tag pushes to avoid CI spam.
+# Optional: `-f platform=windows` (or macos / linux) to rebuild one OS.
 on:
   workflow_dispatch:
     inputs:
       tag:
         description: 'Tag to build and upload to (e.g. v7.4.5)'
         required: true
+      platform:
+        description: 'Which installers to build'
+        type: choice
+        required: true
+        default: all
+        options:
+          - all
+          - windows
+          - macos
+          - linux
 
 permissions:
   contents: write
@@ -23,18 +34,23 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            build: npm run build:nsis && npm run build:portable
+            platform: windows
+            build: npm run build:nsis
             extensions: exe
           - os: macos-latest
+            platform: macos
             build: npm run build:macos
             extensions: pkg
           - os: ubuntu-22.04
+            platform: linux
             build: npm run build:linux22
             extensions: deb,AppImage
           - os: ubuntu-24.04
+            platform: linux
             build: npm run build:linux24
             extensions: deb,AppImage
 
+    if: inputs.platform == 'all' || inputs.platform == matrix.platform
     runs-on: ${{ matrix.os }}
 
     steps:
