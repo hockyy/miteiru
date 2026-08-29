@@ -1,10 +1,15 @@
 import {ipcMain} from "electron";
 import * as fsPromises from "node:fs/promises";
 import path from "node:path";
-import os from "node:os";
 import languageEncoding from "detect-file-encoding-and-language";
 import iconv from "iconv-lite";
 import {MediaAnalyzer} from "../../helpers/mediaAnalyzer";
+import {
+  FileIdentityCache,
+  identityFromStat,
+  isNormalizedSubtitlePath,
+  normalizedSubtitleOutputPath
+} from "../../helpers/subtitleCaches";
 
 type SrtParserModule = typeof import("@plussub/srt-vtt-parser");
 let srtParserPromise: Promise<SrtParserModule> | undefined;
@@ -240,6 +245,9 @@ const entriesToSrt = (entries: SubtitleEntry[]) => {
 };
 
 export function registerMediaHandlers() {
+  const preprocessCache = new FileIdentityCache<string>();
+  const parseCache = new FileIdentityCache<unknown>();
+
   ipcMain.handle("fs-readFile", async (event, filename) => {
     try {
       const buffer = await fsPromises.readFile(filename);
@@ -262,6 +270,11 @@ export function registerMediaHandlers() {
     try {
       const resolvedFilename = normalizeFileSystemPath(filename);
       console.log("[IPC] parse-subtitle", {filename, resolvedFilename});
+      const identity = identityFromStat(await fsPromises.stat(resolvedFilename));
+      const cached = parseCache.get(resolvedFilename, identity);
+      if (cached) {
+        return cached;
+      }
       const buffer = await fsPromises.readFile(resolvedFilename);
       const currentData = await languageEncoding(buffer);
       const text = iconv.decode(buffer, currentData.encoding);
@@ -278,27 +291,30 @@ export function registerMediaHandlers() {
         }
       };
 
+      let result;
       if (lowerFilename.endsWith(".ass")) {
-        return {
+        result = {
           type: "ass",
           content: text
         };
       } else if (lowerFilename.endsWith(".lrc")) {
-        return {
+        result = {
           type: "lrc",
           content: text
         };
       } else if (isLikelyHuf()) {
-        return {
+        result = {
           type: "huf",
           content: text
         };
       } else {
-        return {
+        result = {
           type: "srt",
           content: await parseSRT(text)
         };
       }
+      parseCache.set(resolvedFilename, identity, result);
+      return result;
     } catch (error) {
       throw error;
     }
@@ -308,14 +324,30 @@ export function registerMediaHandlers() {
     try {
       const resolvedFilename = normalizeFileSystemPath(filename);
       console.log("[IPC] preprocess-subtitle-capitalization", {filename, resolvedFilename});
+      if (isNormalizedSubtitlePath(resolvedFilename)) {
+        await fsPromises.access(resolvedFilename);
+        return resolvedFilename;
+      }
+
+      const identity = identityFromStat(await fsPromises.stat(resolvedFilename));
+      const cachedPath = preprocessCache.get(resolvedFilename, identity);
+      if (cachedPath) {
+        try {
+          await fsPromises.access(cachedPath);
+          return cachedPath;
+        } catch {
+          // Cached file was deleted; rewrite below.
+        }
+      }
+
       const buffer = await fsPromises.readFile(resolvedFilename);
       const currentData = await languageEncoding(buffer);
       const text = iconv.decode(buffer, currentData.encoding);
       const entries = await getSubtitleEntries(resolvedFilename, text);
-      const safeBaseName = path.basename(resolvedFilename, path.extname(resolvedFilename)).replace(/[^a-zA-Z0-9._-]/g, "_");
-      const outputPath = path.join(os.tmpdir(), `miteiru_normalized_${safeBaseName}_${Date.now()}.srt`);
+      const outputPath = normalizedSubtitleOutputPath(resolvedFilename);
 
       await fsPromises.writeFile(outputPath, entriesToSrt(entries), "utf8");
+      preprocessCache.set(resolvedFilename, identity, outputPath);
       console.log("[IPC] Subtitle capitalization preprocessed:", outputPath);
       return outputPath;
     } catch (error) {

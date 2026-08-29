@@ -138,20 +138,16 @@ class Chinese {
       for (const segment of segments) {
         const jyutpingList = ToJyutping.getJyutpingList(segment);
 
-        // Format jyutping based on toneType
-        let formattedJyutping: string;
-        if (toneType === 'symbol') {
-          formattedJyutping = jyutpingList.map(([, jp]) => replaceToneSymbol(jp)).join(' ');
-        } else {
-          formattedJyutping = jyutpingList.map(([, jp]) => jp).join(' ');
-        }
+        // num: contour marks (ˉ¹); symbol: numbered jyutping (sik6)
+        const formatJyutping = (jp: string | null) => {
+          if (!jp) return jp;
+          return toneType === 'num' ? replaceToneSymbol(jp) : jp;
+        };
+
+        const formattedJyutping = jyutpingList.map(([, jp]) => formatJyutping(jp)).join(' ');
 
         const separation = jyutpingList.map(([char, jp]) => {
-          let formattedJp = jp;
-
-          if (toneType === 'symbol' && jp) {
-            formattedJp = replaceToneSymbol(jp);
-          }
+          const formattedJp = formatJyutping(jp);
 
           return {
             main: char,

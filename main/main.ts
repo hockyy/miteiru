@@ -12,6 +12,10 @@ import Learning from "./handler/learning";
 import {registerAnalyzerHandlers} from "./handler/languages/analyzerHandlers";
 import {startAnalyzerServer, AnalyzerServerHandle} from "./handler/languages/analyzerServer";
 import {getStore} from "./handler/common/storeHandlers";
+import {
+  applyYouTubeEmbedRequestHeaders,
+  YOUTUBE_EMBED_REQUEST_URLS
+} from "./youtubeEmbedHeaders";
 
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
@@ -22,27 +26,17 @@ const loadElectronServe = () => {
 };
 
 function registerYouTubeHeaderWorkaround() {
-  const youtubeRequestUrls = [
-    "*://youtube.com/*",
-    "*://*.youtube.com/*",
-    "*://*.youtube-nocookie.com/*",
-    "*://*.googlevideo.com/*",
-    "*://*.ytimg.com/*"
-  ];
-
-  session.defaultSession.webRequest.onBeforeSendHeaders({urls: youtubeRequestUrls}, (details, callback) => {
-    const requestHeaders = details.requestHeaders || {};
-
-    // YouTube error 153 can happen when embedded requests have no Referer/Origin.
-    if (!requestHeaders.Referer && !requestHeaders.referer) {
-      requestHeaders.Referer = "https://www.youtube.com/";
+  session.defaultSession.webRequest.onBeforeSendHeaders(
+    {urls: YOUTUBE_EMBED_REQUEST_URLS},
+    (details, callback) => {
+      callback({
+        requestHeaders: applyYouTubeEmbedRequestHeaders(
+          details.requestHeaders || {},
+          details.resourceType
+        )
+      });
     }
-    if (!requestHeaders.Origin && !requestHeaders.origin) {
-      requestHeaders.Origin = "https://www.youtube.com";
-    }
-
-    callback({requestHeaders});
-  });
+  );
 }
 
 const serveReady = isProd

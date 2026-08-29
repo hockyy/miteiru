@@ -394,7 +394,8 @@ export const Sidebar = ({
                           lang,
                           tokenizeMiteiru,
                           subtitleMode,
-                          setSubtitleMode
+                          setSubtitleMode,
+                          setShowLyricsSearch
                         }) => {
   const { exportAllAnkiCards, ankiExportModal } = useExportAllAnkiCards({ lang, tokenizeMiteiru });
   const learningPercentageHandler = useCallback(event => {
@@ -409,6 +410,9 @@ export const Sidebar = ({
   const subtitleModeHandler = useCallback((val) => {
     setSubtitleMode(val ? SubtitleMode.Karaoke : SubtitleMode.Normal);
   }, [setSubtitleMode])
+  const searchLyricsHandler = useCallback(() => {
+    setShowLyricsSearch?.(true);
+  }, [setShowLyricsSearch])
   const exportHufHandler = useCallback(() => {
     if (!primarySub || !primarySub.lines || primarySub.lines.length === 0) {
       alert('No primary subtitle loaded to export.');
@@ -423,6 +427,7 @@ export const Sidebar = ({
       alert(`Failed to export HUF: ${error.message || 'Unknown error'}`);
     }
   }, [primarySub]);
+  const isKaraoke = subtitleMode == SubtitleMode.Karaoke;
   return <>
   {ankiExportModal}
   <SidebarShell
@@ -441,9 +446,17 @@ export const Sidebar = ({
         Enable Auto Pause
       </SidebarSettingRow>
       <SidebarSettingRow>
-        <Toggle isChecked={subtitleMode == SubtitleMode.Karaoke} onChange={subtitleModeHandler}/>
+        <Toggle isChecked={isKaraoke} onChange={subtitleModeHandler}/>
         Use Karaoke Mode
       </SidebarSettingRow>
+      {isKaraoke && (
+        <Button
+            type={"secondary"}
+            className={"w-full min-w-0 max-w-full"}
+            onPress={searchLyricsHandler}>
+          Search Lyrics (LRCLIB)
+        </Button>
+      )}
       <div className={"flex w-full items-center gap-3 rounded-xl bg-black/20 px-3 py-2 text-sm text-white/85"}>
         <span>Learning </span>
         <span className={'inline-block w-14'}>{learningPercentage}%</span>

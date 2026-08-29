@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
   Line,
   setGlobalSubtitleId,
@@ -26,7 +26,8 @@ const DEFAULT_SUBTITLE_PREPROCESS_OPTIONS: SubtitlePreprocessOptions = {
 const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
                       secondarySub, setSecondarySub,
                       primaryStyling,
-                      tokenizeMiteiru, setEnableSeeker, changeTimeTo, player, lang, setFrequencyPrimary) => {
+                      tokenizeMiteiru, setEnableSeeker, changeTimeTo, player, lang, setFrequencyPrimary,
+                      toneType, setPrimaryTimeCache) => {
   const [videoSrc, setVideoSrc] = useState({
     src: '',
     type: '',
@@ -79,6 +80,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       await tmpSub.adjustForLearning(tokenizeMiteiru);
       
       setFrequencyPrimary(tmpSub.frequency);
+      setPrimaryTimeCache?.([]);
     } catch (error) {
       console.error('Error processing subtitle:', error);
       showToast(`Error processing subtitle: ${error.message}`);
@@ -89,11 +91,11 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
         toastSetter = null;
       }
     }
-  }, [tokenizeMiteiru, setFrequencyPrimary, showToast]);
+  }, [tokenizeMiteiru, setFrequencyPrimary, showToast, setPrimaryTimeCache]);
 
-  const loadSubtitleAsPrimary = useCallback((tmpSub, currentPath) => {
+  const loadSubtitleAsPrimary = useCallback((tmpSub, sourcePath) => {
     setPrimarySub(tmpSub);
-    setLastPrimarySubPath([{path: currentPath}]);
+    setLastPrimarySubPath([{path: sourcePath}]);
     setGlobalSubtitleId(tmpSub.id);
     
     showToast('Primary subtitle loaded');
@@ -103,12 +105,45 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     }
   }, [setPrimarySub, showToast, isLearningLanguage, processSubtitleForLearning]);
 
-  const loadSubtitleAsSecondary = useCallback((tmpSub, currentPath) => {
+  const loadSubtitleAsSecondary = useCallback((tmpSub, sourcePath) => {
     setSecondarySub(tmpSub);
-    setLastSecondarySubPath([{path: currentPath}]);
+    setLastSecondarySubPath([{path: sourcePath}]);
     
     showToast('Secondary subtitle loaded');
   }, [setSecondarySub, showToast]);
+
+  const reloadSubtitleWithoutPrompt = useCallback(async (filePath: string, target: 'primary' | 'secondary') => {
+    if (!filePath) return;
+    try {
+      const {tmpSub} = await createSubtitleContainer(filePath);
+      if (target === 'primary') {
+        loadSubtitleAsPrimary(tmpSub, filePath);
+      } else {
+        loadSubtitleAsSecondary(tmpSub, filePath);
+      }
+    } catch (error) {
+      console.error('[useLoadFiles] Failed to refresh subtitle after settings change:', error);
+    }
+  }, [createSubtitleContainer, loadSubtitleAsPrimary, loadSubtitleAsSecondary]);
+
+  const prevToneTypeRef = useRef(toneType);
+  const prevForceSimplifiedRef = useRef(primaryStyling.forceSimplified);
+  useEffect(() => {
+    const toneChanged = prevToneTypeRef.current !== toneType;
+    const simplifiedChanged = prevForceSimplifiedRef.current !== primaryStyling.forceSimplified;
+    prevToneTypeRef.current = toneType;
+    prevForceSimplifiedRef.current = primaryStyling.forceSimplified;
+    if (!toneChanged && !simplifiedChanged) return;
+
+    const primaryPath = lastPrimarySubPath[0]?.path;
+    const secondaryPath = lastSecondarySubPath[0]?.path;
+    if (primaryPath) {
+      reloadSubtitleWithoutPrompt(primaryPath, 'primary');
+    }
+    if (secondaryPath) {
+      reloadSubtitleWithoutPrompt(secondaryPath, 'secondary');
+    }
+  }, [toneType, primaryStyling.forceSimplified, lastPrimarySubPath, lastSecondarySubPath, reloadSubtitleWithoutPrompt]);
 
   useEffect(() => {
     Line.removeHearingImpairedFlag = primaryStyling.removeHearingImpaired
@@ -137,9 +172,9 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       console.log('[useLoadFiles] Loading subtitle file directly:', loadedPath);
       const target = getEmbeddedSubtitleTarget(currentPath);
       if (target === 'secondary') {
-        loadSubtitleAsSecondary(tmpSub, loadedPath);
+        loadSubtitleAsSecondary(tmpSub, currentPath);
       } else {
-        loadSubtitleAsPrimary(tmpSub, loadedPath);
+        loadSubtitleAsPrimary(tmpSub, currentPath);
       }
       return;
     }
@@ -285,9 +320,9 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     if (!pendingSubtitle) return;
     try {
       if (subtitlePreprocessOptions.titleCaseAllCaps) {
-        const {tmpSub, subtitlePath} = await createSubtitleContainer(pendingSubtitlePath, subtitlePreprocessOptions);
-        if (target === 'primary') loadSubtitleAsPrimary(tmpSub, subtitlePath);
-        else loadSubtitleAsSecondary(tmpSub, subtitlePath);
+        const {tmpSub} = await createSubtitleContainer(pendingSubtitlePath, subtitlePreprocessOptions);
+        if (target === 'primary') loadSubtitleAsPrimary(tmpSub, pendingSubtitlePath);
+        else loadSubtitleAsSecondary(tmpSub, pendingSubtitlePath);
       } else {
         if (target === 'primary') loadSubtitleAsPrimary(pendingSubtitle, pendingSubtitlePath);
         else loadSubtitleAsSecondary(pendingSubtitle, pendingSubtitlePath);
@@ -328,12 +363,12 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     console.log(`[useLoadFiles] loadEmbeddedSubtitle called: ${type} from ${filePath}`);
 
     try {
-      const {tmpSub, subtitlePath} = await createSubtitleContainer(filePath, preprocessOptions);
+      const {tmpSub} = await createSubtitleContainer(filePath, preprocessOptions);
       console.log(`[useLoadFiles] Direct loading ${type} subtitle:`, tmpSub);
       if (type === 'primary') {
-        loadSubtitleAsPrimary(tmpSub, subtitlePath);
+        loadSubtitleAsPrimary(tmpSub, filePath);
       } else {
-        loadSubtitleAsSecondary(tmpSub, subtitlePath);
+        loadSubtitleAsSecondary(tmpSub, filePath);
       }
     } catch (error) {
       console.error(`[useLoadFiles] Failed to load ${type} embedded subtitle:`, error);

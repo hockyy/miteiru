@@ -1,3 +1,5 @@
+import {convert} from "pinyin-pro";
+
 /** Mandarin contour+number marks, parallel to Jyutping dcToneMap. */
 export const PINYIN_TONE_MAP: Record<string, string> = {
   "1": "ˉ¹",
@@ -19,9 +21,19 @@ export function replacePinyinToneSymbol(syllable: string): string {
   return syllable;
 }
 
+/** Standard pinyin with diacritics on vowels: ni3 → nǐ */
+export function toPinyinToneMarks(syllable: string): string {
+  if (!syllable) {
+    return "";
+  }
+  const converted = convert(syllable, {format: "numToSymbol"});
+  // Neutral tone (5/0) is not a diacritic; pinyin-pro may leave the digit.
+  return converted.replace(/[05]$/, "");
+}
+
 export function formatPinyinReading(syllable: string, toneType: string): string {
   if (toneType === "symbol") {
-    return replacePinyinToneSymbol(syllable);
+    return toPinyinToneMarks(syllable);
   }
-  return syllable;
+  return replacePinyinToneSymbol(syllable);
 }

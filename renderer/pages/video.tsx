@@ -13,7 +13,7 @@ import useReadyPlayerCallback from "../hooks/useReadyPlayerCallback";
 import useMiteiruToast from "../hooks/useMiteiruToast";
 import useMeaning from "../hooks/useMeaning";
 import Head from "next/head";
-import {getMiteiruAppName, getMiteiruVideoTitle} from "../utils/utils";
+import {getMiteiruAppName, getMiteiruVideoTitle, SubtitleMode} from "../utils/utils";
 import {
   useVideoKeyboardControls,
   useVideoPlayingToggle,
@@ -158,7 +158,8 @@ function Video() {
       primarySub, setPrimarySub,
       secondarySub, setSecondarySub,
       primaryStyling,
-      tokenizeMiteiru, setEnableSeeker, changeTimeTo, player, lang, setFrequencyPrimary);
+      tokenizeMiteiru, setEnableSeeker, changeTimeTo, player, lang, setFrequencyPrimary,
+      toneType, setPrimaryTimeCache);
   const {
     showController,
     setShowController,
@@ -268,10 +269,17 @@ function Video() {
       setPrimarySub, setSecondarySub, primarySub, undo,
       setShowPrimarySub, setShowSecondarySub, primaryStyling, setPrimaryStyling,
       openDeepL, openGoogleTranslate, reloadLastPrimarySubtitle, reloadLastSecondarySubtitle,
-      setShowVocabSidebar, rubyContent, contentString, setShowLyricsSearch);
+      setShowVocabSidebar, rubyContent, contentString, setShowLyricsSearch, subtitleMode);
   useVideoKeyboardControls(togglePlay, deltaTime, setPrimaryShift, setSecondaryShift,
       setToastInfo, backToHead, setIsPlaying);
   usePlayNextAfterEnd(player, currentTime, onVideoChangeHandler, duration, setEnableSeeker);
+
+  // LRCLIB is karaoke-only — close the search modal when leaving karaoke mode
+  useEffect(() => {
+    if (subtitleMode !== SubtitleMode.Karaoke) {
+      setShowLyricsSearch(false);
+    }
+  }, [subtitleMode, setShowLyricsSearch]);
 
   // Pause player when media selection modals open
   useEffect(() => {
@@ -393,7 +401,7 @@ function Video() {
         </div>
 
         <LyricsSearchModal
-            isOpen={showLyricsSearch}
+            isOpen={showLyricsSearch && subtitleMode === SubtitleMode.Karaoke}
             onClose={() => setShowLyricsSearch(false)}
             videoSrc={videoSrc}
             metadata={metadata}
@@ -451,7 +459,8 @@ function Video() {
                  setLearningPercentage={setLearningPercentage} lang={lang} toneType={toneType}
                  tokenizeMiteiru={tokenizeMiteiru}
                  setToneType={setToneType} subtitleMode={subtitleMode}
-                 setSubtitleMode={setSubtitleMode}/>
+                 setSubtitleMode={setSubtitleMode}
+                 setShowLyricsSearch={setShowLyricsSearch}/>
         <VocabSidebar
             showVocabSidebar={showVocabSidebar}
             setShowVocabSidebar={setShowVocabSidebar}
