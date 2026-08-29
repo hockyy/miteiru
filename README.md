@@ -75,7 +75,7 @@ Releases: https://github.com/hockyy/miteiru/releases
 
 ### Windows
 
-- NSIS installer and portable `.exe` are both on the release. Some PCs flag the installer; the source is here if you want to verify.
+- Download the NSIS installer (`.exe`). Some PCs flag it; the source is here if you want to verify.
 
 ### Linux
 
@@ -90,7 +90,6 @@ npm install
 npm run script:initrepo
 npm run dev
 npm run build:nsis       # Windows installer (includes Live Captions helper)
-npm run build:portable   # Windows portable
 npm run build:linux22    # Ubuntu 22.04
 npm run build:linux24    # Ubuntu 24.04
 npm run build:linux26    # Ubuntu 26.04
