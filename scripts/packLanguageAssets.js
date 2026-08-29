@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const archiver = require('archiver');
+const {ZipArchive} = require('archiver');
 const {migrateLanguageAssets} = require('./languageAssetLayout');
 
 const languageAssetsRoot = path.join(__dirname, '../renderer/public/language-assets');
@@ -27,7 +27,7 @@ const packPluginAssets = (pluginDirectory) => {
   ensureDirectory(archiveRoot);
 
   const output = fs.createWriteStream(targetZip);
-  const archive = archiver('zip', {
+  const archive = new ZipArchive({
     zlib: {level: 9}
   });
 

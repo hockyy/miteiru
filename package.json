@@ -107,7 +107,7 @@
     "@typescript-eslint/eslint-plugin": "^8.44.0",
     "@typescript-eslint/parser": "^8.44.0",
     "ajv": "^8.20.0",
-    "archiver": "^6.0.2",
+    "archiver": "^8.0.0",
     "autoprefixer": "^10.4.21",
     "electron": "^41.0.3",
     "electron-builder": "^26.8.1",

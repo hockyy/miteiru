@@ -1,5 +1,5 @@
 const fs = require('fs');
-const archiver = require('archiver');
+const {ZipArchive} = require('archiver');
 const path = require("path");
 const {migrateLanguageAssets} = require("./languageAssetLayout");
 
@@ -15,7 +15,7 @@ if (!fs.existsSync(targetDir)) {
 }
 
 const output = fs.createWriteStream(target);
-const archive = archiver('zip', {
+const archive = new ZipArchive({
   zlib: { level: 9 } // Sets the compression level.
 });
 
