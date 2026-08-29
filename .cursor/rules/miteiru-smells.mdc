@@ -1,0 +1,23 @@
+---
+description: Catch Miteiru regressions around temp files, YouTube embeds, clipboard, and subtitle reload.
+alwaysApply: true
+---
+
+# Miteiru smell checks
+
+After code changes, run `npm run lint:smells` (and `npm test` when behavior changed). Do not finish with a known smell.
+
+## Subtitle temp files
+
+- Never build `miteiru_normalized_${basename}_${Date.now()}`. Use `normalizedSubtitleOutputPath` and skip files that already start with `miteiru_normalized_`.
+- Store/reload the **original** subtitle path (`pendingSubtitlePath` / dropped file), not the processed temp path.
+- Cache preprocess/parse results by source path + mtime/size.
+
+## YouTube
+
+- Missing Referer is error 153. Referer/Origin of `youtube.com` is error 152.
+- Embed identity is `https://miteiru.hocky.id`. Do not rewrite googlevideo player XHRs.
+
+## Clipboard
+
+- Paste handlers use `event.clipboardData.getData("text")`. Do not call `navigator.clipboard.readText()` in the renderer.

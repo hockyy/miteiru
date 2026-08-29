@@ -3,6 +3,7 @@ import {useEffect, useMemo} from 'react';
 import {setGlobalSubtitleId, SubtitleContainer} from "../components/Subtitle/DataStructures";
 import {useRouter} from "next/router";
 import useLanguageManager from "./useLanguageManager";
+import {SubtitleMode} from "../utils/utils";
 
 export default function useKeyBind(
     setMeaning,
@@ -23,7 +24,8 @@ export default function useKeyBind(
     setShowVocabSidebar,
     rubyContent,
     contentString,
-    setShowLyricsSearch
+    setShowLyricsSearch,
+    subtitleMode
 ) {
   const router = useRouter();
   const { clearLanguage } = useLanguageManager();
@@ -62,16 +64,17 @@ export default function useKeyBind(
         await router.push('/learn');
       }
     },
-    {
+    // LRCLIB lyrics search is karaoke-mode only
+    ...(subtitleMode === SubtitleMode.Karaoke ? [{
       id: 'search-lyrics',
-      commandName: 'Search Lyrics',
+      commandName: 'Search Lyrics (LRCLIB)',
       currentKey: 'M',
       modifiers: [],
       category: 'Media',
       handler: () => {
         setShowLyricsSearch(old => !old);
       }
-    },
+    }] : []),
     {
       id: 'go-flash',
       commandName: 'Go to Flashcards',
@@ -243,7 +246,7 @@ export default function useKeyBind(
      setSecondarySub, setPrimaryStyling, primarySub.id, setShowPrimarySub,
      setShowSecondarySub, undo, primaryStyling, openGoogleTranslate, openDeepL,
      reloadLastSecondarySubtitle, reloadLastPrimarySubtitle, setShowVocabSidebar,
-     rubyContent, contentString, setShowLyricsSearch, clearLanguage
+     rubyContent, contentString, setShowLyricsSearch, subtitleMode, clearLanguage
    ]);
 
   useEffect(() => {

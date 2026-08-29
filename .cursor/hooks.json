@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "hooks": {
+    "stop": [
+      {
+        "command": "node .cursor/hooks/lint-smells-on-stop.js",
+        "loop_limit": 1,
+        "timeout": 45
+      }
+    ]
+  }
+}

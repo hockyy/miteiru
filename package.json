@@ -3,7 +3,7 @@
   "name": "miteiru",
   "description": "Miteiru",
   "desktopName": "miteiru.desktop",
-  "version": "7.4.9",
+  "version": "7.5.0",
   "author": "Hocky Yudhiono <hocky.yudhiono@gmail.com>",
   "main": "app/main.js",
   "homepage": "https://miteiru.hocky.id",
@@ -42,11 +42,14 @@
     "script:build-pitch-accent": "node scripts/buildPitchAccentData.js",
     "script:clean-next": "node scripts/cleanRendererNext.js",
     "test": "tsx --test \"tests/**/*.test.ts\"",
+    "lint": "npm run lint:smells && npm run lint:eslint",
+    "lint:smells": "node scripts/lint-smells.js",
+    "lint:eslint": "eslint .",
     "build:live-captions": "node scripts/buildLiveCaptionsBridge.js",
     "dev": "nextron --electron-options=\"--no-sandbox\"",
     "build": "npm run script:clean-next && nextron build",
     "build:macos": "npm run script:clean-next && nextron build --config=buildConfig/macos.config.json",
-    "build:nsis": "npm run build:live-captions && nextron build --config=buildConfig/nsis.config.json",
+    "build:nsis": "npm run build:live-captions && npm run script:clean-next && nextron build --config=buildConfig/nsis.config.json",
     "build:portable": "npm run build:live-captions && npm run script:clean-next && nextron build --config=buildConfig/portable.config.json",
     "build:linux22": "npm run script:clean-next && nextron build --config=buildConfig/linux22.config.json",
     "build:linux24": "npm run script:clean-next && nextron build --config=buildConfig/linux24.config.json",
@@ -130,7 +133,7 @@
     "classic-level@1.4.1": true,
     "classic-level@3.0.0": true,
     "core-js-pure@3.49.0": true,
-    "electron@41.0.3": true,
+    "electron@41.10.6": true,
     "unrs-resolver@1.12.2": true
   }
 }

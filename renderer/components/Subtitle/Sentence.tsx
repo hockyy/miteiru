@@ -29,6 +29,7 @@ const StyledSentence = styled.button<{ subtitleStyling: CJKStyling }>`
 
   ruby {
     -webkit-text-fill-color: ${props => props.subtitleStyling.text.color};
+    ruby-align: center;
   }
 
   .state0 {
@@ -84,6 +85,7 @@ const StyledChineseSentence = styled.button<{ subtitleStyling: CJKStyling }>`
 
   ruby {
     -webkit-text-fill-color: ${props => props.subtitleStyling.text.color};
+    ruby-align: center;
   }
 
   .state0 {

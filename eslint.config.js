@@ -10,6 +10,9 @@ module.exports = [
       "dist/**",
       "node_modules/**",
       "renderer/.next/**",
+      "renderer/public/**",
+      "archived/**",
+      "resources/**",
       "native/**/bin/**",
       "native/**/obj/**"
     ]

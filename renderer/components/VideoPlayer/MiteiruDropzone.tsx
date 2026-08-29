@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useMemo, useRef} from "react";
-import {extractVideoId, isVideo, isYoutube} from "../../utils/utils";
+import {isVideo, isYoutube} from "../../utils/utils";
 
 export const MiteiruDropzone = ({
                                   onDrop,
@@ -43,13 +43,19 @@ export const MiteiruDropzone = ({
     }
   }, [onDrop]);
 
-  const pasteEvent = useCallback(() => {
-    navigator.clipboard.readText().then((clipText) => {
-      const videoId = extractVideoId(clipText);
-      if (videoId) {
-        onDrop([{path: clipText}]);
-      }
-    });
+  const pasteEvent = useCallback((event: ClipboardEvent) => {
+    const target = event.target as HTMLElement | null;
+    if (target?.closest('input, textarea, [contenteditable="true"]')) {
+      return;
+    }
+
+    const clipText = event.clipboardData?.getData('text')?.trim() ?? '';
+    if (!clipText || !isYoutube(clipText)) {
+      return;
+    }
+
+    event.preventDefault();
+    onDrop([{path: clipText}]);
   }, [onDrop]);
 
   useEffect(() => {

@@ -368,10 +368,7 @@ button {
   background: white;
 }
 
-ruby {
-  ruby-align: space-between;
-}
-
+ruby,
 ruby ruby {
-  ruby-align: space-between;
+  ruby-align: center;
 }

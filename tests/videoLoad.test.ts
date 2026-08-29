@@ -60,10 +60,12 @@ const withTempVideo = async (fn: (filePath: string, bytes: Buffer) => Promise<vo
   }
 };
 
+const miteiruRequest = (headers?: HeadersInit) =>
+  new Request('miteiru://localhost/clip.mp4', headers ? {headers} : undefined);
+
 test('createMiteiruFileResponse serves the full file without a range header', async () => {
   await withTempVideo(async (filePath, bytes) => {
-    const request = new Request(`miteiru://${filePath}`);
-    const response = createMiteiruFileResponse(filePath, request);
+    const response = createMiteiruFileResponse(filePath, miteiruRequest());
     assert.equal(response.status, 200);
     assert.equal(response.headers.get('content-length'), String(bytes.length));
     assert.equal(response.headers.get('content-type'), 'video/mp4');
@@ -75,10 +77,10 @@ test('createMiteiruFileResponse serves the full file without a range header', as
 
 test('createMiteiruFileResponse serves partial content for valid ranges', async () => {
   await withTempVideo(async (filePath, bytes) => {
-    const request = new Request(`miteiru://${filePath}`, {
-      headers: {range: 'bytes=10-19'},
-    });
-    const response = createMiteiruFileResponse(filePath, request);
+    const response = createMiteiruFileResponse(
+      filePath,
+      miteiruRequest({range: 'bytes=10-19'}),
+    );
     assert.equal(response.status, 206);
     assert.equal(response.headers.get('content-length'), '10');
     assert.equal(
@@ -92,10 +94,10 @@ test('createMiteiruFileResponse serves partial content for valid ranges', async 
 
 test('createMiteiruFileResponse answers 416 for unsatisfiable ranges', async () => {
   await withTempVideo(async (filePath, bytes) => {
-    const request = new Request(`miteiru://${filePath}`, {
-      headers: {range: 'bytes=9999-10000'},
-    });
-    const response = createMiteiruFileResponse(filePath, request);
+    const response = createMiteiruFileResponse(
+      filePath,
+      miteiruRequest({range: 'bytes=9999-10000'}),
+    );
     assert.equal(response.status, 416);
     assert.equal(
       response.headers.get('content-range'),

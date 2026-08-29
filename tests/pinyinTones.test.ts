@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import {test} from "node:test";
-import {formatPinyinReading, replacePinyinToneSymbol} from "../main/handler/pinyinTones";
+import {
+  formatPinyinReading,
+  replacePinyinToneSymbol,
+  toPinyinToneMarks
+} from "../main/handler/pinyinTones";
 
 test("replacePinyinToneSymbol maps Mandarin contours", () => {
   assert.equal(replacePinyinToneSymbol("ni1"), "niˉ¹");
@@ -17,7 +21,17 @@ test("replacePinyinToneSymbol leaves unnumbered syllables alone", () => {
   assert.equal(replacePinyinToneSymbol("nǐ"), "nǐ");
 });
 
-test("formatPinyinReading only rewrites symbol mode", () => {
-  assert.equal(formatPinyinReading("ni3", "num"), "ni3");
-  assert.equal(formatPinyinReading("ni3", "symbol"), "niᵛ₃");
+test("toPinyinToneMarks places tones on vowels", () => {
+  assert.equal(toPinyinToneMarks("ni3"), "nǐ");
+  assert.equal(toPinyinToneMarks("hao3"), "hǎo");
+  assert.equal(toPinyinToneMarks("ma1"), "mā");
+  assert.equal(toPinyinToneMarks("xue2"), "xué");
+  assert.equal(toPinyinToneMarks("de5"), "de");
+});
+
+test("formatPinyinReading uses contours for num and diacritics for symbol", () => {
+  assert.equal(formatPinyinReading("ni3", "num"), "niᵛ₃");
+  assert.equal(formatPinyinReading("ni3", "symbol"), "nǐ");
+  assert.equal(formatPinyinReading("hao2", "num"), "hao⸍²");
+  assert.equal(formatPinyinReading("hao2", "symbol"), "háo");
 });
