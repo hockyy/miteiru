@@ -22,13 +22,13 @@ While I strive to maintain a safe and secure application, I cannot be held respo
 ## Download ૮ ˶ᵔ ᵕ ᵔ˶ ა✩°｡ ⋆⸜
 <div align="center">
 
-<a href="https://github.com/hockyy/miteiru/releases/latest" target="_blank" rel="noopener noreferrer" style="">
+<a href="https://github.com/hockyy/miteiru/releases/latest" target="_blank" rel="noopener noreferrer">
 <img width="9%" src="./renderer/public/images/kiwi.png" alt="kiwi"/>
 </a>
-<a href="https://github.com/hockyy/miteiru/releases/latest" target="_blank" rel="noopener noreferrer" style="">
+<a href="https://github.com/hockyy/miteiru/releases/latest" target="_blank" rel="noopener noreferrer">
 <img width="60%" src="./renderer/public/images/downloadBanner.gif" alt="banner"/>
 </a>
-<a href="https://github.com/hockyy/miteiru/releases/latest" target="_blank" rel="noopener noreferrer" style="">
+<a href="https://github.com/hockyy/miteiru/releases/latest" target="_blank" rel="noopener noreferrer">
 <img width="7%" src="./renderer/public/images/pome.png" alt="pomegranate"/>
 </a>
 </div>
@@ -36,245 +36,90 @@ While I strive to maintain a safe and secure application, I cannot be held respo
 <table style="border: none;">
   <tr>
     <td><img src="renderer/public/images/logo.png" alt="Miteiru Logo" /></td>
-    <td> Miteiru is an open source Electron video player to learn Chinese, Japanese, Cantonese, and Vietnamese. It has a modular per-language dictionary and tokenizer (morphological analyzer), with built-in tokenizers (Kuromoji, Jieba) and optional external <a href="https://taku910.github.io/mecab/">MeCab</a> support, and bundles <a href="https://github.com/scriptin/jmdict-simplified">JMDict</a>, CC-CEDICT, and VNEDict to give language info boxes. This software is heavily inspired by <a href="https://ookii-tsuki.github.io/Anisubber/">Anisubber</a>. 
-    
-📚 **For detailed language support information, see [Language Documentation](README_LANGUAGES.md)**</td>
+    <td> Miteiru is an open source Electron video player for learning Japanese, Mandarin, Cantonese, and Vietnamese. It tokenizes subtitles (Kuromoji, Jieba, optional <a href="https://taku910.github.io/mecab/">MeCab</a>), shows readings and dictionary info from bundled <a href="https://github.com/scriptin/jmdict-simplified">JMDict</a>, CC-CEDICT, and VNEDict, and is heavily inspired by <a href="https://ookii-tsuki.github.io/Anisubber/">Anisubber</a>.
+
+📚 **Language details:** [Language Documentation](README_LANGUAGES.md)</td>
   </tr>
 </table>
 
 ## What can 見ている do?
 
-- **Multi-language Support**: Japanese, Chinese (Mandarin/Cantonese), Vietnamese with comprehensive tokenization
-- Cross-platform! Available in Windows, MacOS, GNU/Linux.
-- Supports all videos that your [chromium](https://www.chromium.org/audio-video/) supports! In some
-  OS's, it supports **x265**.
-- On-The-Fly Furigana generation! blazing-fast and no severe cache build needed.
-- **Smart Subtitle Language Detection**: Automatically processes subtitles based on filename
-- **Comprehensive Dictionaries**: JMDict, CC-CEDICT, VNEDict, and more — bundled with the installer
-- Instant definition of any word in the subtitles.
-- Instant definition on Kanji
-- Translation subtitles alongside the Japanese subtitles.
-- Word/Token spacing in the Japanese subtitles
-- Youtube Support
+- **Japanese, Mandarin, Cantonese, and Vietnamese** — tokenization, readings (furigana / pinyin / jyutping), and click-to-define
+- **Bundled dictionaries** — JMDict, KanjiDic, CC-CEDICT, CC-Canto, VNEDict, Japanese pitch accent
+- Local video files (whatever [Chromium](https://www.chromium.org/audio-video/) can play; some OSes also play **x265**) plus **YouTube** URLs
+- Primary + secondary (translation) subtitles, karaoke mode with LRCLIB lyrics search, Anki export, notes
+- Cross-platform: Windows, macOS, GNU/Linux
 
 ## How to start immersing
 
-- For the first run, you can press this button, and wait a moment while it loads
-  the Japanese dictionary.
-- ![image](https://github.com/hockyy/miteiru/assets/19528709/6d8bcf4f-73dd-4cfb-8a6f-4bbf7e10a25a)
-- You can start by dragging:
-    - Any videos (Anime is good) you can get subtitle at https://kitsunekko.net/
-    - Any youtube URL
-        - Or you can just literally paste any youtube watch video into the miteiru (just ctrl + v
-          into the player)
-        - But youtube japanese will only show for videos that have japanese CC or auto-generated
-          japanese CC.
-        - Try this:
-            - https://www.youtube.com/results?search_query=onomappu
-            - https://www.youtube.com/results?search_query=nihongo+no+mori+kenshi+yonezu
-            - https://www.youtube.com/@funtv8964
-            - https://www.youtube.com/@mm.millmilk
-            - ![image](https://github.com/hockyy/miteiru/assets/19528709/b97c3ef1-18ee-40d4-a0ab-ff7d9de81d66)
-            - ![image](https://github.com/hockyy/miteiru/assets/19528709/c5e21a69-6cdb-47c9-a842-ad97b81125be)
+- Pick a language on the home screen (dictionaries ship with the installer).
+- Drag in a video, or paste a YouTube URL with Ctrl+V. External subtitles can be dropped the same way; many anime subs live at https://kitsunekko.net/
+- YouTube Japanese only appears when the video has Japanese CC (including auto-generated).
+- `X` / `Z` open settings. Shortcuts are on the home screen; `Q` or Ctrl+H goes back there.
 
-- Press `X` and `Z` for the configs
-- Just read the front page's keyboard shortcut, you can press `Q` to go back to the front page.
-- ![image](https://github.com/hockyy/miteiru/assets/19528709/46cd3065-29cf-4d0a-957b-62ef28386693)
-- ![image](https://github.com/hockyy/miteiru/assets/19528709/2b54c704-019d-47c1-b183-55ad350c4b18)
-- Profit 💰
+![image](https://github.com/hockyy/miteiru/assets/19528709/6d8bcf4f-73dd-4cfb-8a6f-4bbf7e10a25a)
+![image](https://github.com/hockyy/miteiru/assets/19528709/b97c3ef1-18ee-40d4-a0ab-ff7d9de81d66)
+![image](https://github.com/hockyy/miteiru/assets/19528709/c5e21a69-6cdb-47c9-a842-ad97b81125be)
+![image](https://github.com/hockyy/miteiru/assets/19528709/46cd3065-29cf-4d0a-957b-62ef28386693)
+![image](https://github.com/hockyy/miteiru/assets/19528709/2b54c704-019d-47c1-b183-55ad350c4b18)
 
-## For Casual Users: Installation Guide
+## Installation
 
-- Checkout releases here: https://github.com/hockyy/miteiru/releases
+Releases: https://github.com/hockyy/miteiru/releases
 
 ### Mac
 
-- Download the .pkg file
-- Because I'm too poor to afford the so called 99 USD apple developer program annual fee, you will
-  encounter the unidentified developer warning.
-    - No worry, all codes are open source and I have no intend to harm your Mac... You can even
-      build your own app by following the developer guide below
-- Run it this
-  way: https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unidentified-developer-mh40616/mac
-- ![image](https://github.com/hockyy/miteiru/assets/19528709/a440a119-49cf-45f1-8c42-93289d20e01e)
+- Download the `.pkg`. Builds are unsigned (no Apple Developer Program), so macOS will warn about an unidentified developer. The code is open source — [open anyway](https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unidentified-developer-mh40616/mac), or build it yourself below.
+
+![image](https://github.com/hockyy/miteiru/assets/19528709/a440a119-49cf-45f1-8c42-93289d20e01e)
 
 ### Windows
 
-- Being such a good guy I am, I've provided both the portable one and the setup one, you can just
-  pick any, install it.
-- There's this issue where some PC would recognize the setup as a virus... but you can try your own
-  virus total test.
+- NSIS installer and portable `.exe` are both on the release. Some PCs flag the installer; the source is here if you want to verify.
 
-### Ubuntu
+### Linux
 
-- I made the .deb and .AppImage, currently no other build is provided because I'm too lazy
+- `.deb` and AppImage for Ubuntu 22.04 and 24.04.
 
-## How to integrate with Whisper
-> If you're on a Mac, [MacWhisper](https://goodsnooze.gumroad.com/l/macwhisper) is a really good UI for Whisper. Anyway, if you want to run whisper on other OS or for free:
+## For developers
 
-- clone this
-  repo [git@github.com:ggerganov/whisper.cpp.git](https://github.com/ggerganov/whisper.cpp)
-- install ffmpeg
-- `cd whisper.cpp && bash ./models/download-ggml-model.sh large-v3 && cmake -B build && cmake --build build -j`
-
-put this in your ~/.bashrc or ~/.zshrc or any rc your os use
-
-```  
-export WHISPERPATH=~/project/whisper.cpp
-
-whisper() {
-  local input="$1"
-  shift
-
-  # All remaining arguments will be treated as an array
-  local -a extra_args=("$@")
-  "$WHISPERPATH/build/bin/whisper-cli" -f "$input" -of "$input.w" --model "$WHISPERPATH/models/ggml-large-v3.bin" -l ja "${extra_args[@]}" -osrt
-}
-
-prepwhisper() {
-  local input="$1"
-  local output="${input%.\*}.wav"
-  ffmpeg -i "$input" -ar 16000 -ac 1 -c:a pcm_s16le "$output"
-}
-```
-
-Then run on your video
-
-```
-prepwhisper video.mp4
-whisper video.wav
-```
-
-- voila
-
-## For Developer: (Own Build) Installation Guide
-
-You can run the followings on the cloned repository. `script:initrepo` downloads the language asset
-packages from the [assets release](https://github.com/hockyy/miteiru/releases/tag/assets) and
-extracts them into `renderer/public/language-assets`.
-Development requires **Node.js 22.12+** (Electron 41). Ubuntu 20.04 installers are no longer built.
+Needs **Node.js 22.12+**. `script:initrepo` downloads language assets from the [assets release](https://github.com/hockyy/miteiru/releases/tag/assets) into `renderer/public/language-assets`.
 
 ```bash
 npm install
 npm run script:initrepo
-npm run dev # This to run dev
-npm run build:nsis # This to build for Windows with Live Captions helper
-npm run build:portable # This to build for Windows Portable with Live Captions helper
-npm run build:linux22 # This to build for Linux 22.04
-npm run build:linux24 # This to build for Linux 24.04
-npm run build:linux26 # This to build for Linux 26.04
-npm run build:macos # This to build for macOS
+npm run dev
+npm run build:nsis       # Windows installer (includes Live Captions helper)
+npm run build:portable   # Windows portable
+npm run build:linux22    # Ubuntu 22.04
+npm run build:linux24    # Ubuntu 24.04
+npm run build:linux26    # Ubuntu 26.04
+npm run build:macos      # macOS .pkg
 ```
 
-### Language Assets
-
-Language dictionaries and shared Han-character resources live under `renderer/public/language-assets`.
-If you need to download, package, or restore them manually:
+Language assets:
 
 ```bash
 npm run script:download-language-assets
 npm run script:pack-language-assets
 npm run script:unpack-language-assets
-```
-
-You can target specific plugins by passing ids after `--`:
-
-```bash
 npm run script:download-language-assets -- mandarin han-character-core
-npm run script:unpack-language-assets -- vietnamese
 ```
 
-Set `MITEIRU_FORCE_ASSET_DOWNLOAD=1` to redownload existing zip files.
-The pack command creates one `<plugin-id>-assets.zip` per language/resource plugin under `archived/language-assets/`.
-The unpack command restores those archives back into `renderer/public/language-assets/<plugin-id>/`.
+`MITEIRU_FORCE_ASSET_DOWNLOAD=1` redownloads existing zips.
 
-## Mecab and Custom Dictionary Setup (Optional)
+## Optional MeCab
 
-Mecab can be downloaded through [brew](https://brew.sh/) by running:
+Built-in Kuromoji is enough for Japanese. MeCab is optional.
 
 ```bash
-brew install mecab
+brew install mecab          # macOS
+sudo apt install mecab      # Ubuntu
+which mecab                 # path to paste into Miteiru
 ```
 
-or in Ubuntu:
+Windows binaries: [SourceForge](https://sourceforge.net/projects/mecab/). JMDict is already bundled; you can point at a custom dump from [jmdict-simplified](https://github.com/scriptin/jmdict-simplified/releases) if you want.
 
-```bash
-sudo apt install mecab
-```
-
-Then, you can run
-
-```bash
-which mecab
-```
-
-or in Windows, you can directly download the binary file
-from [SourceForge](https://sourceforge.net/projects/mecab/)
-
-to show your default mecab binary file. Use it as the path when asked in Miteiru. JMDict is already
-bundled with Miteiru, but you can point it to a custom dictionary from
-[https://github.com/scriptin/jmdict-simplified/releases](https://github.com/scriptin/jmdict-simplified/releases)
-if you want. Then, you can enjoy the app!
-
-## MeCab Dictionary Customization
-
-By default, you are using whatever your default Mecab Dictionary offers you, but you can further
-customize this by modifying the `mecabrc` file which is located in `/opt/homebrew/etc/mecabrc` in
-MacOS, `C:\Program Files (x86)\MeCab\etc\mecabrc` in Windows, and `/etc/mecabrc` in Ubuntu. For
-other OS's you gotta figure it our for yourself right now. Miteiru's local Japanese analyzer can
-support Unidic, Jumandic, Ipadic, and it's variations. Specifically, if you check out the `dicrc`
-file of each dictionary, Miteiru can support the output format `chamame`, `chasen`, and the classic
-Jumandic god knows what output format. You can
-get [UniDic files here](https://clrd.ninjal.ac.jp/unidic/en/)
-
-Configuration file in mac:
-
-```
-;
-; Configuration file of MeCab
-;
-; $Id: mecabrc.in,v 1.3 2006/05/29 15:36:08 taku-ku Exp $;
-;
-; dicdir =  /opt/homebrew/lib/mecab/dic/ipadic
-; dicdir =  /opt/homebrew/lib/mecab/dic/jumandic
-dicdir =  /opt/homebrew/lib/mecab/dic/unidic
-; userdic = /home/foo/bar/user.dic
-
-; output-format-type = wakati
-; input-buffer-size = 8192
-
-; node-format = %m\n
-; bos-format = %S\n
-; eos-format = EOS\n
-```
-
-Windows:
-
-```
-;
-; Configuration file of MeCab
-;
-; $Id: mecabrc.in,v 1.3 2006/05/29 15:36:08 taku-ku Exp $;
-;
-dicdir =  $(rcpath)\..\dic\unidic
-
-; userdic = /home/foo/bar/user.dic
-
-; output-format-type = wakati
-; input-buffer-size = 8192
-
-; node-format = %m\n
-; bos-format = %S\n
-; eos-format = EOS\n
-```
-
-## Future Enhancements
-
-- Miteiru will be ported to a dedicated media player, like LibVLC or MPV.
-- Kanji explanation in the subtitles with animated diagrams.
-- Online hosted videos.
-- Will support Android.
-- Miteiru will support more languages: French, German, Bahasa Indonesia, Korean, and many more.
+To change the MeCab dictionary, edit `mecabrc` (`/opt/homebrew/etc/mecabrc` on macOS, `C:\Program Files (x86)\MeCab\etc\mecabrc` on Windows, `/etc/mecabrc` on Ubuntu) and set `dicdir` to ipadic, jumandic, or unidic. Miteiru accepts `chamame`, `chasen`, and Jumandic output. [UniDic](https://clrd.ninjal.ac.jp/unidic/en/).
 
 https://user-images.githubusercontent.com/19528709/236619520-076c863a-6c14-4f6e-8f9b-5d1e660fd646.mp4
-
