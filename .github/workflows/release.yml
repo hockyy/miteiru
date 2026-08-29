@@ -28,29 +28,41 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Job-level `if` cannot read `matrix`, so pick the include list here.
+  select:
+    runs-on: ubuntu-latest
+    outputs:
+      include: ${{ steps.set.outputs.include }}
+    steps:
+      - id: set
+        env:
+          PLATFORM: ${{ inputs.platform }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          jobs = [
+            {"os": "windows-latest", "build": "npm run build:nsis", "extensions": "exe", "key": "windows"},
+            {"os": "macos-latest", "build": "npm run build:macos", "extensions": "pkg", "key": "macos"},
+            {"os": "ubuntu-22.04", "build": "npm run build:linux22", "extensions": "deb,AppImage", "key": "linux"},
+            {"os": "ubuntu-24.04", "build": "npm run build:linux24", "extensions": "deb,AppImage", "key": "linux"},
+          ]
+          platform = os.environ["PLATFORM"]
+          rows = jobs if platform == "all" else [j for j in jobs if j["key"] == platform]
+          for row in rows:
+              del row["key"]
+          payload = json.dumps(rows)
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+              fh.write("include<<EOF\n")
+              fh.write(payload + "\n")
+              fh.write("EOF\n")
+          PY
+
   build:
+    needs: select
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: windows-latest
-            platform: windows
-            build: npm run build:nsis
-            extensions: exe
-          - os: macos-latest
-            platform: macos
-            build: npm run build:macos
-            extensions: pkg
-          - os: ubuntu-22.04
-            platform: linux
-            build: npm run build:linux22
-            extensions: deb,AppImage
-          - os: ubuntu-24.04
-            platform: linux
-            build: npm run build:linux24
-            extensions: deb,AppImage
-
-    if: inputs.platform == 'all' || inputs.platform == matrix.platform
+        include: ${{ fromJSON(needs.select.outputs.include) }}
     runs-on: ${{ matrix.os }}
 
     steps:
