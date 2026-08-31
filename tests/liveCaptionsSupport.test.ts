@@ -4,6 +4,7 @@ import {describe, it} from "node:test";
 import {
   getLiveCaptionsBridgeCandidates,
   getLiveCaptionsBridgeExecutableName,
+  getLiveCaptionsAppleLocale,
   isLiveCaptionsSupported
 } from "../main/helpers/liveCaptionsSupport";
 
@@ -78,5 +79,23 @@ describe("getLiveCaptionsBridgeCandidates", () => {
     assert.ok(candidates.includes(path.normalize(
       "/Users/me/miteiru/native/live-captions/mac/MiteiruLiveCaptionsBridge"
     )));
+  });
+});
+
+describe("getLiveCaptionsAppleLocale", () => {
+  it("maps Japanese tokenizers to ja_JP", () => {
+    assert.deepEqual(getLiveCaptionsAppleLocale("kuromoji"), {locale: "ja_JP", languageCode: "ja"});
+    assert.deepEqual(getLiveCaptionsAppleLocale("mecab"), {locale: "ja_JP", languageCode: "ja"});
+  });
+
+  it("maps Mandarin and Cantonese", () => {
+    assert.deepEqual(getLiveCaptionsAppleLocale("jieba"), {locale: "zh_CN", languageCode: "zh-CN"});
+    assert.deepEqual(getLiveCaptionsAppleLocale("cantonese"), {locale: "yue_CN", languageCode: "yue"});
+  });
+
+  it("rejects Vietnamese and an unloaded tokenizer", () => {
+    assert.equal(getLiveCaptionsAppleLocale("vietnamese").locale, undefined);
+    assert.match(getLiveCaptionsAppleLocale("vietnamese").error ?? "", /does not support/);
+    assert.match(getLiveCaptionsAppleLocale("").error ?? "", /home screen/);
   });
 });

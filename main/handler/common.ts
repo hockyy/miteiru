@@ -14,5 +14,5 @@ export const registerCommonHandlers = (getTokenizer: RegisterCommonHandlersArgs[
   registerMediaHandlers();
   registerMediaToolHandlers();
   registerNetworkHandlers();
-  registerLiveCaptionsHandlers();
+  registerLiveCaptionsHandlers(getTokenizer);
 };

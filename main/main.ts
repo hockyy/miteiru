@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "path";
 import {registerMiteiruScheme, setupMiteiruProtocol} from "./miteiruProtocol";
 import {registerCommonHandlers} from "./handler/common";
+import {notifyLiveCaptionsLanguageChange} from "./handler/common/liveCaptionsHandlers";
 import {registerStartupHandlers} from "./handler/startup";
 import Japanese from "./handler/japanese";
 import Chinese from "./handler/chinese";
@@ -62,6 +63,7 @@ if (!isProd) {
 
   const setTokenizer = (value) => {
     tokenizerCommand = value;
+    notifyLiveCaptionsLanguageChange();
   }
   const getTokenizer = () => tokenizerCommand;
   const getToneType = async () => {

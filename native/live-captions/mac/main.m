@@ -160,6 +160,13 @@ int main(int argc, const char *argv[]) {
       return 0;
     }
 
+    NSString *requestedLocale = nil;
+    for (int i = 1; i < argc; i++) {
+      if (strcmp(argv[i], "--locale") == 0 && i + 1 < argc) {
+        requestedLocale = [NSString stringWithUTF8String:argv[++i]];
+      }
+    }
+
     id shared = ((id (*)(id, SEL))objc_msgSend)(cls, NSSelectorFromString(@"shared"));
     if (!shared) {
       writeMessage(@"error", @"AXLiveCaptions.shared returned nil.");
@@ -167,23 +174,27 @@ int main(int argc, const char *argv[]) {
     }
     gEngine = shared;
 
-    __block NSLocale *locale = nil;
-    SEL localeSel = NSSelectorFromString(@"defaultLocaleWithCompletion:");
-    if ([cls respondsToSelector:localeSel]) {
-      void (^localeBlock)(NSLocale *) = ^(NSLocale *nextLocale) {
-        locale = nextLocale;
-      };
-      ((void (*)(id, SEL, id))objc_msgSend)(cls, localeSel, localeBlock);
-      NSDate *deadline = [NSDate dateWithTimeIntervalSinceNow:5.0];
-      while (!locale && [deadline timeIntervalSinceNow] > 0) {
-        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
-                                 beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
+    NSLocale *locale = nil;
+    if (requestedLocale.length > 0) {
+      locale = [NSLocale localeWithLocaleIdentifier:requestedLocale];
+      writeMessage(@"debug", [NSString stringWithFormat:@"Using requested locale %@", locale.localeIdentifier]);
+    } else {
+      __block NSLocale *defaultLocale = nil;
+      SEL localeSel = NSSelectorFromString(@"defaultLocaleWithCompletion:");
+      if ([cls respondsToSelector:localeSel]) {
+        void (^localeBlock)(NSLocale *) = ^(NSLocale *nextLocale) {
+          defaultLocale = nextLocale;
+        };
+        ((void (*)(id, SEL, id))objc_msgSend)(cls, localeSel, localeBlock);
+        NSDate *deadline = [NSDate dateWithTimeIntervalSinceNow:5.0];
+        while (!defaultLocale && [deadline timeIntervalSinceNow] > 0) {
+          [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
+                                   beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
+        }
       }
+      locale = defaultLocale ?: [NSLocale localeWithLocaleIdentifier:@"en_US"];
+      writeMessage(@"debug", [NSString stringWithFormat:@"Using default locale %@", locale.localeIdentifier]);
     }
-    if (!locale) {
-      locale = [NSLocale localeWithLocaleIdentifier:@"en_US"];
-    }
-    writeMessage(@"debug", [NSString stringWithFormat:@"Using locale %@", locale.localeIdentifier]);
 
     NSError * __autoreleasing startError = nil;
     NSError * __autoreleasing *startErrorPtr = &startError;

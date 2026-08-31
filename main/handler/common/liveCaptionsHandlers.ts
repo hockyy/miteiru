@@ -3,7 +3,7 @@ import {ChildProcessWithoutNullStreams, spawn} from "child_process";
 import path from "path";
 import fs from "fs";
 import type {LiveCaptionsApiState, LiveCaptionsState} from "../../../renderer/types/liveCaptions";
-import {isLiveCaptionsSupported, getLiveCaptionsBridgeCandidates} from "../../helpers/liveCaptionsSupport";
+import {isLiveCaptionsSupported, getLiveCaptionsBridgeCandidates, getLiveCaptionsAppleLocale} from "../../helpers/liveCaptionsSupport";
 
 interface LiveCaptionsBridgeMessage {
   type?: "caption" | "state" | "error" | "debug";
@@ -12,6 +12,7 @@ interface LiveCaptionsBridgeMessage {
 }
 
 const supported = isLiveCaptionsSupported();
+let getTokenizer: () => string = () => "";
 
 let bridgeProcess: ChildProcessWithoutNullStreams | null = null;
 let state: LiveCaptionsState = supported ? "stopped" : "unsupported";
@@ -126,7 +127,7 @@ const handleBridgeLine = (line: string) => {
   }
 };
 
-const createBridgeProcess = (bridgePath: string) => spawn(bridgePath, [], {
+const createBridgeProcess = (bridgePath: string, args: string[] = []) => spawn(bridgePath, args, {
   windowsHide: true,
   cwd: path.dirname(bridgePath)
 });
@@ -208,6 +209,18 @@ const startBridge = () => {
   }
 
   try {
+    const bridgeArgs: string[] = [];
+    if (process.platform === "darwin") {
+      const localeResult = getLiveCaptionsAppleLocale(getTokenizer());
+      if (localeResult.error || !localeResult.locale) {
+        setError(localeResult.error ?? "Live Captions language is unavailable.");
+        return getState();
+      }
+
+      bridgeArgs.push("--locale", localeResult.locale);
+      addDebugMessage(`Using Live Captions locale ${localeResult.locale} (${localeResult.languageCode}).`);
+    }
+
     const bridgePath = getBridgePath();
     latestCaption = "";
     latestError = "";
@@ -215,7 +228,7 @@ const startBridge = () => {
     setState("starting");
     addDebugMessage("Starting Live Captions helper process...");
 
-    bridgeProcess = createBridgeProcess(bridgePath);
+    bridgeProcess = createBridgeProcess(bridgePath, bridgeArgs);
     armStartupWatchdog();
     wireBridgeStreams(bridgeProcess);
   } catch (error) {
@@ -244,7 +257,17 @@ const stopBridge = () => {
   return getState();
 };
 
-export function registerLiveCaptionsHandlers() {
+export const notifyLiveCaptionsLanguageChange = () => {
+  if (process.platform !== "darwin") return;
+  if (!bridgeProcess) return;
+
+  addDebugMessage("Language changed; restarting Live Captions with the new locale.");
+  stopBridge();
+  startBridge();
+};
+
+export function registerLiveCaptionsHandlers(nextGetTokenizer: () => string = () => "") {
+  getTokenizer = nextGetTokenizer;
   ipcMain.handle("live-captions:is-supported", async () => supported);
   ipcMain.handle("live-captions:get-state", async () => getState());
   ipcMain.handle("live-captions:start", async () => startBridge());
