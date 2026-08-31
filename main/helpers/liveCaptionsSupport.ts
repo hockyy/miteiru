@@ -83,3 +83,49 @@ export const getLiveCaptionsBridgeCandidates = ({
     relatives.map((segments) => path.join(root, ...segments))
   )));
 };
+
+const tokenizerLanguageCodes: Record<string, string> = {
+  kuromoji: "ja",
+  mecab: "ja",
+  cantonese: "yue",
+  jieba: "zh-CN",
+  vietnamese: "vi"
+};
+
+/** Apple Speech / Live Captions locale IDs (underscores), keyed by Miteiru languageCode. */
+const appleLocalesByLanguageCode: Record<string, string> = {
+  ja: "ja_JP",
+  yue: "yue_CN",
+  "zh-CN": "zh_CN",
+  "zh-TW": "zh_TW",
+  "zh-HK": "zh_HK"
+};
+
+export type LiveCaptionsLocaleResult = {
+  locale?: string;
+  languageCode?: string;
+  error?: string;
+};
+
+export const getLiveCaptionsAppleLocale = (tokenizerMode: string): LiveCaptionsLocaleResult => {
+  const mode = tokenizerMode.trim();
+  if (!mode) {
+    return {error: "Load a language on the home screen first, then start Live CC."};
+  }
+
+  const languageCode = tokenizerLanguageCodes[mode];
+  if (!languageCode) {
+    return {error: `Live Captions has no language mapping for tokenizer "${mode}".`};
+  }
+
+  const locale = appleLocalesByLanguageCode[languageCode];
+  if (!locale) {
+    return {
+      languageCode,
+      error: `Apple Live Captions does not support ${languageCode}. Use Japanese, Mandarin, or Cantonese.`
+    };
+  }
+
+  return {locale, languageCode};
+};
+
