@@ -3,7 +3,7 @@
   "name": "miteiru",
   "description": "Miteiru",
   "desktopName": "miteiru.desktop",
-  "version": "7.5.0",
+  "version": "7.5.1",
   "author": "Hocky Yudhiono <hocky.yudhiono@gmail.com>",
   "main": "app/main.js",
   "homepage": "https://miteiru.hocky.id",
@@ -25,11 +25,26 @@
       "icon": "resources/icon.icns",
       "target": [
         "pkg"
-      ]
+      ],
+      "extraResources": [
+        {
+          "from": "resources/live-captions",
+          "to": "live-captions",
+          "filter": [
+            "**/*",
+            "!**/.gitkeep"
+          ]
+        }
+      ],
+      "extendInfo": {
+        "NSAudioCaptureUsageDescription": "Miteiru uses computer audio to show live captions.",
+        "NSMicrophoneUsageDescription": "Miteiru uses the microphone to show live captions.",
+        "NSScreenCaptureUsageDescription": "Miteiru reads computer audio for live captions."
+      }
     }
   },
   "scripts": {
-    "predev": "npm run script:copy",
+    "predev": "npm run script:copy && node scripts/buildLiveCaptionsBridge.js --if-needed",
     "update:safe": "node scripts/safeUpdate.js",
     "script:copy": "node scripts/copy.js",
     "script:cleansvg": "node scripts/cleanSvg.js",
@@ -47,8 +62,8 @@
     "lint:eslint": "eslint .",
     "build:live-captions": "node scripts/buildLiveCaptionsBridge.js",
     "dev": "nextron --electron-options=\"--no-sandbox\"",
-    "build": "npm run script:clean-next && nextron build",
-    "build:macos": "npm run script:clean-next && nextron build --config=buildConfig/macos.config.json",
+    "build": "npm run build:live-captions && npm run script:clean-next && nextron build",
+    "build:macos": "npm run build:live-captions && npm run script:clean-next && nextron build --config=buildConfig/macos.config.json",
     "build:nsis": "npm run build:live-captions && npm run script:clean-next && nextron build --config=buildConfig/nsis.config.json",
     "build:linux22": "npm run script:clean-next && nextron build --config=buildConfig/linux22.config.json",
     "build:linux24": "npm run script:clean-next && nextron build --config=buildConfig/linux24.config.json",

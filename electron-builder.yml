@@ -16,4 +16,15 @@ win:
       filter:
         - "**/*"
         - "!**/.gitkeep"
+mac:
+  extraResources:
+    - from: resources/live-captions
+      to: live-captions
+      filter:
+        - "**/*"
+        - "!**/.gitkeep"
+  extendInfo:
+    NSAudioCaptureUsageDescription: Miteiru uses computer audio to show live captions.
+    NSMicrophoneUsageDescription: Miteiru uses the microphone to show live captions.
+    NSScreenCaptureUsageDescription: Miteiru reads computer audio for live captions.
 publish: null
