@@ -1,0 +1,85 @@
+import os from "os";
+import path from "path";
+
+export type LiveCaptionsRuntime = {
+  platform: NodeJS.Platform | string;
+  arch: string;
+  release: string;
+};
+
+export type LiveCaptionsBridgeLookup = {
+  platform?: NodeJS.Platform | string;
+  resourcesPath?: string;
+  cwd?: string;
+  appPath?: string;
+};
+
+/** Darwin 25 is macOS 26 Tahoe, the first release we verified AXLiveCaptions against. */
+export const MAC_LIVE_CAPTIONS_MIN_DARWIN_MAJOR = 25;
+
+export const getLiveCaptionsRuntime = (): LiveCaptionsRuntime => ({
+  platform: process.platform,
+  arch: process.arch,
+  release: os.release()
+});
+
+export const isLiveCaptionsSupported = (
+  runtime: LiveCaptionsRuntime = getLiveCaptionsRuntime()
+): boolean => {
+  if (runtime.platform === "win32") return true;
+  if (runtime.platform !== "darwin") return false;
+  if (runtime.arch !== "arm64") return false;
+
+  const major = Number.parseInt(String(runtime.release).split(".")[0] ?? "", 10);
+  return Number.isFinite(major) && major >= MAC_LIVE_CAPTIONS_MIN_DARWIN_MAJOR;
+};
+
+export const getLiveCaptionsBridgeExecutableName = (
+  platform: NodeJS.Platform | string = process.platform
+): string => (
+  platform === "win32" ? "MiteiruLiveCaptionsBridge.exe" : "MiteiruLiveCaptionsBridge"
+);
+
+const uniquePaths = (candidates: Array<string | undefined>): string[] => {
+  const seen = new Set<string>();
+  const result: string[] = [];
+
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    const normalized = path.normalize(candidate);
+    if (seen.has(normalized)) continue;
+    seen.add(normalized);
+    result.push(normalized);
+  }
+
+  return result;
+};
+
+export const getLiveCaptionsBridgeCandidates = ({
+  platform = process.platform,
+  resourcesPath = "",
+  cwd = process.cwd(),
+  appPath = ""
+}: LiveCaptionsBridgeLookup = {}): string[] => {
+  const name = getLiveCaptionsBridgeExecutableName(platform);
+  const roots = uniquePaths([
+    resourcesPath,
+    cwd,
+    appPath,
+    appPath ? path.join(appPath, "..") : undefined
+  ]);
+
+  const relatives = [
+    ["live-captions", name],
+    ["resources", "live-captions", name],
+    ["native", "live-captions", "mac", name],
+    ["native", "live-captions", "bin", "Release", "net8.0-windows", "win-x64", "publish", name],
+    ["native", "live-captions", "bin", "Debug", "net8.0-windows", "win-x64", "publish", name],
+    ["native", "live-captions", "bin", "Release", "net8.0-windows", name],
+    ["native", "live-captions", "bin", "Debug", "net8.0-windows", name]
+  ];
+
+  return uniquePaths(roots.flatMap((root) => (
+    relatives.map((segments) => path.join(root, ...segments))
+  )));
+};

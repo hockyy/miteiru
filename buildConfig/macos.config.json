@@ -2,6 +2,18 @@
   "mac": {
     "icon": "resources/icon.icns",
     "target": ["pkg"],
-    "artifactName": "miteiru-${version}-${os}-${arch}.${ext}"
+    "artifactName": "miteiru-${version}-${os}-${arch}.${ext}",
+    "extraResources": [
+      {
+        "from": "resources/live-captions",
+        "to": "live-captions",
+        "filter": ["**/*", "!**/.gitkeep"]
+      }
+    ],
+    "extendInfo": {
+      "NSAudioCaptureUsageDescription": "Miteiru uses computer audio to show live captions.",
+      "NSMicrophoneUsageDescription": "Miteiru uses the microphone to show live captions.",
+      "NSScreenCaptureUsageDescription": "Miteiru reads computer audio for live captions."
+    }
   }
 }

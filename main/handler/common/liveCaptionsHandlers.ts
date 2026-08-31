@@ -3,6 +3,7 @@ import {ChildProcessWithoutNullStreams, spawn} from "child_process";
 import path from "path";
 import fs from "fs";
 import type {LiveCaptionsApiState, LiveCaptionsState} from "../../../renderer/types/liveCaptions";
+import {isLiveCaptionsSupported, getLiveCaptionsBridgeCandidates} from "../../helpers/liveCaptionsSupport";
 
 interface LiveCaptionsBridgeMessage {
   type?: "caption" | "state" | "error" | "debug";
@@ -10,16 +11,14 @@ interface LiveCaptionsBridgeMessage {
   message?: string;
 }
 
+const supported = isLiveCaptionsSupported();
+
 let bridgeProcess: ChildProcessWithoutNullStreams | null = null;
-let state: LiveCaptionsState = process.platform === "win32" ? "stopped" : "unsupported";
+let state: LiveCaptionsState = supported ? "stopped" : "unsupported";
 let latestCaption = "";
 let latestError = "";
 let latestDebugMessages: string[] = [];
 let startupWatchdog: NodeJS.Timeout | null = null;
-
-const bridgeExecutableName = process.platform === "win32"
-  ? "MiteiruLiveCaptionsBridge.exe"
-  : "MiteiruLiveCaptionsBridge";
 
 const sendToRenderers = (channel: string, payload: unknown) => {
   BrowserWindow.getAllWindows().forEach((window) => {
@@ -36,7 +35,7 @@ const addDebugMessage = (message: string) => {
 };
 
 const setState = (nextState: LiveCaptionsState) => {
-  state = process.platform === "win32" ? nextState : "unsupported";
+  state = supported ? nextState : "unsupported";
   addDebugMessage(`State changed to ${state}`);
   sendToRenderers("live-captions:state", getState());
 };
@@ -58,7 +57,7 @@ const clearStartupWatchdog = () => {
 };
 
 const getState = (): LiveCaptionsApiState => ({
-  supported: process.platform === "win32",
+  supported,
   state,
   running: bridgeProcess !== null,
   latestCaption,
@@ -66,17 +65,12 @@ const getState = (): LiveCaptionsApiState => ({
   debugMessages: latestDebugMessages
 });
 
-const getBridgeCandidates = () => {
-  const candidates = [
-    path.join(process.resourcesPath ?? "", "live-captions", bridgeExecutableName),
-    path.join(app.getAppPath(), "native", "live-captions", "bin", "Release", "net8.0-windows", "win-x64", "publish", bridgeExecutableName),
-    path.join(app.getAppPath(), "native", "live-captions", "bin", "Debug", "net8.0-windows", "win-x64", "publish", bridgeExecutableName),
-    path.join(app.getAppPath(), "native", "live-captions", "bin", "Release", "net8.0-windows", bridgeExecutableName),
-    path.join(app.getAppPath(), "native", "live-captions", "bin", "Debug", "net8.0-windows", bridgeExecutableName)
-  ];
-
-  return candidates.filter((candidate, index) => candidate && candidates.indexOf(candidate) === index);
-};
+const getBridgeCandidates = () => getLiveCaptionsBridgeCandidates({
+  platform: process.platform,
+  resourcesPath: process.resourcesPath,
+  cwd: process.cwd(),
+  appPath: app.getAppPath()
+});
 
 const getBridgePath = () => {
   const candidates = getBridgeCandidates();
@@ -133,8 +127,17 @@ const handleBridgeLine = (line: string) => {
 };
 
 const createBridgeProcess = (bridgePath: string) => spawn(bridgePath, [], {
-  windowsHide: true
+  windowsHide: true,
+  cwd: path.dirname(bridgePath)
 });
+
+const startupTimeoutMessage = () => {
+  if (process.platform === "darwin") {
+    return "Live Captions helper started but never became ready. Grant Screen & System Audio Recording to Miteiru in System Settings, then try again.";
+  }
+
+  return "Live Captions helper started but never became ready. Open Windows Live Captions once with Win+Ctrl+L, finish its setup, then try again.";
+};
 
 const armStartupWatchdog = () => {
   startupWatchdog = setTimeout(() => {
@@ -144,9 +147,7 @@ const armStartupWatchdog = () => {
     const processToStop = bridgeProcess;
     bridgeProcess = null;
     processToStop.kill();
-    setError(
-      "Live Captions helper started but never became ready. Open Windows Live Captions once with Win+Ctrl+L, finish its setup, then try again."
-    );
+    setError(startupTimeoutMessage());
   }, 15000);
 };
 
@@ -196,8 +197,8 @@ const wireBridgeStreams = (processToWire: ChildProcessWithoutNullStreams) => {
 };
 
 const startBridge = () => {
-  if (process.platform !== "win32") {
-    addDebugMessage("Start ignored: Live Captions is Windows-only.");
+  if (!supported) {
+    addDebugMessage("Start ignored: Live Captions is not supported on this system.");
     return getState();
   }
 
@@ -206,16 +207,22 @@ const startBridge = () => {
     return getState();
   }
 
-  const bridgePath = getBridgePath();
-  latestCaption = "";
-  latestError = "";
-  sendToRenderers("live-captions:caption", latestCaption);
-  setState("starting");
-  addDebugMessage("Starting Live Captions helper process...");
+  try {
+    const bridgePath = getBridgePath();
+    latestCaption = "";
+    latestError = "";
+    sendToRenderers("live-captions:caption", latestCaption);
+    setState("starting");
+    addDebugMessage("Starting Live Captions helper process...");
 
-  bridgeProcess = createBridgeProcess(bridgePath);
-  armStartupWatchdog();
-  wireBridgeStreams(bridgeProcess);
+    bridgeProcess = createBridgeProcess(bridgePath);
+    armStartupWatchdog();
+    wireBridgeStreams(bridgeProcess);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    addDebugMessage(`Start failed: ${message}`);
+    setError(message);
+  }
 
   return getState();
 };
@@ -232,13 +239,13 @@ const stopBridge = () => {
   }
 
   latestCaption = "";
-  setState(process.platform === "win32" ? "stopped" : "unsupported");
+  setState(supported ? "stopped" : "unsupported");
   sendToRenderers("live-captions:caption", latestCaption);
   return getState();
 };
 
 export function registerLiveCaptionsHandlers() {
-  ipcMain.handle("live-captions:is-supported", async () => process.platform === "win32");
+  ipcMain.handle("live-captions:is-supported", async () => supported);
   ipcMain.handle("live-captions:get-state", async () => getState());
   ipcMain.handle("live-captions:start", async () => startBridge());
   ipcMain.handle("live-captions:stop", async () => stopBridge());
