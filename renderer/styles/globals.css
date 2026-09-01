@@ -397,7 +397,9 @@ rt {
 }
 
 .ruby-over-reading > rb,
-.ruby-under-reading > rb {
+.ruby-over-reading > .ruby-reading-base,
+.ruby-under-reading > rb,
+.ruby-under-reading > .ruby-reading-base {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;

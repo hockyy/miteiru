@@ -12,6 +12,9 @@ interface ElectronApi {
     onError: (callback: (error: string) => void) => () => void;
     onDebug: (callback: (message: string) => void) => () => void;
   };
+  getUserDataPath: () => Promise<string>;
+  joinPath: (...pathSegments: string[]) => Promise<string>;
+  checkFile: (filePath: string) => Promise<boolean>;
   [key: string]: any;
 }
 

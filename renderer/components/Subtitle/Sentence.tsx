@@ -276,8 +276,7 @@ export const KanjiSentence = ({
         rubyPosition: "over",
         WebkitTextFillColor: subtitleStyling.text.color,
       }} key={index}>
-        {/* @ts-expect-error rb wtf eslint*/}
-        <rb>
+        <span className="ruby-reading-base">
           {Array.from(val.main).map((char, idx) => {
             return <StyledSentence
               key={idx}
@@ -288,7 +287,7 @@ export const KanjiSentence = ({
               }}><>{char as ReactNode}</>
             </StyledSentence>
           })}
-        </rb>
+        </span>
         <rt className={"unselectable"}>{val.hiragana ?? ''}</rt>
       </ruby>
     })}
