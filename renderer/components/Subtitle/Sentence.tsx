@@ -19,6 +19,12 @@ const disableWebkitStroke = `
   -webkit-text-stroke-color: transparent;
 `;
 
+const rubyOverReadingClass = (...extra: string[]) =>
+  ["ruby-over-reading", ...extra].filter(Boolean).join(" ");
+
+const meaningRubyClass = (positionMeaningTop?: boolean) =>
+  positionMeaningTop ? "ruby-over-reading" : "ruby-under-reading";
+
 const StyledSentence = styled.button<{ subtitleStyling: CJKStyling }>`
   ${disableWebkitStroke}
   text-shadow: ${props => strokeShadow(props.subtitleStyling.stroke.width, props.subtitleStyling.stroke.color)};
@@ -30,6 +36,10 @@ const StyledSentence = styled.button<{ subtitleStyling: CJKStyling }>`
   ruby {
     -webkit-text-fill-color: ${props => props.subtitleStyling.text.color};
     ruby-align: center;
+  }
+
+  rt {
+    text-align: center;
   }
 
   .state0 {
@@ -86,6 +96,10 @@ const StyledChineseSentence = styled.button<{ subtitleStyling: CJKStyling }>`
   ruby {
     -webkit-text-fill-color: ${props => props.subtitleStyling.text.color};
     ruby-align: center;
+  }
+
+  rt {
+    text-align: center;
   }
 
   .state0 {
@@ -205,10 +219,10 @@ export const JapaneseSentence = ({
         const showHelp = val.isKanji || val.isMixed || isMixed(origin);
         const showRomaji = (val.isKana || showHelp);
         const showFurigana = ((val.isKana && subtitleStyling.showFuriganaOnKana) || showHelp);
-        return <ruby style={{
+        return <ruby className="ruby-under-reading" style={{
           rubyPosition: "under",
         }} key={index}>
-          <ruby className={learningClassName}
+          <ruby className={rubyOverReadingClass(learningClassName)}
             style={{ rubyPosition: "over" }}>
             {/* @ts-expect-error rb wtf eslint*/}
             <rb>{val.main}</rb>
@@ -226,7 +240,7 @@ export const JapaneseSentence = ({
     className={extraClass}
     onClick={handleClick}
     onContextMenu={handleRightClick}>
-    <ruby style={{
+    <ruby className={meaningRubyClass(subtitleStyling.positionMeaningTop)} style={{
       rubyPosition: subtitleStyling.positionMeaningTop ? "over" : "under",
       WebkitTextFillColor: wordMeaning ? subtitleStyling.textMeaning.color : '',
     }}>
@@ -258,11 +272,12 @@ export const KanjiSentence = ({
   }, [setMeaning]);
   return <>
     {separation.map((val, index) => {
-      return <ruby style={{
-        rubyPosition: "under",
+      return <ruby className="ruby-over-reading" style={{
+        rubyPosition: "over",
         WebkitTextFillColor: subtitleStyling.text.color,
       }} key={index}>
-        <ruby style={{ rubyPosition: "over" }}>
+        {/* @ts-expect-error rb wtf eslint*/}
+        <rb>
           {Array.from(val.main).map((char, idx) => {
             return <StyledSentence
               key={idx}
@@ -273,8 +288,8 @@ export const KanjiSentence = ({
               }}><>{char as ReactNode}</>
             </StyledSentence>
           })}
-          <rt className={"unselectable"}>{val.hiragana ?? ''}</rt>
-        </ruby>
+        </rb>
+        <rt className={"unselectable"}>{val.hiragana ?? ''}</rt>
       </ruby>
     })}
   </>
@@ -294,24 +309,19 @@ export const HanziSentence = ({
   }, [setMeaning]);
   return <>
     {Array.from(origin).map((val, index) => {
-      return <ruby style={{
-        rubyPosition: "under",
-        WebkitTextFillColor: subtitleStyling.text.color,
-      }} key={index}>
-        <ruby style={{ rubyPosition: "over" }}>
-          <StyledChineseSentence
-            subtitleStyling={subtitleStyling}
-            className={extraClass}
-            onClick={() => {
-              handleChange(val)
-            }}>
-
-            {/* @ts-expect-error rb wtf eslint*/}
-            <rb>{val}</rb>
-          </StyledChineseSentence>
+      return <StyledChineseSentence
+        key={index}
+        subtitleStyling={subtitleStyling}
+        className={extraClass}
+        onClick={() => {
+          handleChange(val)
+        }}>
+        <ruby className="ruby-over-reading" style={{ rubyPosition: "over" }}>
+          {/* @ts-expect-error rb wtf eslint*/}
+          <rb>{val}</rb>
           <rt className={"unselectable"}>{index < (pinyin ?? '').length ? pinyin[index] : ''}</rt>
         </ruby>
-      </ruby>
+      </StyledChineseSentence>
     })}
   </>
 }
@@ -359,7 +369,7 @@ export const ChineseSentence = ({
       separation.forEach((val, index) => {
         // Add the main ruby element
         elements.push(
-          <ruby className={learningClassName}
+          <ruby className={rubyOverReadingClass(learningClassName)}
             style={{
               rubyPosition: "over",
             }} key={`word-${index}`}>
@@ -389,7 +399,7 @@ export const ChineseSentence = ({
     className={extraClass}
     onClick={handleClick}
     onContextMenu={handleRightClick}>
-    <ruby style={{
+    <ruby className={meaningRubyClass(subtitleStyling.positionMeaningTop)} style={{
       rubyPosition: subtitleStyling.positionMeaningTop ? "over" : "under",
       WebkitTextFillColor: wordMeaning ? subtitleStyling.textMeaning.color : '',
     }}>
@@ -420,24 +430,20 @@ export const TokenLikeSentence = ({
   // Todo: Add space between the ruby between the maps only if index not the last
   return <>
     {separation.map((val, index) => {
-      return <ruby style={{
-        rubyPosition: "under",
-        WebkitTextFillColor: subtitleStyling.text.color,
-        marginRight: index === separation.length - 1 ? 0 : '0.3em', // spacing between tokens
-      }} key={index}>
-        <ruby style={{ rubyPosition: "over" }}>
-          <StyledChineseSentence
-            subtitleStyling={subtitleStyling}
-            className={extraClass}
-            onClick={() => {
-              handleChange(val.main)
-            }}>
-            {/* @ts-expect-error rb wtf eslint*/}
-            <rb>{val.main}</rb>
-          </StyledChineseSentence>
+      return <StyledChineseSentence
+        key={index}
+        subtitleStyling={subtitleStyling}
+        className={extraClass}
+        style={{ marginRight: index === separation.length - 1 ? 0 : '0.3em' }}
+        onClick={() => {
+          handleChange(val.main)
+        }}>
+        <ruby className="ruby-over-reading" style={{ rubyPosition: "over" }}>
+          {/* @ts-expect-error rb wtf eslint*/}
+          <rb>{val.main}</rb>
           <rt className={"unselectable"}>{index < (reading ?? '').length ? reading[index] : ''}</rt>
         </ruby>
-      </ruby>
+      </StyledChineseSentence>
     })}
   </>
 }

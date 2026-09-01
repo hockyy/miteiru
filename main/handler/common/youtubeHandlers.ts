@@ -1,5 +1,5 @@
 import {ipcMain} from "electron";
-import {getSubtitles} from "../../helpers/getSubtitles";
+import {getSubtitles, getYoutubeVideoTitle} from "../../helpers/getSubtitles";
 
 export function registerYoutubeHandlers() {
   ipcMain.handle("getYoutubeSubtitleLanguages", async (event, videoID) => {
@@ -230,6 +230,15 @@ export function registerYoutubeHandlers() {
     } catch (error) {
       console.error("Error fetching subtitles:", error);
       return [];
+    }
+  });
+
+  ipcMain.handle("getYoutubeVideoTitle", async (_event, videoID: string) => {
+    try {
+      return await getYoutubeVideoTitle(videoID);
+    } catch (error) {
+      console.error(`[IPC] Error getting YouTube title for ${videoID}:`, error);
+      return null;
     }
   });
 }

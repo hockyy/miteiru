@@ -7,24 +7,24 @@ const LyricsSearchModal = ({
                              isOpen,
                              onClose,
                              videoSrc,
-                             metadata,
                              onLyricsDownloaded
                            }) => {
   const [selectedLyrics, setSelectedLyrics] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
 
-  // Use the hook inside the component
   const {
     searchQuery,
     setSearchQuery,
     searchResults,
     isSearching,
+    isResolvingQuery,
+    hasSearched,
     searchLyrics,
     getLyricsById,
     downloadLyrics,
     downloadStatus,
     openMiteiruDataDir
-  } = useLRCLib(videoSrc, metadata);
+  } = useLRCLib(videoSrc, isOpen);
 
   useEffect(() => {
     if (downloadStatus) {
@@ -92,7 +92,7 @@ const LyricsSearchModal = ({
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search for song title, artist..."
+                  placeholder={isResolvingQuery ? "Fetching video title..." : "Search for song title, artist..."}
                   className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <button
@@ -125,7 +125,11 @@ const LyricsSearchModal = ({
 
             {searchResults.length === 0 && !isSearching && (
                 <div className="text-center text-gray-400 py-8">
-                  {searchQuery ? 'No results found. Try a different search query.' : 'Enter a search query to find lyrics.'}
+                  {isResolvingQuery
+                    ? 'Fetching video title...'
+                    : hasSearched
+                      ? 'No results found. Try a different search query.'
+                      : 'Enter a search query to find lyrics.'}
                 </div>
             )}
 

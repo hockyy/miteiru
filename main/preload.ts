@@ -70,6 +70,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   revealAnkiImport: (content: string, filename: string) =>
       ipcRenderer.invoke('reveal-anki-import', content, filename),
   checkFile: (filePath: string) => ipcRenderer.invoke('check-file', filePath),
+  getYoutubeVideoTitle: (videoId: string) => ipcRenderer.invoke('getYoutubeVideoTitle', videoId),
 
   // Update the Gist-related methods to include the token
   createGitHubGist: (filename: string, content: string, description: string, isPublic: boolean, token: string) =>

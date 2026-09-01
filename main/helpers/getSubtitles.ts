@@ -187,6 +187,57 @@ export function findBestLanguageMatch(requestedLang: string, availableLanguages:
   return null;
 }
 
+export function parseYoutubeTitleOutput(stdout: string): string | null {
+  const lines = stdout
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0 && line !== "NA" && !line.startsWith("["));
+  return lines[0] ?? null;
+}
+
+export async function getYoutubeVideoTitle(videoID: string): Promise<string | null> {
+  if (!videoID || typeof videoID !== "string") {
+    return null;
+  }
+
+  const ytDlpAvailable = await checkYtDlpAvailable();
+  if (!ytDlpAvailable) {
+    return null;
+  }
+
+  const ytDlpPath = await getYtDlpPath();
+  try {
+    const stdout = await new Promise<string>((resolve, reject) => {
+      const child = spawn(ytDlpPath, [
+        "--print", "%(title)s",
+        "--skip-download",
+        "--no-playlist",
+        "--no-warnings",
+        `https://youtube.com/watch?v=${videoID}`
+      ]);
+      let out = "";
+      child.stdout.on("data", (data) => {
+        out += data.toString();
+      });
+      child.stderr.on("data", () => {
+        // Drain stderr so a chatty yt-dlp cannot fill the pipe and hang.
+      });
+      child.on("close", (code) => {
+        if (code === 0) {
+          resolve(out);
+        } else {
+          reject(new Error(`yt-dlp title failed with code ${code}`));
+        }
+      });
+      child.on("error", reject);
+    });
+    return parseYoutubeTitleOutput(stdout);
+  } catch (error) {
+    console.error(`[getSubtitles] Failed to get YouTube title for ${videoID}:`, error);
+    return null;
+  }
+}
+
 // Execute yt-dlp command and return result
 async function runYtDlp(args: string[]): Promise<string> {
   const ytDlpPath = await getYtDlpPath();

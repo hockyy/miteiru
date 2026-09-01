@@ -449,14 +449,12 @@ export const Sidebar = ({
         <Toggle isChecked={isKaraoke} onChange={subtitleModeHandler}/>
         Use Karaoke Mode
       </SidebarSettingRow>
-      {isKaraoke && (
-        <Button
-            type={"secondary"}
-            className={"w-full min-w-0 max-w-full"}
-            onPress={searchLyricsHandler}>
-          Search Lyrics (LRCLIB)
-        </Button>
-      )}
+      <Button
+          type={"secondary"}
+          className={"w-full min-w-0 max-w-full"}
+          onPress={searchLyricsHandler}>
+        Search Lyrics (LRCLIB)
+      </Button>
       <div className={"flex w-full items-center gap-3 rounded-xl bg-black/20 px-3 py-2 text-sm text-white/85"}>
         <span>Learning </span>
         <span className={'inline-block w-14'}>{learningPercentage}%</span>

@@ -372,3 +372,47 @@ ruby,
 ruby ruby {
   ruby-align: center;
 }
+
+rt {
+  text-align: center;
+}
+
+/*
+ * Chromium often keeps Latin pinyin/furigana start-aligned even with ruby-align:center.
+ * These classes leave native ruby layout and center the annotation over the base.
+ */
+.ruby-over-reading,
+.ruby-under-reading {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: bottom;
+}
+
+.ruby-over-reading {
+  flex-direction: column-reverse;
+}
+
+.ruby-under-reading {
+  flex-direction: column;
+}
+
+.ruby-over-reading > rb,
+.ruby-under-reading > rb {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.ruby-over-reading > rt,
+.ruby-under-reading > rt {
+  display: block;
+  text-align: center;
+  line-height: 1.15;
+}
+
+.ruby-over-reading > rt:empty,
+.ruby-under-reading > rt:empty {
+  display: none;
+}
