@@ -1,36 +1,83 @@
 // hooks/useLRCLib.js
-import {useCallback, useEffect, useState} from 'react';
-import {extractVideoId, isYoutube} from '../utils/utils';
+import {useCallback, useEffect, useRef, useState} from 'react';
+import {isYoutube} from '../utils/utils';
+import {getYoutubeVideoId} from '../utils/mediaUtils';
+import {lyricsSearchQuery, youtubeLyricsFileName} from '../utils/lyricsUtils';
 
 const LRCLIB_API_BASE = 'https://lrclib.net/api';
 
-const useLRCLib = (videoSrc, metadata) => {
+const useLRCLib = (videoSrc, isOpen = false) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [isResolvingQuery, setIsResolvingQuery] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
   const [downloadStatus, setDownloadStatus] = useState('');
+  const userEditedQueryRef = useRef(false);
+  const titleCacheRef = useRef(new Map());
 
-  // Extract title from video metadata or filename
-  const getDefaultQuery = useCallback(() => {
-    if (metadata?.title) {
-      return metadata.title;
+  const applyDefaultQuery = useCallback((youtubeTitle = null) => {
+    if (userEditedQueryRef.current) {
+      return;
     }
-    if (videoSrc?.path) {
-      const filename = videoSrc.path.split('/').pop().split('\\').pop();
-      // Remove file extension and common video quality indicators
-      return filename
-      .replace(/\.(mp4|mkv|avi|webm|mov)$/i, '')
-      .replace(/(1080p|720p|480p|HD|FHD|4K)/gi, '')
-      .replace(/[._-]/g, ' ')
-      .trim();
-    }
-    return '';
-  }, [videoSrc, metadata]);
+    setSearchQuery(lyricsSearchQuery({
+      videoPath: videoSrc?.path,
+      youtubeTitle
+    }));
+  }, [videoSrc?.path]);
 
-  // Initialize search query when video changes
   useEffect(() => {
-    setSearchQuery(getDefaultQuery());
-  }, [getDefaultQuery]);
+    userEditedQueryRef.current = false;
+    setHasSearched(false);
+    setSearchResults([]);
+    applyDefaultQuery();
+  }, [applyDefaultQuery]);
+
+  useEffect(() => {
+    if (!isOpen || !videoSrc?.path || !isYoutube(videoSrc.path)) {
+      setIsResolvingQuery(false);
+      return;
+    }
+
+    const videoId = getYoutubeVideoId(videoSrc.path);
+    if (!videoId) {
+      return;
+    }
+
+    const cachedTitle = titleCacheRef.current.get(videoId);
+    if (cachedTitle) {
+      applyDefaultQuery(cachedTitle);
+      return;
+    }
+
+    let cancelled = false;
+    setIsResolvingQuery(true);
+    window.electronAPI.getYoutubeVideoTitle(videoId)
+      .then((title) => {
+        if (cancelled || !title) {
+          return;
+        }
+        titleCacheRef.current.set(videoId, title);
+        applyDefaultQuery(title);
+      })
+      .catch((error) => {
+        console.error('Error fetching YouTube title for lyrics search:', error);
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setIsResolvingQuery(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, videoSrc?.path, applyDefaultQuery]);
+
+  const updateSearchQuery = useCallback((value) => {
+    userEditedQueryRef.current = true;
+    setSearchQuery(value);
+  }, []);
 
   // Search for lyrics
   const searchLyrics = useCallback(async (query = searchQuery) => {
@@ -38,6 +85,7 @@ const useLRCLib = (videoSrc, metadata) => {
 
     setIsSearching(true);
     setSearchResults([]);
+    setHasSearched(true);
 
     try {
       const response = await fetch(`${LRCLIB_API_BASE}/search?q=${encodeURIComponent(query)}`);
@@ -81,16 +129,17 @@ const useLRCLib = (videoSrc, metadata) => {
       let filename;
 
       if (isYoutube(videoSrc.path)) {
-        // For YouTube videos, save in user data directory
-        const videoId = extractVideoId(videoSrc.path);
-        filename = `${videoId}.lrc`;
+        const videoId = getYoutubeVideoId(videoSrc.path);
+        if (!videoId) {
+          setDownloadStatus('Could not determine YouTube video ID');
+          return false;
+        }
+        filename = youtubeLyricsFileName(videoId);
         const userDataPath = await window.electronAPI.getUserDataPath();
         savePath = await window.electronAPI.joinPath(userDataPath, 'lyrics', filename);
 
-        // Ensure lyrics directory exists
         await window.electronAPI.ensureDir(await window.electronAPI.joinPath(userDataPath, 'lyrics'));
       } else {
-        // For local videos, save in the same directory
         const videoPath = videoSrc.path;
         const dir = await window.electronAPI.getDirname(videoPath);
         const basename = await window.electronAPI.getBasename(videoPath);
@@ -99,12 +148,10 @@ const useLRCLib = (videoSrc, metadata) => {
         savePath = await window.electronAPI.joinPath(dir, filename);
       }
 
-      // Save the lyrics file
       await window.electronAPI.writeFile(savePath, lyricsData.syncedLyrics);
 
       setDownloadStatus(`Lyrics saved as ${filename}`);
 
-      // Return the path for loading
       return savePath;
     } catch (error) {
       console.error('Error saving lyrics:', error);
@@ -127,9 +174,11 @@ const useLRCLib = (videoSrc, metadata) => {
 
   return {
     searchQuery,
-    setSearchQuery,
+    setSearchQuery: updateSearchQuery,
     searchResults,
     isSearching,
+    isResolvingQuery,
+    hasSearched,
     searchLyrics,
     getLyricsById,
     downloadLyrics,

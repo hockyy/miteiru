@@ -18,6 +18,7 @@ import {
   isEmbeddedSubtitlePath,
   normalizeDroppedPath
 } from "../utils/mediaUtils";
+import {findCachedYoutubeLyricsPath} from "../utils/lyricsUtils";
 
 const DEFAULT_SUBTITLE_PREPROCESS_OPTIONS: SubtitlePreprocessOptions = {
   titleCaseAllCaps: true
@@ -111,6 +112,36 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     
     showToast('Secondary subtitle loaded');
   }, [setSecondarySub, showToast]);
+
+  const loadEmbeddedSubtitle = useCallback(async (filePath: string, type: 'primary' | 'secondary', preprocessOptions: SubtitlePreprocessOptions = DEFAULT_SUBTITLE_PREPROCESS_OPTIONS) => {
+    console.log(`[useLoadFiles] loadEmbeddedSubtitle called: ${type} from ${filePath}`);
+
+    try {
+      const {tmpSub} = await createSubtitleContainer(filePath, preprocessOptions);
+      console.log(`[useLoadFiles] Direct loading ${type} subtitle:`, tmpSub);
+      if (type === 'primary') {
+        loadSubtitleAsPrimary(tmpSub, filePath);
+      } else {
+        loadSubtitleAsSecondary(tmpSub, filePath);
+      }
+    } catch (error) {
+      console.error(`[useLoadFiles] Failed to load ${type} embedded subtitle:`, error);
+      showToast(`Failed to load ${type} subtitle`);
+    }
+  }, [createSubtitleContainer, loadSubtitleAsPrimary, loadSubtitleAsSecondary, showToast]);
+
+  const tryAutoLoadYoutubeLyrics = useCallback(async (videoPath: string) => {
+    try {
+      const lyricsPath = await findCachedYoutubeLyricsPath(videoPath, window.electronAPI);
+      if (!lyricsPath) {
+        return;
+      }
+      console.log(`[useLoadFiles] Auto-loading cached YouTube lyrics: ${lyricsPath}`);
+      await loadEmbeddedSubtitle(lyricsPath, 'primary');
+    } catch (error) {
+      console.error('[useLoadFiles] Failed to auto-load YouTube lyrics:', error);
+    }
+  }, [loadEmbeddedSubtitle]);
 
   const reloadSubtitleWithoutPrompt = useCallback(async (filePath: string, target: 'primary' | 'secondary') => {
     if (!filePath) return;
@@ -235,7 +266,9 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
         loadVideoFile(currentPath, pathUri);
       }
 
-      if (isSubtitle(currentPath) || isYoutube(currentPath)) {
+      if (isYoutube(currentPath)) {
+        await tryAutoLoadYoutubeLyrics(currentPath);
+      } else if (isSubtitle(currentPath)) {
         await loadSubtitleFile(currentPath);
       }
     } catch (error) {
@@ -244,15 +277,13 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     } finally {
       queue.end(currentHash);
     }
-  }, [queue, loadVideoFile, loadSubtitleFile, showToast]);
+  }, [queue, loadVideoFile, loadSubtitleFile, tryAutoLoadYoutubeLyrics, showToast]);
 
-  // Handler for when lyrics are downloaded
   const loadPath = useCallback((lyricsPath) => {
-    // Auto-load the downloaded lyrics as primary subtitle
     if (lyricsPath) {
-      onLoadFiles([{path: lyricsPath}]);
+      loadEmbeddedSubtitle(lyricsPath, 'primary');
     }
-  },[onLoadFiles]);
+  }, [loadEmbeddedSubtitle]);
 
   const onVideoChangeHandler = useCallback(async (delta: number = 1) => {
     if (!isLocalPath(videoSrc.path)) return;
@@ -357,24 +388,6 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
   }, [cleanupModal, showToast]);
 
   const currentAppLanguage = useMemo(() => getLanguageDisplayName(lang), [lang]);
-
-  // Enhanced load for embedded subtitles with type specification
-  const loadEmbeddedSubtitle = useCallback(async (filePath: string, type: 'primary' | 'secondary', preprocessOptions: SubtitlePreprocessOptions = DEFAULT_SUBTITLE_PREPROCESS_OPTIONS) => {
-    console.log(`[useLoadFiles] loadEmbeddedSubtitle called: ${type} from ${filePath}`);
-
-    try {
-      const {tmpSub} = await createSubtitleContainer(filePath, preprocessOptions);
-      console.log(`[useLoadFiles] Direct loading ${type} subtitle:`, tmpSub);
-      if (type === 'primary') {
-        loadSubtitleAsPrimary(tmpSub, filePath);
-      } else {
-        loadSubtitleAsSecondary(tmpSub, filePath);
-      }
-    } catch (error) {
-      console.error(`[useLoadFiles] Failed to load ${type} embedded subtitle:`, error);
-      showToast(`Failed to load ${type} subtitle`);
-    }
-  }, [createSubtitleContainer, loadSubtitleAsPrimary, loadSubtitleAsSecondary, showToast]);
 
   return {
     onLoadFiles,

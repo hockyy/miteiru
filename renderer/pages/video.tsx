@@ -269,17 +269,10 @@ function Video() {
       setPrimarySub, setSecondarySub, primarySub, undo,
       setShowPrimarySub, setShowSecondarySub, primaryStyling, setPrimaryStyling,
       openDeepL, openGoogleTranslate, reloadLastPrimarySubtitle, reloadLastSecondarySubtitle,
-      setShowVocabSidebar, rubyContent, contentString, setShowLyricsSearch, subtitleMode);
+      setShowVocabSidebar, rubyContent, contentString, setShowLyricsSearch);
   useVideoKeyboardControls(togglePlay, deltaTime, setPrimaryShift, setSecondaryShift,
       setToastInfo, backToHead, setIsPlaying);
   usePlayNextAfterEnd(player, currentTime, onVideoChangeHandler, duration, setEnableSeeker);
-
-  // LRCLIB is karaoke-only — close the search modal when leaving karaoke mode
-  useEffect(() => {
-    if (subtitleMode !== SubtitleMode.Karaoke) {
-      setShowLyricsSearch(false);
-    }
-  }, [subtitleMode, setShowLyricsSearch]);
 
   // Pause player when media selection modals open
   useEffect(() => {
@@ -401,10 +394,9 @@ function Video() {
         </div>
 
         <LyricsSearchModal
-            isOpen={showLyricsSearch && subtitleMode === SubtitleMode.Karaoke}
+            isOpen={showLyricsSearch}
             onClose={() => setShowLyricsSearch(false)}
             videoSrc={videoSrc}
-            metadata={metadata}
             onLyricsDownloaded={loadPath}
         />
         <SubtitleSelectionModal
