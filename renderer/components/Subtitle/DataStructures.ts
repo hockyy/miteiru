@@ -1,7 +1,7 @@
 import { isHiragana, isKatakana, toHiragana, toKatakana, toRomaji } from 'wanakana'
 import { videoConstants } from "../../utils/constants";
 import { v4 as uuidv4 } from 'uuid';
-import type { Entry } from "@plussub/srt-vtt-parser/dist/types";
+import type { SubtitleEntry as Entry } from "../../../main/helpers/subtitleParser";
 import * as OpenCC from 'opencc-js';
 import { parse as parseASS } from 'ass-compiler';
 import { parseLRC } from "./LrcParser";

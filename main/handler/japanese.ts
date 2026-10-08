@@ -4,10 +4,14 @@ import {searchKanji, setupKanjidic} from "../dictionary/kanjidicDb";
 import path from "path";
 import {readJsonFile} from "../utils";
 import fs from "node:fs";
-import {getTokenizer} from "kuromojin";
+import kuromoji, {type Tokenizer} from "kuromoji";
 import {getFurigana, processKuromojinToSeparations, KuromojinWord} from "./languages/japaneseAnalysis";
 import {buildInflectionTable, type InflectionTableRequest} from "./languages/inflectionTable";
 import {readStrokeSvg} from "../helpers/strokeSvg";
+
+const buildKuromojiTokenizer = (dicPath: string) => new Promise<Tokenizer>((resolve, reject) => {
+  kuromoji.builder({dicPath}).build((error, tokenizer) => (error ? reject(error) : resolve(tokenizer)));
+});
 
 class Japanese {
 
@@ -29,8 +33,8 @@ class Japanese {
   static importDict: string;
   static importBaseSVG: string;
   static kuromojiDictPath: string;
-  static kuromojiTokenizer = null;
-  static kuromojiTokenizerPromise: Promise<any> | null = null;
+  static kuromojiTokenizer: Tokenizer | null = null;
+  static kuromojiTokenizerPromise: Promise<Tokenizer> | null = null;
 
   static getJapaneseSettings = (appDataDirectory, replacements: any = {}) => {
     return {
@@ -108,9 +112,13 @@ class Japanese {
       path.join(__dirname, 'dict')
     ].filter(Boolean).find((candidate) => fs.existsSync(candidate)) ?? path.join(__dirname, 'dict');
 
-    this.kuromojiTokenizerPromise ??= getTokenizer({dicPath: dictionaryPath}).then(loadedTokenizer => {
+    // A failed load is forgotten so the next call retries (kuromojin cached the rejection for good).
+    this.kuromojiTokenizerPromise ??= buildKuromojiTokenizer(dictionaryPath).then((loadedTokenizer) => {
       this.kuromojiTokenizer = loadedTokenizer;
       return loadedTokenizer;
+    }, (error) => {
+      this.kuromojiTokenizerPromise = null;
+      throw error;
     });
 
     return this.kuromojiTokenizerPromise;

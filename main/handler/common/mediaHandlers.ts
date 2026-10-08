@@ -1,8 +1,8 @@
 import {ipcMain} from "electron";
 import * as fsPromises from "node:fs/promises";
 import path from "node:path";
-import languageEncoding from "detect-file-encoding-and-language";
-import iconv from "iconv-lite";
+import {decodeText} from "../../helpers/textEncoding";
+import {parseSubtitleCues} from "../../helpers/subtitleParser";
 import {MediaAnalyzer} from "../../helpers/mediaAnalyzer";
 import {
   FileIdentityCache,
@@ -11,19 +11,6 @@ import {
   normalizedSubtitleOutputPath
 } from "../../helpers/subtitleCaches";
 import {normalizeCapitalization} from "../../helpers/subtitleCapitalization";
-
-type SrtParserModule = typeof import("@plussub/srt-vtt-parser");
-let srtParserPromise: Promise<SrtParserModule> | undefined;
-
-const loadSrtParser = () => {
-  srtParserPromise ??= Function("specifier", "return import(specifier)")("@plussub/srt-vtt-parser") as Promise<SrtParserModule>;
-  return srtParserPromise;
-};
-
-const parseSRT = async (text: string) => {
-  const {parse} = await loadSrtParser();
-  return parse(text);
-};
 
 const normalizeFileSystemPath = (filePath: string) => {
   const withoutUriSlash = process.platform === "win32" && /^\/[A-Za-z]:[\\/]/.test(filePath)
@@ -213,7 +200,7 @@ const getSubtitleEntries = async (filename: string, text: string): Promise<Subti
     return parseHufToEntries(text);
   }
 
-  return (await parseSRT(text)).entries;
+  return parseSubtitleCues(text);
 };
 
 const formatSrtTimestamp = (milliseconds: number) => {
@@ -255,8 +242,7 @@ export function registerMediaHandlers() {
         return cached;
       }
       const buffer = await fsPromises.readFile(resolvedFilename);
-      const currentData = await languageEncoding(buffer);
-      const text = iconv.decode(buffer, currentData.encoding);
+      const {text} = decodeText(buffer);
       const lowerFilename = resolvedFilename.toLowerCase();
 
       const isLikelyHuf = () => {
@@ -289,7 +275,7 @@ export function registerMediaHandlers() {
       } else {
         result = {
           type: "srt",
-          content: await parseSRT(text)
+          content: {entries: parseSubtitleCues(text)}
         };
       }
       parseCache.set(resolvedFilename, identity, result);
@@ -320,8 +306,7 @@ export function registerMediaHandlers() {
       }
 
       const buffer = await fsPromises.readFile(resolvedFilename);
-      const currentData = await languageEncoding(buffer);
-      const text = iconv.decode(buffer, currentData.encoding);
+      const {text} = decodeText(buffer);
       const entries = await getSubtitleEntries(resolvedFilename, text);
       const outputPath = normalizedSubtitleOutputPath(resolvedFilename);
 
