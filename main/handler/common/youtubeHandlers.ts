@@ -1,27 +1,16 @@
 import {ipcMain} from "electron";
+import {spawn} from "child_process";
+import os from "os";
+import path from "path";
+import fs from "fs/promises";
 import {getSubtitles, getYoutubeVideoTitle} from "../../helpers/getSubtitles";
+import {resolveToolCommand} from "./mediaTools";
 
 export function registerYoutubeHandlers() {
   ipcMain.handle("getYoutubeSubtitleLanguages", async (event, videoID) => {
     console.log(`[IPC] getYoutubeSubtitleLanguages called for ${videoID}`);
     try {
-      const {spawn} = require("child_process");
-      const os = require("os");
-      const path = require("path");
-      const fs = require("fs/promises");
-
-      const toolsDir = path.join(os.tmpdir(), "miteiru_tools");
-      const executableName = process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp";
-      const internalPath = path.join(toolsDir, executableName);
-
-      let ytDlpPath = "yt-dlp";
-      try {
-        await fs.access(internalPath);
-        ytDlpPath = internalPath;
-        console.log(`[IPC] Using internal yt-dlp: ${internalPath}`);
-      } catch {
-        console.log("[IPC] Using system yt-dlp");
-      }
+      const ytDlpPath = await resolveToolCommand("yt-dlp");
 
       const ytDlpOutput = await new Promise<string>((resolve, reject) => {
         const child = spawn(ytDlpPath, [
@@ -132,25 +121,11 @@ export function registerYoutubeHandlers() {
   ipcMain.handle("downloadYoutubeSubtitle", async (event, videoID, lang) => {
     console.log(`[IPC] downloadYoutubeSubtitle called for ${videoID} (${lang})`);
     try {
-      const {spawn} = require("child_process");
-      const tempDir = require("os").tmpdir();
-      const tempFilePath = require("path").join(tempDir, `miteiru_youtube_${videoID}_${lang}_${Date.now()}.srt`);
-      const os = require("os");
-      const path = require("path");
-      const fs = require("fs/promises");
-
-      const toolsDir = path.join(os.tmpdir(), "miteiru_tools");
-      const executableName = process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp";
-      const internalPath = path.join(toolsDir, executableName);
-
-      let ytDlpPath = "yt-dlp";
-      try {
-        await fs.access(internalPath);
-        ytDlpPath = internalPath;
-        console.log(`[IPC] Using internal yt-dlp: ${internalPath}`);
-      } catch {
-        console.log("[IPC] Using system yt-dlp");
-      }
+      const ytDlpPath = await resolveToolCommand("yt-dlp");
+      // A fresh folder per download: scanning the shared temp folder could pick up an older
+      // file for the same video, or en-US when en was asked for.
+      const tempDirPath = await fs.mkdtemp(path.join(os.tmpdir(), "miteiru_youtube_"));
+      const outputBase = path.join(tempDirPath, `${videoID}_${lang}`);
 
       const extractArgs = [
         "--write-subs",
@@ -158,7 +133,7 @@ export function registerYoutubeHandlers() {
         "--sub-langs", lang,
         "--sub-format", "srt",
         "--skip-download",
-        "--output", tempFilePath.replace(".srt", ""),
+        "--output", outputBase,
         `https://youtube.com/watch?v=${videoID}`
       ];
 
@@ -190,17 +165,11 @@ export function registerYoutubeHandlers() {
         });
       });
 
-      const tempDirPath = path.dirname(tempFilePath);
       const files = await fs.readdir(tempDirPath);
-
-      const downloadedFile = files.find(file =>
-        file.includes(videoID) &&
-        file.includes(lang) &&
-        file.endsWith(".srt")
-      );
+      const downloadedFile = files.find((file) => file.endsWith(".srt"));
 
       if (!downloadedFile) {
-        console.log("[IPC] Available files:", files.filter(f => f.includes(videoID)));
+        console.log("[IPC] Available files:", files);
         throw new Error(`Could not find downloaded subtitle file for ${videoID} (${lang})`);
       }
 

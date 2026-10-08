@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import {Readable} from "node:stream";
 import {protocol} from "electron";
+import {isAppUrl} from "./helpers/navigationGuard";
 
 const mimeTypes: Record<string, string> = {
   ".mp4": "video/mp4",
@@ -73,9 +74,16 @@ export const resolveMiteiruFilePath = (rawUrl: string) => {
   return path.normalize(filePath);
 };
 
-const buildResponseHeaders = (filePath: string, fileSize: number) => ({
+// Local files are only shared with Miteiru's own pages, never with other origins such as an
+// embedded YouTube frame. <video src> needs no CORS header at all.
+const corsHeaders = (request: Request): Record<string, string> => {
+  const origin = request.headers.get("origin");
+  return origin && isAppUrl(origin) ? {"access-control-allow-origin": origin, "vary": "origin"} : {};
+};
+
+const buildResponseHeaders = (filePath: string, fileSize: number, request: Request) => ({
   "accept-ranges": "bytes",
-  "access-control-allow-origin": "*",
+  ...corsHeaders(request),
   "content-type": mimeForPath(filePath),
   "content-length": String(fileSize),
 });
@@ -88,7 +96,7 @@ export const createMiteiruFileResponse = (filePath: string, request: Request) =>
   if (!rangeHeader) {
     return new Response(Readable.toWeb(fs.createReadStream(filePath)) as BodyInit, {
       status: 200,
-      headers: buildResponseHeaders(filePath, fileSize),
+      headers: buildResponseHeaders(filePath, fileSize, request),
     });
   }
 
@@ -98,7 +106,7 @@ export const createMiteiruFileResponse = (filePath: string, request: Request) =>
       status: 416,
       headers: {
         "accept-ranges": "bytes",
-        "access-control-allow-origin": "*",
+        ...corsHeaders(request),
         "content-range": `bytes */${fileSize}`,
         "content-type": mimeForPath(filePath),
       },
@@ -114,7 +122,7 @@ export const createMiteiruFileResponse = (filePath: string, request: Request) =>
       status: 206,
       headers: {
         "accept-ranges": "bytes",
-        "access-control-allow-origin": "*",
+        ...corsHeaders(request),
         "content-length": String(contentLength),
         "content-range": `bytes ${start}-${end}/${fileSize}`,
         "content-type": mimeForPath(filePath),

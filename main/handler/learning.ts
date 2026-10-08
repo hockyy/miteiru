@@ -62,10 +62,11 @@ class Learning {
               throw new Error('Invalid format');
             }
           } catch {
-            // If parsing fails, assume it's an old format (number)
+            // If parsing fails, assume it's an old format (number). It has no edit time, so it
+            // counts as older than any synced entry.
             parsedValue = {
               level: parseInt(value, 10),
-              updTime: Date.now()
+              updTime: 0
             };
             await this.db.put(key, JSON.stringify(parsedValue));
           }

@@ -1,8 +1,10 @@
 import {
   screen,
+  shell,
   BrowserWindow,
   BrowserWindowConstructorOptions,
 } from 'electron';
+import {isAppUrl, isWebUrl} from './navigationGuard';
 
 const loadElectronStore = () => {
   return Function("specifier", "return import(specifier)")("electron-store") as Promise<typeof import("electron-store")>;
@@ -82,6 +84,20 @@ export default async (windowName: string, options: BrowserWindowConstructorOptio
     },
   };
   win = new BrowserWindow(browserOptions);
+  // A link from the embedded YouTube player (or any page that is not Miteiru) must not load in
+  // an app window, where it would get the preload bridge; web links go to the system browser.
+  const openInBrowser = (url: string) => {
+    if (isWebUrl(url)) shell.openExternal(url).catch((error) => console.error('openExternal failed:', error));
+  };
+  win.webContents.setWindowOpenHandler(({url}) => {
+    openInBrowser(url);
+    return {action: 'deny'};
+  });
+  win.webContents.on('will-navigate', (event, url) => {
+    if (isAppUrl(url)) return;
+    event.preventDefault();
+    openInBrowser(url);
+  });
   win.on('close', saveState);
   win.on('enter-full-screen', () => {
     win.setAutoHideMenuBar(true);

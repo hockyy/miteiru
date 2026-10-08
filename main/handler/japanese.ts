@@ -7,6 +7,7 @@ import fs from "node:fs";
 import {getTokenizer} from "kuromojin";
 import {getFurigana, processKuromojinToSeparations, KuromojinWord} from "./languages/japaneseAnalysis";
 import {buildInflectionTable, type InflectionTableRequest} from "./languages/inflectionTable";
+import {readStrokeSvg} from "../helpers/strokeSvg";
 
 class Japanese {
 
@@ -77,6 +78,14 @@ class Japanese {
     }
   }
 
+  /** Closes the JMdict and KANJIDIC databases so their cache folders can be deleted. */
+  static async closeDictionaries() {
+    await this.Dict.db?.close();
+    await this.KanjiDict.db?.close();
+    this.Dict = {db: null, tags: {}};
+    this.KanjiDict = {db: null};
+  }
+
   static async setupHanCharacterCore(settings) {
     this.importWanikaniKanji = settings.importWanikaniKanji;
     this.importWanikaniRadical = settings.importWanikaniRadical;
@@ -92,9 +101,6 @@ class Japanese {
     }
   }
 
-  /**
-   * TODO: Refactor this koakowakowakowko males bgt anjing
-   */
   static async loadKuromojiTokenizer() {
     const dictionaryPath = [
       this.kuromojiDictPath,
@@ -119,14 +125,11 @@ class Japanese {
 
   static getFurigana = getFurigana;
 
-  static registerKuromoji() {
+  /** Starts loading the Kuromoji dictionary at launch so the first analysis is fast. */
+  static preloadKuromoji() {
     this.loadKuromojiTokenizer().catch(e => {
       console.error(e)
     })
-
-    ipcMain.handle('tokenizeUsingKuromoji', async (event, sentence) => {
-      return this.tokenizeUsingKuromoji(sentence);
-    });
   }
 
   static registerHandlers() {
@@ -199,22 +202,7 @@ class Japanese {
       return (this.waniradical?.[radicalSlug]);
     });
 
-    ipcMain.handle('readKanjiSVG', async (event, filename) => {
-      const kanjiFilePath = path.join(this.importBaseSVG, `${filename}`);
-      try {
-        return fs.readFileSync(kanjiFilePath).toString();
-      } catch {
-        return ''
-      }
-    })
-
-    ipcMain.handle('miteiru-getFurigana', async (event, sentence, mode) => {
-      return getFurigana(sentence, mode);
-    });
-
-    ipcMain.handle('miteiru-processKuromojinToSeparations', async (event, kuromojiEntries) => {
-      return processKuromojinToSeparations(kuromojiEntries);
-    });
+    ipcMain.handle('readKanjiSVG', async (event, filename) => readStrokeSvg(this.importBaseSVG, filename));
   }
 
 }
