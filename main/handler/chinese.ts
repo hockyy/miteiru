@@ -1,4 +1,4 @@
-import {charAnywhere, charBeginning, hanzi, setup as wrapperChinese} from "cc-chinese-wrapper";
+import {charAnywhere, charBeginning, hanzi, setupChineseDictionary} from "../dictionary/chineseDictionaryDb";
 import {ipcMain} from "electron";
 import path from "path";
 import fs from "node:fs";
@@ -67,7 +67,7 @@ class Chinese {
       if (this.Dict.db) {
         this.Dict.db.close();
       }
-      const dictSetup = await wrapperChinese(this.dictPath, this.importDict);
+      const dictSetup = await setupChineseDictionary(this.dictPath, this.importDict);
       this.Dict = {
         db: dictSetup.db
       }
