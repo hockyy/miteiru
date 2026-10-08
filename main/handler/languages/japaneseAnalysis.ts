@@ -40,11 +40,14 @@ export interface KuromojinWord {
 type ParseResponse = {
   ok: boolean;
   pairs: MiteiruJapaneseWord[];
+  launched?: boolean;
 };
 
 type RunResponse = {
   ok: boolean;
   splittedSentences: string[];
+  /** False when MeCab could not be started or timed out, so other output formats won't help. */
+  launched?: boolean;
 };
 
 const notOkRunAndSplitResponse: RunResponse = {ok: false, splittedSentences: []};
@@ -132,7 +135,7 @@ const runAndSplit = (text: string, mecabCommand: string, outputFormat: string): 
     input: normalizedText,
     timeout: 30000
   });
-  if (result.error || !result.stdout) return notOkRunAndSplitResponse;
+  if (result.error || !result.stdout) return {...notOkRunAndSplitResponse, launched: false};
 
   const sentences = result.stdout.toString();
   const splittedSentences = sentences.split("\n");
@@ -150,7 +153,8 @@ const runAndSplit = (text: string, mecabCommand: string, outputFormat: string): 
 const normalizeReading = (value: string) => isKana(value) ? toHiragana(value, {passRomaji: true}) : value;
 
 const parseChamame = (text: string, mecabCommand: string): ParseResponse => {
-  const {ok, splittedSentences} = runAndSplit(text, mecabCommand, "chamame");
+  const {ok, splittedSentences, launched} = runAndSplit(text, mecabCommand, "chamame");
+  if (launched === false) return {...notOkParseResponse, launched};
   if (splittedSentences.length === 0 || !ok) return notOkParseResponse;
 
   const pairs: MiteiruJapaneseWord[] = [];
@@ -218,6 +222,7 @@ export const separateJapaneseWords = (
 
 export const getFurigana = (text: string, mecabCommand = "mecab"): MiteiruJapaneseWordWithSeparations[] => {
   let res = parseChamame(text, mecabCommand);
+  if (res.launched === false) return [];
   if (!res.ok) {
     res = parseChasen(text, mecabCommand);
     if (!res.ok) {

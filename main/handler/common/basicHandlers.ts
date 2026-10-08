@@ -8,7 +8,7 @@ import Chinese from "../chinese";
 import {videoConstants} from "../../../renderer/utils/constants";
 import {RegisterCommonHandlersArgs} from "./types";
 import {revealAnkiImportFile} from "../../helpers/ankiImportReveal";
-import {isWebUrl} from "../../helpers/navigationGuard";
+import {isInsideDirectory, isLyricsFilePath, isWebUrl} from "../../helpers/navigationGuard";
 
 const isArrayEndsWithMatcher = (filePath, arrayMatcher) => {
   const lowerPath = filePath.toLowerCase();
@@ -193,7 +193,7 @@ export function registerBasicHandlers({
   ipcMain.handle("write-file", async (event, filePath, content) => {
     // The renderer only saves synced lyrics; refusing other extensions keeps a compromised page
     // from writing scripts or executables.
-    if (typeof filePath !== "string" || extname(filePath).toLowerCase() !== ".lrc") {
+    if (!isLyricsFilePath(filePath)) {
       console.error("Refusing to write a non-.lrc file:", filePath);
       return false;
     }
@@ -208,9 +208,10 @@ export function registerBasicHandlers({
 
   ipcMain.handle("open-path", async (event, pathToOpen) => {
     try {
-      // Folders only: openPath on a file runs it with its default program.
-      if (!(await fsPromises.stat(pathToOpen)).isDirectory()) {
-        return { ok: false, error: "Only folders can be opened." };
+      // Only Miteiru's own folders: openPath runs files (and macOS .app bundles, which are
+      // folders) with their default program.
+      if (!isInsideDirectory(appDataDirectory, pathToOpen) || !(await fsPromises.stat(pathToOpen)).isDirectory()) {
+        return { ok: false, error: "Only Miteiru's own folders can be opened." };
       }
       const errorMessage = await shell.openPath(pathToOpen);
       if (errorMessage) {
