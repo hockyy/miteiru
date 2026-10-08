@@ -3,6 +3,7 @@ import {useEffect, useMemo} from 'react';
 import {setGlobalSubtitleId, SubtitleContainer} from "../components/Subtitle/DataStructures";
 import {useRouter} from "next/router";
 import useLanguageManager from "./useLanguageManager";
+import {isTextEntryTarget} from "../utils/keyboardTargets";
 
 export default function useKeyBind(
     setMeaning,
@@ -248,7 +249,7 @@ export default function useKeyBind(
 
   useEffect(() => {
     const handleKeyPress = async (event) => {
-      if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+      if (isTextEntryTarget(event.target)) {
         return;
       }
 

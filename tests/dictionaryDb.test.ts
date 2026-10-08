@@ -176,16 +176,15 @@ test("Chinese characters that reuse an id keep their own records", async () => {
   assert.equal((await hanzi(db, "四", 1))[0].content, "四");
 });
 
-test("valuesWithPrefix skips an excluded key range and keeps the limit across it", async () => {
+test("valuesWithPrefix returns every key under the prefix, including astral continuations", async () => {
   const db = new Level<string, string>(path.join(directory, "prefix-db"));
   openDbs.push(db);
-  await db.batch(["indexes/pa-1", "indexes/partial/x-9", "indexes/partial/y-9", "indexes/pat-2", "indexes/pb-3"]
+  await db.batch(["indexes/pa-1", "indexes/pat-2", "indexes/pb-3", "indexes/pa𠹻-4", "indexes/paＡ-5"]
     .map((key) => ({type: "put" as const, key, value: key.slice(-1)})));
 
-  assert.deepEqual(await valuesWithPrefix(db, "indexes/pa", -1, "indexes/partial/"), ["1", "2"]);
-  assert.deepEqual(await valuesWithPrefix(db, "indexes/pa", 1, "indexes/partial/"), ["1"]);
-  assert.deepEqual(await valuesWithPrefix(db, "indexes/p", 2, "indexes/partial/"), ["1", "2"]);
-  assert.deepEqual(await valuesWithPrefix(db, "indexes/partial/", -1, "indexes/partial/"), []);
+  assert.deepEqual(await valuesWithPrefix(db, "indexes/pa"), ["1", "2", "5", "4"]);
+  assert.deepEqual(await valuesWithPrefix(db, "indexes/pa", 2), ["1", "2"]);
+  assert.deepEqual(await valuesWithPrefix(db, "indexes/q"), []);
 });
 
 test("allSubstrings keeps astral characters whole", () => {

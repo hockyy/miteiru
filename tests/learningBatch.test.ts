@@ -37,3 +37,11 @@ test("updateContentBatch has written every newer entry when it resolves", async 
   assert.deepEqual(await read("ja/見る"), {level: 3, updTime: 500});
   assert.deepEqual(await read("ja/書く"), {level: 1, updTime: 50});
 });
+
+test("updateContentBatch replaces entries still stored in the old numeric format", async () => {
+  await Learning.db.put("ja/走る", "2");
+
+  await Learning.updateContentBatch({"走る": {level: 3, updTime: 10}}, "ja");
+
+  assert.deepEqual(await read("ja/走る"), {level: 3, updTime: 10});
+});

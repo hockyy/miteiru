@@ -99,31 +99,9 @@ export const openDictionary = async <T>(
 // Sorts after every character in UTF-8, so [prefix, prefixEnd(prefix)) holds every key starting with prefix.
 const prefixEnd = (prefix: string) => `${prefix}\u{10FFFF}`;
 
-/**
- * Values of the keys that start with `prefix`, in key order (`limit` < 0 means all).
- * Keys under `excludedPrefix` are skipped without scanning them.
- */
-export const valuesWithPrefix = async (
-  db: DictionaryDb,
-  prefix: string,
-  limit = -1,
-  excludedPrefix?: string
-): Promise<string[]> => {
-  const end = prefixEnd(prefix);
-  if (!excludedPrefix || !excludedPrefix.startsWith(prefix)) {
-    if (excludedPrefix && prefix.startsWith(excludedPrefix)) return [];
-    return db.values({gte: prefix, lt: end, limit}).all();
-  }
-
-  const before = await db.values({gte: prefix, lt: excludedPrefix, limit}).all();
-  if (limit >= 0 && before.length >= limit) return before;
-  const after = await db.values({
-    gte: prefixEnd(excludedPrefix),
-    lt: end,
-    limit: limit < 0 ? -1 : limit - before.length
-  }).all();
-  return [...before, ...after];
-};
+/** Values of the keys that start with `prefix`, in key order (`limit` < 0 means all). */
+export const valuesWithPrefix = (db: DictionaryDb, prefix: string, limit = -1): Promise<string[]> =>
+  db.values({gte: prefix, lt: prefixEnd(prefix), limit}).all();
 
 /** JSON records stored under `keys`, in order; keys with no record are skipped. */
 export const getJsonRecords = async <T>(db: DictionaryDb, keys: string[]): Promise<T[]> => {

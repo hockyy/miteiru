@@ -64,9 +64,7 @@ class Chinese {
     const dictBuffer = fs.readFileSync(this.jiebaDictPath)
     this.jieba = Jieba.withDict(dictBuffer);
     try {
-      if (this.Dict.db) {
-        this.Dict.db.close();
-      }
+      await this.Dict.db?.close();
       const dictSetup = await setupChineseDictionary(this.dictPath, this.importDict);
       this.Dict = {
         db: dictSetup.db

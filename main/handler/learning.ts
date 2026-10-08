@@ -28,7 +28,8 @@ class Learning {
       const dbKey = `${lang}/${key}`;
       try {
         const stored = JSON.parse(await this.db.get(dbKey));
-        if (!(stored.updTime < value.updTime)) return;
+        // Old numeric entries have no updTime, so any incoming entry replaces them.
+        if (typeof stored?.updTime === "number" && !(stored.updTime < value.updTime)) return;
       } catch {
         // Missing or unreadable entry: take the incoming one.
       }

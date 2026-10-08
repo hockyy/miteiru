@@ -55,12 +55,9 @@ class Japanese {
     this.importBaseSVG = settings.importBaseSVG;
     this.kuromojiDictPath = settings.kuromojiDictPath;
     try {
-      if (this.Dict.db) {
-        this.Dict.db.close();
-      }
-      if (this.KanjiDict.db) {
-        this.KanjiDict.db.close();
-      }
+      // Reopening the same path below needs the old handle's LevelDB lock released first.
+      await this.Dict.db?.close();
+      await this.KanjiDict.db?.close();
       const jmSetup = await setupJmdict(this.dictPath, this.importDict);
       const jmTags = await getJmdictTags(jmSetup.db);
       this.Dict = {

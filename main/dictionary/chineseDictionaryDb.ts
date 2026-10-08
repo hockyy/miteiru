@@ -14,7 +14,7 @@ export interface ChineseDictionaryFile {
   characters: ChineseEntry[];
 }
 
-const PARTIAL_INDEX = "indexes/partial/";
+const PARTIAL_INDEX = "partial/";
 
 /**
  * Storage ids for entries in file order. cantodict.json's character list is two lists whose ids
@@ -31,13 +31,14 @@ const storageIds = (entries: ChineseEntry[]) => {
 };
 
 /*
- * Key layout (same as cc-chinese-wrapper, with ids made unique as above):
+ * Key layout (cc-chinese-wrapper's, with ids made unique as above):
  *   raw/words/<id>, raw/char/<id>          entry JSON
  *   indexes/<content|simplified>-<id>      → word id
- *   indexes/partial/<substring>-<id>       → word id, for every substring of either form
+ *   partial/<substring>-<id>               → word id, for every substring of either form
  *   indexchar/<content>-<id>               → character id
  *   raw/version                            written last
- * cc-chinese-wrapper indexed substrings with substring(start, length), which skipped most
+ * cc-chinese-wrapper kept the substring index under indexes/partial/, where a Latin prefix
+ * like "pa" scanned into it, and built it with substring(start, length), which skipped most
  * non-prefix substrings.
  */
 export const setupChineseDictionary = async (dbPath: string, importPath = "") => {
@@ -71,12 +72,9 @@ export const setupChineseDictionary = async (dbPath: string, importPath = "") =>
 const wordsForIds = (db: DictionaryDb, ids: string[]) =>
   getJsonRecords<ChineseEntry>(db, ids.map((id) => `raw/words/${id}`));
 
-/**
- * Words whose traditional or simplified form starts with `prefix`. The partial index shares
- * the indexes/ namespace, so it is skipped for prefixes such as "pa".
- */
+/** Words whose traditional or simplified form starts with `prefix`. */
 export const charBeginning = async (db: DictionaryDb, prefix: string, limit = -1) =>
-  wordsForIds(db, await valuesWithPrefix(db, `indexes/${prefix}`, limit, PARTIAL_INDEX));
+  wordsForIds(db, await valuesWithPrefix(db, `indexes/${prefix}`, limit));
 
 /** Words that contain `text` anywhere in either form. */
 export const charAnywhere = async (db: DictionaryDb, text: string, limit = -1) =>

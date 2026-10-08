@@ -1,11 +1,7 @@
 import {useEffect} from 'react';
 import {useRouter} from "next/router";
 import useLanguageManager from "./useLanguageManager";
-
-const isTextEntryTarget = (target: EventTarget | null) => (
-    target instanceof HTMLElement
-    && (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable)
-);
+import {isTextEntryTarget} from "../utils/keyboardTargets";
 
 export default function useLearningKeyBind(
     setMeaning,
