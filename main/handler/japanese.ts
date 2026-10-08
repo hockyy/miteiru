@@ -1,6 +1,6 @@
 import {ipcMain} from "electron";
-import {getTags, kanjiBeginning, readingBeginning, setup as wrapperJM} from "jmdict-wrapper";
-import {search, setup as wrapperKanji} from "kanjidic-wrapper";
+import {getJmdictTags, kanjiBeginning, readingBeginning, setupJmdict} from "../dictionary/jmdictDb";
+import {searchKanji, setupKanjidic} from "../dictionary/kanjidicDb";
 import path from "path";
 import {readJsonFile} from "../utils";
 import fs from "node:fs";
@@ -61,13 +61,13 @@ class Japanese {
       if (this.KanjiDict.db) {
         this.KanjiDict.db.close();
       }
-      const jmSetup = await wrapperJM(this.dictPath, this.importDict);
-      const jmTags = await getTags(jmSetup.db);
+      const jmSetup = await setupJmdict(this.dictPath, this.importDict);
+      const jmTags = await getJmdictTags(jmSetup.db);
       this.Dict = {
         db: jmSetup.db,
         tags: jmTags
       }
-      const charSetup = await wrapperKanji(this.charDictPath, this.importKanjiDict);
+      const charSetup = await setupKanjidic(this.charDictPath, this.importKanjiDict);
       this.KanjiDict = {
         db: charSetup.db
       }
@@ -176,7 +176,7 @@ class Japanese {
 
 
     ipcMain.handle('queryKanji', async (event, query) => {
-      return search(this.KanjiDict.db, query);
+      return searchKanji(this.KanjiDict.db, query);
     })
 
 
