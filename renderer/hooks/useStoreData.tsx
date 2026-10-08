@@ -53,6 +53,7 @@ export const useStoreData = <T,>(key: string, defaultValue: T): [T, (value: T) =
       setData(() => value);
       publishStoreKey(key, value);
     } catch (error) {
+      console.error(`Failed to save setting "${key}":`, error);
     }
   }, [key]);
 

@@ -3,14 +3,15 @@ import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 import 'videojs-youtube';
 import {videoConstants} from "../../utils/constants";
-import PitchControl from "../Utils/PitchControl";
 
 
-export const VideoJS = ({options, onReady, setCurrentTime, pitchValue}) => {
+export const VideoJS = ({options, onReady, setCurrentTime}) => {
   const videoRef = useRef(null);
   const playerRef = useRef(null);
-  const pitchControlRef = useRef<PitchControl>(new PitchControl());
   const youtubeObserverRef = useRef<MutationObserver | null>(null);
+  // The unmount cleanup tells the page the player is gone, using the latest callback.
+  const onReadyRef = useRef(onReady);
+  onReadyRef.current = onReady;
 
   const logPlayerState = useCallback((player, eventName: string) => {
     const mediaElement = player.el()?.querySelector('video') as HTMLVideoElement | null;
@@ -39,12 +40,9 @@ export const VideoJS = ({options, onReady, setCurrentTime, pitchValue}) => {
   }, []);
 
   const handle = useCallback(() => {
-    setCurrentTime(playerRef.current.currentTime())
+    const player = playerRef.current;
+    if (player && !player.isDisposed()) setCurrentTime(player.currentTime());
   }, [setCurrentTime])
-
-  useEffect(() => {
-    pitchControlRef.current.setPitch(pitchValue);
-  }, [pitchValue]);
 
   useEffect(() => {
     // Make sure Video.js player is only initialized once
@@ -71,7 +69,7 @@ export const VideoJS = ({options, onReady, setCurrentTime, pitchValue}) => {
           }
         };
 
-        onReady && onReady(player);
+        onReady?.(player);
         applyYouTubeIframeAttributes();
 
         youtubeObserverRef.current = new MutationObserver(() => {
@@ -81,12 +79,6 @@ export const VideoJS = ({options, onReady, setCurrentTime, pitchValue}) => {
           childList: true,
           subtree: true
         });
-
-        // Initialize pitch control when player is ready
-        const videoEl = player.el().querySelector('video');
-        if (videoEl) {
-          pitchControlRef.current.initialize(videoEl);
-        }
       });
     } else {
       if (options.sources[0].src !== playerRef.current.currentSrc()) {
@@ -112,7 +104,13 @@ export const VideoJS = ({options, onReady, setCurrentTime, pitchValue}) => {
         youtubeObserverRef.current.disconnect();
         youtubeObserverRef.current = null;
       }
-      pitchControlRef.current.destroy();
+      // Without this every closed video left a live player (and its media element) behind.
+      const player = playerRef.current;
+      if (player && !player.isDisposed()) {
+        player.dispose();
+        playerRef.current = null;
+        onReadyRef.current?.(null);
+      }
     };
   }, []);
 

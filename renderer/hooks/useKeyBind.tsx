@@ -11,7 +11,6 @@ export default function useKeyBind(
     setShowSidebar,
     setPrimarySub,
     setSecondarySub,
-    primarySub,
     undo,
     setShowPrimarySub,
     setShowSecondarySub,
@@ -142,8 +141,10 @@ export default function useKeyBind(
       modifiers: ['Ctrl'],
       category: 'Subtitles',
       handler: () => {
-        setPrimarySub(new SubtitleContainer(''));
-        setGlobalSubtitleId(primarySub.id);
+        // Point the current id at the empty container so the cleared subtitle stops processing.
+        const emptySubtitle = new SubtitleContainer('');
+        setPrimarySub(emptySubtitle);
+        setGlobalSubtitleId(emptySubtitle.id);
       }
     },
     {
@@ -241,7 +242,7 @@ export default function useKeyBind(
     }
      ], [
      router, setMeaning, setShowController, setShowSidebar, setPrimarySub,
-     setSecondarySub, setPrimaryStyling, primarySub.id, setShowPrimarySub,
+     setSecondarySub, setPrimaryStyling, setShowPrimarySub,
      setShowSecondarySub, undo, primaryStyling, openGoogleTranslate, openDeepL,
      reloadLastSecondarySubtitle, reloadLastPrimarySubtitle, setShowVocabSidebar,
      rubyContent, contentString, setShowLyricsSearch, clearLanguage

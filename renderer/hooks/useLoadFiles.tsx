@@ -1,5 +1,6 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
+  isCurrentSubtitle,
   Line,
   setGlobalSubtitleId,
   SubtitleContainer
@@ -79,8 +80,9 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       }, TOAST_TIMEOUT / 10);
 
       await tmpSub.adjustForLearning(tokenizeMiteiru);
-      
-      setFrequencyPrimary(tmpSub.frequency);
+
+      // A newer subtitle may have replaced this one while it was processing.
+      if (isCurrentSubtitle(tmpSub.id)) setFrequencyPrimary(tmpSub.frequency);
       setPrimaryTimeCache?.([]);
     } catch (error) {
       console.error('Error processing subtitle:', error);

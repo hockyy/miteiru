@@ -197,12 +197,13 @@ export const JapaneseSentence = ({
   }, [basicForm, getLearningStateClass, subtitleStyling]);
 
   const handleChange = useCallback((pressedString) => {
+    if (!pressedString) return;
     writeClipboardText(pressedString);
     setMeaning(pressedString)
   }, [setMeaning]);
 
   const handleClick = useCallback((e) => {
-    handleChange(e.shiftKey ? origin : basicForm);
+    handleChange(e.shiftKey ? origin : (basicForm || origin));
   }, [handleChange, origin, basicForm]);
 
   const handleRightClick = useCallback(() => {
