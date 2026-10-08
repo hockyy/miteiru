@@ -28,7 +28,7 @@ const isBlank = (line: string | undefined) => line === undefined || line.trim() 
  * such as WEBVTT headers or NOTE blocks, none of which make the whole file fail.
  */
 export const parseSubtitleCues = (input: string): SubtitleEntry[] => {
-  const lines = input.replace(/^﻿/, "").split(/\r\n|\r|\n/);
+  const lines = input.replace(/^\uFEFF/, "").split(/\r\n|\r|\n/);
   const entries: SubtitleEntry[] = [];
 
   for (let index = 0; index < lines.length; index++) {
@@ -47,7 +47,8 @@ export const parseSubtitleCues = (input: string): SubtitleEntry[] => {
       next++;
     }
     // Without a blank line between cues, the next cue's number ends up last; leave it to that cue.
-    if (next < lines.length && TIMING_LINE.test(lines[next]) && CUE_NUMBER.test(textLines.at(-1) ?? "")) {
+    // A cue whose only text is a number keeps it.
+    if (next < lines.length && TIMING_LINE.test(lines[next]) && textLines.length > 1 && CUE_NUMBER.test(textLines.at(-1))) {
       textLines.pop();
     }
 

@@ -86,3 +86,21 @@ test("a failed Kuromoji dictionary load can be retried", async () => {
   const tokenizer = await Japanese.loadKuromojiTokenizer();
   assert.equal(tokenizer.tokenizeForSentence("見た")[0].surface_form, "見");
 });
+
+test("decodeText keeps UTF-8 with a stray bad byte and reads ISO-2022-JP", () => {
+  const french = srt("Café, déjà vu, à la fenêtre. C’est l’été.");
+  const utf8 = Buffer.from(french);
+  const corrupted = Buffer.concat([utf8.subarray(0, 40), Buffer.from([0xff]), utf8.subarray(40)]);
+  const decoded = decodeText(corrupted);
+  assert.equal(decoded.encoding, "utf-8");
+  assert.ok(decoded.text.includes("déjà vu"));
+
+  // 日本語の字幕 in ISO-2022-JP (JIS escape sequences), which iconv-lite cannot decode.
+  const jis = Buffer.from([0x1b, 0x24, 0x42, 0x46, 0x7c, 0x4b, 0x5c, 0x38, 0x6c, 0x24, 0x4e, 0x3b, 0x7a, 0x4b, 0x6b, 0x1b, 0x28, 0x42]);
+  const jisSubtitle = Buffer.concat(Array.from({length: 6}, () => Buffer.concat([Buffer.from("1\n00:00:01,000 --> 00:00:02,000\n"), jis, Buffer.from("\n\n")])));
+  assert.ok(decodeText(jisSubtitle).text.includes("日本語の字幕"));
+});
+
+test("parseSubtitleCues keeps a cue whose only text is a number", () => {
+  assert.deepEqual(parseSubtitleCues("00:00:01,000 --> 00:00:02,000\n42\n00:00:03,000 --> 00:00:04,000\nnext\n").map((cue) => cue.text), ["42", "next"]);
+});
