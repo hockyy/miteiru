@@ -9,9 +9,9 @@ import {
   buildExamplesHtml,
   buildHtmlList,
   buildHtmlSection,
-  escapeHtml,
   uniqueNonEmpty,
 } from './ankiExport';
+import { escapeHtml } from '../../utils/html';
 
 /** True when saved grammar notes have exportable AI content. */
 export const hasGrammarAnkiContent = (userData: GrammarUserData | null | undefined): boolean => {

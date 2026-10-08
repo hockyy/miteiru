@@ -29,6 +29,8 @@ export const useVideoKeyboardControls = (togglePlay, deltaTime, setPrimaryShift,
     const handleVideoController = (event) => {
       // Typing in a search box or notes must not toggle playback or seek.
       if (isTextEntryTarget(event.target)) return;
+      // Arrow keys on a focused slider move the slider, not the video.
+      if (event.code.startsWith("Arrow") && event.target instanceof HTMLInputElement) return;
       const plainKey = !event.ctrlKey && !event.metaKey && !event.altKey;
       if (!plainKey && !event.code.startsWith("Bracket")) return;
       if (event.code === "KeyE") {

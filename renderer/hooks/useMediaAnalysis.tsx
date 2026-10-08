@@ -2,6 +2,12 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { MediaInfo, MediaTrack } from '../types/media';
 import { TrackSelection } from '../components/Utils/MediaTrackSelectionModal';
 
+const deleteTempSubtitle = (filePath: string) => {
+  window.electronAPI.cleanupTempSubtitle(filePath).catch(err =>
+    console.warn('Failed to cleanup temp subtitle:', err)
+  );
+};
+
 const useMediaAnalysis = (videoPath: string) => {
   const [mediaInfo, setMediaInfo] = useState<MediaInfo>({
     duration: 0,
@@ -13,6 +19,8 @@ const useMediaAnalysis = (videoPath: string) => {
   // Subtitles extracted from the current video. A ref: deleting them must wait for the video to change,
   // not happen whenever another one is added.
   const tempSubtitleFiles = useRef<string[]>([]);
+  // The video those subtitles belong to; null once the page closes.
+  const activeVideoPath = useRef<string | null>(videoPath);
   const [showTrackSelectionModal, setShowTrackSelectionModal] = useState(false);
   const [showAudioReencodeModal, setShowAudioReencodeModal] = useState(false);
   const [showReencodeProgress, setShowReencodeProgress] = useState(false);
@@ -152,9 +160,16 @@ const useMediaAnalysis = (videoPath: string) => {
 
       if (promises.length > 0) {
         const extractedSubtitles = await Promise.all(promises);
-        
+        const tempPaths = extractedSubtitles.map(sub => sub.tempPath);
+
+        // The video changed (or the page closed) while extracting: these belong to the old one.
+        if (activeVideoPath.current !== videoPath) {
+          tempPaths.forEach(deleteTempSubtitle);
+          return {extractedSubtitles: []};
+        }
+
         // Store temp files for cleanup
-        tempSubtitleFiles.current.push(...extractedSubtitles.map(sub => sub.tempPath));
+        tempSubtitleFiles.current.push(...tempPaths);
 
         // Load extracted subtitles using the existing subtitle loading mechanism
         if (onSubtitleLoad) {
@@ -245,14 +260,14 @@ const useMediaAnalysis = (videoPath: string) => {
   }, [mediaInfo.subtitleTracks]);
 
   // Delete the extracted subtitles when the video changes or the page closes.
-  useEffect(() => () => {
-    const files = tempSubtitleFiles.current;
-    tempSubtitleFiles.current = [];
-    files.forEach(filePath => {
-      window.electronAPI.cleanupTempSubtitle(filePath).catch(err =>
-        console.warn('Failed to cleanup temp subtitle:', err)
-      );
-    });
+  useEffect(() => {
+    activeVideoPath.current = videoPath;
+    return () => {
+      activeVideoPath.current = null;
+      const files = tempSubtitleFiles.current;
+      tempSubtitleFiles.current = [];
+      files.forEach(deleteTempSubtitle);
+    };
   }, [videoPath]);
 
   return {
