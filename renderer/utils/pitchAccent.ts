@@ -42,7 +42,7 @@ const SMALL_KANA = new Set([
   ...'ァィゥェォャュョヮヵヶ',
 ]);
 
-export const toHiraganaSafe= (text: string): string =>
+export const toHiraganaSafe = (text: string): string =>
   text.replace(/[ァ-ヶ]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0x60));
 
 /** Splits a kana reading into morae (small kana attach to the previous mora). */

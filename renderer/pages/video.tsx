@@ -121,6 +121,11 @@ function Video() {
     getLearningState,
     refreshTrigger,
   } = useLearningState(lang);
+  // Clearing the primary subtitle (Ctrl+O) also clears its word frequencies.
+  const primaryCleared = primarySub.lines.length === 0;
+  useEffect(() => {
+    if (primaryCleared) setFrequencyPrimary(new Map());
+  }, [primaryCleared, setFrequencyPrimary]);
   const {
     meaning,
     setMeaning,

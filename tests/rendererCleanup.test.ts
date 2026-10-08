@@ -67,8 +67,10 @@ test("isTextEntryTarget treats sliders and checkboxes as non-text", () => {
     assert.equal(isTextEntryTarget(editable as never), true);
     assert.equal(isTextEntryTarget(null), false);
   } finally {
-    globals.HTMLElement = saved.HTMLElement;
-    globals.HTMLInputElement = saved.HTMLInputElement;
+    for (const [name, value] of Object.entries(saved)) {
+      if (value === undefined) delete globals[name];
+      else globals[name] = value;
+    }
   }
 });
 

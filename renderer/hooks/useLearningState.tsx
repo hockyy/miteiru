@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {sortAndFilterTopXPercentToJson} from "../utils/utils";
 import {videoConstants} from "../utils/constants";
 import {useStoreData} from "./useStoreData";
@@ -29,8 +29,12 @@ const useLearningState = (lang: string) => {
     return `state${getLearningState(content)}`
   }, [getLearningState]);
 
+  // Entries saved since the last render, so two quick clicks build on each other.
+  const savedEntries = useRef<Record<string, LearningStateType>>({});
+
   // State updaters must stay pure (React may call them twice), so the IPC write happens outside.
-  const saveLearningEntry = useCallback((content: string, entry: { level: number; updTime: number }) => {
+  const saveLearningEntry = useCallback((content: string, entry: LearningStateType) => {
+    savedEntries.current[content] = entry;
     setCachedLearningState((oldCached) => ({...oldCached, [content]: entry}));
     window.ipc.invoke('updateContent', content, lang, entry);
     setRefreshTrigger((prev) => prev + 1);
@@ -38,13 +42,14 @@ const useLearningState = (lang: string) => {
 
   const changeLearningState = useCallback((content: string) => {
     if (!content) return;
-    const nextLevel = (getLearningState(content) + 1) % videoConstants.learningStateLength;
+    const currentLevel = savedEntries.current[content]?.level ?? getLearningState(content);
+    const nextLevel = (currentLevel + 1) % videoConstants.learningStateLength;
     saveLearningEntry(content, {level: nextLevel, updTime: Date.now()});
   }, [getLearningState, saveLearningEntry]);
 
   const updateTimeWithSameLevel = useCallback((content: string, updTime: number) => {
     if (!content) return;
-    saveLearningEntry(content, {level: getLearningState(content), updTime});
+    saveLearningEntry(content, {level: savedEntries.current[content]?.level ?? getLearningState(content), updTime});
   }, [getLearningState, saveLearningEntry]);
 
   useEffect(() => {

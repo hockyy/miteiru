@@ -96,7 +96,7 @@ export const getPrimaryRomajiedVariant = (romajiedData) => {
   return [romajiedData[0]];
 };
 
-export const buildRubyHtmlFromRomajiedData= (romajiedData) => {
+export const buildRubyHtmlFromRomajiedData = (romajiedData) => {
   let rubyHtml = '';
   romajiedData.forEach(({ romajied }) => {
     if (Array.isArray(romajied)) {
