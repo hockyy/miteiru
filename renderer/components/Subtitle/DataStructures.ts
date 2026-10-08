@@ -1,4 +1,4 @@
-import { isHiragana, isKatakana, toHiragana, toRomaji } from 'wanakana'
+import { isHiragana, isKatakana, toHiragana, toKatakana, toRomaji } from 'wanakana'
 import { videoConstants } from "../../utils/constants";
 import { v4 as uuidv4 } from 'uuid';
 import type { Entry } from "@plussub/srt-vtt-parser/dist/types";
@@ -87,6 +87,10 @@ const parseHufToEntries = (content: string): Entry[] => {
   .filter((entry): entry is Entry => entry !== null);
 };
 
+// Token readings keep ー (こーひー) while JMdict may not, so compare both spelled out (こうひい).
+const sameKanaReading = (left: string, right: string): boolean =>
+  toHiragana(toKatakana(left)) === toHiragana(toKatakana(right));
+
 const getRomajiFromSeparation = (separation: any): string => {
   if (!Array.isArray(separation)) return '';
 
@@ -161,7 +165,7 @@ export class Line {
           if (got) break;
           try {
             for (const reading of entry.kana) {
-              if (toHiragana(reading.text) === word.hiragana) {
+              if (sameKanaReading(reading.text, word.hiragana)) {
                 got = 1;
                 break;
               }
@@ -504,8 +508,9 @@ export const cleanHearingImpaired = (text) => {
     // Discard anything in square brackets
     let cleanedLine = line.replace(/\[.*?]/g, '');
 
-    // Discard anything in brackets
-    const brackets = [/\[.*?]/g, /\(.*?\)/g, /（.*?）/g, /「.*?」/g, /『.*?』/g, /【.*?】/g];
+    // Discard anything in brackets used for sound or speaker annotations.
+    // 「」 and 『』 are quoted speech in Japanese subtitles, so they stay.
+    const brackets = [/\[.*?]/g, /\(.*?\)/g, /（.*?）/g, /【.*?】/g];
     for (const bracket of brackets) {
       cleanedLine = cleanedLine.replace(bracket, '');
     }

@@ -32,16 +32,19 @@ export const getMeaningEntries = async (term, lang) => {
     });
   }
 
+  // Placeholder so the header can still tokenize the term; `notFound` tells the panel to say so.
   if (entries.length === 0) {
     if (lang === videoConstants.japaneseLang) {
       entries.push({
         id: "0",
+        notFound: true,
         single: [{key: 0, text: term}],
         sense: []
       });
     } else {
       entries.push({
         id: "0",
+        notFound: true,
         content: term,
         simplified: term,
         pinyin: [],

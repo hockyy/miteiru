@@ -25,7 +25,7 @@ export const HanziEntry = ({
   subtitleStyling = defaultMeaningBoxStyling,
 }: HanziEntryProps) => {
   const metadataTags = [
-    `CantoDict ${meaningHanzi.cantodict_id}`,
+    meaningHanzi.cantodict_id ? `CantoDict ${meaningHanzi.cantodict_id}` : '',
     meaningHanzi.dialect ? `${meaningHanzi.dialect} dialect` : '',
     meaningHanzi.stroke_count ? `${meaningHanzi.stroke_count} strokes` : '',
     meaningHanzi.freq ? `${meaningHanzi.freq} appearances` : '',

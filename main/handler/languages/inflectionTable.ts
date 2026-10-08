@@ -8,7 +8,7 @@ import {
   type Auxiliary,
   type Conjugation,
   type Deconjugated,
-} from "kamiya-codec";
+} from "./kamiya";
 import type {
   DeconjugationLadderStep,
   InflectionKind,
@@ -335,6 +335,20 @@ const ADJ_CONJUGATION_LABELS: Record<AdjConjugation, string> = {
 const uniqueForms = (forms: string[]) =>
   Array.from(new Set(forms.map((form) => form.trim()).filter(Boolean)));
 
+// kamiya's conjugate() also returns the bare stem a form is built on (乗ら for 乗らない,
+// 乗れ for 乗れば, 高く for 高くて); the table shows only the usable forms.
+const VERB_STEM_SUFFIXES: Partial<Record<Conjugation, string>> = {
+  Negative: "ない",
+  Conditional: "ば",
+  Volitional: "う",
+};
+const ADJ_STEM_SUFFIXES: Partial<Record<AdjConjugation, string>> = {
+  ConjunctiveTe: "て",
+};
+
+const withoutBareStems = (forms: string[], suffix: string | undefined) =>
+  suffix ? forms.filter((form) => !forms.includes(form + suffix)) : forms;
+
 const safeVerbForms = (
   dictionaryForm: string,
   conjugation: Conjugation,
@@ -345,7 +359,7 @@ const safeVerbForms = (
     const forms =
       auxiliaries.length > 0
         ? conjugateAuxiliaries(dictionaryForm, auxiliaries, conjugation, typeII)
-        : conjugate(dictionaryForm, conjugation, typeII);
+        : withoutBareStems(conjugate(dictionaryForm, conjugation, typeII), VERB_STEM_SUFFIXES[conjugation]);
     return uniqueForms(forms);
   } catch {
     return [];
@@ -358,7 +372,9 @@ const safeAdjForms = (
   iAdjective: boolean,
 ): string[] => {
   try {
-    return uniqueForms(adjConjugate(dictionaryForm, conjugation, iAdjective));
+    return uniqueForms(
+      withoutBareStems(adjConjugate(dictionaryForm, conjugation, iAdjective), ADJ_STEM_SUFFIXES[conjugation]),
+    );
   } catch {
     return [];
   }
@@ -443,7 +459,11 @@ const buildVerbLadder = (
   const hits = verbDeconjugate(clickedForm, dictionaryForm, typeII, 2);
   if (!hits.length) return [];
 
-  const best = [...hits].sort((left, right) => right.auxiliaries.length - left.auxiliaries.length)[0];
+  // Ichidan 〜られる is both passive and potential; on a tie prefer ReruRareru, whose label says so.
+  const isReruRareru = (hit: Deconjugated) => (hit.auxiliaries.includes("ReruRareru") ? 1 : 0);
+  const best = [...hits].sort((left, right) => (
+    right.auxiliaries.length - left.auxiliaries.length || isReruRareru(right) - isReruRareru(left)
+  ))[0];
   return [
     {
       surface: clickedForm,

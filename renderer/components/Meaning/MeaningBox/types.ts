@@ -29,8 +29,10 @@ export type MeaningContentState = {
   content: string;
   simplified: string;
   meaning?: string | string[];
-  jyutping?: string;
+  jyutping?: string | string[];
   comments?: string;
+  /** Set on the placeholder entry `getMeaningEntries` returns when the dictionary has no match. */
+  notFound?: boolean;
 };
 
 export type SenseEntry = {

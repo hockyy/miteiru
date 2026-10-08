@@ -57,22 +57,30 @@ const anyOneTrue = (word: string, func: (value: string) => boolean) => {
   return false;
 };
 
-const createStoredObject = (textMain: string, textHiragana: string): MiteiruJapaneseSeparation => ({
+const createStoredObject = (
+  textMain: string,
+  textHiragana: string,
+  textSpoken: string = textHiragana
+): MiteiruJapaneseSeparation => ({
   main: textMain,
   hiragana: textHiragana,
-  romaji: toRomaji(textHiragana),
+  romaji: toRomaji(textSpoken),
   isKana: anyOneTrue(textMain, isKana),
   isKanji: anyOneTrue(textMain, isKanji),
   isMixed: anyOneTrue(textMain, isMixed)
 });
 
-const splitOkuriganaCompact = (text: string, reading?: string): MiteiruJapaneseSeparation[] => {
+/**
+ * @param spokenReading Optional kana aligned 1:1 with `reading`, used only for romaji.
+ */
+const splitOkuriganaCompact = (text: string, reading?: string, spokenReading?: string): MiteiruJapaneseSeparation[] => {
   let hiragana = reading;
   if (typeof hiragana === "undefined") {
     hiragana = text;
   } else if (hiragana === "*") {
     hiragana = toHiragana(text);
   }
+  const spoken = spokenReading?.length === hiragana.length ? spokenReading : hiragana;
 
   const kanjiPointer = [text.length, -1];
   const stored: MiteiruJapaneseSeparation[] = [];
@@ -87,27 +95,30 @@ const splitOkuriganaCompact = (text: string, reading?: string): MiteiruJapaneseS
     if (i === -1 || isKanji(text[i])) break;
   }
 
+  const pushPart = (main: string, start: number, end: number) => {
+    stored.push(createStoredObject(main, hiragana.substring(start, end), spoken.substring(start, end)));
+  };
+
   if (kanjiPointer[0] > 0) {
-    stored.push(createStoredObject(
-      text.substring(0, kanjiPointer[0]),
-      hiragana.substring(0, kanjiPointer[0])
-    ));
+    pushPart(text.substring(0, kanjiPointer[0]), 0, kanjiPointer[0]);
   }
 
   if (kanjiPointer[0] <= kanjiPointer[1]) {
     const spentBack = text.length - kanjiPointer[1];
-    stored.push(createStoredObject(
+    pushPart(
       text.substring(kanjiPointer[0], kanjiPointer[1] + 1),
-      hiragana.substring(kanjiPointer[0], hiragana.length - spentBack + 1)
-    ));
+      kanjiPointer[0],
+      hiragana.length - spentBack + 1
+    );
   }
 
   if (kanjiPointer[0] <= kanjiPointer[1] && kanjiPointer[1] + 1 !== text.length) {
     const spentBack = text.length - kanjiPointer[1];
-    stored.push(createStoredObject(
+    pushPart(
       text.substring(kanjiPointer[1] + 1, text.length),
-      hiragana.substring(hiragana.length - spentBack + 1, hiragana.length)
-    ));
+      hiragana.length - spentBack + 1,
+      hiragana.length
+    );
   }
 
   return stored;
@@ -213,9 +224,27 @@ export const getFurigana = (text: string, mecabCommand = "mecab"): MiteiruJapane
   return separateJapaneseWords(res.pairs);
 };
 
+// Unknown words have no reading; keep the old empty-reading behavior for them.
+const kuromojiReading = (item: KuromojinWord): string => item.reading ?? item.pronunciation ?? "";
+
+/**
+ * Kuromoji's `pronunciation` is the spoken form (ハ → ワ, オオキイ → オーキイ).
+ * Romaji keeps its sound changes but not its long-vowel marks, which would
+ * otherwise read 大きい as "oukii" and 先生 as "sensee".
+ */
+const spokenKana = (reading: string, pronunciation?: string): string => {
+  const written = Array.from(reading);
+  const spoken = Array.from(pronunciation ?? "");
+  if (spoken.length !== written.length) return reading;
+  return written.map((char, index) => (spoken[index] === "ー" ? char : spoken[index])).join("");
+};
+
+// Furigana follows the dictionary reading; ー stays as written (ホーム → ほーむ, not ほうむ).
+const toFuriganaHiragana =(kana: string): string => toHiragana(kana, {convertLongVowelMark: false});
+
 export const kuromojinToJapaneseWords = (texts: KuromojinWord[]): MiteiruJapaneseWord[] => texts.map((item) => ({
   origin: item.surface_form,
-  hiragana: toHiragana(item.pronunciation),
+  hiragana: toFuriganaHiragana(kuromojiReading(item)),
   basicForm: item.basic_form,
   pos: item.pos
     + (item.pos_detail_1 !== "*" ? `-${item.pos_detail_1}` : "")
@@ -225,4 +254,11 @@ export const kuromojinToJapaneseWords = (texts: KuromojinWord[]): MiteiruJapanes
 
 export const processKuromojinToSeparations = (
   texts: KuromojinWord[]
-): MiteiruJapaneseWordWithSeparations[] => separateJapaneseWords(kuromojinToJapaneseWords(texts));
+): MiteiruJapaneseWordWithSeparations[] => kuromojinToJapaneseWords(texts).map((word, index) => ({
+  ...word,
+  separation: splitOkuriganaCompact(
+    word.origin,
+    word.hiragana,
+    spokenKana(kuromojiReading(texts[index]), texts[index].pronunciation)
+  )
+}));

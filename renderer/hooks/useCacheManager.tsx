@@ -1,15 +1,11 @@
 import { useCallback, useState } from 'react';
+import { useStoreData } from './useStoreData';
+import { defaultMecabPath, MECAB_PATH_STORE_KEY } from '../utils/mecabPath';
 
 interface CacheResult {
   ok: number;
   message: string;
 }
-
-const mecabDefaultDirectory = {
-  'darwin': '/opt/homebrew/bin/mecab',
-  'linux': '/usr/bin/mecab',
-  'win32': 'C:\\Program Files (x86)\\MeCab\\bin\\mecab.exe'
-};
 
 const removingCacheMessage: CacheResult = {
   ok: 2,
@@ -17,16 +13,15 @@ const removingCacheMessage: CacheResult = {
 };
 
 export const useCacheManager = () => {
-  const [mecab, setMecab] = useState(
-    mecabDefaultDirectory[process.platform] ?? mecabDefaultDirectory['linux']
-  );
+  // Persisted so language loading (including auto-load) can send it to main.
+  const [mecab, setMecab] = useStoreData(MECAB_PATH_STORE_KEY, defaultMecabPath());
   const [isRemovingCache, setIsRemovingCache] = useState(false);
 
   const handleSelectMecabPath = useCallback(() => {
     window.ipc.invoke('pickFile', ['*']).then((val) => {
       if (!val.canceled) setMecab(val.filePaths[0]);
     });
-  }, []);
+  }, [setMecab]);
 
   const handleRemoveCache = useCallback(async () => {
     if (isRemovingCache) {

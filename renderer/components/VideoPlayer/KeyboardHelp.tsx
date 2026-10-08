@@ -43,8 +43,8 @@ const shortcutGroups = [
     items: [
       {key: "[", description: "Shift CJK subtitle slower"},
       {key: "]", description: "Shift CJK subtitle faster"},
-      {key: "Ctrl + [", description: "Shift main subtitle slower"},
-      {key: "Ctrl + ]", description: "Shift main subtitle faster"}
+      {key: "Ctrl + [", description: "Shift secondary subtitle slower"},
+      {key: "Ctrl + ]", description: "Shift secondary subtitle faster"}
     ]
   }
 ];

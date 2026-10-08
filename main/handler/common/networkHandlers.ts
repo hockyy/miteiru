@@ -84,7 +84,9 @@ export function registerNetworkHandlers() {
 
   ipcMain.handle("loadGitHubGists", async (event, username: string, token: string, perPage: number = 30, page: number = 1) => {
     try {
-      const response = await axios.get(`https://api.github.com/users/${username}/gists`, {
+      // /users/{username}/gists lists public gists only; the token's own /gists includes secret ones.
+      const url = token ? "https://api.github.com/gists" : `https://api.github.com/users/${username}/gists`;
+      const response = await axios.get(url, {
         params: {
           per_page: perPage,
           page: page

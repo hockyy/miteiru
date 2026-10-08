@@ -19,6 +19,7 @@ export interface AnalyzerServerContext {
   version: string;
   getTokenizer: () => string;
   getToneType: () => Promise<string>;
+  getMecabCommand?: () => string;
   analyze?: typeof analyzeText;
 }
 
@@ -138,6 +139,7 @@ const handleAnalyze = async (
   }
 
   const toneType = await context.getToneType();
+  const mecabCommand = context.getMecabCommand?.();
 
   if (batch) {
     if (!Array.isArray(body.texts)) {
@@ -148,7 +150,8 @@ const handleAnalyze = async (
     const analyzer = context.analyze ?? analyzeText;
     const results = await Promise.all(body.texts.map((text) => analyzer(text, {
       tokenizerMode,
-      toneType
+      toneType,
+      mecabCommand
     })));
     sendJson(res, 200, {ok: true, active, results});
     return;
@@ -162,7 +165,8 @@ const handleAnalyze = async (
   const analyzer = context.analyze ?? analyzeText;
   const tokens = await analyzer(body.text, {
     tokenizerMode,
-    toneType
+    toneType,
+    mecabCommand
   });
   sendJson(res, 200, {ok: true, active, tokens});
 };
