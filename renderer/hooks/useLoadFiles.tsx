@@ -9,7 +9,7 @@ import {v4 as uuidv4} from 'uuid';
 import {TOAST_TIMEOUT} from "../components/VideoPlayer/Toast";
 import {isLocalPath, isSubtitle, isVideo, isYoutube} from "../utils/utils";
 import {findPositionDeltaInFolder} from "../utils/folderUtils";
-import {useAsyncAwaitQueue} from "./useAsyncAwaitQueue";
+import {useSerialRunner} from "./useSerialRunner";
 import {isLearningSubtitleLanguage} from "../components/Subtitle/subtitleLanguageSupport";
 import {
   buildVideoSource,
@@ -34,7 +34,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     type: '',
     path: ''
   });
-  const queue = useAsyncAwaitQueue();
+  const runSerially = useSerialRunner();
 
   const [lastPrimarySubPath, setLastPrimarySubPath] = useState([{path: ''}]);
   const [lastSecondarySubPath, setLastSecondarySubPath] = useState([{path: ''}]);
@@ -242,10 +242,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     }
   }, [createSubtitleContainer, routeLoadedSubtitle, showToast]);
 
-  const onLoadFiles = useCallback(async (acceptedFiles) => {
-    const currentHash = Symbol();
-    await queue.wait(currentHash);
-
+  const onLoadFiles = useCallback((acceptedFiles) => runSerially(async () => {
     try {
       const droppedPath = await acceptedFiles[0]?.path;
       if (!droppedPath) {
@@ -274,10 +271,8 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     } catch (error) {
       console.error('[useLoadFiles] Error in file loading pipeline:', error);
       showToast(`Error: ${error.message}`);
-    } finally {
-      queue.end(currentHash);
     }
-  }, [queue, loadVideoFile, loadSubtitleFile, tryAutoLoadYoutubeLyrics, showToast]);
+  }), [runSerially, loadVideoFile, loadSubtitleFile, tryAutoLoadYoutubeLyrics, showToast]);
 
   const loadPath = useCallback((lyricsPath) => {
     if (lyricsPath) {

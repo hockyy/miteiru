@@ -2,7 +2,8 @@ import {app, session} from 'electron';
 import {createWindow} from './helpers';
 import fs from "node:fs";
 import path from "path";
-import {registerMiteiruScheme, setupMiteiruProtocol} from "./miteiruProtocol";
+import {registerPrivilegedSchemes, setupMiteiruProtocol} from "./miteiruProtocol";
+import {setupAppProtocol} from "./appProtocol";
 import {registerCommonHandlers} from "./handler/common";
 import {notifyLiveCaptionsLanguageChange} from "./handler/common/liveCaptionsHandlers";
 import {registerStartupHandlers} from "./handler/startup";
@@ -21,11 +22,7 @@ import {
 
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
-registerMiteiruScheme();
-
-const loadElectronServe = () => {
-  return Function("specifier", "return import(specifier)")("electron-serve") as Promise<typeof import("electron-serve")>;
-};
+registerPrivilegedSchemes();
 
 function registerYouTubeHeaderWorkaround() {
   session.defaultSession.webRequest.onBeforeSendHeaders(
@@ -41,19 +38,13 @@ function registerYouTubeHeaderWorkaround() {
   );
 }
 
-const serveReady = isProd
-  ? loadElectronServe().then(({default: serve}) => {
-    serve({directory: 'app', hostname: '.'});
-  })
-  : Promise.resolve();
-
 if (!isProd) {
   app.setPath('userData', `${app.getPath('userData')} (development)`);
 }
 
 (async () => {
-  await serveReady;
   await app.whenReady();
+  if (isProd) setupAppProtocol(path.join(app.getAppPath(), 'app'));
   setupMiteiruProtocol();
   registerYouTubeHeaderWorkaround();
   const appDataDirectory = app.getPath('userData');

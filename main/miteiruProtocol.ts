@@ -3,6 +3,7 @@ import path from "node:path";
 import {Readable} from "node:stream";
 import {protocol} from "electron";
 import {isAppUrl} from "./helpers/navigationGuard";
+import {APP_SCHEME_PRIVILEGES} from "./appProtocol";
 
 const mimeTypes: Record<string, string> = {
   ".mp4": "video/mp4",
@@ -131,8 +132,10 @@ export const createMiteiruFileResponse = (filePath: string, request: Request) =>
   );
 };
 
-export const registerMiteiruScheme = () => {
+/** Registers app:// and miteiru:// in the single registerSchemesAsPrivileged call Electron allows. */
+export const registerPrivilegedSchemes = () => {
   protocol.registerSchemesAsPrivileged([
+    APP_SCHEME_PRIVILEGES,
     {
       scheme: "miteiru",
       privileges: {

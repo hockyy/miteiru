@@ -1,5 +1,17 @@
 import {ipcMain} from "electron";
-import axios from "axios";
+
+const githubHeaders = (token: string) => ({
+  "Accept": "application/vnd.github.v3+json",
+  ...(token ? {"Authorization": `token ${token}`} : {})
+});
+
+/** Calls the GitHub REST API and returns the JSON body; failures throw with GitHub's message. */
+const githubJson = async (url: string, token: string, init: RequestInit = {}) => {
+  const response = await fetch(url, {...init, headers: {...githubHeaders(token), ...(init.headers ?? {})}});
+  const body = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(body?.message ?? `GitHub request failed (${response.status})`);
+  return body;
+};
 
 async function translateHandler(text, lang) {
   const targetLang = "en";
@@ -53,31 +65,26 @@ export function registerNetworkHandlers() {
 
   ipcMain.handle("createGitHubGist", async (event, filename: string, content: string, description: string, isPublic: boolean, token: string) => {
     try {
-      const response = await axios.post("https://api.github.com/gists", {
-        files: {
-          [filename]: {
-            content: content
-          }
-        },
-        description: description,
-        public: isPublic
-      }, {
-        headers: {
-          "Authorization": `token ${token}`,
-          "Accept": "application/vnd.github.v3+json"
-        }
+      const gist = await githubJson("https://api.github.com/gists", token, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+          files: {[filename]: {content}},
+          description,
+          public: isPublic
+        })
       });
 
       return {
         success: true,
-        gistUrl: response.data.html_url,
-        gistId: response.data.id
+        gistUrl: gist.html_url,
+        gistId: gist.id
       };
     } catch (error) {
       console.error("Error creating GitHub Gist:", error);
       return {
         success: false,
-        error: error.response ? error.response.data.message : error.message
+        error: error.message
       };
     }
   });
@@ -86,18 +93,10 @@ export function registerNetworkHandlers() {
     try {
       // /users/{username}/gists lists public gists only; the token's own /gists includes secret ones.
       const url = token ? "https://api.github.com/gists" : `https://api.github.com/users/${username}/gists`;
-      const response = await axios.get(url, {
-        params: {
-          per_page: perPage,
-          page: page
-        },
-        headers: {
-          "Accept": "application/vnd.github.v3+json",
-          "Authorization": `token ${token}`
-        }
-      });
+      const query = new URLSearchParams({per_page: String(perPage), page: String(page)});
+      const list = await githubJson(`${url}?${query}`, token);
 
-      const gists = response.data.map(gist => ({
+      const gists = list.map(gist => ({
         id: gist.id,
         description: gist.description,
         created_at: gist.created_at,
@@ -118,32 +117,27 @@ export function registerNetworkHandlers() {
       console.error("Error loading GitHub Gists:", error);
       return {
         success: false,
-        error: error.response ? error.response.data.message : error.message
+        error: error.message
       };
     }
   });
 
   ipcMain.handle("getGitHubGistContent", async (event, gistId: string, token: string) => {
     try {
-      const response = await axios.get(`https://api.github.com/gists/${gistId}`, {
-        headers: {
-          "Accept": "application/vnd.github.v3+json",
-          "Authorization": `token ${token}`
-        }
-      });
+      const data = await githubJson(`https://api.github.com/gists/${encodeURIComponent(gistId)}`, token);
 
       const gist = {
-        id: response.data.id,
-        description: response.data.description,
-        created_at: response.data.created_at,
-        updated_at: response.data.updated_at,
-        files: Object.keys(response.data.files).map(filename => ({
+        id: data.id,
+        description: data.description,
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+        files: Object.keys(data.files).map(filename => ({
           filename: filename,
-          language: response.data.files[filename].language,
-          content: response.data.files[filename].content,
-          raw_url: response.data.files[filename].raw_url
+          language: data.files[filename].language,
+          content: data.files[filename].content,
+          raw_url: data.files[filename].raw_url
         })),
-        html_url: response.data.html_url
+        html_url: data.html_url
       };
 
       return {
@@ -154,7 +148,7 @@ export function registerNetworkHandlers() {
       console.error("Error getting GitHub Gist content:", error);
       return {
         success: false,
-        error: error.response ? error.response.data.message : error.message
+        error: error.message
       };
     }
   });
