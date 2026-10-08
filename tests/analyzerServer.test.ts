@@ -130,3 +130,20 @@ test("analyze reports when no desktop language is selected", async () => {
   assert.equal(response.body.ok, false);
   assert.match(response.body.error, /No analyzer language is selected/);
 });
+
+test("analyze passes the configured MeCab command to the analyzer", async () => {
+  const seen: Array<string | undefined> = [];
+  const handle = await createServer({
+    getTokenizer: () => "mecab",
+    getMecabCommand: () => "C:\MeCab\bin\mecab.exe",
+    analyze: async (text, options) => {
+      seen.push(options.mecabCommand);
+      return [];
+    }
+  });
+
+  await requestJson(handle, "/analyze", {text: "見た"});
+  await requestJson(handle, "/analyze-batch", {texts: ["見た"]});
+
+  assert.deepEqual(seen, ["C:\MeCab\bin\mecab.exe", "C:\MeCab\bin\mecab.exe"]);
+});

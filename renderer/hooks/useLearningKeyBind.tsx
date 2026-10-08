@@ -2,6 +2,11 @@ import {useEffect} from 'react';
 import {useRouter} from "next/router";
 import useLanguageManager from "./useLanguageManager";
 
+const isTextEntryTarget = (target: EventTarget | null) => (
+    target instanceof HTMLElement
+    && (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable)
+);
+
 export default function useLearningKeyBind(
     setMeaning,
     setShowSidebar,
@@ -14,6 +19,8 @@ export default function useLearningKeyBind(
   
   useEffect(() => {
     const handleKeyPress = async (event) => {
+      // Let "x" type and Ctrl+X cut inside text fields instead of toggling sidebars.
+      if (event.code === "KeyX" && isTextEntryTarget(event.target)) return;
       if (event.code === "Escape") {
         setMeaning("");
       } else if (event.code === "KeyH" && event.ctrlKey && !event.shiftKey) {

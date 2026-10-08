@@ -10,6 +10,7 @@ import {
   isNormalizedSubtitlePath,
   normalizedSubtitleOutputPath
 } from "../../helpers/subtitleCaches";
+import {normalizeCapitalization} from "../../helpers/subtitleCapitalization";
 
 type SrtParserModule = typeof import("@plussub/srt-vtt-parser");
 let srtParserPromise: Promise<SrtParserModule> | undefined;
@@ -213,10 +214,6 @@ const getSubtitleEntries = async (filename: string, text: string): Promise<Subti
   }
 
   return (await parseSRT(text)).entries;
-};
-
-const normalizeCapitalization = (text: string) => {
-  return text.toLowerCase().replace(/[a-z]/, (letter) => letter.toUpperCase());
 };
 
 const formatSrtTimestamp = (milliseconds: number) => {

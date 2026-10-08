@@ -86,3 +86,33 @@ test("buildInflectionTable returns null for non-inflecting POS", () => {
     null,
   );
 });
+
+const formsById = (term: string, posTags: string[]) => Object.fromEntries(
+  buildInflectionTable({ term, dictionaryForm: term, posTags })?.rows.map((row) => [row.id, row.forms]) ?? [],
+);
+
+test("buildInflectionTable does not list bare stems as separate forms", () => {
+  const godan = formsById("乗る", ["v5r"]);
+  assert.deepEqual(godan.negative, ["乗らない"]);
+  assert.deepEqual(godan.volitional, ["乗ろう"]);
+  assert.deepEqual(godan.conditional, ["乗れば"]);
+  assert.deepEqual(godan.imperative, ["乗れ"]);
+
+  const ichidan = formsById("食べる", ["v1"]);
+  assert.deepEqual(ichidan.negative, ["食べない"]);
+  assert.deepEqual(ichidan.volitional, ["食べよう"]);
+  assert.deepEqual(ichidan.conditional, ["食べれば"]);
+
+  assert.deepEqual(formsById("高い", ["adj-i"]).te, ["高くて"]);
+});
+
+test("buildInflectionTable gives the standard ichidan potential first", () => {
+  assert.deepEqual(formsById("食べる", ["v1"]).potential, ["食べられる", "食べれる"]);
+  assert.deepEqual(formsById("来る", ["vk"]).potential, ["来られる", "来れる"]);
+  assert.deepEqual(formsById("書く", ["v5k"]).potential, ["書ける"]);
+});
+
+test("buildInflectionTable labels ichidan られる as passive / potential", () => {
+  const table = buildInflectionTable({ term: "食べられる", dictionaryForm: "食べる", posTags: ["v1"] });
+  assert.equal(table?.ladder[0]?.description, "passive / potential (dictionary)");
+});

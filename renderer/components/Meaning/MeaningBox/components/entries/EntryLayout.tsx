@@ -79,9 +79,14 @@ export const CharacterEntryShell = ({ tags, children }: CharacterEntryShellProps
 
 type InfoFieldsEntryProps = {
   /** Keys starting with `$` render without a label prefix (e.g. comments). */
-  info: Record<string, string | undefined | null>;
+  info: Record<string, string | string[] | undefined | null>;
   gloss: React.ReactNode;
 };
+
+// Dictionary fields may be arrays (Mandarin entries carry `jyutping: [""]`); blank ones get no pill.
+const infoFieldText = (value: string | string[] | undefined | null) => (
+  Array.isArray(value) ? value.filter(Boolean).join(', ') : value
+);
 
 /**
  * Chinese / Vietnamese dictionary layouts share the same shape:
@@ -93,12 +98,13 @@ export const InfoFieldsEntry = ({ info, gloss }: InfoFieldsEntryProps) => (
     gloss={gloss}
   >
     {Object.entries(info).map(([key, value]) => {
-      if (!value) {
+      const text = infoFieldText(value);
+      if (!text) {
         return null;
       }
       return (
         <TagPill key={key}>
-          {!key.startsWith('$') && <strong>{key}:</strong>} {value}
+          {!key.startsWith('$') && <strong>{key}:</strong>} {text}
         </TagPill>
       );
     })}

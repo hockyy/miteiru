@@ -26,7 +26,9 @@ export const GistManager: React.FC<GistManagerProps> = ({lang}) => {
       const val = await window.ipc.invoke('loadLearningState', lang);
       const filename = `learning_state_${lang}.json`;
       const description = `Learning state for ${lang}`;
-      const result = await window.ipc.invoke('createGitHubGist', filename, JSON.stringify(val), description, true, githubToken);
+      // Secret gist: unlisted, though anyone with the URL can still open it.
+      const isPublic = false;
+      const result = await window.ipc.invoke('createGitHubGist', filename, JSON.stringify(val), description, isPublic, githubToken);
 
       if (result.success) {
         console.log('Gist created successfully!');
@@ -64,7 +66,7 @@ export const GistManager: React.FC<GistManagerProps> = ({lang}) => {
       }
 
       const learningStateGist = result.gists.find((gist: any) =>
-          gist.description.includes(`Learning state for ${lang}`)
+          gist.description?.includes(`Learning state for ${lang}`)
       );
 
       if (!learningStateGist) {

@@ -55,7 +55,7 @@ While I strive to maintain a safe and secure application, I cannot be held respo
 - Pick a language on the home screen (dictionaries ship with the installer).
 - Drag in a video, or paste a YouTube URL with Ctrl+V. External subtitles can be dropped the same way; many anime subs live at https://kitsunekko.net/
 - YouTube Japanese only appears when the video has Japanese CC (including auto-generated).
-- `X` / `Z` open settings. Shortcuts are on the home screen; `Q` or Ctrl+H goes back there.
+- `X` opens settings and `Z` toggles the video controls. Shortcuts are on the home screen; Ctrl+H goes back there.
 
 ![image](https://github.com/hockyy/miteiru/assets/19528709/6d8bcf4f-73dd-4cfb-8a6f-4bbf7e10a25a)
 ![image](https://github.com/hockyy/miteiru/assets/19528709/b97c3ef1-18ee-40d4-a0ab-ff7d9de81d66)

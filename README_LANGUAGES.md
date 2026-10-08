@@ -152,10 +152,10 @@ Miteiru automatically detects subtitle language based on filename:
 - Hover to see pronunciation/meaning tooltips
 
 ### Learning States
-- **State 0** (New): Red highlighting
-- **State 1** (Learning): Orange highlighting  
+- **State 0** (New): Near-white highlighting
+- **State 1** (Learning): Yellow highlighting
 - **State 2** (Known): Green highlighting
-- **State 3** (Mastered): Blue highlighting
+- **State 3** (Mastered): Cyan highlighting
 
 ### Frequency Tracking
 All languages track word frequency across subtitles for learning prioritization.
