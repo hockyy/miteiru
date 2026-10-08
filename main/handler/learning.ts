@@ -22,6 +22,20 @@ class Learning {
     this.db = new Level(this.dbPath);
   }
 
+  /** Writes each entry unless the stored one is at least as new; resolves once every write is done. */
+  static async updateContentBatch(contents: Record<string, LearningStateType>, lang: string) {
+    await Promise.all(Object.entries(contents).map(async ([key, value]) => {
+      const dbKey = `${lang}/${key}`;
+      try {
+        const stored = JSON.parse(await this.db.get(dbKey));
+        if (!(stored.updTime < value.updTime)) return;
+      } catch {
+        // Missing or unreadable entry: take the incoming one.
+      }
+      await this.db.put(dbKey, JSON.stringify(value));
+    }));
+  }
+
   static registerHandler() {
     ipcMain.handle('loadLearningState', async (_event, lang) => {
       if (!lang) return;
@@ -79,22 +93,10 @@ class Learning {
     });
 
     // Handler to update a batch of contents' learning states
-    ipcMain.handle('updateContentBatch', async (_event, contents: LearningStateType, lang) => {
+    ipcMain.handle('updateContentBatch', async (_event, contents: Record<string, LearningStateType>, lang) => {
       if (!contents) return true;
       try {
-        const promises = [];
-        for (const [key, value] of Object.entries(contents)) {
-          const goUpdate = async () => {
-            await this.db.put(`${lang}/${key}`, JSON.stringify(value));
-          }
-          this.db.get(`${lang}/${key}`).then(async val => {
-            const parsedVal = JSON.parse(val);
-            if (parsedVal.updTime < value.updTime) await goUpdate();
-          }).catch(async () => {
-            await goUpdate();
-          })
-        }
-        await Promise.all(promises);
+        await this.updateContentBatch(contents, lang);
         return true; // Indicate success
       } catch (error) {
         console.error('Error updating content:', error);

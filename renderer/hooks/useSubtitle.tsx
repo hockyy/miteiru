@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import {SubtitleContainer} from "../components/Subtitle/DataStructures";
-import {defaultPrimarySubtitleStyling} from "../utils/CJKStyling";
+import {defaultPrimarySubtitleStyling, defaultSecondarySubtitleStyling} from "../utils/CJKStyling";
 import {useStoreData} from "./useStoreData";
 
 const useSubtitle = () => {
@@ -12,7 +12,7 @@ const useSubtitle = () => {
 
   const [secondarySub, setSecondarySub] = useState(new SubtitleContainer(''));
   const [secondaryShift, setSecondaryShift] = useState(0);
-  const [secondaryStyling, setSecondaryStyling] = useStoreData('user.styling.secondary', defaultPrimarySubtitleStyling);
+  const [secondaryStyling, setSecondaryStyling] = useStoreData('user.styling.secondary', defaultSecondarySubtitleStyling);
   const [showSecondarySub, setShowSecondarySub] = useState(true);
   const [secondaryTimeCache, setSecondaryTimeCache] = useState([])
 

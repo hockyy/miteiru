@@ -207,6 +207,11 @@ test('cleanHearingImpaired strips brackets, speaker names and extra spaces', () 
   assert.equal(cleanHearingImpaired('plain text'), 'plain text');
 });
 
+test('cleanHearingImpaired keeps Japanese quoted speech', () => {
+  assert.equal(cleanHearingImpaired('（ドアの音）「行くよ」と言った'), '「行くよ」と言った');
+  assert.equal(cleanHearingImpaired('『君の名は』を見た【拍手】'), '『君の名は』を見た');
+});
+
 test('Line honors the removeHearingImpairedFlag', () => {
   Line.removeHearingImpairedFlag = true;
   try {
@@ -215,4 +220,23 @@ test('Line honors the removeHearingImpairedFlag', () => {
   } finally {
     Line.removeHearingImpairedFlag = false;
   }
+});
+
+test('fillContentWithLearningKotoba matches JMdict kana against furigana readings', async () => {
+  const dictionary = {
+    '大きい': [{kana: [{text: 'おおきい'}], kanji: [{text: '大いさ'}], sense: [{gloss: [{text: 'big (in size)'}]}]}],
+    'コーヒー': [{kana: [{text: 'コーヒー'}], kanji: [], sense: [{gloss: [{text: 'coffee'}]}]}],
+  };
+  (globalThis as Record<string, unknown>).window = {
+    ipc: {invoke: async (_channel: string, query: string) => dictionary[query] ?? []},
+  };
+  const line = new Line(0, 1000, '');
+  line.content = [
+    {origin: '大きい', basicForm: '大きい', hiragana: 'おおきい'},
+    {origin: 'コーヒー', basicForm: 'コーヒー', hiragana: 'こーひー'},
+  ];
+
+  await line.fillContentWithLearningKotoba(new Map());
+
+  assert.deepEqual(line.meaning, ['big', 'coffee']);
 });

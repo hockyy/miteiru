@@ -77,37 +77,57 @@ class Vietnamese {
   }
 
   /**
+   * Exact dictionary key for a term, falling back to a lowercase first letter
+   * (sentence-initial "Nước Nga" → "nước Nga") and then to all lowercase.
+   */
+  static findDictionaryKey(term: string): string | null {
+    const candidates = [term, term.charAt(0).toLowerCase() + term.slice(1), term.toLowerCase()];
+    return candidates.find((candidate) => this.dictionary.has(candidate)) ?? null;
+  }
+
+  /**
    * Tokenize Vietnamese sentence using longest match algorithm from suffix.
-   * This implements the longest-match suffix parsing as requested.
+   * Punctuation around a syllable is ignored for matching ("Nga," matches "Nga") but kept
+   * in `separation` for display; a multi-syllable match never spans punctuation.
+   * `origin` is the matched dictionary key, so lookups and learning state use it directly.
    */
   static tokenizeLongestSuffix(sentence: string): VietnameseTokenResult[] {
     if (!sentence?.trim()) {
       return [];
     }
 
+    const chunks = sentence.split(/\s+/).filter(Boolean).map((raw) => {
+      const [, lead, core, trail] = raw.match(/^([\p{P}\p{S}]*)(.*?)([\p{P}\p{S}]*)$/u);
+      return {raw, lead, core, trail};
+    });
+    const canSpan = (j: number, i: number) => chunks.slice(j, i + 1).every((chunk, offset) => (
+      chunk.core !== ''
+      && (offset === 0 || chunk.lead === '')
+      && (j + offset === i || chunk.trail === '')
+    ));
+
     const result: VietnameseTokenResult[] = [];
-    const splittedSentence = sentence.split(' ');
-    for(let i = splittedSentence.length - 1; i >= 0; i--) {
-      const rightPointer = i;
+    for (let i = chunks.length - 1; i >= 0; i--) {
       let matched = false;
-      for(let j = 0; j <= rightPointer; j++) {
-        const current = splittedSentence.slice(j, rightPointer + 1).join(' ');
-        if(this.dictionary.has(current.trim())) {
+      for (let j = 0; j <= i; j++) {
+        if (!canSpan(j, i)) continue;
+        const key = this.findDictionaryKey(chunks.slice(j, i + 1).map((chunk) => chunk.core).join(' '));
+        if (key) {
           result.push({
-            origin: current,
-            meaning: this.dictionary.get(current) || '',
-            separation: splittedSentence.slice(j, rightPointer + 1).map(term => ({ main: term }))
+            origin: key,
+            meaning: this.dictionary.get(key) || '',
+            separation: chunks.slice(j, i + 1).map((chunk) => ({main: chunk.raw}))
           });
           matched = true;
           i = j;
           break;
         }
       }
-      if(!matched) {
+      if (!matched) {
         result.push({
-          origin: splittedSentence[i],
+          origin: chunks[i].core || chunks[i].raw,
           meaning: '',
-          separation: [{ main: splittedSentence[i] }]
+          separation: [{main: chunks[i].raw}]
         });
       }
     }
