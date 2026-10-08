@@ -176,6 +176,7 @@ class Japanese {
 
 
     ipcMain.handle('queryKanji', async (event, query) => {
+      if (!this.KanjiDict.db) return undefined;
       return searchKanji(this.KanjiDict.db, query);
     })
 

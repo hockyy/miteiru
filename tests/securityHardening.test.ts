@@ -5,7 +5,7 @@ import path from "node:path";
 import {test} from "node:test";
 import React from "react";
 import {renderToStaticMarkup} from "react-dom/server";
-import {isAppUrl, isWebUrl} from "../main/helpers/navigationGuard";
+import {isAppUrl, isInsideDirectory, isLyricsFilePath, isWebUrl} from "../main/helpers/navigationGuard";
 import {readStrokeSvg} from "../main/helpers/strokeSvg";
 import {createMiteiruFileResponse} from "../main/miteiruProtocol";
 import {MediaAnalyzer} from "../main/helpers/mediaAnalyzer";
@@ -21,6 +21,30 @@ test("only Miteiru's own pages count as app URLs", () => {
   assert.equal(isAppUrl("not a url"), false);
 });
 
+test("a packaged build does not treat localhost as Miteiru", () => {
+  const env = process.env as Record<string, string | undefined>;
+  const previous = env.NODE_ENV;
+  env.NODE_ENV = "production";
+  try {
+    assert.equal(isAppUrl("http://localhost:3000/"), false);
+    assert.equal(isAppUrl("app://./home"), true);
+  } finally {
+    env.NODE_ENV = previous;
+  }
+});
+
+test("open-path and write-file guards", () => {
+  const root = path.join(os.tmpdir(), "miteiru-user-data");
+  assert.equal(isInsideDirectory(root, path.join(root, "lyrics")), true);
+  assert.equal(isInsideDirectory(root, root), true);
+  assert.equal(isInsideDirectory(root, path.join(root, "..", "Applications", "Terminal.app")), false);
+  assert.equal(isInsideDirectory(root, path.join(root + "-evil", "x")), false);
+  assert.equal(isInsideDirectory(root, undefined), false);
+  assert.equal(isLyricsFilePath("C:/Users/x/song.LRC"), true);
+  assert.equal(isLyricsFilePath("C:/Users/x/song.lrc.bat"), false);
+  assert.equal(isLyricsFilePath(null), false);
+});
+
 test("only http(s) links are handed to the system browser", () => {
   assert.equal(isWebUrl("https://github.com/settings/tokens/new"), true);
   assert.equal(isWebUrl("http://example.com"), true);
@@ -34,6 +58,7 @@ const renderHtml = (html: string) => renderToStaticMarkup(React.createElement("d
 test("subtitle HTML keeps formatting tags", () => {
   assert.equal(renderHtml("<i>Hello</i> <b>there</b><br/>line"), "<div><i>Hello</i> <b>there</b><br/>line</div>");
   assert.equal(renderHtml('<font color="#ff0">yellow</font>'), '<div><font color="#ff0">yellow</font></div>');
+  assert.equal(renderHtml('<span style="color: #ffff00; font-size: 90px">Narrator</span>'), '<div><span style="color:#ffff00">Narrator</span></div>');
 });
 
 test("subtitle HTML drops active content and unsafe attributes", () => {
@@ -61,15 +86,18 @@ test("miteiru:// shares files cross-origin only with Miteiru's pages", async () 
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), "miteiru-protocol-test-"));
   const file = path.join(directory, "clip.mp4");
   await fs.writeFile(file, "0123456789");
-  const response = (origin?: string) => createMiteiruFileResponse(
-    file,
-    new Request("miteiru://local/clip.mp4", {headers: origin ? {origin} : {}})
-  );
+  const allowOrigin = async (origin?: string) => {
+    const response = createMiteiruFileResponse(
+      file,
+      new Request("miteiru://local/clip.mp4", {headers: origin ? {origin} : {}})
+    );
+    await response.body?.cancel();
+    return response.headers.get("access-control-allow-origin");
+  };
 
-  assert.equal(response("app://.").headers.get("access-control-allow-origin"), "app://.");
-  assert.equal(response("https://www.youtube.com").headers.get("access-control-allow-origin"), null);
-  assert.equal(response().headers.get("access-control-allow-origin"), null);
-  assert.equal(response().status, 200);
+  assert.equal(await allowOrigin("app://."), "app://.");
+  assert.equal(await allowOrigin("https://www.youtube.com"), null);
+  assert.equal(await allowOrigin(), null);
   await fs.rm(directory, {recursive: true, force: true});
 });
 

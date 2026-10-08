@@ -6,10 +6,15 @@ import fs from "fs/promises";
 import {getSubtitles, getYoutubeVideoTitle} from "../../helpers/getSubtitles";
 import {resolveToolCommand} from "./mediaTools";
 
+// YouTube video ids and subtitle language codes (en, en-US, zh-Hant, ja-orig, ...).
+const YOUTUBE_VIDEO_ID = /^[A-Za-z0-9_-]{6,20}$/;
+const SUBTITLE_LANGUAGE = /^[A-Za-z0-9_-]{1,40}$/;
+
 export function registerYoutubeHandlers() {
   ipcMain.handle("getYoutubeSubtitleLanguages", async (event, videoID) => {
     console.log(`[IPC] getYoutubeSubtitleLanguages called for ${videoID}`);
     try {
+      if (!YOUTUBE_VIDEO_ID.test(String(videoID))) throw new Error(`Invalid YouTube video id: ${videoID}`);
       const ytDlpPath = await resolveToolCommand("yt-dlp");
 
       const ytDlpOutput = await new Promise<string>((resolve, reject) => {
@@ -121,6 +126,9 @@ export function registerYoutubeHandlers() {
   ipcMain.handle("downloadYoutubeSubtitle", async (event, videoID, lang) => {
     console.log(`[IPC] downloadYoutubeSubtitle called for ${videoID} (${lang})`);
     try {
+      if (!YOUTUBE_VIDEO_ID.test(String(videoID)) || !SUBTITLE_LANGUAGE.test(String(lang))) {
+        throw new Error(`Invalid YouTube video id or language: ${videoID} (${lang})`);
+      }
       const ytDlpPath = await resolveToolCommand("yt-dlp");
       // A fresh folder per download: scanning the shared temp folder could pick up an older
       // file for the same video, or en-US when en was asked for.

@@ -34,7 +34,7 @@ export const useCacheManager = () => {
     try {
       const result = await window.ipc.invoke('removeDictCache');
       return {
-        ok: 0,
+        ok: 1,
         message: result
       };
     } catch (error) {
