@@ -42,12 +42,7 @@ const SMALL_KANA = new Set([
   ...'ァィゥェォャュョヮヵヶ',
 ]);
 
-const isKatakana = (ch: string): boolean => {
-  const code = ch.charCodeAt(0);
-  return code >= 0x30a1 && code <= 0x30f6;
-};
-
-export const toHiraganaSafe = (text: string): string =>
+export const toHiraganaSafe= (text: string): string =>
   text.replace(/[ァ-ヶ]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0x60));
 
 /** Splits a kana reading into morae (small kana attach to the previous mora). */

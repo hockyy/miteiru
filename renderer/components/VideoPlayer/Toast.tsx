@@ -6,14 +6,9 @@ const toastHidden = ["", "hidden"]
 export const Toast = ({info}) => {
   const [lastToast, setLastToast] = useState(info)
   useEffect(() => {
-    if (info.message !== '') {
-      setTimeout(() => {
-        (function () {
-          setLastToast(info)
-        })();
-      }, TOAST_TIMEOUT)
-    }
-    return;
+    if (info.message === '') return;
+    const timer = setTimeout(() => setLastToast(info), TOAST_TIMEOUT);
+    return () => clearTimeout(timer);
   }, [info])
   return <div
       className={"animation z-[18] right-3 top-3 fixed bg-gray-800 p-3 rounded-lg unselectable " + toastHidden[+(lastToast === info)]}>

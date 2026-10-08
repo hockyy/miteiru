@@ -282,6 +282,9 @@ export const setGlobalSubtitleId = (id) => {
   globalSubtitleId = id;
 };
 
+/** Whether `id` belongs to the primary subtitle currently shown (others stop their processing). */
+export const isCurrentSubtitle = (id: string) => globalSubtitleId === id;
+
 export class SubtitleContainer {
   id: string;
   lines: Line[];
@@ -414,43 +417,7 @@ export class SubtitleContainer {
   }
 
   async adjustForLearning(tokenizeMiteiru: TokenizeMiteiru) {
-    await fillSubtitleWithLearningContent(this, tokenizeMiteiru, () => globalSubtitleId === this.id);
-  }
-
-  async adjustJapanese(tokenizeMiteiru: TokenizeMiteiru) {
-    const promises = this.lines.map(async (line) => {
-      if (globalSubtitleId !== this.id) return;
-
-      await line.fillContentSeparations(tokenizeMiteiru);
-      await line.fillContentWithLearningKotoba(this.frequency);
-    });
-
-    await Promise.all(promises);
-    this.progress = 'done';
-  }
-
-  async adjustChinese(tokenizeMiteiru: TokenizeMiteiru) {
-    const promises = this.lines.map(async (line) => {
-      if (globalSubtitleId !== this.id) return;
-
-      await line.fillContentSeparations(tokenizeMiteiru);
-      await line.fillContentWithLearningChinese(this.frequency);
-    });
-
-    await Promise.all(promises);
-    this.progress = 'done';
-  }
-
-  async adjustVietnamese(tokenizeMiteiru: TokenizeMiteiru) {
-    const promises = this.lines.map(async (line) => {
-      if (globalSubtitleId !== this.id) return;
-
-      await line.fillContentSeparations(tokenizeMiteiru);
-      await line.fillContentWithLearningVietnamese(this.frequency);
-    });
-
-    await Promise.all(promises);
-    this.progress = 'done';
+    await fillSubtitleWithLearningContent(this, tokenizeMiteiru, () => isCurrentSubtitle(this.id));
   }
 }
 

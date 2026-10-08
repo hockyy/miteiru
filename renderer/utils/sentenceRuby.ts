@@ -2,7 +2,7 @@
  * Ruby HTML for sentence Anki cards.
  * Readings come from AI JSON segments; Miteiru builds the markup locally.
  */
-import { escapeHtml } from '../components/Meaning/ankiExport';
+import { escapeHtml } from './html';
 
 export type SentenceRubySegment = {
   text: string;

@@ -684,7 +684,7 @@ export const ImageOCR: React.FC<ImageOCRProps> = ({ onTextExtracted, targetLangu
               <p className="mb-2">You need a Google Cloud Vision API key to use this feature.</p>
               <ol className="list-decimal ml-5 space-y-1">
                 <li>Go to <a href="https://console.cloud.google.com" className="text-blue-600 underline" target="_blank" rel="noopener noreferrer">Google Cloud Console</a></li>
-                <li>Enable "Cloud Vision API"</li>
+                <li>Enable &quot;Cloud Vision API&quot;</li>
                 <li>Create an API key</li>
                 <li>Add it in Settings (Ctrl+X)</li>
               </ol>

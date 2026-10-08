@@ -13,7 +13,7 @@ import useReadyPlayerCallback from "../hooks/useReadyPlayerCallback";
 import useMiteiruToast from "../hooks/useMiteiruToast";
 import useMeaning from "../hooks/useMeaning";
 import Head from "next/head";
-import {getMiteiruAppName, getMiteiruVideoTitle, SubtitleMode} from "../utils/utils";
+import {getMiteiruAppName, getMiteiruVideoTitle} from "../utils/utils";
 import {
   useVideoKeyboardControls,
   useVideoPlayingToggle,
@@ -29,7 +29,6 @@ import useVocabSidebar from "../hooks/useVocabSidebar";
 import VocabSidebar from "../components/VideoPlayer/VocabSidebar";
 import {RIGHT_SIDEBAR_WIDTH, VOCAB_SIDEBAR_WIDTH} from "../components/VideoPlayer/SidebarShell";
 import useRubyCopy from "../hooks/useRubyCopy";
-import usePitchValue from "../hooks/usePitchValue";
 import {useSubtitleMode} from "../hooks/useSubtitleMode";
 import {SubtitleDisplay} from "../components/Subtitle/SubtitleDisplay";
 import LyricsSearchModal from "../components/Lyrics/LyricsSearchModal";
@@ -56,10 +55,6 @@ function Video() {
     subtitleMode,
     setSubtitleMode
   } = useSubtitleMode();
-  const {
-    pitchValue,
-    setPitchValue
-  } = usePitchValue();
   const {
     tokenizerMode,
     tokenizeMiteiru,
@@ -266,7 +261,7 @@ function Video() {
   } = usePauseAndRepeat(primaryTimeCache, player, currentTime, primaryShift, setIsPlaying, changeTimeTo);
 
   const commands = useKeyBind(setMeaning, setShowController, setShowSidebar,
-      setPrimarySub, setSecondarySub, primarySub, undo,
+      setPrimarySub, setSecondarySub, undo,
       setShowPrimarySub, setShowSecondarySub, primaryStyling, setPrimaryStyling,
       openDeepL, openGoogleTranslate, reloadLastPrimarySubtitle, reloadLastSecondarySubtitle,
       setShowVocabSidebar, rubyContent, contentString, setShowLyricsSearch);
@@ -320,7 +315,7 @@ function Video() {
           )}
 
           {hasVideo && (
-            <VideoJS options={videoOptions} onReady={readyCallback} setCurrentTime={setCurrentTime} pitchValue={pitchValue}/>
+            <VideoJS options={videoOptions} onReady={readyCallback} setCurrentTime={setCurrentTime}/>
           )}
 
           <div>
@@ -387,8 +382,7 @@ function Video() {
                 enableSeeker={enableSeeker}
                 setEnableSeeker={setEnableSeeker}
                 onVideoChangeHandler={onVideoChangeHandler}
-                backToHead={backToHead}
-                setPitchValue={setPitchValue}/>}
+                backToHead={backToHead}/>}
           </div>
           {tokenizerMode !== '' && <MiteiruDropzone onDrop={onLoadFiles} deltaTime={deltaTime}/>}
         </div>
