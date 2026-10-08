@@ -240,7 +240,7 @@ const spokenKana = (reading: string, pronunciation?: string): string => {
 };
 
 // Furigana follows the dictionary reading; ー stays as written (ホーム → ほーむ, not ほうむ).
-const toFuriganaHiragana =(kana: string): string => toHiragana(kana, {convertLongVowelMark: false});
+const toFuriganaHiragana = (kana: string): string => toHiragana(kana, {convertLongVowelMark: false});
 
 export const kuromojinToJapaneseWords = (texts: KuromojinWord[]): MiteiruJapaneseWord[] => texts.map((item) => ({
   origin: item.surface_form,

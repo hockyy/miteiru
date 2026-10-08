@@ -1,8 +1,9 @@
 import { useCallback, useEffect } from 'react';
+import { isTextEntryTarget } from '../../../../utils/keyboardTargets';
 
 /**
  * W / Shift+W copy shortcuts while the meaning box is open.
- * Ignores key events when focus is inside an input or textarea.
+ * Ignores key events while focus is in a text field.
  */
 export const useMeaningCopyShortcuts = (
   isOpen: boolean,
@@ -33,8 +34,7 @@ export const useMeaningCopyShortcuts = (
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+      if (isTextEntryTarget(event.target)) {
         return;
       }
 
