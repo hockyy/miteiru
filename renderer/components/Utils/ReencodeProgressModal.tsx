@@ -70,7 +70,7 @@ const ReencodeProgressModal: React.FC<ReencodeProgressModalProps> = ({
           {/* Warning */}
           <div className="mt-4 text-center">
             <div className="text-yellow-200 text-xs bg-yellow-900/30 border border-yellow-600/50 rounded p-2">
-              Please don't close the app during media processing
+              Please don&apos;t close the app during media processing
             </div>
           </div>
         </div>

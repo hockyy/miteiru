@@ -1,6 +1,5 @@
 import React, { useCallback } from 'react';
 import { getColorGradient, getRelativeTime } from '../../utils/utils';
-import { videoConstants } from '../../utils/constants';
 import { Key } from '../VideoPlayer/KeyboardHelp';
 
 // Reusable component for drag illustration and navigation
@@ -41,30 +40,11 @@ interface WordOfTheDayProps {
 
 const WordOfTheDay: React.FC<WordOfTheDayProps> = ({
   dailyWords,
-  dateString,
-  lang,
   setMeaning,
-  tokenizeMiteiru,
-  onRefresh
 }) => {
   const handleWordClick = useCallback((word: string) => {
     setMeaning(word);
   }, [setMeaning]);
-
-  const getLevelName = useCallback((level: number) => {
-    const levels = ['New', 'Learning', 'Known', 'Mastered'];
-    return levels[level] || 'Unknown';
-  }, []);
-
-  const formatDate = useCallback((dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">

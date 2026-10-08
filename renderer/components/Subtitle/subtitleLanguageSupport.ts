@@ -1,4 +1,5 @@
 import {languageCodes} from "../../languages/manifest";
+import {escapeHtml} from "../../utils/html";
 import type {Line, SubtitleContainer} from "./DataStructures";
 
 export type TokenizeMiteiru = (text: string) => Promise<any[]>;
@@ -42,6 +43,8 @@ export const fillLineWithLearningContent = async (
   return true;
 };
 
+const LEARNING_CONCURRENCY = 8;
+
 export const fillSubtitleWithLearningContent = async (
   subtitle: SubtitleContainer,
   tokenizeMiteiru: TokenizeMiteiru,
@@ -52,12 +55,16 @@ export const fillSubtitleWithLearningContent = async (
     return false;
   }
 
-  const promises = subtitle.lines.map(async (line) => {
-    if (!shouldContinue()) return;
-    await fillLineWithLearningContent(line, subtitle.language, tokenizeMiteiru, subtitle.frequency);
-  });
-
-  await Promise.all(promises);
+  // A few lines at a time, checking before each one: starting every line at once fired thousands of
+  // lookups up front, so loading another subtitle could not stop the old one.
+  let nextLine = 0;
+  const worker = async () => {
+    while (nextLine < subtitle.lines.length && shouldContinue()) {
+      const line = subtitle.lines[nextLine++];
+      await fillLineWithLearningContent(line, subtitle.language, tokenizeMiteiru, subtitle.frequency);
+    }
+  };
+  await Promise.all(Array.from({length: LEARNING_CONCURRENCY}, worker));
   subtitle.progress = "done";
   return true;
 };
@@ -104,3 +111,17 @@ const defaultTokenPresentation: SubtitleTokenPresentation = {
 export const getSubtitleTokenPresentation = (token: any) => (
   subtitleTokenPresentations.find(({matches}) => matches(token))?.presentation ?? defaultTokenPresentation
 );
+
+/**
+ * Ruby HTML of a tokenized line, as copied for Anki. Text and readings are escaped, and each token
+ * gets the reading its language uses (furigana, pinyin, jyutping or a Vietnamese gloss).
+ */
+export const buildRubyCopyHtml = (tokens: any[], showSpace: boolean): string => tokens
+  .map((token) => {
+    const presentation = getSubtitleTokenPresentation(token);
+    const ruby = (token?.separation ?? [])
+      .map((part) => `<ruby>${escapeHtml(part.main)}<rt>${escapeHtml(presentation.getRubyReading(part))}</rt></ruby>`)
+      .join('');
+    return ruby || escapeHtml(token?.origin ?? '');
+  })
+  .join(showSpace ? ' ' : '');

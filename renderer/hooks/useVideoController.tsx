@@ -1,6 +1,7 @@
 import {useCallback, useEffect, useState} from "react";
 import {videoConstants} from "../utils/constants";
 import {v4 as uuidv4} from 'uuid';
+import {isTextEntryTarget} from "../utils/keyboardTargets";
 
 
 export const useVideoPlayingToggle = (player, metadata) => {
@@ -26,6 +27,10 @@ export const useVideoKeyboardControls = (togglePlay, deltaTime, setPrimaryShift,
                                          setSecondaryShift, setInfo, backToHead, setIsPlaying) => {
   useEffect(() => {
     const handleVideoController = (event) => {
+      // Typing in a search box or notes must not toggle playback or seek.
+      if (isTextEntryTarget(event.target)) return;
+      const plainKey = !event.ctrlKey && !event.metaKey && !event.altKey;
+      if (!plainKey && !event.code.startsWith("Bracket")) return;
       if (event.code === "KeyE") {
         togglePlay()
       } else if (event.code === "ArrowLeft") {

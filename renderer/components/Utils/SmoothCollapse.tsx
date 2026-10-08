@@ -124,7 +124,8 @@ export default function SmoothCollapse({
         return;
       }
 
-      mainEl.clientHeight;
+      // Reading the height forces a layout, so the collapse starts from the measured height.
+      void mainEl.clientHeight;
       setClosing(true);
       setHeight(collapsedHeight);
 

@@ -15,8 +15,9 @@ const usePauseAndRepeat = (timeCache: any,
       setPauseId(-1);
       return;
     }
-    changeTimeTo(timeCache[0] / 1000);
-  }, [timeCache, changeTimeTo])
+    // timeCache is in shifted subtitle time (video ms - shift); convert back to video time.
+    changeTimeTo((timeCache[0] + shift) / 1000);
+  }, [timeCache, changeTimeTo, shift])
   useEffect(() => {
     if (!timeCache || timeCache.length != 2) {
       setPauseId(-1);
@@ -38,7 +39,7 @@ const usePauseAndRepeat = (timeCache: any,
     } else {
       setPauseId(timeCache[0]);
     }
-  }, [currentTime, timeCache, setIsPlaying, shift]);
+  }, [currentTime, timeCache, setIsPlaying, shift, autoPause, pauseId]);
   return {autoPause, setAutoPause, backToHead};
 }
 

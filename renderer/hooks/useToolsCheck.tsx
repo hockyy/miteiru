@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 interface ToolStatus {
   available: boolean;
@@ -38,13 +38,17 @@ export const useToolsCheck = () => {
   const [isChecking, setIsChecking] = useState(false);
   const [isDownloading, setIsDownloading] = useState<string | null>(null);
 
+  // A ref, not state: the callback is memoised once, so state would always read false here.
+  const checkInProgress = useRef(false);
+
   const checkMediaTools = useCallback(async (forceRefresh = false) => {
     // Prevent multiple concurrent checks
-    if (isChecking) {
+    if (checkInProgress.current) {
       console.log('[Media Tools Check] Check already in progress, ignoring request');
       return;
     }
 
+    checkInProgress.current = true;
     setIsChecking(true);
     setToolsCheck(checkingToolsMessage);
     
@@ -64,9 +68,10 @@ export const useToolsCheck = () => {
         cached: false
       });
     } finally {
+      checkInProgress.current = false;
       setIsChecking(false);
     }
-  }, []); // Remove isChecking from dependencies to prevent infinite loops
+  }, []);
 
   // Get tools configuration
   const getToolsConfig = useCallback(async () => {

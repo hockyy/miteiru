@@ -5,9 +5,10 @@ const useReadyPlayerCallback = () => {
 
   const [currentTime, setCurrentTime] = useState(0);
   const [metadata, setMetadata] = useState(0);
+  // Called with null when the player is disposed.
   const readyCallback = useCallback((playerRef) => {
     setPlayer(playerRef);
-    playerRef.on('loadedmetadata', () => {
+    playerRef?.on('loadedmetadata', () => {
       setMetadata(old => (old + 1));
     })
   }, []);

@@ -8,7 +8,6 @@ import {ArrowLeft, ArrowRight, RepeatSubtitle, StepLeft, StepRight} from "./Icon
 import {toTime} from "../../utils/utils";
 import {videoConstants} from "../../utils/constants";
 import {Speed} from "./Speed";
-import {Pitch} from "./Pitch";
 
 export const VideoController = ({
                                   isPlaying,
@@ -23,8 +22,7 @@ export const VideoController = ({
                                   enableSeeker,
                                   setEnableSeeker,
                                   onVideoChangeHandler,
-                                  backToHead,
-                                  setPitchValue
+                                  backToHead
                                 }) => {
   const step = useCallback((delta) => {
     if (enableSeeker) {

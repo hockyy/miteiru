@@ -2,18 +2,8 @@ import { useCallback, useState } from 'react';
 import { useStoreData } from './useStoreData';
 import { defaultMecabPath, MECAB_PATH_STORE_KEY } from '../utils/mecabPath';
 
-interface CacheResult {
-  ok: number;
-  message: string;
-}
-
-const removingCacheMessage: CacheResult = {
-  ok: 2,
-  message: 'Removing Caches '
-};
-
 export const useCacheManager = () => {
-  // Persisted so language loading (including auto-load) can send it to main.
+  // Persisted so language loading can send it to main.
   const [mecab, setMecab] = useStoreData(MECAB_PATH_STORE_KEY, defaultMecabPath());
   const [isRemovingCache, setIsRemovingCache] = useState(false);
 

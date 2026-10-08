@@ -29,43 +29,23 @@ const useLearningState = (lang: string) => {
     return `state${getLearningState(content)}`
   }, [getLearningState]);
 
+  // State updaters must stay pure (React may call them twice), so the IPC write happens outside.
+  const saveLearningEntry = useCallback((content: string, entry: { level: number; updTime: number }) => {
+    setCachedLearningState((oldCached) => ({...oldCached, [content]: entry}));
+    window.ipc.invoke('updateContent', content, lang, entry);
+    setRefreshTrigger((prev) => prev + 1);
+  }, [lang]);
+
   const changeLearningState = useCallback((content: string) => {
-    setCachedLearningState(oldCached => {
-      if (!content) return oldCached;
-      const newCopy = {...oldCached};
-      const currentState = getLearningState(content);
-      const nextVal = (currentState + 1) % videoConstants.learningStateLength;
-      const updTime = Date.now();
-      newCopy[content] = {
-        level: nextVal,
-        updTime: updTime
-      };
-      window.ipc.invoke('updateContent', content, lang, newCopy[content]);
-      
-      // Trigger vocabulary refresh
-      setRefreshTrigger(prev => prev + 1);
-      
-      return newCopy;
-    });
-  }, [getLearningState, lang]);
+    if (!content) return;
+    const nextLevel = (getLearningState(content) + 1) % videoConstants.learningStateLength;
+    saveLearningEntry(content, {level: nextLevel, updTime: Date.now()});
+  }, [getLearningState, saveLearningEntry]);
 
   const updateTimeWithSameLevel = useCallback((content: string, updTime: number) => {
-    setCachedLearningState(oldCached => {
-      if (!content) return oldCached;
-      const newCopy = {...oldCached};
-      const currentState = getLearningState(content);
-      newCopy[content] = {
-        level: currentState,
-        updTime: updTime
-      };
-      window.ipc.invoke('updateContent', content, lang, newCopy[content]);
-      
-      // Trigger vocabulary refresh
-      setRefreshTrigger(prev => prev + 1);
-      
-      return newCopy;
-    });
-  }, [getLearningState, lang]);
+    if (!content) return;
+    saveLearningEntry(content, {level: getLearningState(content), updTime});
+  }, [getLearningState, saveLearningEntry]);
 
   useEffect(() => {
     window.ipc.invoke('loadLearningState', lang).then((val) => {

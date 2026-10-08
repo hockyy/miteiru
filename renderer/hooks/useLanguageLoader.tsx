@@ -1,7 +1,6 @@
 import { useCallback, useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import useLanguageManager from './useLanguageManager';
-import { useStoreData } from './useStoreData';
 import { defaultMecabPath, MECAB_PATH_STORE_KEY } from '../utils/mecabPath';
 
 interface LanguageCheckResult {
@@ -23,19 +22,14 @@ export const useLanguageLoader = () => {
   const router = useRouter();
   const [check, setCheck] = useState<LanguageCheckResult>(initialCheck);
   const [tokenizerMode, setTokenizerMode] = useState(0);
-  const [isAutoLoading, setIsAutoLoading] = useState(true);
   const [isLoadingLanguage, setIsLoadingLanguage] = useState(false);
 
   const {
     lastLanguageMode,
-    hasLastLanguage,
-    getLastLanguage,
     setLanguage,
     clearLanguage,
     languageModes
   } = useLanguageManager();
-
-  const [autoLoadEnabled, setAutoLoadEnabled] = useStoreData('app.autoLoadLastLanguage', true);
 
   useEffect(() => {
     if (lastLanguageMode === null || lastLanguageMode === undefined) {
@@ -67,7 +61,7 @@ export const useLanguageLoader = () => {
     setCheck(checkingMessage);
     
     try {
-      // Read at call time: auto-load runs before the home screen's stored path has loaded.
+      // Read at call time: a click can come before the home screen's stored path has loaded.
       const mecabPath = await window.electronStore.get(MECAB_PATH_STORE_KEY, defaultMecabPath());
       const res = await window.ipc.invoke(mode.channel, { mecabPath });
       setCheck(res);
@@ -85,18 +79,6 @@ export const useLanguageLoader = () => {
       setIsLoadingLanguage(false);
     }
   }, [languageModes, setLanguage, router, isLoadingLanguage]);
-
-  // Auto-load last language on startup
-  const performAutoLoad = useCallback(async () => {
-    if (autoLoadEnabled && hasLastLanguage()) {
-      const lastLanguage = getLastLanguage();
-      if (lastLanguage) {
-        setTokenizerMode(lastLanguage.id);
-        await loadLanguage(lastLanguage.id);
-      }
-    }
-    setIsAutoLoading(false);
-  }, []); // Remove dependencies to prevent infinite loops - values are captured correctly
 
   const handleLanguageButtonClick = useCallback(async () => {
     await loadLanguage(tokenizerMode, '/video');
@@ -118,10 +100,7 @@ export const useLanguageLoader = () => {
     tokenizerMode,
     setTokenizerMode: selectTokenizerMode,
     lastLanguageMode,
-    isAutoLoading,
     isLoadingLanguage,
-    autoLoadEnabled,
-    setAutoLoadEnabled,
     languageModes,
     ableToProceedToVideo,
 
@@ -130,7 +109,6 @@ export const useLanguageLoader = () => {
     handleLanguageButtonClick,
     handleOpenLearn,
     handleOpenFlash,
-    performAutoLoad,
     clearLanguage
   };
 };

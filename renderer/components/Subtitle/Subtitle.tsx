@@ -5,7 +5,7 @@ import {CJKStyling, defaultSecondarySubtitleStyling} from "../../utils/CJKStylin
 import {adjustTimeWithShift} from "../../utils/utils";
 import useSubtitleContainerStyle from "../../hooks/useSubtitleContainerStyle";
 import {getSubtitleOutlineStyle} from "../../utils/subtitleStroke";
-import {getSubtitleTokenPresentation} from "./subtitleLanguageSupport";
+import {buildRubyCopyHtml, getSubtitleTokenPresentation} from "./subtitleLanguageSupport";
 
 interface CurrentSubtitleLine {
   content: any[] | string;
@@ -111,21 +111,10 @@ const buildPrimaryCaption = ({
       };
     }
 
-    let rubyCopyContent = '';
+    const rubyCopyContent = buildRubyCopyHtml(content, Boolean(subtitleStyling?.showSpace));
     const caption = content.map((val, index) => {
       const validBasicForm = val.basicForm != '' && val.basicForm != '*';
       const presentation = getSubtitleTokenPresentation(val);
-
-      // Generate ruby HTML for copying
-      const rubyHtml = val.separation.map(part => {
-        const reading = presentation.getRubyReading(part);
-        return `<ruby>${part.main}<rt>${reading || ''}</rt></ruby>`;
-      }).join('');
-      rubyCopyContent += rubyHtml;
-
-      if (index + 1 < content.length && subtitleStyling?.showSpace) {
-        rubyCopyContent += ' ';
-      }
 
       return (
           <React.Fragment key={index}>

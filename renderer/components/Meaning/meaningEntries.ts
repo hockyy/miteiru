@@ -1,4 +1,5 @@
 import {videoConstants} from "../../utils/constants";
+import {escapeHtml} from "../../utils/html";
 
 const normalizeStringArray = (value) => {
   if (Array.isArray(value)) return value.flatMap(normalizeStringArray);
@@ -95,15 +96,7 @@ export const getPrimaryRomajiedVariant = (romajiedData) => {
   return [romajiedData[0]];
 };
 
-// Local copy: importing escapeHtml from ankiExport would create a circular import.
-const escapeHtml = (value) => String(value ?? '')
-  .replace(/&/g, '&amp;')
-  .replace(/</g, '&lt;')
-  .replace(/>/g, '&gt;')
-  .replace(/"/g, '&quot;')
-  .replace(/'/g, '&#39;');
-
-export const buildRubyHtmlFromRomajiedData = (romajiedData) => {
+export const buildRubyHtmlFromRomajiedData= (romajiedData) => {
   let rubyHtml = '';
   romajiedData.forEach(({ romajied }) => {
     if (Array.isArray(romajied)) {

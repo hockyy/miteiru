@@ -4,17 +4,12 @@ import {
   getDictionaryDefinitions,
   getMeaningEntries,
   getPrimaryRomajiedVariant,
-  getReadingsFromRomajiedData,
   getRomajiedDataForMeaningContent
 } from "./meaningEntries";
 import {v5 as uuidv5} from 'uuid';
+import {escapeHtml} from "../../utils/html";
 
-export const escapeHtml = (value) => String(value ?? '')
-  .replace(/&/g, '&amp;')
-  .replace(/</g, '&lt;')
-  .replace(/>/g, '&gt;')
-  .replace(/"/g, '&quot;')
-  .replace(/'/g, '&#39;');
+export {escapeHtml};
 
 const toAnkiTsvField = (value) => String(value ?? '')
   .replace(/\r?\n/g, '<br>')

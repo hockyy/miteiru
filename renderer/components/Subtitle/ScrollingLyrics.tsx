@@ -2,6 +2,7 @@ import React, {useCallback, useEffect, useState} from "react";
 import {ChineseSentence, JapaneseSentence, PlainSentence} from "./Sentence";
 import {CJKStyling} from "../../utils/CJKStyling";
 import {SubtitleContainer} from "./DataStructures";
+import {buildRubyCopyHtml, getSubtitleTokenPresentation} from "./subtitleLanguageSupport";
 import {adjustTimeWithShift} from "../../utils/utils";
 
 interface LyricsLine {
@@ -202,32 +203,7 @@ const LyricsLine = ({
   // Handle current line ruby copy content
   useEffect(() => {
     if (isCurrent && line.content && Array.isArray(line.content)) {
-      let rubyCopyContent = '';
-      line.content.forEach((val, index) => {
-        const rubyHtml = val.separation?.map(part => {
-          const isChineseSentence = val.jyutping || val.pinyin;
-          const isJapaneseSentence = val.hiragana !== undefined;
-          const isVietnameseSentence = val.separation && !val.jyutping && !val.pinyin && !val.hiragana;
-
-          let reading;
-          if (isChineseSentence) {
-            reading = part.jyutping || part.pinyin;
-          } else if (isJapaneseSentence) {
-            reading = part.hiragana || part.romaji;
-          } else if (isVietnameseSentence) {
-            reading = part.meaning || '';
-          } else {
-            reading = '';
-          }
-          return `<ruby>${part.main}<rt>${reading || ''}</rt></ruby>`;
-        }).join('') || val.origin;
-
-        rubyCopyContent += rubyHtml;
-        if (index + 1 < line.content.length && subtitleStyling.showSpace) {
-          rubyCopyContent += ' ';
-        }
-      });
-      setRubyCopyContent(rubyCopyContent);
+      setRubyCopyContent(buildRubyCopyHtml(line.content, Boolean(subtitleStyling.showSpace)));
     }
   }, [isCurrent, line.content, subtitleStyling.showSpace, setRubyCopyContent]);
 
@@ -250,10 +226,8 @@ const LyricsLine = ({
     <div style={lineStyle}>
       {line.content.map((val, index) => {
         const validBasicForm = val.basicForm != '' && val.basicForm != '*';
-        const isChineseSentence = val.jyutping || val.pinyin;
-        const isVietnameseSentence = val.separation && !val.jyutping && !val.pinyin && !val.hiragana;
-
-        const SentenceComponent = isChineseSentence || isVietnameseSentence ? ChineseSentence : JapaneseSentence;
+        // Japanese tokens with an empty reading (Latin words, unknown words) stay Japanese.
+        const SentenceComponent = getSubtitleTokenPresentation(val).sentenceKind === "chinese" ? ChineseSentence : JapaneseSentence;
 
         return (
           <React.Fragment key={index}>

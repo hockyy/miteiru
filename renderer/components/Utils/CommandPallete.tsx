@@ -89,6 +89,8 @@ const CommandPalette = ({showCommandPalette, setShowCommandPalette, commands}) =
     const stopPropagation = (e) => {
       // Allow Escape to close the palette
       if (e.code === 'Escape') {
+        // Closing the palette should not also close the meaning box or undo.
+        e.stopPropagation();
         setShowCommandPalette(false);
         return;
       }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { MediaInfo, MediaTrack } from '../types/media';
 import { TrackSelection } from '../components/Utils/MediaTrackSelectionModal';
 
@@ -10,7 +10,9 @@ const useMediaAnalysis = (videoPath: string) => {
     videoTracks: []
   });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [tempSubtitleFiles, setTempSubtitleFiles] = useState<string[]>([]);
+  // Subtitles extracted from the current video. A ref: deleting them must wait for the video to change,
+  // not happen whenever another one is added.
+  const tempSubtitleFiles = useRef<string[]>([]);
   const [showTrackSelectionModal, setShowTrackSelectionModal] = useState(false);
   const [showAudioReencodeModal, setShowAudioReencodeModal] = useState(false);
   const [showReencodeProgress, setShowReencodeProgress] = useState(false);
@@ -81,7 +83,7 @@ const useMediaAnalysis = (videoPath: string) => {
       
       // Store temp file for cleanup
       if (track.tempFilePath) {
-        setTempSubtitleFiles(prev => [...prev, track.tempFilePath]);
+        tempSubtitleFiles.current.push(track.tempFilePath);
       }
       
       return track.tempFilePath;
@@ -152,10 +154,7 @@ const useMediaAnalysis = (videoPath: string) => {
         const extractedSubtitles = await Promise.all(promises);
         
         // Store temp files for cleanup
-        setTempSubtitleFiles(prev => [
-          ...prev, 
-          ...extractedSubtitles.map(sub => sub.tempPath)
-        ]);
+        tempSubtitleFiles.current.push(...extractedSubtitles.map(sub => sub.tempPath));
 
         // Load extracted subtitles using the existing subtitle loading mechanism
         if (onSubtitleLoad) {
@@ -163,11 +162,9 @@ const useMediaAnalysis = (videoPath: string) => {
             onSubtitleLoad(subtitle.tempPath, subtitle.type as 'primary' | 'secondary', selection.preprocessOptions);
           }
         }
+        return {extractedSubtitles};
       }
-
-      return {
-        extractedSubtitles: promises.length > 0 ? await Promise.all(promises) : []
-      };
+      return {extractedSubtitles: []};
     } catch (error) {
       throw error;
     }
@@ -194,14 +191,14 @@ const useMediaAnalysis = (videoPath: string) => {
     setShowReencodeProgress(true);
     setReencodeProgress(convertToX264 ? 'Starting video conversion...' : convertAudioToAac ? 'Starting audio conversion...' : 'Starting fast remux...');
     
+    // Set up progress listener; removed in `finally` so a failed conversion does not leak it.
+    const progressHandler = (progress: string) => {
+      console.log(`[DEBUG Frontend] Progress update:`, progress);
+      setReencodeProgress(progress);
+    };
+    const removeProgressListener = window.ipc.on('reencode-progress', progressHandler);
+
     try {
-      // Set up progress listener
-      const progressHandler = (progress: string) => {
-        console.log(`[DEBUG Frontend] Progress update:`, progress);
-        setReencodeProgress(progress);
-      };
-      
-      const removeProgressListener = window.ipc.on('reencode-progress', progressHandler);
       
       // Start media processing
       console.log(`[DEBUG Frontend] Calling reencodeVideoWithAudioTrack...`);
@@ -214,9 +211,6 @@ const useMediaAnalysis = (videoPath: string) => {
       );
       
       console.log(`[DEBUG Frontend] Media processing completed:`, reencodedVideoPath);
-      
-      // Clean up progress listener
-      removeProgressListener();
       
       setShowReencodeProgress(false);
       setReencodeProgress('');
@@ -236,8 +230,10 @@ const useMediaAnalysis = (videoPath: string) => {
       setShowReencodeProgress(false);
       setReencodeProgress('');
       // TODO: Show error toast
+    } finally {
+      removeProgressListener();
     }
-  }, [videoPath, mediaInfo.audioTracks, mediaInfo.duration]);
+  }, [videoPath, mediaInfo.audioTracks, mediaInfo.duration, mediaInfo.subtitleTracks.length]);
 
   const handleAudioReencodeSkip = useCallback(() => {
     setShowAudioReencodeModal(false);
@@ -248,27 +244,15 @@ const useMediaAnalysis = (videoPath: string) => {
     }
   }, [mediaInfo.subtitleTracks]);
 
-  // Cleanup temp files when component unmounts or video changes
-  useEffect(() => {
-    return () => {
-      tempSubtitleFiles.forEach(filePath => {
-        window.electronAPI.cleanupTempSubtitle(filePath).catch(err => 
-          console.warn('Failed to cleanup temp subtitle:', err)
-        );
-      });
-    };
-  }, [tempSubtitleFiles]);
-
-  // Clean up temp files when video changes
-  useEffect(() => {
-    if (tempSubtitleFiles.length > 0) {
-      tempSubtitleFiles.forEach(filePath => {
-        window.electronAPI.cleanupTempSubtitle(filePath).catch(err => 
-          console.warn('Failed to cleanup temp subtitle:', err)
-        );
-      });
-      setTempSubtitleFiles([]);
-    }
+  // Delete the extracted subtitles when the video changes or the page closes.
+  useEffect(() => () => {
+    const files = tempSubtitleFiles.current;
+    tempSubtitleFiles.current = [];
+    files.forEach(filePath => {
+      window.electronAPI.cleanupTempSubtitle(filePath).catch(err =>
+        console.warn('Failed to cleanup temp subtitle:', err)
+      );
+    });
   }, [videoPath]);
 
   return {
