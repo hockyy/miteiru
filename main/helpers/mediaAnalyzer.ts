@@ -2,6 +2,10 @@ import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs/promises';
 import os from 'os';
+import {resolveToolCommand} from '../handler/common/mediaTools';
+
+/** File-name prefix of embedded subtitles extracted to the temp folder. */
+const TEMP_SUBTITLE_PREFIX = 'miteiru_subtitle_';
 
 interface MediaTrack {
   index: number;
@@ -20,38 +24,6 @@ interface MediaInfo {
 }
 
 export class MediaAnalyzer {
-  private static ffprobePath: string = 'ffprobe'; // Default, can be configured
-  private static ffmpegPath: string = 'ffmpeg'; // Default, can be configured
-
-  static setFFprobePath(path: string) {
-    this.ffprobePath = path;
-  }
-
-  static setFFmpegPath(path: string) {
-    this.ffmpegPath = path;
-  }
-
-  // Get the best available tool path (internal or system)
-  static async getToolPath(toolName: string): Promise<string> {
-    const os = require('os');
-    const path = require('path');
-    const fs = require('fs/promises');
-    
-    // Check internal path first
-    const toolsDir = path.join(os.tmpdir(), 'miteiru_tools');
-    const executableName = process.platform === 'win32' ? `${toolName}.exe` : toolName;
-    const internalPath = path.join(toolsDir, executableName);
-    
-    try {
-      await fs.access(internalPath);
-      console.log(`[MediaAnalyzer] Using internal ${toolName}: ${internalPath}`);
-      return internalPath;
-    } catch {
-      console.log(`[MediaAnalyzer] Using system ${toolName}`);
-      return toolName; // Fall back to system PATH
-    }
-  }
-
   /**
    * Check if ffprobe/ffmpeg are available
    */
@@ -66,8 +38,8 @@ export class MediaAnalyzer {
     };
 
     const [ffprobeAvailable, ffmpegAvailable] = await Promise.all([
-      checkTool(this.ffprobePath),
-      checkTool('ffmpeg')
+      resolveToolCommand('ffprobe').then(checkTool),
+      resolveToolCommand('ffmpeg').then(checkTool)
     ]);
 
     return { ffprobe: ffprobeAvailable, ffmpeg: ffmpegAvailable };
@@ -84,7 +56,8 @@ export class MediaAnalyzer {
     if (!toolsStatus.ffprobe) {
       throw new Error(`FFprobe not found. Please install FFmpeg and make sure it's in your PATH.`);
     }
-    
+    const ffprobeCommand = await resolveToolCommand('ffprobe');
+
     return new Promise((resolve, reject) => {
       const args = [
         '-v', 'quiet',
@@ -95,7 +68,7 @@ export class MediaAnalyzer {
       ];
 
 
-      const ffprobe = spawn(this.ffprobePath, args);
+      const ffprobe = spawn(ffprobeCommand, args);
       let output = '';
       let error = '';
 
@@ -143,8 +116,9 @@ export class MediaAnalyzer {
     const tempDir = os.tmpdir();
     const outputPath = path.join(
       tempDir, 
-      `miteiru_subtitle_${Date.now()}_${streamIndex}.${outputFormat}`
+      `${TEMP_SUBTITLE_PREFIX}${Date.now()}_${streamIndex}.${outputFormat}`
     );
+    const ffmpegCommand = await resolveToolCommand('ffmpeg');
 
     return new Promise((resolve, reject) => {
       // Use direct stream mapping: 0:5 instead of 0:s:5
@@ -157,7 +131,7 @@ export class MediaAnalyzer {
       ];
 
 
-      const ffmpeg = spawn('ffmpeg', args);
+      const ffmpeg = spawn(ffmpegCommand, args);
       let error = '';
 
       ffmpeg.stderr.on('data', (data) => {
@@ -221,6 +195,7 @@ export class MediaAnalyzer {
     const selectedTrackInfo = `_audio${audioStreamIndex}${convertAudioToAac ? '_aac' : ''}${convertToX264 ? '_h264' : '_remux'}`;
     // Use MKV to preserve all subtitle formats and codecs
     const outputPath = path.join(inputDir, `${inputName}${selectedTrackInfo}.mkv`);
+    const ffmpegCommand = await resolveToolCommand('ffmpeg');
 
     return new Promise((resolve, reject) => {
       // Create video with selected audio track + all subtitles using MKV container.
@@ -247,7 +222,7 @@ export class MediaAnalyzer {
       console.log(`[DEBUG] Convert audio to AAC: ${convertAudioToAac}`);
       console.log(`[DEBUG] Total duration: ${totalDuration}s`);
 
-      const ffmpeg = spawn('ffmpeg', args);
+      const ffmpeg = spawn(ffmpegCommand, args);
       let error = '';
 
       ffmpeg.stdout.on('data', (data) => {
@@ -375,6 +350,13 @@ export class MediaAnalyzer {
   /**
    * Clean up temporary subtitle files
    */
+  static isTempSubtitlePath(filePath: unknown): boolean {
+    if (typeof filePath !== 'string' || filePath === '') return false;
+    const resolved = path.resolve(filePath);
+    return path.dirname(resolved) === path.resolve(os.tmpdir())
+      && path.basename(resolved).startsWith(TEMP_SUBTITLE_PREFIX);
+  }
+
   static async cleanupTempFile(filePath: string): Promise<void> {
     try {
       await fs.unlink(filePath);
@@ -392,7 +374,7 @@ export class MediaAnalyzer {
     const subtitleTracks: MediaTrack[] = [];
     const videoTracks: MediaTrack[] = [];
 
-    streams.forEach((stream: any, index: number) => {
+    streams.forEach((stream: any) => {
 
       const track: MediaTrack = {
         index: stream.index,

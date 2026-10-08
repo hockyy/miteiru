@@ -130,9 +130,9 @@ export const findAnkiInstall = (): AnkiInstall | null => {
   return findLinuxAnki();
 };
 
-export const launchAnkiInstall = (install: AnkiInstall): boolean => {
+export const launchAnkiInstall = async (install: AnkiInstall): Promise<boolean> => {
   if (install.type === "open-path") {
-    const errorMessage = shell.openPath(install.path);
+    const errorMessage = await shell.openPath(install.path);
     if (errorMessage) {
       console.warn("Could not launch Anki via openPath:", errorMessage);
       return false;
@@ -140,20 +140,29 @@ export const launchAnkiInstall = (install: AnkiInstall): boolean => {
     return true;
   }
 
-  try {
-    const child = spawn(install.command, install.args, {
-      detached: true,
-      stdio: "ignore",
-    });
-    child.unref();
-    return true;
-  } catch (error) {
-    console.warn("Could not launch Anki via command:", error);
-    return false;
-  }
+  // spawn reports a missing command through an 'error' event, which would otherwise be unhandled.
+  return new Promise((resolve) => {
+    try {
+      const child = spawn(install.command, install.args, {
+        detached: true,
+        stdio: "ignore",
+      });
+      child.once("spawn", () => {
+        child.unref();
+        resolve(true);
+      });
+      child.once("error", (error) => {
+        console.warn("Could not launch Anki via command:", error);
+        resolve(false);
+      });
+    } catch (error) {
+      console.warn("Could not launch Anki via command:", error);
+      resolve(false);
+    }
+  });
 };
 
-export const revealFileInFolder = (filePath: string) => {
+export const revealFileInFolder = async (filePath: string) => {
   const absolutePath = path.resolve(filePath);
 
   try {
@@ -164,7 +173,7 @@ export const revealFileInFolder = (filePath: string) => {
   }
 
   const folderPath = path.dirname(absolutePath);
-  const folderError = shell.openPath(folderPath);
+  const folderError = await shell.openPath(folderPath);
   if (folderError) {
     return {
       ok: false,
@@ -189,7 +198,7 @@ export async function revealAnkiImportFile(
     await fsPromises.writeFile(filePath, content, "utf8");
     await fsPromises.access(filePath);
 
-    const revealResult = revealFileInFolder(filePath);
+    const revealResult = await revealFileInFolder(filePath);
     if (!revealResult.ok) {
       return {
         ok: false,
@@ -199,7 +208,7 @@ export async function revealAnkiImportFile(
     }
 
     const ankiInstall = findAnkiInstall();
-    const ankiLaunched = ankiInstall ? launchAnkiInstall(ankiInstall) : false;
+    const ankiLaunched = ankiInstall ? await launchAnkiInstall(ankiInstall) : false;
 
     return {
       ok: true,

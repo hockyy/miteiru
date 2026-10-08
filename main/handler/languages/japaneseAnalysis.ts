@@ -126,10 +126,13 @@ const splitOkuriganaCompact = (text: string, reading?: string, spokenReading?: s
 
 const runAndSplit = (text: string, mecabCommand: string, outputFormat: string): RunResponse => {
   const normalizedText = text.replace(/[^\S\n]/g, " ").trim();
-  const result = spawnSync(`"${mecabCommand}"`, outputFormat !== "" ? ["-O", outputFormat] : [], {
+  // No shell: the command is a path, and quoting it into a shell line would let a crafted path
+  // run other commands.
+  const result = spawnSync(mecabCommand, outputFormat !== "" ? ["-O", outputFormat] : [], {
     input: normalizedText,
-    shell: true
+    timeout: 30000
   });
+  if (result.error || !result.stdout) return notOkRunAndSplitResponse;
 
   const sentences = result.stdout.toString();
   const splittedSentences = sentences.split("\n");

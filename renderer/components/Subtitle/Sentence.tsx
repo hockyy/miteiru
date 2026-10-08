@@ -1,10 +1,9 @@
-import parse from "html-react-parser";
+import {renderSubtitleHtml} from "../../utils/subtitleHtml";
 import styled from "styled-components";
 import { CJKStyling, defaultLearningColorStyling } from "../../utils/CJKStyling";
 import { getTextShadowFromStroke } from "../../utils/subtitleStroke";
 import React, { ReactNode, useCallback, useEffect, useState } from "react";
 import { isMixed, toRomaji } from "wanakana"
-import { v4 as uuidv4 } from 'uuid';
 
 const writeClipboardText = (value: string) => {
   navigator.clipboard.writeText(value).catch((error) => {
@@ -257,7 +256,7 @@ export const JapaneseSentence = ({
 }
 
 export const PlainSentence = ({ origin }) => {
-  return <div key={uuidv4()}>{parse(origin)}</div>
+  return <div>{renderSubtitleHtml(origin)}</div>
 }
 
 export const KanjiSentence = ({

@@ -1,9 +1,13 @@
 import {spawn} from "child_process";
+import os from "node:os";
 import path from "path";
 import * as fsPromises from "node:fs/promises";
+import {app} from "electron";
+
+type ToolName = "yt-dlp" | "ffmpeg" | "ffprobe";
 
 interface ToolConfig {
-  name: string;
+  name: ToolName;
   check_command: string;
   download_link: string;
   executable_name: string;
@@ -37,37 +41,56 @@ const mediaToolsCache = {
   CACHE_DURATION: 30000
 };
 
+/** Folder where users put their own yt-dlp / ffmpeg / ffprobe for Miteiru. */
 export function getMiteiruToolsPath(): string {
-  const os = require("os");
-  return path.join(os.tmpdir(), "miteiru_tools");
+  return path.join(app.getPath("userData"), "tools");
 }
 
+// Older versions used <temp>/miteiru_tools. Temp is per-user on Windows and macOS, so tools
+// placed there still count; on Linux /tmp is shared, and another user could plant a binary.
+const legacyToolsPath = (): string | null =>
+  process.platform === "linux" ? null : path.join(os.tmpdir(), "miteiru_tools");
+
+const localToolPaths = (executableName: string): string[] =>
+  [getMiteiruToolsPath(), legacyToolsPath()]
+    .filter((dir): dir is string => Boolean(dir))
+    .map((dir) => path.join(dir, executableName));
+
+const findTool = (name: ToolName): ToolConfig => MEDIA_TOOLS_CONFIG.find((tool) => tool.name === name);
+
+/** The command to run for a tool: the user's local copy when present, otherwise the name on PATH. */
+export async function resolveToolCommand(name: ToolName): Promise<string> {
+  const tool = findTool(name);
+  for (const candidate of localToolPaths(tool.executable_name)) {
+    try {
+      await fsPromises.access(candidate);
+      return candidate;
+    } catch {
+      // Not placed here; try the next location.
+    }
+  }
+  return tool.name;
+}
+
+const runsSuccessfully = (command: string, args: string[]) => new Promise<boolean>((resolve) => {
+  const child = spawn(command, args);
+  child.on("close", (code) => resolve(code === 0));
+  child.on("error", () => resolve(false));
+});
+
 export async function checkToolPath(tool: ToolConfig): Promise<{ available: boolean; path: string | null; isInternal: boolean }> {
-  const miteiruToolsPath = getMiteiruToolsPath();
-  const internalPath = path.join(miteiruToolsPath, tool.executable_name);
-
-  try {
-    await fsPromises.access(internalPath);
-    const internalWorks = await new Promise<boolean>((resolve) => {
-      const child = spawn(internalPath, [tool.check_command]);
-      child.on("close", (code) => resolve(code === 0));
-      child.on("error", () => resolve(false));
-    });
-
-    if (internalWorks) {
+  for (const internalPath of localToolPaths(tool.executable_name)) {
+    try {
+      await fsPromises.access(internalPath);
+    } catch {
+      continue;
+    }
+    if (await runsSuccessfully(internalPath, [tool.check_command])) {
       return {available: true, path: internalPath, isInternal: true};
     }
-  } catch (error) {
-    // Internal tool missing or invalid, continue to system PATH check.
   }
 
-  const systemWorks = await new Promise<boolean>((resolve) => {
-    const child = spawn(tool.name, [tool.check_command]);
-    child.on("close", (code) => resolve(code === 0));
-    child.on("error", () => resolve(false));
-  });
-
-  if (systemWorks) {
+  if (await runsSuccessfully(tool.name, [tool.check_command])) {
     return {available: true, path: tool.name, isInternal: false};
   }
 
@@ -94,8 +117,9 @@ export async function checkMediaTools(forceRefresh = false) {
     const missingTools = [];
     const availableTools = [];
 
-    for (const tool of MEDIA_TOOLS_CONFIG) {
-      const toolCheck = await checkToolPath(tool);
+    const toolChecks = await Promise.all(MEDIA_TOOLS_CONFIG.map((tool) => checkToolPath(tool)));
+    for (const [index, tool] of MEDIA_TOOLS_CONFIG.entries()) {
+      const toolCheck = toolChecks[index];
 
       toolsStatus[tool.name] = {
         available: toolCheck.available,
@@ -114,10 +138,9 @@ export async function checkMediaTools(forceRefresh = false) {
     }
 
     const allAvailable = missingTools.length === 0;
-    const someAvailable = availableTools.length > 0;
 
     const result = {
-      ok: allAvailable ? 1 : someAvailable ? 0 : 0,
+      ok: allAvailable ? 1 : 0,
       message: allAvailable
         ? `All optional tools available: ${availableTools.join(", ")}`
         : missingTools.length === MEDIA_TOOLS_CONFIG.length

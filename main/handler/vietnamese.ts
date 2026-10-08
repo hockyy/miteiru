@@ -15,11 +15,6 @@ import {ipcMain} from "electron";
 import path from "path";
 import fs from "node:fs";
 
-interface VietnameseDictionaryEntry {
-  term: string;
-  meaning: string;
-}
-
 interface VietnameseTokenResult {
   origin: string;
   meaning: string;
@@ -135,18 +130,8 @@ class Vietnamese {
     return result;
   }
 
-  static registerVietnamese() {
-    ipcMain.handle('tokenizeUsingVietnamese', async (event, sentence: string) => {
-      if (!this.isLoaded) {
-        throw new Error('Vietnamese dictionary not loaded');
-      }
-      
-      return this.tokenizeLongestSuffix(sentence);
-    });
-  }
-
   static registerHandlers() {
-    ipcMain.handle('queryVietnamese', async (event, query: string, limit: number = 50) => {
+    ipcMain.handle('queryVietnamese', async (event, query: string) => {
       if (!this.isLoaded) {
         return [];
       }

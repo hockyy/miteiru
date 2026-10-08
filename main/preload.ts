@@ -34,6 +34,7 @@ contextBridge.exposeInMainWorld('electronStore', {
 contextBridge.exposeInMainWorld('ipc', handler)
 
 contextBridge.exposeInMainWorld('electronAPI', {
+  platform: process.platform,
   getPath: (file) => {
     return webUtils.getPathForFile(file);
   },
@@ -41,10 +42,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
   checkSubtitleFile: (videoFilePath: string) =>
       ipcRenderer.invoke('check-subtitle-file', videoFilePath),
-  fs: {
-    readFile: (filename: string) => ipcRenderer.invoke('fs-readFile', filename),
-    writeFile: (filename: string, data: string) => ipcRenderer.invoke('fs-writeFile', filename, data),
-  },
   parseSubtitle: (filename: string) => ipcRenderer.invoke('parse-subtitle', filename),
   preprocessSubtitleCapitalization: (filename: string) => ipcRenderer.invoke('preprocess-subtitle-capitalization', filename),
   findPositionDeltaInFolder: (path: string, delta: number = 1) =>
@@ -90,13 +87,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onError: (callback: (error: string) => void) => subscribe('live-captions:error', callback),
     onDebug: (callback: (message: string) => void) => subscribe('live-captions:debug', callback)
   },
-});
-
-contextBridge.exposeInMainWorld('miteiruJapanese', {
-  getFurigana: (sentence: string, mode: string) =>
-      ipcRenderer.invoke('miteiru-getFurigana', sentence, mode),
-  processKuromojinToSeparations: (kuromojiEntries: any[]) =>
-      ipcRenderer.invoke('miteiru-processKuromojinToSeparations', kuromojiEntries),
 });
 
 export type IpcHandler = typeof handler

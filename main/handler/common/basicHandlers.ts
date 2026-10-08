@@ -5,19 +5,20 @@ import {access} from "node:fs/promises";
 import path, {basename, dirname, extname, join} from "path";
 import Japanese from "../japanese";
 import Chinese from "../chinese";
-import Vietnamese from "../vietnamese";
 import {videoConstants} from "../../../renderer/utils/constants";
 import {RegisterCommonHandlersArgs} from "./types";
 import {revealAnkiImportFile} from "../../helpers/ankiImportReveal";
+import {isWebUrl} from "../../helpers/navigationGuard";
 
 const isArrayEndsWithMatcher = (filePath, arrayMatcher) => {
-  for (const videoFormat of arrayMatcher) {
-    if (filePath.endsWith("." + videoFormat)) {
-      return true;
-    }
-  }
-  return false;
+  const lowerPath = filePath.toLowerCase();
+  return arrayMatcher.some((format) => lowerPath.endsWith("." + format.toLowerCase()));
 };
+
+// Windows and macOS file systems are case-insensitive, so C:\Videos and c:\videos are one folder.
+const samePath = (left: string, right: string) => (
+  process.platform === "linux" ? left === right : left.toLowerCase() === right.toLowerCase()
+);
 
 const isVideo = (filePath) => {
   return isArrayEndsWithMatcher(filePath, videoConstants.supportedVideoFormats);
@@ -32,12 +33,6 @@ export function registerBasicHandlers({
   packageJson,
   appDataDirectory
 }: RegisterCommonHandlersArgs) {
-  ipcMain.handle("pickDirectory", async () => {
-    return await dialog.showOpenDialog({
-      properties: ["openDirectory"]
-    });
-  });
-
   ipcMain.handle("pickFile", async (event, allowed) => {
     return await dialog.showOpenDialog({
       properties: ["openFile"],
@@ -86,12 +81,16 @@ export function registerBasicHandlers({
     return false;
   });
 
-  ipcMain.handle("removeDictCache", () => {
+  ipcMain.handle("removeDictCache", async () => {
     const japSet = Japanese.getJapaneseSettings(appDataDirectory);
     const chinSet = Chinese.getMandarinSettings(appDataDirectory);
     const canSet = Chinese.getCantoneseSettings(appDataDirectory);
-    const vietSet = Vietnamese.getVietnameseSettings(appDataDirectory);
-    return `rm -rf "${japSet.dictPath}"; rm -rf "${japSet.charDictPath}"; rm -rf "${canSet.dictPath}"; rm -rf "${chinSet.dictPath}"; rm -rf "${vietSet.dictPath}"`;
+    // The LevelDB folders are caches rebuilt from the bundled JSON on the next language load.
+    await Japanese.closeDictionaries();
+    await Chinese.closeDictionary();
+    const cacheDirs = [japSet.dictPath, japSet.charDictPath, canSet.dictPath, chinSet.dictPath];
+    await Promise.all(cacheDirs.map((dir) => fsPromises.rm(dir, {recursive: true, force: true})));
+    return `Removed ${cacheDirs.length} dictionary caches; they are rebuilt the next time a language loads.`;
   });
 
   ipcMain.handle("getTokenizerMode", async () => {
@@ -139,7 +138,7 @@ export function registerBasicHandlers({
         .filter(filePattern => isArrayEndsWithMatcher(filePattern, matcher))
         .sort((a, b) => a.localeCompare(b, undefined, {numeric: true, sensitivity: "base"}));
       filePath = path.normalize(filePath);
-      const currentIndex = filesMatched.indexOf(filePath);
+      const currentIndex = filesMatched.findIndex((candidate) => samePath(candidate, filePath));
       if (currentIndex === -1) {
         if (delta < 0) delta++;
       }
@@ -157,6 +156,11 @@ export function registerBasicHandlers({
   });
 
   ipcMain.handle("open-external", async (event, url) => {
+    // Only web links: openExternal on file: or other schemes can launch programs.
+    if (!isWebUrl(url)) {
+      console.warn("Refusing to open a non-web URL externally:", url);
+      return;
+    }
     await shell.openExternal(url);
   });
 
@@ -187,6 +191,12 @@ export function registerBasicHandlers({
   });
 
   ipcMain.handle("write-file", async (event, filePath, content) => {
+    // The renderer only saves synced lyrics; refusing other extensions keeps a compromised page
+    // from writing scripts or executables.
+    if (typeof filePath !== "string" || extname(filePath).toLowerCase() !== ".lrc") {
+      console.error("Refusing to write a non-.lrc file:", filePath);
+      return false;
+    }
     try {
       await fsPromises.writeFile(filePath, content, "utf8");
       return true;
@@ -198,6 +208,10 @@ export function registerBasicHandlers({
 
   ipcMain.handle("open-path", async (event, pathToOpen) => {
     try {
+      // Folders only: openPath on a file runs it with its default program.
+      if (!(await fsPromises.stat(pathToOpen)).isDirectory()) {
+        return { ok: false, error: "Only folders can be opened." };
+      }
       const errorMessage = await shell.openPath(pathToOpen);
       if (errorMessage) {
         console.error("Error opening path:", errorMessage);
