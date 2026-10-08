@@ -9,8 +9,6 @@ import {
 import {v5 as uuidv5} from 'uuid';
 import {escapeHtml} from "../../utils/html";
 
-export {escapeHtml};
-
 const toAnkiTsvField = (value) => String(value ?? '')
   .replace(/\r?\n/g, '<br>')
   .replace(/\t/g, ' ');

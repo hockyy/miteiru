@@ -100,13 +100,15 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     setPrimarySub(tmpSub);
     setLastPrimarySubPath([{path: sourcePath}]);
     setGlobalSubtitleId(tmpSub.id);
-    
+    // Until this subtitle is analysed, the previous one's frequent words must not be highlighted.
+    setFrequencyPrimary(new Map());
+
     showToast('Primary subtitle loaded');
 
     if (isLearningLanguage(tmpSub.language)) {
       processSubtitleForLearning(tmpSub);
     }
-  }, [setPrimarySub, showToast, isLearningLanguage, processSubtitleForLearning]);
+  }, [setPrimarySub, showToast, isLearningLanguage, processSubtitleForLearning, setFrequencyPrimary]);
 
   const loadSubtitleAsSecondary = useCallback((tmpSub, sourcePath) => {
     setSecondarySub(tmpSub);
