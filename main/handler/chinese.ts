@@ -6,6 +6,7 @@ import {pinyin} from "pinyin-pro";
 import ToJyutping from "to-jyutping";
 import {Jieba} from '@node-rs/jieba'
 import {formatPinyinReading} from "./pinyinTones";
+import {readStrokeSvg} from "../helpers/strokeSvg";
 
 
 interface JyutpingResult {
@@ -29,6 +30,12 @@ class Chinese {
     } catch {
       return {}
     }
+  }
+
+  /** Closes the CC-CEDICT / CantoDict database so its cache folder can be deleted. */
+  static async closeDictionary() {
+    await this.Dict.db?.close();
+    this.Dict = {db: null};
   }
 
   static getMandarinSettings = (appDataDirectory: string, replacements: any = {}) => {
@@ -74,17 +81,6 @@ class Chinese {
       console.error(e);
       return e.message;
     }
-  }
-
-  static registerJieba() {
-    // This method now calls registerNodeJieba for backwards compatibility
-    this.registerNodeJieba();
-  }
-
-  static registerNodeJieba() {
-    ipcMain.handle('tokenizeUsingJieba', async (event, sentence, toneType) => {
-      return this.tokenizeUsingJieba(sentence, toneType);
-    });
   }
 
   static tokenizeUsingJieba(sentence: string, toneType: string) {
@@ -164,13 +160,6 @@ class Chinese {
     });
   }
 
-  static registerCantoJieba() {
-    ipcMain.handle('tokenizeUsingCantoneseJieba', async (event, sentence, toneType: string) => {
-      return await this.getJyutpingForSentence(sentence, toneType);
-    });
-
-  }
-
   static registerHandlers() {
     ipcMain.handle('queryChinese', async (event, query, limit) => {
       let matches = []
@@ -208,14 +197,7 @@ class Chinese {
       // return searchKanji(KanjiDic.db, query);
     })
 
-    ipcMain.handle('readHanziSVG', async (event, filename) => {
-      const hanziFilePath = path.join(this.importBaseSVG, `${filename}`);
-      try {
-        return fs.readFileSync(hanziFilePath).toString();
-      } catch {
-        return ''
-      }
-    })
+    ipcMain.handle('readHanziSVG', async (event, filename) => readStrokeSvg(this.importBaseSVG, filename));
   }
 
 }

@@ -204,7 +204,7 @@ const getSubtitleEntries = async (filename: string, text: string): Promise<Subti
     if (!lowerFilename.endsWith(".json")) return false;
     try {
       return JSON.parse(text)?.format === "holokara-unified-format";
-    } catch (error) {
+    } catch {
       return false;
     }
   };
@@ -245,24 +245,6 @@ export function registerMediaHandlers() {
   const preprocessCache = new FileIdentityCache<string>();
   const parseCache = new FileIdentityCache<unknown>();
 
-  ipcMain.handle("fs-readFile", async (event, filename) => {
-    try {
-      const buffer = await fsPromises.readFile(filename);
-      return buffer.toString("base64");
-    } catch (error) {
-      throw error;
-    }
-  });
-
-  ipcMain.handle("fs-writeFile", async (event, filename, data) => {
-    try {
-      await fsPromises.writeFile(filename, Buffer.from(data, "base64"));
-      return true;
-    } catch (error) {
-      throw error;
-    }
-  });
-
   ipcMain.handle("parse-subtitle", async (event, filename) => {
     try {
       const resolvedFilename = normalizeFileSystemPath(filename);
@@ -283,7 +265,7 @@ export function registerMediaHandlers() {
         try {
           const parsed = JSON.parse(text);
           return parsed?.format === "holokara-unified-format";
-        } catch (error) {
+        } catch {
           return false;
         }
       };
@@ -420,6 +402,11 @@ export function registerMediaHandlers() {
   });
 
   ipcMain.handle("cleanup-temp-subtitle", async (event, filePath) => {
+    // Only the subtitle files extractEmbeddedSubtitle wrote to the temp folder may be deleted.
+    if (!MediaAnalyzer.isTempSubtitlePath(filePath)) {
+      console.warn("Refusing to delete a file that is not an extracted subtitle:", filePath);
+      return;
+    }
     try {
       await MediaAnalyzer.cleanupTempFile(filePath);
     } catch (error) {
@@ -427,28 +414,4 @@ export function registerMediaHandlers() {
     }
   });
 
-  ipcMain.handle("checkFFmpegTools", async (event, forceRefresh = false) => {
-    console.log("[Backward Compatibility] checkFFmpegTools called, using MediaAnalyzer directly");
-
-    try {
-      const ffmpegStatus = await MediaAnalyzer.checkToolsAvailable();
-      const isAvailable = ffmpegStatus.ffmpeg && ffmpegStatus.ffprobe;
-
-      return {
-        ok: isAvailable ? 1 : 0,
-        message: isAvailable
-          ? "FFmpeg and FFprobe are available"
-          : `Missing tools - FFmpeg: ${ffmpegStatus.ffmpeg ? "OK" : "Missing"}, FFprobe: ${ffmpegStatus.ffprobe ? "OK" : "Missing"}`,
-        details: ffmpegStatus,
-        cached: false
-      };
-    } catch (error) {
-      return {
-        ok: 0,
-        message: `Error checking FFmpeg tools: ${error.message}`,
-        details: {ffmpeg: false, ffprobe: false},
-        cached: false
-      };
-    }
-  });
 }

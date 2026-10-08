@@ -2,6 +2,8 @@ import {IpcHandler} from '../main/preload'
 import type {LiveCaptionsApiState} from "./types/liveCaptions";
 
 interface ElectronApi {
+  /** The OS Miteiru runs on; `process.platform` is not available in the renderer. */
+  platform: NodeJS.Platform;
   liveCaptions: {
     isSupported: () => Promise<boolean>;
     getState: () => Promise<LiveCaptionsApiState>;
@@ -28,7 +30,6 @@ declare global {
     ipc: IpcHandler;
     electronStore: any;
     electronAPI: ElectronApi;
-    miteiruJapanese: any;
   }
 }
 

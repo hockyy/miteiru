@@ -93,22 +93,24 @@ if (!isProd) {
   Japanese.registerHandlers();
   Chinese.registerHandlers();
   Vietnamese.registerHandlers();
-  Japanese.registerKuromoji();
-  Chinese.registerJieba();
-  Chinese.registerCantoJieba();
-  Vietnamese.registerVietnamese();
+  Japanese.preloadKuromoji();
 
   Learning.setup();
   Learning.registerHandler();
 
-  analyzerServer = await startAnalyzerServer({
-    appDataDirectory,
-    version: packageJson.version,
-    getTokenizer,
-    getToneType,
-    getMecabCommand
-  });
-  console.log(`[AnalyzerServer] Listening on ${analyzerServer.registration.host}:${analyzerServer.registration.port}`);
+  // The analyzer server is optional; failing to start it must not leave the window blank.
+  try {
+    analyzerServer = await startAnalyzerServer({
+      appDataDirectory,
+      version: packageJson.version,
+      getTokenizer,
+      getToneType,
+      getMecabCommand
+    });
+    console.log(`[AnalyzerServer] Listening on ${analyzerServer.registration.host}:${analyzerServer.registration.port}`);
+  } catch (error) {
+    console.error("[AnalyzerServer] Failed to start:", error);
+  }
 
   if (isProd) {
     await mainWindow.loadURL('app://./home');
