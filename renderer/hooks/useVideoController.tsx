@@ -2,6 +2,7 @@ import {useCallback, useEffect, useState} from "react";
 import {videoConstants} from "../utils/constants";
 import {v4 as uuidv4} from 'uuid';
 import {isTextEntryTarget} from "../utils/keyboardTargets";
+import type {PlaybackClock} from "../utils/playbackClock";
 
 
 export const useVideoPlayingToggle = (player, metadata) => {
@@ -64,20 +65,23 @@ export const useVideoKeyboardControls = (togglePlay, deltaTime, setPrimaryShift,
 }
 
 
-export const useVideoTimeChanger = (player, setCurrentTime, metadata) => {
+export const useVideoTimeChanger = (player, clock: PlaybackClock, metadata) => {
   const [duration, setDuration] = useState(0);
   const [enableSeeker, setEnableSeeker] = useState(false);
   useEffect(() => {
-    if (player) {
-      setDuration(player.duration() * 1000);
-    }
+    if (!player) return;
+    // In ms; NaN until metadata loads, and YouTube reports it later through durationchange.
+    const updateDuration = () => setDuration((player.duration() || 0) * 1000);
+    updateDuration();
+    player.on('durationchange', updateDuration);
+    return () => player.off('durationchange', updateDuration);
   }, [player, metadata]);
   const changeTimeTo = useCallback((seekedTime: number) => {
     if (player) {
-      setCurrentTime(seekedTime)
+      clock.set(seekedTime)
       player.currentTime(seekedTime)
     }
-  }, [player, setCurrentTime])
+  }, [player, clock])
 
   const deltaTime = useCallback((plusDelta: number) => {
     if (player) {

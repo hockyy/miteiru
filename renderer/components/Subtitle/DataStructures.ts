@@ -294,33 +294,38 @@ export class SubtitleContainer {
   }
 }
 
-export function getLineByTime(subtitle: SubtitleContainer, t: number) {
-  if (!subtitle.lines || subtitle.lines.length === 0) {
-    return {
-      content: '',
-      meaning: []
-    };
-  }
+/** Index of the last line starting at or before `t` (ms), or -1. Lines are in start order and do not overlap. */
+export const findLastLineStartingBy = (lines: Line[] | undefined, t: number): number => {
+  if (!lines?.length || t < lines[0].timeStart) return -1;
   let low = 0;
-  let high = subtitle.lines.length - 1;
+  let high = lines.length - 1;
   while (low < high) {
     const mid = (low + high + 1) >> 1;
-    if (subtitle.lines[mid].timeStart <= t) low = mid;
+    if (lines[mid].timeStart <= t) low = mid;
     else high = mid - 1;
   }
-  if (subtitle.lines[low].timeStart <= t && t <= subtitle.lines[low].timeEnd) {
-    return {
-      content: subtitle.lines[low].content,
-      meaning: subtitle.lines[low].meaning,
-      timePair: [subtitle.lines[low].timeStart, subtitle.lines[low].timeEnd]
-    };
-  } else {
-    return {
-      content: '',
-      meaning: []
-    };
+  return low;
+};
+
+/** Index of the line shown at `t` (ms), or -1 between lines. */
+export const findLineIndexAt = (lines: Line[] | undefined, t: number): number => {
+  const index = findLastLineStartingBy(lines, t);
+  return index >= 0 && t <= lines[index].timeEnd ? index : -1;
+};
+
+/** Which lines to show at `adjustedTime`: the current one at `currentLinePosition`, else the next one there. */
+export const getLyricsWindow = (lines: Line[] | undefined, adjustedTime: number, linesVisible: number, currentLinePosition: number) => {
+  if (!lines?.length) return {start: 0, current: -1};
+  const last = findLastLineStartingBy(lines, adjustedTime);
+  if (last >= 0 && adjustedTime <= lines[last].timeEnd) {
+    const start = Math.max(0, last - currentLinePosition);
+    return {start, current: last - start};
   }
-}
+  // Between lines: lead up to the next one; past the end: the last few.
+  const next = last + 1;
+  const start = next < lines.length ? Math.max(0, next - currentLinePosition) : Math.max(0, lines.length - linesVisible);
+  return {start, current: -1};
+};
 
 interface YoutubeSubtitleEntry {
   start: string;

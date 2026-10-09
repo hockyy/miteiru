@@ -1,9 +1,7 @@
 import {useEffect} from "react";
 
 export const usePlayNextAfterEnd = (player,
-                                    currentTime,
                                     onVideoChangeHandler,
-                                    duration,
                                     setEnableSeeker) => {
   useEffect(() => {
     if (player) {
@@ -16,5 +14,5 @@ export const usePlayNextAfterEnd = (player,
         player.off('ended', ender)
       }
     }
-  }, [player, currentTime, duration, setEnableSeeker, onVideoChangeHandler]);
+  }, [player, setEnableSeeker, onVideoChangeHandler]);
 }

@@ -3,9 +3,10 @@ import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 import 'videojs-youtube';
 import {videoConstants} from "../../utils/constants";
+import type {PlaybackClock} from "../../utils/playbackClock";
 
 
-export const VideoJS = ({options, onReady, setCurrentTime}) => {
+export const VideoJS = ({options, onReady, clock}: { options: any; onReady: (player: any) => void; clock: PlaybackClock }) => {
   const videoRef = useRef(null);
   const playerRef = useRef(null);
   const youtubeObserverRef = useRef<MutationObserver | null>(null);
@@ -39,10 +40,11 @@ export const VideoJS = ({options, onReady, setCurrentTime}) => {
     }
   }, []);
 
+  // Samples the player into the clock; the clock only notifies when the time moved.
   const handle = useCallback(() => {
     const player = playerRef.current;
-    if (player && !player.isDisposed()) setCurrentTime(player.currentTime());
-  }, [setCurrentTime])
+    if (player && !player.isDisposed()) clock.set(player.currentTime());
+  }, [clock])
 
   useEffect(() => {
     // Make sure Video.js player is only initialized once

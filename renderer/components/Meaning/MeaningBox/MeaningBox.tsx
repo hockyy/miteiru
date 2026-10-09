@@ -48,7 +48,6 @@ const MeaningBox = ({
   getLearningState = null,
   showMeaning = true,
   sidebarInsets = {},
-  onMoveToAnalyzer,
 }: MeaningBoxProps) => {
   const { speak, stop, speaking, supported } = useSpeech();
   const [selectedVoice] = useStoreData('tts.option.voice', '');

@@ -74,8 +74,7 @@ function Video() {
     readyCallback,
     metadata,
     player,
-    currentTime,
-    setCurrentTime
+    clock
   } = useReadyPlayerCallback();
 
   const {
@@ -137,7 +136,7 @@ function Video() {
     changeTimeTo,
     enableSeeker,
     setEnableSeeker
-  } = useVideoTimeChanger(player, setCurrentTime, metadata);
+  } = useVideoTimeChanger(player, clock, metadata);
   const {
     videoSrc,
     onLoadFiles,
@@ -263,7 +262,7 @@ function Video() {
     autoPause,
     setAutoPause,
     backToHead
-  } = usePauseAndRepeat(primaryTimeCache, player, currentTime, primaryShift, setIsPlaying, changeTimeTo);
+  } = usePauseAndRepeat(primaryTimeCache, clock, primaryShift, setIsPlaying, changeTimeTo);
 
   const commands = useKeyBind(setMeaning, setShowController, setShowSidebar,
       setPrimarySub, setSecondarySub, undo,
@@ -272,7 +271,7 @@ function Video() {
       setShowVocabSidebar, rubyContent, contentString, setShowLyricsSearch);
   useVideoKeyboardControls(togglePlay, deltaTime, setPrimaryShift, setSecondaryShift,
       setToastInfo, backToHead, setIsPlaying);
-  usePlayNextAfterEnd(player, currentTime, onVideoChangeHandler, duration, setEnableSeeker);
+  usePlayNextAfterEnd(player, onVideoChangeHandler, setEnableSeeker);
 
   // Pause player when media selection modals open
   useEffect(() => {
@@ -320,7 +319,7 @@ function Video() {
           )}
 
           {hasVideo && (
-            <VideoJS options={videoOptions} onReady={readyCallback} setCurrentTime={setCurrentTime}/>
+            <VideoJS options={videoOptions} onReady={readyCallback} clock={clock}/>
           )}
 
           <div>
@@ -328,7 +327,7 @@ function Video() {
                 // Primary subtitle props
                 showPrimarySub={showPrimarySubtitle}
                 setMeaning={setMeaning}
-                currentTime={currentTime}
+                clock={clock}
                 primarySub={primarySub}
                 primaryShift={primaryShift}
                 primaryStyling={primaryStyling}
@@ -381,7 +380,7 @@ function Video() {
                 deltaTime={deltaTime}
                 togglePlay={togglePlay}
                 player={player}
-                currentTime={currentTime}
+                clock={clock}
                 showController={showController}
                 setShowSidebar={setShowSidebar}
                 enableSeeker={enableSeeker}

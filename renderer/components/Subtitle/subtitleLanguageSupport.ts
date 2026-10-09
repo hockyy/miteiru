@@ -65,18 +65,21 @@ const fillLearningContent = async (
 ) => {
   const requests: LearningLookup[] = [];
   const requested = new Set<string>();
-  const slots: { line: Line; index: number; key: string }[] = [];
+  // Each line's glosses, assigned in one go at the end: subtitle views notice a new array, not edits.
+  const meanings = new Map<Line, string[]>();
+  const slots: { meaning: string[]; index: number; key: string }[] = [];
 
   for (const line of lines) {
     if (!Array.isArray(line.content)) continue;
-    line.meaning = Array(line.content.length).fill("");
+    const meaning = Array(line.content.length).fill("");
+    meanings.set(line, meaning);
     line.content.forEach((token, index) => {
       const word = support.frequencyKey(token);
       frequency.set(word, (frequency.get(word) ?? 0) + 1);
       const lookup = support.lookup(token);
       if (!lookup) return;
       const key = glossKey(lookup);
-      slots.push({line, index, key});
+      slots.push({meaning, index, key});
       if (cache.has(key) || requested.has(key)) return;
       requested.add(key);
       requests.push(lookup);
@@ -95,7 +98,8 @@ const fillLearningContent = async (
       requests.forEach((lookup, index) => cache.set(glossKey(lookup), String(glosses[index] ?? "")));
     }
   }
-  for (const {line, index, key} of slots) line.meaning[index] = cache.get(key) ?? "";
+  for (const {meaning, index, key} of slots) meaning[index] = cache.get(key) ?? "";
+  for (const [line, meaning] of meanings) line.meaning = meaning;
 };
 
 export const fillLineWithLearningContent = async (

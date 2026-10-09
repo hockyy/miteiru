@@ -418,3 +418,95 @@ rt {
 .ruby-under-reading > rt:empty {
   display: none;
 }
+/* Video seek bar (components/VideoPlayer/SeekBar.tsx). Moving parts are transformed, never resized. */
+.seek-bar {
+  position: relative;
+  height: 18px;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+}
+
+.seek-bar__track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 3px;
+  transform: translateY(-50%);
+  overflow: hidden;
+  background-color: rgb(255 255 255 / 0.2);
+  transition: height 0.1s;
+}
+
+.seek-bar__fill {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 0;
+  transform: scaleX(0);
+}
+
+.seek-bar__hover {
+  background-color: rgb(255 255 255 / 0.5);
+  opacity: 0;
+}
+
+.seek-bar__buffered {
+  background-color: rgb(255 255 255 / 0.3);
+}
+
+.seek-bar__progress {
+  background-color: #f00;
+}
+
+.seek-bar__thumb-rail {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.seek-bar__thumb {
+  position: absolute;
+  top: 3px;
+  left: -6px;
+  width: 12px;
+  height: 12px;
+  border-radius: 9999px;
+  background-color: #f00;
+  opacity: 0;
+  transform: scale(0.4);
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.seek-bar__tooltip {
+  position: absolute;
+  left: 0;
+  bottom: 18px;
+  padding: 5px 10px;
+  font-size: 16px;
+  line-height: 18px;
+  white-space: nowrap;
+  color: #ddd;
+  text-shadow: 1px 1px 1px #000;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.seek-bar:hover .seek-bar__hover,
+.seek-bar:hover .seek-bar__tooltip,
+.seek-bar[data-dragging] .seek-bar__tooltip {
+  opacity: 1;
+}
+
+.seek-bar:hover .seek-bar__thumb,
+.seek-bar[data-dragging] .seek-bar__thumb {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@media (hover: hover) {
+  .seek-bar:hover .seek-bar__track,
+  .seek-bar[data-dragging] .seek-bar__track {
+    height: 8px;
+  }
+}
