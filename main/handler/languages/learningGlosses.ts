@@ -1,4 +1,4 @@
-import {isKanji, toHiragana, toKatakana} from "wanakana";
+import {isKana, isKanji, toHiragana, toKatakana} from "wanakana";
 import {kanjiBeginning, readingBeginning, type JmdictWord} from "../../dictionary/jmdictDb";
 import {charAnywhere, charBeginning} from "../../dictionary/chineseDictionaryDb";
 import type {DictionaryDb} from "../../dictionary/levelDictionary";
@@ -13,33 +13,64 @@ export interface LearningGlossRequest {
 export const sameKanaReading = (left: string, right: string): boolean =>
   toHiragana(toKatakana(left)) === toHiragana(toKatakana(right));
 
+// Words used only attached to another: 人 read じん "-ian", 人 read にん (counter), 前 read ぜん "previous".
+const AFFIX_POS = new Set(["pref", "suf", "ctr", "n-pref", "n-suf"]);
+// Grammar uses that make a kana query mean this word: ている (居る), てくれる (呉れる), pronouns.
+const GRAMMAR_POS = new Set(["pn", "aux", "aux-v", "aux-adj", "cop"]);
+
 /**
- * Orders `queryJapanese` results: duplicates removed (keeping the last), common words first, then
- * among words with the same first spelling (or none) verbs, then nouns, then fewer spellings; the
- * first exact kanji match is moved to the front.
+ * Orders dictionary matches for a query, the word most likely meant first:
+ * 1. spelled or read exactly as the query, 2. that exact spelling or reading is common,
+ * 3. a standalone word rather than an affix or counter (人 → ひと, not じん "-ian"),
+ * 4. the query is the word's main spelling (所 as ところ, not as a spelling of 其処),
+ * 5. any spelling or reading is common.
+ * Then, for kana queries, words with a grammar use (いる → 居る, くれる → 呉れる) and the most
+ * senses (とる → 取る, こと → 事); for kanji queries, JMdict order, which lists the native word
+ * first (心 → こころ, 金 → かね); then the shorter headword. Duplicates are dropped.
+ * Measured on 167 frequent lookups: scripts/evaluateJmdictRanking.ts.
  */
-export const rankJapaneseMatches = (matches: JmdictWord[], query: string, tags: Record<string, string>) => {
-  const ids = matches.map((word) => word.id);
-  const ranked = matches.filter(({id}, index) => !ids.includes(id, index + 1));
-  const lacksPartOfSpeech = (word: JmdictWord, name: string) =>
-    +!(tags[word.sense[0]?.partOfSpeech[0]] ?? "").includes(name);
-  const firstSpelling = (word: JmdictWord) => (word.kanji.length ? word.kanji[0].text : null);
-  ranked.sort((a, b) => {
-    const commonA = a.kanji.length ? +a.kanji[0].common : 0;
-    const commonB = b.kanji.length ? +b.kanji[0].common : 0;
-    if (commonA !== commonB) return commonB - commonA;
-    // The old comparator subtracted the spellings here (NaN, i.e. unordered) unless they were equal.
-    if (firstSpelling(a) !== firstSpelling(b)) return 0;
-    const verbOrder = lacksPartOfSpeech(a, "verb") - lacksPartOfSpeech(b, "verb");
-    if (verbOrder) return verbOrder;
-    const nounOrder = lacksPartOfSpeech(a, "noun") - lacksPartOfSpeech(b, "noun");
-    if (nounOrder) return nounOrder;
-    return a.kanji.length - b.kanji.length;
+export const rankJapaneseMatches = (matches: JmdictWord[], query: string): JmdictWord[] => {
+  const seen = new Set<string>();
+  const unique = matches.filter((word) => !seen.has(word.id) && Boolean(seen.add(word.id)));
+  const kanaQuery = isKana(query);
+  const score = (word: JmdictWord): number[] => {
+    const elements = [...word.kanji, ...word.kana];
+    const exact = elements.filter((element) => element.text === query);
+    const firstPos = word.sense[0]?.partOfSpeech ?? [];
+    const affixOnly = firstPos.length > 0 && firstPos.every((pos) => AFFIX_POS.has(pos));
+    const mainSpelling = (word.kanji[0] ?? word.kana[0])?.text === query || word.kana[0]?.text === query;
+    const grammar = word.sense.some((sense) => sense.partOfSpeech.some((pos) => GRAMMAR_POS.has(pos)));
+    return [
+      exact.length > 0 ? 1 : 0,
+      exact.some((element) => element.common) ? 1 : 0,
+      affixOnly ? 0 : 1,
+      mainSpelling ? 1 : 0,
+      elements.some((element) => element.common) ? 1 : 0,
+      kanaQuery && grammar ? 1 : 0,
+      kanaQuery ? word.sense.length : -Number(word.id),
+      kanaQuery ? -Number(word.id) : 0,
+      -Math.min(...elements.map((element) => element.text.length))
+    ];
+  };
+  const scored = unique.map((word, index) => ({word, index, score: score(word)}));
+  scored.sort((a, b) => {
+    for (let key = 0; key < a.score.length; key++) {
+      if (a.score[key] !== b.score[key]) return b.score[key] - a.score[key];
+    }
+    return a.index - b.index;
   });
-  const exact = ranked.findIndex((word) => word.kanji.some((kanji) => kanji.text === query));
-  if (exact > 0) [ranked[0], ranked[exact]] = [ranked[exact], ranked[0]];
-  return ranked;
+  return scored.map(({word}) => word);
 };
+
+/**
+ * Every word spelled or read exactly `query`. Index keys are `<text>-<id>`, so a `<query>-` prefix
+ * matches the exact text only; a plain prefix read is capped and can miss them (いい has eight
+ * archaic entries before the common one).
+ */
+export const exactJapaneseMatches = async (db: DictionaryDb, query: string) => [
+  ...await readingBeginning(db, `${query}-`),
+  ...await kanjiBeginning(db, `${query}-`)
+];
 
 /**
  * The entry a learning word refers to: preferably one spelled `target` and read `reading` (数 read
@@ -63,26 +94,22 @@ export const pickJapaneseGloss = (entries: JmdictWord[], target: string, reading
 const SPELLING_PREFIX_FALLBACK = 200;
 
 /**
- * Gloss for a Japanese learning word. Candidates are the first two words whose reading starts with
- * `target` and every word spelled exactly `target`; only when none fits are words whose spelling
- * starts with `target` read, and then a bounded number. `queryJapanese` reads all of those (817
- * entries for 人), which only its search results need.
+ * Gloss for a Japanese learning word. Candidates are the words spelled or read exactly `target`;
+ * only when none fits are words whose spelling starts with `target` read, and then a bounded number.
+ * `queryJapanese` reads all of those (817 entries for 人), which only its search results need.
  */
 export const japaneseLearningGloss = async (
   db: DictionaryDb,
-  tags: Record<string, string>,
   {target, reading = ""}: LearningGlossRequest
 ): Promise<string> => {
   if (!target || target === "*") return "";
-  const byReading = await readingBeginning(db, target, 2);
-  // The index key is `<spelling>-<id>`, so this prefix matches the exact spelling only.
-  const exact = rankJapaneseMatches([...byReading, ...await kanjiBeginning(db, `${target}-`)], target, tags);
-  const entry = findJapaneseEntry(exact, target, reading);
+  const exact = await exactJapaneseMatches(db, target);
+  const entry = findJapaneseEntry(rankJapaneseMatches(exact, target), target, reading);
   if (entry) return firstGloss(entry);
   // Spellings start with kanji; a kana word (a name, slang) missing from JMdict has nothing to find.
   if (![...target].some((character) => isKanji(character))) return "";
-  const prefixed= await kanjiBeginning(db, target, SPELLING_PREFIX_FALLBACK);
-  return pickJapaneseGloss(rankJapaneseMatches([...byReading, ...prefixed], target, tags), target, reading);
+  const prefixed = await kanjiBeginning(db, target, SPELLING_PREFIX_FALLBACK);
+  return pickJapaneseGloss(rankJapaneseMatches([...exact, ...prefixed], target), target, reading);
 };
 
 /** Orders `queryChinese` results: duplicates removed, shortest headword first, then most meanings. */
