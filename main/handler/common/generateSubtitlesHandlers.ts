@@ -1,0 +1,142 @@
+import {app, BrowserWindow, ipcMain} from "electron";
+import path from "node:path";
+import {getStore} from "./storeHandlers";
+import {openRouterMessages} from "../../../renderer/utils/openRouterConstants";
+import {isKnownAsrModel, DEFAULT_ASR_MODEL, DEFAULT_TRANSLATE_MODEL} from "../../../renderer/utils/generateSubtitlesConfig";
+import type {
+  GenerateSubtitlesProgress,
+  GenerateSubtitlesResult,
+  GenerateSubtitlesStartRequest,
+  GenerateSubtitlesTranslateRequest
+} from "../../../renderer/types/generateSubtitles";
+import {generateSourceSubtitles} from "../../helpers/generateSubtitlesPipeline";
+import {translateSrtToEnglish} from "../../helpers/translateSrt";
+import {isJobCancelled, JobCancelledError} from "../../helpers/runCommand";
+
+type ActiveJob = {
+  abort: AbortController;
+};
+
+let activeJob: ActiveJob | null = null;
+
+const sendProgress = (sender: Electron.WebContents | undefined, progress: GenerateSubtitlesProgress) => {
+  if (sender && !sender.isDestroyed()) {
+    sender.send("generate-subtitles:progress", progress);
+    return;
+  }
+  BrowserWindow.getAllWindows().forEach((window) => {
+    window.webContents.send("generate-subtitles:progress", progress);
+  });
+};
+
+const miteiruDocumentsDir = () => path.join(app.getPath("documents"), "miteiru");
+
+const readOpenRouterKey = async () => {
+  const store = await getStore();
+  const key = String(store.get("openrouter.apiKey", "") || "").trim();
+  if (!key) {
+    throw new Error(openRouterMessages.missingApiKey);
+  }
+  return key;
+};
+
+const failResult = (error: unknown): GenerateSubtitlesResult => {
+  if (isJobCancelled(error) || error instanceof JobCancelledError) {
+    return {ok: false, cancelled: true};
+  }
+  return {
+    ok: false,
+    error: error instanceof Error ? error.message : String(error)
+  };
+};
+
+const runExclusive = async <T>(work: (signal: AbortSignal) => Promise<T>): Promise<T> => {
+  if (activeJob) {
+    throw new Error("A subtitle job is already running");
+  }
+  const abort = new AbortController();
+  activeJob = {abort};
+  try {
+    return await work(abort.signal);
+  } finally {
+    activeJob = null;
+  }
+};
+
+export function registerGenerateSubtitlesHandlers() {
+  ipcMain.handle("generate-subtitles:start", async (event, request: GenerateSubtitlesStartRequest): Promise<GenerateSubtitlesResult> => {
+    const videoPath = String(request?.videoPath || "").trim();
+    const lang = String(request?.lang || "").trim();
+    const asrModel = isKnownAsrModel(request?.asrModel) ? request.asrModel : DEFAULT_ASR_MODEL;
+
+    if (!videoPath) {
+      return {ok: false, error: "Load a video first"};
+    }
+    if (!lang) {
+      return {ok: false, error: "Learning language is not set"};
+    }
+
+    try {
+      return await runExclusive(async (signal) => {
+        const apiKey = await readOpenRouterKey();
+        const {sourceSrtPath} = await generateSourceSubtitles({
+          videoPath,
+          lang,
+          asrModel,
+          apiKey,
+          outputDir: miteiruDocumentsDir(),
+          signal,
+          onProgress: (progress) => sendProgress(event.sender, progress)
+        });
+        return {ok: true, sourceSrtPath};
+      });
+    } catch (error) {
+      const result = failResult(error);
+      sendProgress(event.sender, {
+        stage: result.cancelled ? "cancelled" : "error",
+        message: result.cancelled ? "Cancelled" : (result.error || "Failed"),
+        error: result.error
+      });
+      return result;
+    }
+  });
+
+  ipcMain.handle("generate-subtitles:translate", async (event, request: GenerateSubtitlesTranslateRequest): Promise<GenerateSubtitlesResult> => {
+    const sourceSrtPath = String(request?.sourceSrtPath || "").trim();
+    const lang = String(request?.lang || "").trim();
+    const translateModel = String(request?.translateModel || DEFAULT_TRANSLATE_MODEL).trim() || DEFAULT_TRANSLATE_MODEL;
+
+    if (!sourceSrtPath) {
+      return {ok: false, error: "Generate subtitles before translating"};
+    }
+
+    try {
+      return await runExclusive(async (signal) => {
+        const apiKey = await readOpenRouterKey();
+        const {englishSrtPath} = await translateSrtToEnglish({
+          sourceSrtPath,
+          lang,
+          translateModel,
+          apiKey,
+          signal,
+          onProgress: (progress) => sendProgress(event.sender, progress)
+        });
+        return {ok: true, sourceSrtPath, englishSrtPath};
+      });
+    } catch (error) {
+      const result = failResult(error);
+      sendProgress(event.sender, {
+        stage: result.cancelled ? "cancelled" : "error",
+        message: result.cancelled ? "Cancelled" : (result.error || "Failed"),
+        sourceSrtPath,
+        error: result.error
+      });
+      return result;
+    }
+  });
+
+  ipcMain.handle("generate-subtitles:cancel", async () => {
+    activeJob?.abort.abort();
+    return true;
+  });
+}
