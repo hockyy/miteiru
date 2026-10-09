@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useEffect, useLayoutEffect, useRef, useState} from "react";
 import {ChineseSentence, JapaneseSentence, PlainSentence} from "./Sentence";
 import {CJKStyling} from "../../utils/CJKStyling";
 import {getLyricsWindow, Line, NO_MEANING, SubtitleContainer} from "./DataStructures";
@@ -31,9 +31,14 @@ interface ScrollingLyricsProps {
   currentLinePosition?: number;
 }
 
-const Measurement = {
-  lineHeight : 100
-}
+// The lyrics block is scaled down to fit in this fraction of the window height.
+const WINDOW_FIT = 0.92;
+
+// The scale (never above 1, never below minScale) that makes content of that height fit the available height.
+export const fitScale = (contentHeight: number, availableHeight: number, minScale = 0.5) => {
+  if (contentHeight <= 0 || contentHeight <= availableHeight) return 1;
+  return Math.max(minScale, availableHeight / contentHeight);
+};
 
 interface LyricsWindow {
   // Index (in the subtitle) of the first visible line.
@@ -65,6 +70,8 @@ export const ScrollingLyrics = ({
 }: ScrollingLyricsProps) => {
   const [{lines: displayLines, current: currentLineIndex}, setLyricsWindow] = useState<LyricsWindow>(EMPTY_WINDOW);
   const shownRef = useRef(EMPTY_WINDOW);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [fit, setFit] = useState(1);
 
   // Runs on every clock tick; re-renders only when the window moves or a visible line gets tokens or glosses.
   useEffect(() => {
@@ -108,17 +115,40 @@ export const ScrollingLyrics = ({
     };
   }, [clock, shift, subtitle, linesVisible, currentLinePosition, setExternalContent, timeCache, setTimeCache]);
 
+  // The block is as tall as its lines (a fixed height used to squeeze them, so readings and meanings ran
+  // into the neighbouring lines). When it is taller than the window, scale it down to fit; a transform
+  // leaves the layout size alone, so this can't feed back into the observer.
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const refit = () => {
+      const next = fitScale(container.offsetHeight, window.innerHeight * WINDOW_FIT);
+      setFit((current) => Math.abs(current - next) < 0.005 ? current : next);
+    };
+    refit();
+    const observer = new ResizeObserver(refit);
+    observer.observe(container);
+    window.addEventListener('resize', refit);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', refit);
+    };
+  }, []);
+
   return (
     <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-10">
       <div
+        ref={containerRef}
         className="lyrics-container"
         style={{
           width: '85vw',
           maxWidth: '85vw',
-          height: `${linesVisible * Measurement.lineHeight + 200}px`,
-          display: 'flex',
+          display: displayLines.length > 0 ? 'flex' : 'none',
           flexDirection: 'column',
-          justifyContent: 'space-around',
+          justifyContent: 'center',
+          // Room for the current line to grow by its scale without touching the next one.
+          rowGap: '0.15em',
+          transform: fit < 1 ? `scale(${fit})` : undefined,
           backgroundColor: subtitleStyling.background,
           borderRadius: '16px',
           padding: '24px',
@@ -186,13 +216,14 @@ const LyricsLine = ({
   const lineStyle: React.CSSProperties = {
     opacity: getLineOpacity(),
     transform: `scale(${getLineScale()})`,
-    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+    transition: 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
     textAlign: 'center',
     padding: '12px 8px',
     pointerEvents: isCurrent ? 'auto' : 'none',
     borderRadius: '8px',
     backgroundColor: isCurrent ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-    minHeight: `${Measurement.lineHeight}px`,
+    // A line is never squeezed below its content: readings over the words, meanings under them.
+    flexShrink: 0,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
