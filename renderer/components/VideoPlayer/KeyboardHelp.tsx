@@ -85,7 +85,7 @@ export const KeyboardHelp = () => {
           <div className="grid gap-3 md:grid-cols-2">
             {shortcutGroups.map((group) => (
               <div key={group.title} className="rounded-2xl border border-blue-100 bg-blue-50/60 p-3">
-                <h3 className="mb-2 text-xs font-black uppercase tracking-wide text-blue-800">{group.title}</h3>
+                <h3 className="mb-2 text-sm font-black text-blue-800">{group.title}</h3>
                 <div className="space-y-2">
                   {group.items.map((item) => (
                     <div key={`${group.title}-${item.key}`} className="flex items-center gap-3 rounded-xl bg-white/70 px-3 py-2">

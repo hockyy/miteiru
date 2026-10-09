@@ -21,7 +21,8 @@
  *
  * 1. **Do not invent new blues** — extend variants here instead of one-off Tailwind in pages.
  * 2. **Panels** — wrap related controls in `MiteiruPanel`; use `label` for yellow header bar text.
- * 3. **Shadows** — hard offset shadows (`shadow-[2px_2px_0_0_#…]`) match MeaningBox; keep them on section shells only.
+ * 3. **Calm, still playful** — 1px borders in light blues, soft downward offset shadows (`shadow-[0_2px_0_0_#…]`)
+ *    on section shells only, yellow label bars in sentence case (no all-caps). Chosen for the 2026 revamp.
  * 4. **Buttons in narrow columns** — use `Button` with `size="small"` or `UI_ACTION_BTN`; paired buttons use `miteiru-btn--fill` (see globals.css).
  * 5. **New page shells** — add `UI_PAGE_*` tokens here, then thin re-export file if the page needs a alias (see `homeMenuTheme.ts`).
  *
@@ -42,63 +43,63 @@ export const UI_STUDY_COLUMN_BG = 'bg-gradient-to-br from-purple-50 to-pink-50';
 
 /** Top-level card (home menu shell). */
 export const UI_SHELL =
-  'w-full overflow-hidden rounded-2xl border-2 border-blue-700 bg-blue-100 shadow-[3px_3px_0_0_#1d4ed8]';
+  'w-full overflow-hidden rounded-2xl border border-blue-200 bg-blue-50 shadow-[0_3px_0_0_#bfdbfe]';
 
 /** MeaningBox modal shell (fixed height). */
 export const MEANING_SHELL =
-  'overflow-auto rounded-2xl border-2 border-blue-700 bg-blue-100 shadow-[3px_3px_0_0_#1d4ed8] w-full max-w-[1200px] h-[80vh] max-h-[90vh] transition-[width,max-width] duration-300 ease-out';
+  'overflow-auto rounded-2xl border border-blue-200 bg-blue-50 shadow-[0_6px_24px_-8px_rgba(30,58,138,0.35)] w-full max-w-[1200px] h-[80vh] max-h-[90vh] transition-[width,max-width] duration-300 ease-out';
 
 export const MEANING_HEADER =
-  'sticky top-0 z-[100] flex flex-col items-center gap-3 border-b-2 border-blue-700 bg-blue-100/95 px-4 py-3 shadow-[0_2px_0_0_rgba(29,78,216,0.12)] backdrop-blur-sm';
+  'sticky top-0 z-[100] flex flex-col items-center gap-3 border-b border-blue-200 bg-blue-50/95 px-4 py-3 backdrop-blur-sm';
 
 export const MEANING_BODY = 'space-y-4 px-4 py-4 text-blue-950';
 
 export const UI_SECTION =
-  'overflow-hidden min-w-0 rounded-xl border-2 border-blue-600 bg-white shadow-[2px_2px_0_0_#2563eb]';
+  'overflow-hidden min-w-0 rounded-xl border border-blue-200 bg-white shadow-[0_2px_0_0_#dbeafe]';
 
 export const MEANING_SECTION = UI_SECTION;
 
 export const UI_SECTION_LABEL =
-  'border-b-2 border-blue-600 bg-yellow-200 px-3 py-2 text-xs font-bold uppercase tracking-wide text-blue-900';
+  'border-b border-yellow-200 bg-yellow-100 px-3 py-2 text-sm font-bold text-blue-900';
 
 export const MEANING_SECTION_LABEL = UI_SECTION_LABEL;
 
 export const MEANING_SECTION_TITLE =
-  'text-xs font-bold uppercase tracking-wide text-blue-900';
+  'text-sm font-bold text-blue-900';
 
 export const MEANING_SECTION_HEADER =
-  'flex flex-wrap items-start justify-between gap-3 border-b border-blue-600 bg-yellow-200 px-4 py-2';
+  'flex flex-wrap items-start justify-between gap-3 border-b border-yellow-200 bg-yellow-100 px-4 py-2';
 
 export const UI_SECTION_BODY = 'min-w-0 bg-white px-3 py-2';
 
 export const UI_SECTION_LIVE =
-  'overflow-hidden min-w-0 rounded-xl border-2 border-green-600 bg-green-50 shadow-[2px_2px_0_0_#16a34a]';
+  'overflow-hidden min-w-0 rounded-xl border border-green-300 bg-green-50 shadow-[0_2px_0_0_#bbf7d0]';
 
 export const UI_SECTION_PURPLE =
-  'overflow-hidden min-w-0 flex flex-col h-full border-2 border-purple-700 bg-purple-50 shadow-[2px_2px_0_0_#7e22ce]';
+  'overflow-hidden min-w-0 flex flex-col h-full border border-purple-200 bg-purple-50 shadow-[0_2px_0_0_#e9d5ff]';
 
 export const UI_SECTION_EMERALD =
-  'overflow-hidden min-w-0 flex flex-col h-full border-2 border-emerald-700 bg-emerald-50 shadow-[2px_2px_0_0_#047857]';
+  'overflow-hidden min-w-0 flex flex-col h-full border border-emerald-200 bg-emerald-50 shadow-[0_2px_0_0_#a7f3d0]';
 
 export const UI_SECTION_LABEL_PURPLE =
-  'border-b-2 border-purple-600 bg-yellow-200 px-3 py-2 text-xs font-bold uppercase tracking-wide text-purple-950';
+  'border-b border-purple-100 bg-yellow-100 px-3 py-2 text-sm font-bold text-purple-950';
 
 export const UI_SECTION_LABEL_EMERALD =
-  'border-b-2 border-emerald-600 bg-yellow-200 px-3 py-2 text-xs font-bold uppercase tracking-wide text-emerald-950';
+  'border-b border-emerald-100 bg-yellow-100 px-3 py-2 text-sm font-bold text-emerald-950';
 
 export const UI_SECTION_LABEL_LIVE =
-  'border-b-2 border-green-600 bg-yellow-100 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-green-900';
+  'border-b border-green-100 bg-yellow-50 px-3 py-1.5 text-sm font-bold text-green-900';
 
 export const MEANING_ENTRY =
-  'overflow-hidden rounded-xl border border-blue-700 bg-white shadow-[1px_1px_0_0_#1d4ed8]';
+  'overflow-hidden rounded-xl border border-blue-200 bg-white shadow-[0_1px_0_0_#dbeafe]';
 
 export const MEANING_ENTRY_CHARACTER =
-  'overflow-hidden rounded-xl border border-red-700 border-l-4 border-l-red-600 bg-red-50 shadow-[1px_1px_0_0_#b91c1c]';
+  'overflow-hidden rounded-xl border border-red-200 border-l-4 border-l-red-500 bg-red-50 shadow-[0_1px_0_0_#fecaca]';
 
-export const MEANING_TAG_ROW = 'flex flex-wrap gap-2 border-b border-blue-600 bg-blue-100 px-4 py-3';
+export const MEANING_TAG_ROW = 'flex flex-wrap gap-2 border-b border-blue-100 bg-blue-50 px-4 py-3';
 
 export const MEANING_TAG_ROW_CHARACTER =
-  'flex flex-wrap gap-2 border-b border-red-600 bg-red-100 px-4 py-3';
+  'flex flex-wrap gap-2 border-b border-red-100 bg-red-50 px-4 py-3';
 
 export const MEANING_TAG =
   'rounded-lg bg-blue-600 px-2 py-1 text-xs font-bold text-white unselectable';
@@ -107,38 +108,38 @@ export const MEANING_TAG_CHARACTER =
   'rounded-lg bg-red-600 px-2 py-1 text-xs font-bold text-white unselectable';
 
 export const MEANING_WORD_DISPLAY =
-  'inline-flex h-fit w-fit items-center justify-center rounded-xl border-2 border-blue-700 bg-white px-[0.35em] pb-[0.25em] pt-[0.45em] unselectable hovery shadow-[1px_1px_0_0_#1d4ed8] transition-transform duration-150 hover:-translate-y-0.5';
+  'inline-flex h-fit w-fit items-center justify-center rounded-xl border border-blue-300 bg-white px-[0.35em] pb-[0.25em] pt-[0.45em] unselectable hovery shadow-[0_2px_0_0_#bfdbfe] transition-transform duration-150 hover:-translate-y-0.5';
 
 export const MEANING_GLOSS = 'px-4 py-3 text-base font-semibold leading-relaxed text-red-700';
 
 export const MEANING_GLOSS_INDEX = 'font-bold text-blue-800 mr-2';
 
 export const UI_ACTION_BTN =
-  'inline-flex min-w-0 max-w-full items-center justify-center gap-1 rounded-lg border border-blue-700 bg-yellow-200 px-2.5 py-1 text-xs font-bold text-blue-900 transition-colors hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-50';
+  'inline-flex min-w-0 max-w-full items-center justify-center gap-1 rounded-lg border border-yellow-300 bg-yellow-100 px-2.5 py-1 text-xs font-bold text-blue-900 transition-colors hover:bg-yellow-200 disabled:cursor-not-allowed disabled:opacity-50';
 
 export const MEANING_ACTION_BTN = UI_ACTION_BTN;
 
 export const UI_ACTION_BTN_PRIMARY =
-  'inline-flex min-w-0 items-center justify-center rounded-lg border border-blue-700 bg-blue-200 px-2.5 py-1 text-xs font-bold text-blue-900 transition-colors hover:bg-blue-300 disabled:cursor-not-allowed disabled:opacity-50';
+  'inline-flex min-w-0 items-center justify-center rounded-lg border border-blue-300 bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-900 transition-colors hover:bg-blue-200 disabled:cursor-not-allowed disabled:opacity-50';
 
 export const UI_ACTION_BTN_LIVE =
-  'inline-flex min-w-0 items-center justify-center rounded-lg border border-green-700 bg-green-200 px-2.5 py-1 text-xs font-bold text-green-900 transition-colors hover:bg-green-300 disabled:cursor-not-allowed disabled:opacity-50';
+  'inline-flex min-w-0 items-center justify-center rounded-lg border border-green-300 bg-green-100 px-2.5 py-1 text-xs font-bold text-green-900 transition-colors hover:bg-green-200 disabled:cursor-not-allowed disabled:opacity-50';
 
 export const MEANING_KBD =
-  'rounded-md border border-blue-500 bg-yellow-100 px-2 py-0.5 text-xs font-bold text-blue-800';
+  'rounded-md border border-blue-200 bg-white px-2 py-0.5 text-xs font-bold text-blue-800';
 
 export const MEANING_NOTE_LABEL =
-  'text-xs font-bold uppercase tracking-wide text-blue-900';
+  'text-sm font-bold text-blue-900';
 
 export const MEANING_NOTE_DIVIDER = 'border-t border-blue-200';
 
 export const UI_FIELD_INPUT =
-  'w-full min-w-0 rounded-lg border-2 border-blue-400 bg-white px-3 py-2 text-sm font-medium text-blue-950 placeholder:text-blue-400 focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-yellow-200';
+  'w-full min-w-0 rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm font-medium text-blue-950 placeholder:text-blue-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-yellow-200';
 
 export const MEANING_FIELD_INPUT = UI_FIELD_INPUT;
 
 export const UI_TEXTAREA =
-  'w-full min-w-0 rounded-lg border-2 border-blue-400 bg-white px-3 py-2 text-sm font-medium text-blue-950 placeholder:text-blue-400 focus:border-blue-700 focus:outline-none focus:ring-2 focus:ring-yellow-200 resize-y min-h-[120px]';
+  'w-full min-w-0 rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm font-medium text-blue-950 placeholder:text-blue-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-yellow-200 resize-y min-h-[120px]';
 
 export const UI_SELECT = `${UI_FIELD_INPUT} cursor-pointer text-xs py-1.5`;
 
@@ -154,26 +155,26 @@ export const UI_SUBTITLE_SLOT =
 export const UI_HINT_TEXT = 'text-xs font-medium text-blue-800';
 
 export const UI_ERROR_BANNER =
-  'rounded-lg border-2 border-red-400 bg-red-50 px-2 py-1 text-[11px] font-medium text-red-800';
+  'rounded-lg border border-red-300 bg-red-50 px-2 py-1 text-[11px] font-medium text-red-800';
 
 /** Home menu aliases (re-exported via homeMenuTheme.ts). */
 export const HOME_PAGE_BG = UI_PAGE_BG;
-export const HOME_SHELL = `${UI_SHELL} max-w-4xl rounded-3xl shadow-[0_6px_0_0_#1d4ed8]`;
+export const HOME_SHELL = `${UI_SHELL} max-w-4xl rounded-3xl shadow-[0_4px_0_0_#bfdbfe]`;
 export const HOME_HEADER =
-  'flex flex-row items-center justify-between gap-3 border-b-2 border-blue-700 bg-blue-200 px-4 py-4';
+  'flex flex-row items-center justify-between gap-3 border-b border-blue-200 bg-blue-100 px-4 py-4';
 export const HOME_BODY = MEANING_BODY;
-export const HOME_SECTION = `${UI_SECTION} rounded-2xl shadow-[0_4px_0_0_#2563eb]`;
+export const HOME_SECTION = `${UI_SECTION} rounded-2xl shadow-[0_3px_0_0_#dbeafe]`;
 export const HOME_SECTION_LABEL = `${UI_SECTION_LABEL} py-2.5`;
 export const HOME_STATUS_PILL =
-  'max-w-[min(50vw,280px)] truncate rounded-2xl border-2 border-blue-700 bg-yellow-200 px-3 py-1.5 text-[11px] font-bold text-blue-900';
+  'max-w-[min(50vw,280px)] truncate rounded-2xl border border-yellow-300 bg-yellow-100 px-3 py-1.5 text-[11px] font-bold text-blue-900';
 export const HOME_INNER_PANEL =
-  'overflow-hidden rounded-2xl border-2 border-blue-500 bg-blue-50 shadow-[0_3px_0_0_#3b82f6]';
+  'overflow-hidden rounded-2xl border border-blue-200 bg-blue-50 shadow-[0_2px_0_0_#dbeafe]';
 export const HOME_INNER_LABEL =
-  'border-b-2 border-blue-500 bg-yellow-100 px-3 py-2 text-xs font-bold uppercase tracking-wide text-blue-900';
+  'border-b border-yellow-200 bg-yellow-50 px-3 py-2 text-sm font-bold text-blue-900';
 export const HOME_STATUS_CHIP =
-  'inline-flex items-center gap-1.5 rounded-2xl border-2 border-blue-600 bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-900 shadow-[0_2px_0_0_#2563eb]';
+  'inline-flex items-center gap-1.5 rounded-2xl border border-blue-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-blue-900';
 export const HOME_ICON_BADGE =
-  'flex h-10 w-10 items-center justify-center rounded-2xl border-2 border-blue-700 bg-yellow-200 text-lg shadow-[0_2px_0_0_#1d4ed8]';
+  'flex h-10 w-10 items-center justify-center rounded-2xl border border-yellow-300 bg-yellow-200 text-lg shadow-[0_2px_0_0_#fde68a]';
 
 export const UI_PANEL_VARIANTS: Record<MiteiruPanelVariant, { shell: string; label: string; body: string }> = {
   default: { shell: UI_SECTION, label: UI_SECTION_LABEL, body: UI_SECTION_BODY },

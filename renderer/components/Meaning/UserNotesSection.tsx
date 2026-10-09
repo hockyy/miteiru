@@ -219,12 +219,12 @@ export const UserNotesSection: React.FC<UserNotesSectionProps> = ({
             <div className="flex flex-wrap items-center gap-2">
               <h3 className={MEANING_SECTION_TITLE}>My Notes</h3>
               {hasSavedNote && !isEditing && (
-                <span className="rounded-full border-2 border-green-700 bg-green-400 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white">
+                <span className="rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-bold text-green-800">
                   Saved
                 </span>
               )}
               {isEditing && (
-                <span className="rounded-full border-2 border-blue-700 bg-blue-500 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white">
+                <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-bold text-blue-800">
                   Editing
                 </span>
               )}
