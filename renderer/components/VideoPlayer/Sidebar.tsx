@@ -1,4 +1,4 @@
-import React, {useCallback} from "react";
+import React, {ReactNode, useCallback, useState} from "react";
 import {PopoverPicker} from "./PopoverPicker";
 import {
   CJKStyling,
@@ -11,371 +11,245 @@ import {GistManager} from "../Data/GistManager";
 import {SubtitleMode} from "../../utils/utils";
 import {SidebarSection, SidebarSettingRow, SidebarShell, SIDEBAR_FIELD_INPUT} from "./SidebarShell";
 import {useExportAllAnkiCards} from "../../hooks/useExportAllAnkiCards";
+import {videoConstants} from "../../utils/constants";
 
-export const StylingBox = ({
-                             subtitleStyling,
-                             setSubtitleStyling,
-                             subtitleName,
-                             defaultStyling,
-                             lang
-                           }) => {
-  const saveHandler = useCallback(() => {
-    window.ipc.invoke("saveFile", ["json"], JSON.stringify(subtitleStyling))
-  }, [subtitleStyling]);
-  const loadHandler = useCallback(() => {
+/** Sets one (possibly nested) field of a subtitle style, e.g. `update("text.color", "#fff")`. */
+const useStylingUpdate = (styling: CJKStyling, setStyling: (styling: CJKStyling) => void) =>
+  useCallback((path: string, value: unknown) => {
+    const copy = JSON.parse(JSON.stringify(styling));
+    const keys = path.split(".");
+    let target = copy;
+    for (const key of keys.slice(0, -1)) target = target[key];
+    target[keys[keys.length - 1]] = value;
+    setStyling(copy);
+  }, [styling, setStyling]);
+
+// The reading shown above words, by language; Vietnamese has none.
+const READING_NAME: Record<string, string> = {
+  [videoConstants.japaneseLang]: "furigana",
+  [videoConstants.chineseLang]: "pinyin",
+  [videoConstants.cantoneseLang]: "jyutping",
+};
+
+const Hint = ({children}: { children: ReactNode }) => (
+  <div className="text-xs text-white/50">{children}</div>
+);
+
+const ToggleRow = ({label, hint, checked, onChange}: {
+  label: string;
+  hint?: string;
+  checked: boolean;
+  onChange: (value: boolean) => void;
+}) => (
+  <SidebarSettingRow>
+    <Toggle isChecked={Boolean(checked)} onChange={onChange}/>
+    <div className="min-w-0">
+      <div>{label}</div>
+      {hint && <Hint>{hint}</Hint>}
+    </div>
+  </SidebarSettingRow>
+);
+
+const SliderRow = ({label, valueLabel, min, max, step, value, onChange}: {
+  label: string;
+  valueLabel: string;
+  min: number;
+  max: number;
+  step: number;
+  value: number;
+  onChange: (value: number) => void;
+}) => (
+  <div className="flex flex-col gap-1.5 rounded-xl bg-black/20 px-3 py-2 text-sm text-white/85">
+    <div className="flex items-center justify-between gap-3">
+      <span>{label}</span>
+      <span className="text-white/60">{valueLabel}</span>
+    </div>
+    <input className="slider" type="range" aria-label={label} min={min} max={max} step={step} value={value}
+           onChange={(event) => onChange(event.target.valueAsNumber)}/>
+  </div>
+);
+
+const ColorRow = ({label, color, onChange}: { label: string; color: string; onChange: (color: string) => void }) => (
+  <div className="flex flex-row items-center gap-3 text-sm text-white/85">
+    <PopoverPicker color={color} onChange={onChange}/>
+    {label}
+  </div>
+);
+
+const LearningFileButtons = ({lang}: { lang: string }) => {
+  const saveLearning = useCallback(() => {
+    window.ipc.invoke('loadLearningState', lang).then((val) => {
+      window.ipc.invoke("saveFile", ["json"], JSON.stringify(val))
+    })
+  }, [lang]);
+  const loadLearning = useCallback(() => {
     window.ipc.invoke("readFile", ["json"]).then((val) => {
       try {
-        const parsed = JSON.parse(val) as CJKStyling;
-        setSubtitleStyling(parsed)
+        window.ipc.invoke("updateContentBatch", JSON.parse(val), lang)
+      } catch (e) {
+        console.error(e)
+      }
+    })
+  }, [lang]);
+  return <div className="flex min-w-0 flex-row gap-2 w-full">
+    <Button type="secondary" className="miteiru-btn--fill" onPress={saveLearning}>Save to a file…</Button>
+    <Button type="secondary" className="miteiru-btn--fill" onPress={loadLearning}>Load from a file…</Button>
+  </div>;
+};
+
+/** What the primary subtitle shows: readings, meanings, learning colours. */
+export const SubtitleContentSettings = ({subtitleStyling, setSubtitleStyling, lang}: {
+  subtitleStyling: CJKStyling;
+  setSubtitleStyling: (styling: CJKStyling) => void;
+  lang: string;
+}) => {
+  const update = useStylingUpdate(subtitleStyling, setSubtitleStyling);
+  const reading = READING_NAME[lang];
+  const japanese = lang === videoConstants.japaneseLang;
+  return <div className="flex flex-col gap-3">
+    {reading && <ToggleRow label={`Show ${reading}`} checked={subtitleStyling.showFurigana}
+                           onChange={(value) => update("showFurigana", value)}/>}
+    {japanese && subtitleStyling.showFurigana &&
+        <ToggleRow label="Furigana on kana words too" hint="Otherwise only words with kanji get furigana."
+                   checked={subtitleStyling.showFuriganaOnKana}
+                   onChange={(value) => update("showFuriganaOnKana", value)}/>}
+    {japanese && <ToggleRow label="Show romaji" checked={subtitleStyling.showRomaji}
+                            onChange={(value) => update("showRomaji", value)}/>}
+    {lang === videoConstants.chineseLang &&
+        <ToggleRow label="Show simplified characters" hint="Converts traditional-character subtitles."
+                   checked={subtitleStyling.forceSimplified}
+                   onChange={(value) => update("forceSimplified", value)}/>}
+    <ToggleRow label="Show word meanings" checked={subtitleStyling.showMeaning}
+               onChange={(value) => update("showMeaning", value)}/>
+    {subtitleStyling.showMeaning && <>
+      <ToggleRow label="Meanings above the words" checked={subtitleStyling.positionMeaningTop}
+                 onChange={(value) => update("positionMeaningTop", value)}/>
+      <SliderRow label="Longest meaning shown" valueLabel={`${subtitleStyling.maximalMeaningLengthPerCharacter} letters per character`}
+                 min={0} max={20} step={1} value={Number(subtitleStyling.maximalMeaningLengthPerCharacter)}
+                 onChange={(value) => update("maximalMeaningLengthPerCharacter", value)}/>
+    </>}
+    <ToggleRow label="Colour words by how well you know them" checked={subtitleStyling.learning}
+               onChange={(value) => update("learning", value)}/>
+    <ToggleRow label="Space between words" checked={subtitleStyling.showSpace}
+               onChange={(value) => update("showSpace", value)}/>
+    <ToggleRow label="Hide hearing-impaired notes"
+               hint="Removes [sounds], (notes) and speaker names from both subtitles, from the next one loaded."
+               checked={subtitleStyling.removeHearingImpaired}
+               onChange={(value) => update("removeHearingImpaired", value)}/>
+  </div>;
+};
+
+/** How a subtitle looks: font, colours, outline, background and position. */
+export const SubtitleLookSettings = ({subtitleStyling, setSubtitleStyling, defaultStyling, name, withMeaning}: {
+  subtitleStyling: CJKStyling;
+  setSubtitleStyling: (styling: CJKStyling) => void;
+  defaultStyling: CJKStyling;
+  name: string;
+  withMeaning: boolean;
+}) => {
+  const update = useStylingUpdate(subtitleStyling, setSubtitleStyling);
+  const exportStyle = useCallback(() => {
+    window.ipc.invoke("saveFile", ["json"], JSON.stringify(subtitleStyling))
+  }, [subtitleStyling]);
+  const importStyle = useCallback(() => {
+    window.ipc.invoke("readFile", ["json"]).then((val) => {
+      try {
+        setSubtitleStyling(JSON.parse(val) as CJKStyling)
       } catch (e) {
         console.error(e)
       }
     })
   }, [setSubtitleStyling]);
-  const cjkForceSimplifiedHandler = useCallback((val) => {
-    const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-    newCopy.forceSimplified = val;
-    setSubtitleStyling(newCopy)
-  }, [setSubtitleStyling, subtitleStyling]);
-  const cjkShowFuriganaHandler = useCallback((val) => {
-    const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-    newCopy.showFurigana = val;
-    setSubtitleStyling(newCopy)
-  }, [setSubtitleStyling, subtitleStyling]);
-  const cjkShowFuriganaOnKanaHandler = useCallback((val) => {
-    const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-    newCopy.showFuriganaOnKana = val;
-    setSubtitleStyling(newCopy)
-  }, [setSubtitleStyling, subtitleStyling]);
-  const cjkShowRomajiHandler = useCallback((val) => {
-    const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-    newCopy.showRomaji = val;
-    setSubtitleStyling(newCopy)
-  }, [setSubtitleStyling, subtitleStyling]);
-  const cjkShowMeaningHandler = useCallback((val) => {
-    const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-    newCopy.showMeaning = val;
-    setSubtitleStyling(newCopy)
-  }, [setSubtitleStyling, subtitleStyling]);
-  const cjkUseLearningHandler = useCallback((val) => {
-        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-        newCopy.learning = val;
-        setSubtitleStyling(newCopy)
-      }
-      , [setSubtitleStyling, subtitleStyling]);
-  const cjkTextMeaningColorHandler = useCallback((val) => {
-        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-        newCopy.textMeaning.color = val;
-        setSubtitleStyling(newCopy)
-      }
-      , [setSubtitleStyling, subtitleStyling]);
-  const cjkShowMoreSpaceHandler = useCallback((val) => {
-        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-        newCopy.showSpace = val;
-        setSubtitleStyling(newCopy)
-      }
-      , [setSubtitleStyling, subtitleStyling]);
-  const cjkMeaningHoverTextHandler = useCallback((val) => {
-        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-        newCopy.textMeaning.hoverColor = val;
-        setSubtitleStyling(newCopy)
-      }
-      , [setSubtitleStyling, subtitleStyling]);
-  const cjkMeaningWeightHandler = useCallback(event => {
-    const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-    newCopy.textMeaning.weight = parseInt(event.target.value);
-    setSubtitleStyling(newCopy)
-  }, [setSubtitleStyling, subtitleStyling]);
-  const cjkRemoveHearingImpairedHandler = useCallback((val) => {
-        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-        newCopy.removeHearingImpaired = val;
-        setSubtitleStyling(newCopy)
-      }
-      , [setSubtitleStyling, subtitleStyling]);
-  const cjkSubtitleMeaningTopHandler = useCallback((val) => {
-        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-        newCopy.positionMeaningTop = val;
-        setSubtitleStyling(newCopy)
-      }
-      , [setSubtitleStyling, subtitleStyling]);
-  const cjkMaximalMeaningLPCHandler = useCallback(event => {
-    const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-    newCopy.maximalMeaningLengthPerCharacter = parseInt(event.target.value);
-    setSubtitleStyling(newCopy)
-  }, [setSubtitleStyling, subtitleStyling]);
-  const subtitleTextColorHandler = useCallback((val) => {
-        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-        newCopy.text.color = val;
-        setSubtitleStyling(newCopy)
-      }
-      , [setSubtitleStyling, subtitleStyling]);
-  const subtitleHoverColorHandler = useCallback((val) => {
-        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-        newCopy.text.hoverColor = val;
-        setSubtitleStyling(newCopy)
-      }
-      , [setSubtitleStyling, subtitleStyling]);
-  const subtitleStrokeColorHandler = useCallback((val) => {
-        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-        newCopy.stroke.color = val;
-        setSubtitleStyling(newCopy)
-      }
-      , [setSubtitleStyling, subtitleStyling]);
-  const subtitleHoverStrokeColorHandler = useCallback((val) => {
-        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-        newCopy.stroke.hoverColor = val;
-        setSubtitleStyling(newCopy)
-      }
-      , [setSubtitleStyling, subtitleStyling]);
-  const subtitlePositionFromTopHandler = useCallback((val) => {
-        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-        newCopy.positionFromTop = val;
-        setSubtitleStyling(newCopy)
-      }
-      , [setSubtitleStyling, subtitleStyling]);
-  const backgroundColorHandler = useCallback((val) => {
-        const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-        newCopy.background = val;
-        setSubtitleStyling(newCopy)
-      }
-      , [setSubtitleStyling, subtitleStyling]);
+  const resetStyle = useCallback(() => {
+    if (window.confirm(`Reset the ${name} subtitle style to the defaults?`)) setSubtitleStyling(defaultStyling);
+  }, [defaultStyling, name, setSubtitleStyling]);
+  return <div className="flex flex-col gap-3">
+    <div className="flex flex-row items-center gap-3 text-sm text-white/85">
+      Font
+      <input className={SIDEBAR_FIELD_INPUT} aria-label="Font" value={subtitleStyling.text.fontFamily}
+             onChange={(event) => update("text.fontFamily", event.target.value)}/>
+    </div>
+    <SliderRow label="Size" valueLabel={subtitleStyling.text.fontSize} min={10} max={100} step={1}
+               value={parseInt(subtitleStyling.text.fontSize)} onChange={(value) => update("text.fontSize", `${value}px`)}/>
+    <SliderRow label="Weight" valueLabel={String(subtitleStyling.text.weight)} min={100} max={800} step={100}
+               value={Number(subtitleStyling.text.weight)} onChange={(value) => update("text.weight", value)}/>
+    <ColorRow label="Text" color={subtitleStyling.text.color} onChange={(value) => update("text.color", value)}/>
+    <ColorRow label="Text on hover" color={subtitleStyling.text.hoverColor}
+              onChange={(value) => update("text.hoverColor", value)}/>
+    <ColorRow label="Outline" color={subtitleStyling.stroke.color} onChange={(value) => update("stroke.color", value)}/>
+    <ColorRow label="Outline on hover" color={subtitleStyling.stroke.hoverColor}
+              onChange={(value) => update("stroke.hoverColor", value)}/>
+    <SliderRow label="Outline width" valueLabel={subtitleStyling.stroke.width} min={0} max={1.5} step={0.02}
+               value={parseFloat(subtitleStyling.stroke.width)} onChange={(value) => update("stroke.width", `${value}px`)}/>
+    <ColorRow label="Background" color={subtitleStyling.background} onChange={(value) => update("background", value)}/>
+    {withMeaning && <>
+      <ColorRow label="Meaning text" color={subtitleStyling.textMeaning.color}
+                onChange={(value) => update("textMeaning.color", value)}/>
+      <ColorRow label="Meaning text on hover" color={subtitleStyling.textMeaning.hoverColor}
+                onChange={(value) => update("textMeaning.hoverColor", value)}/>
+      <SliderRow label="Meaning weight" valueLabel={String(subtitleStyling.textMeaning.weight)} min={100} max={800}
+                 step={100} value={Number(subtitleStyling.textMeaning.weight)}
+                 onChange={(value) => update("textMeaning.weight", value)}/>
+    </>}
+    <ToggleRow label="Place at the top of the screen" checked={subtitleStyling.positionFromTop}
+               onChange={(value) => update("positionFromTop", value)}/>
+    <SliderRow label={`Distance from the ${subtitleStyling.positionFromTop ? 'top' : 'bottom'}`}
+               valueLabel={subtitleStyling.position} min={0} max={100} step={1}
+               value={parseInt(subtitleStyling.position)} onChange={(value) => update("position", `${value}vh`)}/>
+    <div className="flex min-w-0 flex-row gap-2 w-full">
+      <Button type="secondary" className="miteiru-btn--fill" onPress={importStyle}>Import…</Button>
+      <Button type="secondary" className="miteiru-btn--fill" onPress={exportStyle}>Export…</Button>
+      <Button type="danger" className="miteiru-btn--fill" onPress={resetStyle}>Reset</Button>
+    </div>
+  </div>;
+};
 
-  const subtitleFontFamilyHandler = useCallback((event) => {
-    const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-    newCopy.text.fontFamily = event.target.value;
-    setSubtitleStyling(newCopy)
-  }, [setSubtitleStyling, subtitleStyling]);
-  const fontWeightHandler = useCallback(event => {
-    const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-    newCopy.text.weight = parseInt(event.target.value);
-    setSubtitleStyling(newCopy)
-  }, [setSubtitleStyling, subtitleStyling]);
-  const fontSizeHandler = useCallback(event => {
-    const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-    newCopy.text.fontSize = event.target.value + "px";
-    setSubtitleStyling(newCopy)
-  }, [setSubtitleStyling, subtitleStyling]);
-  const positionFromTopSlideHandler = useCallback(event => {
-    const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-    newCopy.position = event.target.value + "vh";
-    setSubtitleStyling(newCopy)
-  }, [setSubtitleStyling, subtitleStyling]);
-  const strokeWidthHandler = useCallback(event => {
-    const newCopy = JSON.parse(JSON.stringify(subtitleStyling))
-    newCopy.stroke.width = event.target.value + "px";
-    setSubtitleStyling(newCopy)
-  }, [setSubtitleStyling, subtitleStyling]);
-  const saveLearningHandler = useCallback(() => {
-    window.ipc.invoke('loadLearningState', lang).then((val) => {
-      window.ipc.invoke("saveFile", ["json"], JSON.stringify(val))
-    })
-  }, [lang]);
+/** Content, learning files and look of one subtitle, in one column (the Learn page's sidebar). */
+export const StylingBox = ({subtitleStyling, setSubtitleStyling, subtitleName, defaultStyling, lang}) => {
+  const primary = subtitleName === "CJK";
+  return <div className="w-full min-w-0 flex flex-col content-start gap-3 unselectable text-sm text-white/85">
+    {primary && <SubtitleContentSettings subtitleStyling={subtitleStyling} setSubtitleStyling={setSubtitleStyling}
+                                         lang={lang}/>}
+    {primary && <LearningFileButtons lang={lang}/>}
+    <SubtitleLookSettings subtitleStyling={subtitleStyling} setSubtitleStyling={setSubtitleStyling}
+                          defaultStyling={defaultStyling} name={primary ? "primary" : "secondary"}
+                          withMeaning={primary}/>
+  </div>;
+};
 
-  const loadLearningHandler = useCallback(() => {
-    window.ipc.invoke("readFile", ["json"]).then((val) => {
-      try {
-        const parsed = JSON.parse(val);
-        window.ipc.invoke("updateContentBatch", parsed, lang)
-      } catch (e) {
-        console.error(e)
-      }
-    })
-  }, [lang]);
-  return <div className={"w-full min-w-0 flex flex-col content-start gap-3 unselectable text-sm text-white/85"}>
-    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
-      <Toggle isChecked={subtitleStyling.showFurigana} onChange={cjkShowFuriganaHandler}/>
-      {subtitleName} Show Furigana
-    </div>}
-    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
-      <Toggle isChecked={subtitleStyling.forceSimplified} onChange={cjkForceSimplifiedHandler}/>
-      {subtitleName} Force Simplified ZH
-    </div>}
-    {subtitleName == "CJK" && subtitleStyling.showFurigana &&
-        <div className={"flex flex-row items-center gap-3"}>
-          <Toggle isChecked={subtitleStyling.showFuriganaOnKana}
-                  onChange={cjkShowFuriganaOnKanaHandler}/>
-          {subtitleName} Show Furigana on Kana
-        </div>}
-    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
-      <Toggle isChecked={subtitleStyling.showRomaji} onChange={cjkShowRomajiHandler
-      }/>
-      {subtitleName} Show Romaji
-    </div>}
-    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
-      <Toggle isChecked={subtitleStyling.showMeaning} onChange={cjkShowMeaningHandler
-      }/>
-      {subtitleName} Show Meaning
-    </div>}
-    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
-      <Toggle isChecked={subtitleStyling.learning} onChange={cjkUseLearningHandler}/>
-      {subtitleName} Use learning styling
-    </div>}
-    {subtitleName == "CJK" && <div className={"flex min-w-0 flex-row gap-2 w-full"}>
-      <Button
-          type={"primary"}
-          className={"miteiru-btn--fill"}
-          onPress={saveLearningHandler}>Save Learning</Button>
-      <Button
-          type={"secondary"}
-          className={"miteiru-btn--fill"}
-          onPress={loadLearningHandler}>Load Learning</Button>
-    </div>}
-    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
-      <Toggle isChecked={subtitleStyling.showSpace} onChange={cjkShowMoreSpaceHandler}/>
-      {subtitleName} Show More Space Between Each Token
-    </div>}
-    <div className={"flex flex-row items-center gap-3"}>
-      Font Family &nbsp;
-      <input
-          className={SIDEBAR_FIELD_INPUT}
-          value={subtitleStyling.text.fontFamily}
-          onChange={subtitleFontFamilyHandler}
-      />
-    </div>
-    <div className={"flex flex-row items-center gap-3"}>
-      <PopoverPicker color={subtitleStyling.text.color} onChange={subtitleTextColorHandler}/>
-      {subtitleName} Subtitle Text Color
-    </div>
-    <div className={"flex flex-row items-center gap-3"}>
-      <PopoverPicker color={subtitleStyling.text.hoverColor} onChange={subtitleHoverColorHandler}/>
-      {subtitleName} Subtitle Hover Color
-    </div>
+type SettingsTab = "playback" | "subtitles" | "look" | "data";
 
-    <div className={"flex flex-row items-center gap-3"}>
-      <PopoverPicker color={subtitleStyling.stroke.color} onChange={subtitleStrokeColorHandler}/>
-      {subtitleName} Subtitle Stroke Color
-    </div>
-    <div className={"flex flex-row items-center gap-3"}>
-      <PopoverPicker color={subtitleStyling.stroke.hoverColor}
-                     onChange={subtitleHoverStrokeColorHandler}/>
-      {subtitleName} Subtitle Hover Stroke Color
-    </div>
+const TABS: { id: SettingsTab; label: string }[] = [
+  {id: "playback", label: "Playback"},
+  {id: "subtitles", label: "Subtitles"},
+  {id: "look", label: "Look"},
+  {id: "data", label: "Data"},
+];
 
-    {subtitleName == "CJK" &&
-        <div className={"flex flex-row items-center gap-3"}>
-          <PopoverPicker color={subtitleStyling.textMeaning.color}
-                         onChange={cjkTextMeaningColorHandler}/>
-          {subtitleName} Meaning Text Color
-        </div>}
-    {subtitleName == "CJK" &&
-        <div className={"flex flex-row items-center gap-3"}>
-          <PopoverPicker color={subtitleStyling.textMeaning.hoverColor}
-                         onChange={cjkMeaningHoverTextHandler}/>
-          {subtitleName} Meaning Hover Text Color
-        </div>}
-
-    {subtitleName == "CJK" &&
-        <div className={"flex w-full justify-center items-center"}>
-          Meaning Font Weight <span>{subtitleStyling.textMeaning.weight}</span> &nbsp;
-          <input
-              className={"slider"}
-              type="range"
-              min={100}
-              max={800}
-              step={100}
-              value={parseInt(subtitleStyling.textMeaning.weight)}
-              onChange={cjkMeaningWeightHandler}
-          />
-        </div>}
-    <div className={"w-full flex flex-row items-center gap-3"}>
-      <PopoverPicker color={subtitleStyling.background} onChange={backgroundColorHandler}/>
-      {subtitleName} Background Color
-    </div>
-    <div className={"flex w-full justify-center items-center"}>
-      Stroke Width <span>{subtitleStyling.stroke.width}</span> &nbsp;
-      <input
-          className={"slider"}
-          type="range"
-          min={0}
-          max={1.5}
-          step={0.02}
-          value={parseFloat(subtitleStyling.stroke.width.trim('px'))}
-          onChange={strokeWidthHandler}
-      />
-    </div>
-    <div className={"flex w-full justify-center items-center"}>
-      Font Size <span>{subtitleStyling.text.fontSize}</span> &nbsp;
-      <input
-          className={"slider"}
-          type="range"
-          min={10}
-          max={100}
-          step={1}
-          value={parseInt(subtitleStyling.text.fontSize.trim('px'))}
-          onChange={fontSizeHandler}
-      />
-    </div>
-
-    <div className={"flex w-full justify-center items-center"}>
-      Font Weight <span>{subtitleStyling.text.weight}</span> &nbsp;
-      <input
-          className={"slider"}
-          type="range"
-          min={100}
-          max={800}
-          step={100}
-          value={parseInt(subtitleStyling.text.weight)}
-          onChange={fontWeightHandler}
-      />
-    </div>
-    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
-      <Toggle isChecked={subtitleStyling.removeHearingImpaired}
-              onChange={cjkRemoveHearingImpairedHandler}/>
-      Remove Hearing Impaired
-    </div>}
-    <div className={"flex flex-row items-center gap-3"}>
-      <Toggle isChecked={subtitleStyling.positionFromTop}
-              onChange={subtitlePositionFromTopHandler}/>
-      {subtitleName} Subtitle Position from Top
-    </div>
-    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
-      <Toggle isChecked={subtitleStyling.positionMeaningTop}
-              onChange={cjkSubtitleMeaningTopHandler}/>
-      {subtitleName} Subtitle Meaning at Top
-    </div>}
-    {subtitleName == "CJK" && <div className={"flex flex-row items-center gap-3"}>
-      Max Meaning Length/Character <span>{subtitleStyling.maximalMeaningLengthPerCharacter}</span>
-      <input
-          className={"slider"}
-          type="range"
-          min={0}
-          max={20}
-          step={1}
-          value={parseInt(subtitleStyling.maximalMeaningLengthPerCharacter)}
-          onChange={cjkMaximalMeaningLPCHandler}
-      />
-    </div>}
-    <div className={"flex w-full justify-center items-center"}>
-      Position from {subtitleStyling.positionFromTop ? 'top' : 'bottom'}
-      <input
-          className={"slider"}
-          type="range"
-          min={0}
-          max={100}
-          step={1}
-          value={parseInt(subtitleStyling.position.trim('vh'))}
-          onChange={positionFromTopSlideHandler}
-      />
-    </div>
-    <Button
-        type={"danger"}
-        onPress={() => {
-          setSubtitleStyling(defaultStyling)
-        }}
-    >Reset</Button>
-    <div className={"flex min-w-0 flex-row gap-2 w-full"}>
-      <Button
-          type={"primary"}
-          className={"miteiru-btn--fill"}
-          onPress={loadHandler}>Import</Button>
-      <Button
-          type={"secondary"}
-          className={"miteiru-btn--fill"}
-          onPress={saveHandler}>Export
-      </Button>
-    </div>
+const Segmented = <T extends string>({options, value, onChange, label}: {
+  options: { id: T; label: string }[];
+  value: T;
+  onChange: (value: T) => void;
+  label: string;
+}) => (
+  <div role="tablist" aria-label={label} className="flex w-full gap-1 rounded-xl bg-black/30 p-1">
+    {options.map((option) => (
+      <button
+        key={option.id}
+        type="button"
+        role="tab"
+        aria-selected={value === option.id}
+        onClick={() => onChange(option.id)}
+        className={[
+          "flex-1 rounded-lg px-2 py-1.5 text-sm font-bold transition-colors",
+          value === option.id ? "bg-white text-slate-900" : "text-white/70 hover:bg-white/10 hover:text-white"
+        ].join(" ")}
+      >
+        {option.label}
+      </button>
+    ))}
   </div>
-}
+);
 
 export const Sidebar = ({
                           showSidebar,
@@ -397,22 +271,10 @@ export const Sidebar = ({
                           setSubtitleMode,
                           setShowLyricsSearch
                         }) => {
-  const { exportAllAnkiCards, ankiExportModal } = useExportAllAnkiCards({ lang, tokenizeMiteiru });
-  const learningPercentageHandler = useCallback(event => {
-    setLearningPercentage(parseFloat(event.target.value));
-  }, [setLearningPercentage])
-  const autoPauseHandler = useCallback((val) => {
-    setAutoPause(val);
-  }, [setAutoPause])
-  const toneTypeHandler = useCallback((val) => {
-    setToneType(val ? 'num' : 'symbol');
-  }, [setToneType])
-  const subtitleModeHandler = useCallback((val) => {
-    setSubtitleMode(val ? SubtitleMode.Karaoke : SubtitleMode.Normal);
-  }, [setSubtitleMode])
-  const searchLyricsHandler = useCallback(() => {
-    setShowLyricsSearch?.(true);
-  }, [setShowLyricsSearch])
+  const {exportAllAnkiCards, ankiExportModal} = useExportAllAnkiCards({lang, tokenizeMiteiru});
+  const [tab, setTab] = useState<SettingsTab>("playback");
+  const [lookTarget, setLookTarget] = useState<"primary" | "secondary">("primary");
+  const usesToneNumbers = lang === videoConstants.chineseLang || lang === videoConstants.cantoneseLang;
   const exportHufHandler = useCallback(() => {
     if (!primarySub || !primarySub.lines || primarySub.lines.length === 0) {
       alert('No primary subtitle loaded to export.');
@@ -429,70 +291,75 @@ export const Sidebar = ({
   }, [primarySub]);
   const isKaraoke = subtitleMode == SubtitleMode.Karaoke;
   return <>
-  {ankiExportModal}
-  <SidebarShell
-      showSidebar={showSidebar}
-      setShowSidebar={setShowSidebar}
-      title="Video Settings"
-      subtitle="Playback, learning, subtitle style, and data tools"
-  >
-    <SidebarSection title="Playback">
-      <SidebarSettingRow>
-        <Toggle isChecked={toneType === 'num'} onChange={toneTypeHandler}/>
-        Use {toneType} Tone Type
-      </SidebarSettingRow>
-      <SidebarSettingRow>
-        <Toggle isChecked={autoPause} onChange={autoPauseHandler}/>
-        Enable Auto Pause
-      </SidebarSettingRow>
-      <SidebarSettingRow>
-        <Toggle isChecked={isKaraoke} onChange={subtitleModeHandler}/>
-        Use Karaoke Mode
-      </SidebarSettingRow>
-      <Button
-          type={"secondary"}
-          className={"w-full min-w-0 max-w-full"}
-          onPress={searchLyricsHandler}>
-        Search Lyrics (LRCLIB)
-      </Button>
-      <div className={"flex w-full items-center gap-3 rounded-xl bg-black/20 px-3 py-2 text-sm text-white/85"}>
-        <span>Learning </span>
-        <span className={'inline-block w-14'}>{learningPercentage}%</span>
-        <span className={'inline-block w-1/2'}><input
-            className={"slider"}
-            type="range"
-            min={0}
-            max={100}
-            step={0.4}
-            value={learningPercentage}
-            onChange={learningPercentageHandler}
-        /></span>
-      </div>
-      <Button
-            type={"secondary"}
-            className={"w-full min-w-0 max-w-full"}
-            onPress={exportHufHandler}>Export Primary as HUF</Button>
-    </SidebarSection>
+    {ankiExportModal}
+    <SidebarShell
+        showSidebar={showSidebar}
+        setShowSidebar={setShowSidebar}
+        title="Video settings"
+        subtitle="Press X to open or close"
+    >
+      <Segmented<SettingsTab> options={TABS} value={tab} onChange={setTab} label="Settings sections"/>
 
-    <SidebarSection title="Primary Subtitle">
-    <StylingBox subtitleStyling={primaryStyling} setSubtitleStyling={setPrimaryStyling}
-                subtitleName={"CJK"} defaultStyling={defaultPrimarySubtitleStyling} lang={lang}/>
-    </SidebarSection>
-    <SidebarSection title="Secondary Subtitle">
-    <StylingBox subtitleStyling={secondaryStyling} setSubtitleStyling={setSecondaryStyling}
-                subtitleName={"Other"} defaultStyling={defaultSecondarySubtitleStyling}
-                lang={lang}/>
-    </SidebarSection>
-    <SidebarSection title="Cloud Sync">
-      <Button
-          type={"secondary"}
-          className={"w-full min-w-0 max-w-full"}
-          onPress={exportAllAnkiCards}
-      >
-        Export All Anki Cards
-      </Button>
-      <GistManager lang={lang}/>
-    </SidebarSection>
-  </SidebarShell>
+      {tab === "playback" && <SidebarSection>
+        <ToggleRow label="Pause after each line" hint="Stops at the end of every line, for shadowing or reading."
+                   checked={autoPause} onChange={setAutoPause}/>
+        <ToggleRow label="Karaoke mode" hint="Scrolling lyrics instead of one line at a time."
+                   checked={isKaraoke}
+                   onChange={(value) => setSubtitleMode(value ? SubtitleMode.Karaoke : SubtitleMode.Normal)}/>
+        <Button type="secondary" className="w-full min-w-0 max-w-full"
+                onPress={() => setShowLyricsSearch?.(true)}>
+          Find lyrics online (LRCLIB)…
+        </Button>
+        {usesToneNumbers &&
+            <ToggleRow label="Tone numbers" hint={toneType === 'num' ? "ni3 hao3" : "Tone marks: nǐ hǎo"}
+                       checked={toneType === 'num'} onChange={(value) => setToneType(value ? 'num' : 'symbol')}/>}
+      </SidebarSection>}
+
+      {tab === "subtitles" && <>
+        <SidebarSection title="Primary subtitle">
+          <SubtitleContentSettings subtitleStyling={primaryStyling} setSubtitleStyling={setPrimaryStyling}
+                                   lang={lang}/>
+        </SidebarSection>
+        <SidebarSection title="Words to learn">
+          <SliderRow label="Treat the most common words as mastered" valueLabel={`top ${learningPercentage}%`}
+                     min={0} max={100} step={0.4} value={learningPercentage} onChange={setLearningPercentage}/>
+          <Hint>Words you have not marked yet that are this common in the subtitle show as mastered, so the
+            rarer ones stand out.</Hint>
+        </SidebarSection>
+      </>}
+
+      {tab === "look" && <SidebarSection>
+        <Segmented<"primary" | "secondary"> options={[{id: "primary", label: "Primary"}, {id: "secondary", label: "Secondary"}]}
+                   value={lookTarget} onChange={setLookTarget} label="Subtitle to style"/>
+        {lookTarget === "primary"
+          ? <SubtitleLookSettings key="primary" subtitleStyling={primaryStyling} setSubtitleStyling={setPrimaryStyling}
+                                  defaultStyling={defaultPrimarySubtitleStyling} name="primary" withMeaning/>
+          : <SubtitleLookSettings key="secondary" subtitleStyling={secondaryStyling}
+                                  setSubtitleStyling={setSecondaryStyling}
+                                  defaultStyling={defaultSecondarySubtitleStyling} name="secondary"
+                                  withMeaning={false}/>}
+      </SidebarSection>}
+
+      {tab === "data" && <>
+        <SidebarSection title="Learning progress">
+          <Hint>How well you know each word, for backups or another computer.</Hint>
+          <LearningFileButtons lang={lang}/>
+        </SidebarSection>
+        <SidebarSection title="Anki">
+          <Button type="secondary" className="w-full min-w-0 max-w-full" onPress={exportAllAnkiCards}>
+            Export all Anki cards…
+          </Button>
+        </SidebarSection>
+        <SidebarSection title="Primary subtitle">
+          <Button type="secondary" className="w-full min-w-0 max-w-full" onPress={exportHufHandler}>
+            Save as lyrics (.huf)…
+          </Button>
+          <Hint>Miteiru’s lyrics format, with the word splits and readings.</Hint>
+        </SidebarSection>
+        <SidebarSection title="Sync with a GitHub Gist">
+          <GistManager lang={lang}/>
+        </SidebarSection>
+      </>}
+    </SidebarShell>
   </>;
-}
+};
