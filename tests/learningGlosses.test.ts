@@ -54,6 +54,12 @@ test("japaneseLearningGloss reads exact spellings, not every word that starts wi
       // 数 has entries for several readings; the one matching the token's reading wins.
       word("105", ["屡々", "数"], ["しばしば"], "often", "adv"),
       word("106", ["数"], ["かず"], "number"),
+      // Neither 尤も spelling is common; the word spelled 尤も first wins over 最も's variant.
+      word("1293700", ["最も", "尤も"], ["もっとも"], "most", "adv", false),
+      word("1535810", ["尤も"], ["もっとも"], "but then", "conj", false),
+      // A kana word with homophones gets the common one.
+      word("1182010", ["黄梢"], ["こうしょう"], "spring of yellow buds", "n", false),
+      word("1272110", ["交渉"], ["こうしょう"], "negotiations"),
     ]
   }), "utf8");
   const {db} = await setupJmdict(path.join(directory, "jmdict-db"), file);
@@ -65,6 +71,8 @@ test("japaneseLearningGloss reads exact spellings, not every word that starts wi
     // No word is spelled 成: fall back to spellings starting with it, matched by reading.
     assert.equal(await japaneseLearningGloss(db, {target: "成", reading: "なる"}), "to become");
     assert.equal(await japaneseLearningGloss(db, {target: "数", reading: "かず"}), "number");
+    assert.equal(await japaneseLearningGloss(db, {target: "尤も", reading: "もっとも"}), "but then");
+    assert.equal(await japaneseLearningGloss(db, {target: "こうしょう", reading: "こうしょう"}), "negotiations");
     // A kana word missing from JMdict gets no gloss (and no spelling scan).
     assert.equal(await japaneseLearningGloss(db, {target: "ナルトス", reading: "なるとす"}), "");
     assert.equal(await japaneseLearningGloss(db, {target: "", reading: ""}), "");
