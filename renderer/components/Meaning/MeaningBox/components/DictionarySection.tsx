@@ -6,7 +6,7 @@ type DictionarySectionProps = {
   meaningContent: React.ReactNode;
 };
 
-/** Wraps kanji/hanji + word senses under one labelled section. */
+/** The word's senses, then its characters (kanji/hanzi breakdown), under one labelled section. */
 export const DictionarySection = ({
   characterContent,
   meaningContent,
@@ -19,8 +19,8 @@ export const DictionarySection = ({
     <section className={MEANING_SECTION}>
       <div className={MEANING_SECTION_LABEL}>Dictionary</div>
       <div className="space-y-3 p-4">
-        {characterContent}
         {meaningContent}
+        {characterContent}
       </div>
     </section>
   );

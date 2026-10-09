@@ -31,10 +31,10 @@ import type { MeaningBoxProps } from './types';
  *
  * Composed of:
  * - {@link MeaningBoxHeader} — navigation, TTS, headword ruby
+ * - {@link DictionarySection} — word senses, then kanji/hanzi
  * - {@link QuickActionsSection} — clipboard + Anki export
- * - {@link UserNotesSection} — personal notes (also used for Anki backs)
  * - {@link PitchAccentSection} — Japanese pitch contour per headword variant
- * - {@link DictionarySection} — kanji/hanzi + word senses
+ * - {@link UserNotesSection} — personal notes (also used for Anki backs)
  * - {@link InflectionSection} — collapsible conjugation table (Japanese)
  */
 const MeaningBox = ({
@@ -205,12 +205,20 @@ const MeaningBox = ({
           />
         }
       >
+        {/* What the word means comes first; tools and extras follow. */}
+        <DictionarySection
+          characterContent={characterPanel}
+          meaningContent={meaningPanel}
+        />
+
         <QuickActionsSection
           meaning={meaning}
           rubyHtmlContent={rubyHtmlContent}
           isExportingAnki={isExportingAnki}
           onExportAnki={exportToAnki}
         />
+
+        {showMeaning && <PitchAccentSection romajiedData={romajiedData} lang={lang} />}
 
         {showMeaning && <UserNotesSection
           term={meaning}
@@ -223,13 +231,6 @@ const MeaningBox = ({
           isGenerating={isGeneratingNote}
           onNavigateToTerm={handleNavigateToTerm}
         />}
-
-        {showMeaning && <PitchAccentSection romajiedData={romajiedData} lang={lang} />}
-
-        <DictionarySection
-          characterContent={characterPanel}
-          meaningContent={meaningPanel}
-        />
 
         {showMeaning && lang === videoConstants.japaneseLang && inflectionTable ? (
           <InflectionSection
