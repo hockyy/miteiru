@@ -253,10 +253,6 @@ export const Subtitle = (
     }) => {
   const currentContainerStyle = useSubtitleContainerStyle(subtitleStyling, extraContainerStyle);
 
-  currentContainerStyle[subtitleStyling.positionFromTop ? 'top' : 'bottom'] = subtitleStyling.position;
-  // Open side panels narrow the line instead of covering it (the video page sets these).
-  currentContainerStyle.left = 'var(--subtitle-inset-left, 0px)';
-  currentContainerStyle.right = 'var(--subtitle-inset-right, 0px)';
   return <div
       className={"unselectable fixed z-10 text-center transition-[left,right] duration-300 ease-out " + extraClass}
       style={currentContainerStyle}>

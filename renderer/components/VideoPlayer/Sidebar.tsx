@@ -3,7 +3,8 @@ import {PopoverPicker} from "./PopoverPicker";
 import {
   CJKStyling,
   defaultPrimarySubtitleStyling,
-  defaultSecondarySubtitleStyling
+  defaultSecondarySubtitleStyling,
+  withStylingPath
 } from "../../utils/CJKStyling";
 import Toggle from "./Toggle";
 import {Button} from "../Utils/Button";
@@ -15,14 +16,8 @@ import {videoConstants} from "../../utils/constants";
 
 /** Sets one (possibly nested) field of a subtitle style, e.g. `update("text.color", "#fff")`. */
 const useStylingUpdate = (styling: CJKStyling, setStyling: (styling: CJKStyling) => void) =>
-  useCallback((path: string, value: unknown) => {
-    const copy = JSON.parse(JSON.stringify(styling));
-    const keys = path.split(".");
-    let target = copy;
-    for (const key of keys.slice(0, -1)) target = target[key];
-    target[keys[keys.length - 1]] = value;
-    setStyling(copy);
-  }, [styling, setStyling]);
+  useCallback((path: string, value: unknown) => setStyling(withStylingPath(styling, path, value)),
+    [styling, setStyling]);
 
 // The reading shown above words, by language; Vietnamese has none.
 const READING_NAME: Record<string, string> = {
@@ -42,8 +37,9 @@ const ToggleRow = ({label, hint, checked, onChange}: {
   onChange: (value: boolean) => void;
 }) => (
   <SidebarSettingRow>
-    <Toggle isChecked={Boolean(checked)} onChange={onChange}/>
-    <div className="min-w-0">
+    <Toggle isChecked={Boolean(checked)} onChange={onChange} label={label}/>
+    {/* The text toggles too; the switch alone is a small target. Keyboard users use the switch. */}
+    <div className="min-w-0 flex-1 cursor-pointer select-none" onClick={() => onChange(!checked)}>
       <div>{label}</div>
       {hint && <Hint>{hint}</Hint>}
     </div>
@@ -116,7 +112,7 @@ export const SubtitleContentSettings = ({subtitleStyling, setSubtitleStyling, la
     {japanese && <ToggleRow label="Show romaji" checked={subtitleStyling.showRomaji}
                             onChange={(value) => update("showRomaji", value)}/>}
     {lang === videoConstants.chineseLang &&
-        <ToggleRow label="Show simplified characters" hint="Converts traditional-character subtitles."
+        <ToggleRow label="Simplified characters" hint="On: simplified (简体). Off: traditional (繁體)."
                    checked={subtitleStyling.forceSimplified}
                    onChange={(value) => update("forceSimplified", value)}/>}
     <ToggleRow label="Show word meanings" checked={subtitleStyling.showMeaning}
@@ -226,19 +222,44 @@ const TABS: { id: SettingsTab; label: string }[] = [
   {id: "data", label: "Data"},
 ];
 
-const Segmented = <T extends string>({options, value, onChange, label}: {
+const tabId = (group: string, id: string) => `${group}-tab-${id}`;
+const panelId = (group: string, id: string) => `${group}-panel-${id}`;
+
+/** One tab's content, labelled by its tab in `group`. */
+const TabPanel = ({group, id, children}: { group: string; id: string; children: ReactNode }) => (
+  <div role="tabpanel" id={panelId(group, id)} aria-labelledby={tabId(group, id)} className="flex flex-col gap-4">
+    {children}
+  </div>
+);
+
+const Segmented = <T extends string>({group, options, value, onChange, label}: {
+  // Prefix for the tab and panel ids, unique per tab list.
+  group: string;
   options: { id: T; label: string }[];
   value: T;
   onChange: (value: T) => void;
   label: string;
 }) => (
-  <div role="tablist" aria-label={label} className="flex w-full gap-1 rounded-xl bg-black/30 p-1">
+  <div role="tablist" aria-label={label} className="flex w-full gap-1 rounded-xl bg-black/30 p-1"
+       onKeyDown={(event) => {
+         // Left/Right move between tabs, as the tab pattern expects.
+         const step = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
+         if (!step) return;
+         event.preventDefault();
+         const index = options.findIndex((option) => option.id === value);
+         const next = options[(index + step + options.length) % options.length];
+         onChange(next.id);
+         document.getElementById(tabId(group, next.id))?.focus();
+       }}>
     {options.map((option) => (
       <button
         key={option.id}
         type="button"
         role="tab"
+        id={tabId(group, option.id)}
+        aria-controls={panelId(group, option.id)}
         aria-selected={value === option.id}
+        tabIndex={value === option.id ? 0 : -1}
         onClick={() => onChange(option.id)}
         className={[
           "flex-1 rounded-lg px-2 py-1.5 text-sm font-bold transition-colors",
@@ -298,9 +319,9 @@ export const Sidebar = ({
         title="Video settings"
         subtitle="Press X to open or close"
     >
-      <Segmented<SettingsTab> options={TABS} value={tab} onChange={setTab} label="Settings sections"/>
+      <Segmented<SettingsTab> group="settings" options={TABS} value={tab} onChange={setTab} label="Settings sections"/>
 
-      {tab === "playback" && <SidebarSection>
+      {tab === "playback" && <TabPanel group="settings" id="playback"><SidebarSection>
         <ToggleRow label="Pause after each line" hint="Stops at the end of every line, for shadowing or reading."
                    checked={autoPause} onChange={setAutoPause}/>
         <ToggleRow label="Karaoke mode" hint="Scrolling lyrics instead of one line at a time."
@@ -313,24 +334,26 @@ export const Sidebar = ({
         {usesToneNumbers &&
             <ToggleRow label="Tone numbers" hint={toneType === 'num' ? "ni3 hao3" : "Tone marks: nǐ hǎo"}
                        checked={toneType === 'num'} onChange={(value) => setToneType(value ? 'num' : 'symbol')}/>}
-      </SidebarSection>}
+      </SidebarSection></TabPanel>}
 
-      {tab === "subtitles" && <>
+      {tab === "subtitles" && <TabPanel group="settings" id="subtitles">
         <SidebarSection title="Primary subtitle">
           <SubtitleContentSettings subtitleStyling={primaryStyling} setSubtitleStyling={setPrimaryStyling}
                                    lang={lang}/>
         </SidebarSection>
         <SidebarSection title="Words to learn">
-          <SliderRow label="Treat the most common words as mastered" valueLabel={`top ${learningPercentage}%`}
+          <SliderRow label="Treat the most common words as mastered"
+                     valueLabel={`top ${Math.round(learningPercentage * 10) / 10}%`}
                      min={0} max={100} step={0.4} value={learningPercentage} onChange={setLearningPercentage}/>
           <Hint>Words you have not marked yet that are this common in the subtitle show as mastered, so the
             rarer ones stand out.</Hint>
         </SidebarSection>
-      </>}
+      </TabPanel>}
 
-      {tab === "look" && <SidebarSection>
-        <Segmented<"primary" | "secondary"> options={[{id: "primary", label: "Primary"}, {id: "secondary", label: "Secondary"}]}
+      {tab === "look" && <TabPanel group="settings" id="look"><SidebarSection>
+        <Segmented<"primary" | "secondary"> group="subtitle-style" options={[{id: "primary", label: "Primary"}, {id: "secondary", label: "Secondary"}]}
                    value={lookTarget} onChange={setLookTarget} label="Subtitle to style"/>
+        <TabPanel group="subtitle-style" id={lookTarget}>
         {lookTarget === "primary"
           ? <SubtitleLookSettings key="primary" subtitleStyling={primaryStyling} setSubtitleStyling={setPrimaryStyling}
                                   defaultStyling={defaultPrimarySubtitleStyling} name="primary" withMeaning/>
@@ -338,9 +361,10 @@ export const Sidebar = ({
                                   setSubtitleStyling={setSecondaryStyling}
                                   defaultStyling={defaultSecondarySubtitleStyling} name="secondary"
                                   withMeaning={false}/>}
-      </SidebarSection>}
+        </TabPanel>
+      </SidebarSection></TabPanel>}
 
-      {tab === "data" && <>
+      {tab === "data" && <TabPanel group="settings" id="data">
         <SidebarSection title="Learning progress">
           <Hint>How well you know each word, for backups or another computer.</Hint>
           <LearningFileButtons lang={lang}/>
@@ -359,7 +383,7 @@ export const Sidebar = ({
         <SidebarSection title="Sync with a GitHub Gist">
           <GistManager lang={lang}/>
         </SidebarSection>
-      </>}
+      </TabPanel>}
     </SidebarShell>
   </>;
 };
