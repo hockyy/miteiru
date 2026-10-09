@@ -1,4 +1,4 @@
-import { isHiragana, isKatakana, toHiragana, toKatakana, toRomaji } from 'wanakana'
+import { toRomaji } from 'wanakana'
 import { videoConstants } from "../../utils/constants";
 import { v4 as uuidv4 } from 'uuid';
 import type { SubtitleEntry as Entry } from "../../../main/helpers/subtitleParser";
@@ -87,10 +87,6 @@ const parseHufToEntries = (content: string): Entry[] => {
   .filter((entry): entry is Entry => entry !== null);
 };
 
-// Token readings keep ー (こーひー) while JMdict may not, so compare both spelled out (こうひい).
-const sameKanaReading = (left: string, right: string): boolean =>
-  toHiragana(toKatakana(left)) === toHiragana(toKatakana(right));
-
 const getRomajiFromSeparation = (separation: any): string => {
   if (!Array.isArray(separation)) return '';
 
@@ -150,129 +146,6 @@ export class Line {
 
   async fillContentSeparations(tokenizeMiteiru: TokenizeMiteiru) {
     this.content = await tokenizeMiteiru((this.content as string).replace(/\n/g, " "));
-  }
-
-  async fillContentWithLearningKotoba(frequency) {
-    this.meaning = Array(this.content.length).fill('');
-    for (let i = 0; i < this.content.length; i++) {
-      const word = this.content[i];
-      const target = word.basicForm;
-      frequency.set(target, (frequency.get(target) ?? 0) + 1);
-      if ((isHiragana(target) || isKatakana(target)) && target.length <= 3) continue;
-      await window.ipc.invoke('queryJapanese', target, 2).then(val => {
-        let got = 0;
-        for (const entry of val) {
-          if (got) break;
-          try {
-            for (const reading of entry.kana) {
-              if (sameKanaReading(reading.text, word.hiragana)) {
-                got = 1;
-                break;
-              }
-            }
-            // loop all kanji entry
-            for (const kanjiEntry of entry.kanji) {
-              if (target === kanjiEntry.text) {
-                got = 1;
-                break;
-              }
-            }
-            if (got) {
-              this.meaning[i] = entry.sense[0].gloss[0].text;
-              this.meaning[i] = this.meaning[i].replace(/\((.*?)\)/g, '').trim();
-              break;
-            }
-          } catch (ignored) {
-            console.error(ignored)
-          }
-        }
-      })
-    }
-  }
-
-  async fillContentWithLearningChinese(frequency) {
-    this.meaning = Array(this.content.length).fill('');
-    for (let i = 0; i < this.content.length; i++) {
-      const word = this.content[i];
-      const target = word.origin;
-      frequency.set(target, (frequency.get(target) ?? 0) + 1);
-      await window.ipc.invoke('queryChinese', target, 3).then(val => {
-        let got = 0;
-        for (const entry of val) {
-          if (got) break;
-          for (const splittedContent of [...(entry.content ?? '').split('，'), ...(entry.simplified ?? '').split(', ')]) {
-            try {
-              if (splittedContent === target) {
-                got = 1;
-                let cleanedFirst = entry.meaning.join('\n')
-                for (let iter = 0; iter < 3; iter++) {
-                  cleanedFirst = cleanedFirst.replace(/\([^)(]*\)/, "");
-                }
-                for (let iter = 0; iter < 3; iter++) {
-                  cleanedFirst = cleanedFirst.replace(/\[[^\]\[]*]/, "");
-                }
-                const tmpMeaning = cleanedFirst.split(/[,;\n]/);
-                if (tmpMeaning.length > 0 && tmpMeaning[0].length > 10) {
-                  tmpMeaning.sort((a, b) => a.length - b.length);
-                }
-                for (const meaningEl of tmpMeaning) {
-                  let cleanedMeaning = meaningEl.trim();
-                  cleanedMeaning = cleanedMeaning.replace(/\(.*/, "")
-                  cleanedMeaning = cleanedMeaning.replace(/\|.*/, "");
-                  if (cleanedMeaning !== "" && cleanedMeaning.length <= 10) {
-                    this.meaning[i] = cleanedMeaning;
-                    break;
-                  }
-                }
-                break;
-              }
-            } catch (ignored) {
-              console.error(ignored)
-            }
-          }
-        }
-      })
-    }
-  }
-
-  async fillContentWithLearningVietnamese(frequency) {
-    this.meaning = Array(this.content.length).fill('');
-    for (let i = 0; i < this.content.length; i++) {
-      const word = this.content[i];
-      const target = word.origin;
-      frequency.set(target, (frequency.get(target) ?? 0) + 1);
-      await window.ipc.invoke('queryVietnamese', target, 3).then(val => {
-        let got = 0;
-        for (const entry of val) {
-          if (got) break;
-          try {
-            if (entry.content === target) {
-              got = 1;
-              let cleanedMeaning = entry.meaning;
-              // Clean up the meaning - remove parentheses and extra content
-              cleanedMeaning = cleanedMeaning.replace(/\([^)(]*\)/g, "").trim();
-              cleanedMeaning = cleanedMeaning.replace(/\[[^\]\[]*]/g, "").trim();
-
-              // Split by common delimiters and take the shortest meaningful part
-              const tmpMeaning = cleanedMeaning.split(/[,;]/);
-              if (tmpMeaning.length > 0) {
-                tmpMeaning.sort((a, b) => a.trim().length - b.trim().length);
-                for (const meaningEl of tmpMeaning) {
-                  const finalMeaning = meaningEl.trim();
-                  if (finalMeaning !== "" && finalMeaning.length <= 15) {
-                    this.meaning[i] = finalMeaning;
-                    break;
-                  }
-                }
-              }
-              break;
-            }
-          } catch (ignored) {
-            console.error(ignored)
-          }
-        }
-      })
-    }
   }
 }
 
