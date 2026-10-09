@@ -7,6 +7,7 @@ music and sound effects are generated in code, and the cuts land on their beat g
 npm ci
 npm run music      # music/make_music.py → public/music.wav and public/sfx/*.wav (needs Python, numpy, scipy)
 npm run render     # → out/miteiru-promo.mp4
+npm run master     # → out/miteiru-promo-final.mp4: audio peaks limited to −0.5 dBFS (needs ffmpeg on PATH)
 npm run thumbnail  # → out/thumbnail.jpg (1280×720, for YouTube)
 npm run studio     # preview and scrub in the browser
 ```
