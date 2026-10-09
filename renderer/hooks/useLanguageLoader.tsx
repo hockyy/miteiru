@@ -25,6 +25,7 @@ export const useLanguageLoader = () => {
 
   const {
     lastLanguageMode,
+    languageLoaded,
     setLanguage,
     migratedFromRemovedMode,
     languageModes
@@ -95,7 +96,8 @@ export const useLanguageLoader = () => {
     await loadLanguage(tokenizerMode, '/flash');
   }, [loadLanguage, tokenizerMode]);
 
-  const ableToProceedToVideo = check.ok !== 2 && !isLoadingLanguage;
+  // Until the remembered language is read, the selection still shows the first mode (Kuromoji).
+  const ableToProceedToVideo = check.ok !== 2 && !isLoadingLanguage && languageLoaded;
 
   return {
     // State

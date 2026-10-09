@@ -28,7 +28,7 @@ export const LANGUAGE_MODES: LanguageMode[] = languageModes.map(({
 const REMOVED_MODE_REPLACEMENTS: Record<number, number> = {1: 0};
 
 const useLanguageManager = () => {
-  const [storedLanguageMode, setLastLanguageMode] = useStoreData('app.lastLanguageMode', null);
+  const [storedLanguageMode, setLastLanguageMode, languageLoaded] = useStoreData('app.lastLanguageMode', null);
   const lastLanguageMode = REMOVED_MODE_REPLACEMENTS[storedLanguageMode] ?? storedLanguageMode;
   // Set once when a removed mode is migrated, so the home screen can say why the selection changed.
   const [migratedFromRemovedMode, setMigratedFromRemovedMode] = useState(false);
@@ -47,21 +47,12 @@ const useLanguageManager = () => {
     return LANGUAGE_MODES.find(mode => mode.id === id);
   }, []);
 
-  const hasLastLanguage = useCallback(() => {
-    return lastLanguageMode !== null && lastLanguageMode !== undefined;
-  }, [lastLanguageMode]);
-
-  const getLastLanguage = useCallback((): LanguageMode | null => {
-    if (!hasLastLanguage()) return null;
-    return getLanguageById(lastLanguageMode) || null;
-  }, [lastLanguageMode, hasLastLanguage, getLanguageById]);
-
   return {
     lastLanguageMode,
+    // False until the remembered language has been read from the store.
+    languageLoaded,
     setLanguage,
     getLanguageById,
-    hasLastLanguage,
-    getLastLanguage,
     migratedFromRemovedMode,
     languageModes: LANGUAGE_MODES
   };
