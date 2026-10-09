@@ -105,6 +105,7 @@ test("auxiliary verbs Kuromoji tags as suffix or dependent verbs join the verb, 
   assert.deepEqual(await group("友達に読ませてもらった"), ["友達(友達)", "に(に)", "読ませてもらった(読む)"]);
   assert.deepEqual(await group("書いとく"), ["書いとく(書く)"]);
   assert.deepEqual(await group("窓が開けてある"), ["窓(窓)", "が(が)", "開けてある(開ける)"]);
+  assert.deepEqual(await group("先生が読んでいらっしゃる"), ["先生(先生)", "が(が)", "読んでいらっしゃる(読む)"]);
   // 〜てやる and 〜たりする start their own word; a noun before する stays separate.
   assert.deepEqual(await group("教えてやる"), ["教えて(教える)", "やる(やる)"]);
   assert.deepEqual(await group("勉強させられた"), ["勉強(勉強)", "させられた(する)"]);
