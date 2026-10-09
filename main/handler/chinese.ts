@@ -2,12 +2,12 @@ import {hanzi, setupChineseDictionary} from "../dictionary/chineseDictionaryDb";
 import {chineseLearningGloss, glossAll, queryChineseDictionary} from "./languages/learningGlosses";
 import {ipcMain} from "electron";
 import path from "path";
-import fs from "node:fs";
 import {pinyin} from "pinyin-pro";
 import ToJyutping from "to-jyutping";
 import {Jieba} from '@node-rs/jieba'
 import {formatPinyinReading} from "./pinyinTones";
 import {readStrokeSvg} from "../helpers/strokeSvg";
+import {readAssetSync} from "../helpers/assetFiles";
 
 
 interface JyutpingResult {
@@ -69,7 +69,7 @@ class Chinese {
     // this.setupPy(settings)
     // Initialize nodejieba
 
-    const dictBuffer = fs.readFileSync(this.jiebaDictPath)
+    const dictBuffer = readAssetSync(this.jiebaDictPath)
     this.jieba = Jieba.withDict(dictBuffer);
     try {
       await this.Dict.db?.close();

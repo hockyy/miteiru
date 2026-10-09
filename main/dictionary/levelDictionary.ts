@@ -1,3 +1,4 @@
+import {readTextAsset} from "../helpers/assetFiles";
 import {promises as fs} from "node:fs";
 import {Level} from "level";
 
@@ -41,7 +42,7 @@ export class BatchWriter {
 const readImportFile = async <T>(importPath: string): Promise<T> => {
   let contents: string;
   try {
-    contents = await fs.readFile(importPath, "utf8");
+    contents = await readTextAsset(importPath);
   } catch (error) {
     throw new Error(`Dictionary file not found: ${importPath} (${error.message})`);
   }

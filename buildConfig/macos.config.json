@@ -1,13 +1,19 @@
 {
+  "extends": "buildConfig/base.config.json",
   "mac": {
     "icon": "resources/icon.icns",
-    "target": ["pkg"],
+    "target": [
+      "pkg"
+    ],
     "artifactName": "miteiru-${version}-${os}-${arch}.${ext}",
     "extraResources": [
       {
         "from": "resources/live-captions",
         "to": "live-captions",
-        "filter": ["**/*", "!**/.gitkeep"]
+        "filter": [
+          "**/*",
+          "!**/.gitkeep"
+        ]
       }
     ],
     "extendInfo": {

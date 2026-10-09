@@ -1,8 +1,12 @@
 {
+  "extends": "buildConfig/base.config.json",
   "linux": {
     "category": "Education",
     "icon": "resources/icon.png",
-    "target": ["deb", "AppImage"],
+    "target": [
+      "deb",
+      "AppImage"
+    ],
     "artifactName": "miteiru-${version}-${os}-22.04-${arch}.${ext}"
   }
 }
