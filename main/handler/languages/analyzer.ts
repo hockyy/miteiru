@@ -11,99 +11,55 @@ export type AnalyzeTextOptions = {
 
 export type AnalyzeTextResult = any[];
 
+// Particles that end a verb chain: quotation, nominalizer, and the でしょ of でしょう (a separate word).
+const CHAIN_BREAKING_PARTICLES = ["と", "でしょ", "の", "という"];
+// Dependent verbs that start their own word (〜てやる, 〜たりする).
+const NOT_AUXILIARY_VERBS = ["やる", "する"];
+// Auxiliary verbs Kuromoji does not always tag as such (ある after て is 動詞-自立).
+const ALWAYS_AUXILIARY_VERBS = ["いる", "ある", "おる", "られる", "れる", "せる", "させる"];
+
+/** Whether a token can continue the verb before it: auxiliaries, particles, and suffix or dependent verbs. */
+const continuesVerb = (token: MiteiruJapaneseWordWithSeparations) => {
+  const [pos, detail] = token.pos.split("-");
+  if (ALWAYS_AUXILIARY_VERBS.includes(token.basicForm)) return true;
+  if (pos === "助動詞") return true;
+  if (pos === "助詞") return !CHAIN_BREAKING_PARTICLES.includes(token.origin);
+  if (pos === "動詞" && (detail === "接尾" || detail === "非自立")) return !NOT_AUXILIARY_VERBS.includes(token.basicForm);
+  return false;
+};
+
+/**
+ * Joins each verb with the auxiliaries and particles that conjugate it (食べ|させ|られ|なかっ|た →
+ * 食べさせられなかった, base form 食べる): the longest run of following tokens that is still a
+ * conjugation of the verb.
+ */
 export const parseJapaneseVerbs = async (
   res: MiteiruJapaneseWordWithSeparations[]
 ): Promise<MiteiruJapaneseWordWithSeparations[]> => {
   const newRes: MiteiruJapaneseWordWithSeparations[] = [];
-  const VERB = "動詞";
-  const RARERU = "られる";
-  const IRU = "いる";
-  const ARU = "ある";
-  const SERU = 'せる';
-
-  const YARI = "やり";
-  const YARU = "やる";
-  const SURU = 'する';
-  const whitelist = [RARERU, IRU, ARU, SERU];
-  const blacklist = [YARI, YARU, SURU];
   for (let i = 0; i < res.length; i++) {
-    const entry = res[i];
-    const isVerb = entry.pos.split('-').includes("動詞");
-    if (!isVerb) {
+    if (!res[i].pos.split('-').includes("動詞")) {
       newRes.push(res[i]);
       continue;
     }
-    const whitelistPos = ['助動詞', '助詞'];
-    const isSpecialRule = (firstOne, index) => {
-      const currentEntry = res[index];
-      const currentPos = res[index].pos.split('-')[0];
-      if (whitelist.includes(currentEntry.basicForm)) return true;
-      if (blacklist.includes(currentEntry.basicForm)) return false;
-      if (!whitelistPos.includes(currentPos)) {
-        return false;
-      }
-      return !['と', 'でしょ', 'の', 'という'].includes(currentEntry.origin);
-
+    let last = i;
+    while (last + 1 < res.length && continuesVerb(res[last + 1])) last++;
+    const basicForm = res[i].basicForm;
+    const surfaceUpTo = (end: number) => res.slice(i, end + 1).map((token) => token.origin).join('');
+    while (last > i && !isConjugationOf(surfaceUpTo(last), basicForm)) last--;
+    if (last === i) {
+      newRes.push(res[i]);
+      continue;
     }
-
-    let accumIndex = [i];
-    let accumVerb: string = '';
-    let baseVerb: string = '';
-    for (let itr = i + 1; itr < res.length; itr++) {
-      if (isSpecialRule(res[i].basicForm, itr)) {
-        accumIndex.push(itr);
-      } else break;
-    }
-    let conjugationResult = null;
-    do {
-      if (accumIndex.length === 0) break;
-      accumVerb = accumIndex.reduce((pre, curval) => {
-        return pre + res[curval].origin;
-      }, '');
-      const baseIndex: number[] = [...accumIndex];
-      do {
-        const lastElement: number = baseIndex.pop();
-        if (res[lastElement].basicForm === RARERU && baseIndex.length > 0) continue;
-        if (res[lastElement].basicForm === IRU && baseIndex.length > 0) continue;
-        if (res[lastElement].basicForm === ARU && baseIndex.length > 0) continue;
-        if (res[lastElement].pos.split('-')[0] === VERB) {
-          baseIndex.push(lastElement);
-          break;
-        }
-      } while (baseIndex.length > 0);
-
-      baseVerb = '';
-      for (let j = 0; j < baseIndex.length - 1; j++) {
-        baseVerb += res[baseIndex[j]].origin;
-      }
-      baseVerb += res[baseIndex[baseIndex.length - 1]].basicForm;
-      if (isConjugationOf(accumVerb, baseVerb)) {
-        conjugationResult = {base: baseVerb};
-      }
-
-      if (conjugationResult === null) {
-        accumIndex = baseIndex;
-        if (accumIndex.length === 1) {
-          conjugationResult = {base: res[accumIndex[0]].basicForm};
-        } else {
-          accumIndex.pop();
-        }
-      }
-    } while (conjugationResult === null);
+    const chain = res.slice(i, last + 1);
     newRes.push({
-      origin: accumIndex.reduce((pre, curval) => {
-        return pre + res[curval].origin;
-      }, ''),
-      hiragana: accumIndex.reduce((val, idx) => {
-        return val + res[idx].hiragana;
-      }, ''),
-      basicForm: baseVerb,
+      origin: surfaceUpTo(last),
+      hiragana: chain.map((token) => token.hiragana).join(''),
+      basicForm,
       pos: res[i].pos,
-      separation: accumIndex.reduce((val, idx) => {
-        return val.concat(res[idx].separation);
-      }, []),
-    })
-    i = accumIndex.pop();
+      separation: chain.flatMap((token) => token.separation)
+    });
+    i = last;
   }
   return newRes;
 };
