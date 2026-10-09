@@ -50,7 +50,9 @@ const hasMissingManifestAssets = async (sourceLanguageAssetsDir, destLanguageAss
     for (const relativeAssetPath of manifest.files ?? []) {
       const sourceAssetPath = path.join(sourcePluginDir, relativeAssetPath);
       const destAssetPath = path.join(destLanguageAssetsDir, pluginId, relativeAssetPath);
-      if (!(await fs.pathExists(sourceAssetPath)) || !(await fs.pathExists(destAssetPath))) {
+      // A packaged build leaves only the gzipped copy in app/ (see compressLanguageAssets.js).
+      const destExists = await fs.pathExists(destAssetPath) || await fs.pathExists(destAssetPath + '.gz');
+      if (!(await fs.pathExists(sourceAssetPath)) || !destExists) {
         return true;
       }
     }

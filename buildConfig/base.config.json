@@ -3,9 +3,12 @@
   "files": [
     "app/**/*",
     "!**/.DS_Store",
+    "!app/language-assets/han-character-core/kanji/*-*.svg",
     "!**/node_modules/classic-level/deps{,/**}",
-    "!**/node_modules/classic-level/build/Release/obj{,/**}",
-    "!**/node_modules/classic-level/build/Release/*.{exp,iobj,ipdb,lib,pdb}",
+    "!**/node_modules/classic-level/build/Release/{obj,obj.target,.deps}{,/**}",
+    "!**/node_modules/classic-level/build/Release/*.{a,exp,iobj,ipdb,lib,pdb}",
+    "!**/node_modules/classic-level/build/{Makefile,*.gypi,*.mk,*.sln,*.vcxproj,*.vcxproj.filters}",
+    "!**/node_modules/classic-level/prebuilds/{android-arm,android-arm64,linux-arm,win32-ia32}{,/**}",
     "!**/node_modules/kuromoji/{dict,test,demo}{,/**}",
     "!**/node_modules/@node-rs/jieba/{dict.txt,idf.txt}"
   ]
