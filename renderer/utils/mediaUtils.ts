@@ -46,14 +46,41 @@ export const isMiteiruTempSubtitle = (filePath: string) => (
 export const isEnglishSubtitleName = (filePath: string) => /\.(en|eng|english)(-[a-z]+)?\.[^.]+$/i.test(getFileNameFromPath(filePath));
 
 /**
- * Loads dropped or picked files one at a time: the video first, then the subtitles given with it, then
- * those beside it that share its name. `loadFile` takes one file per call (useLoadFiles' onLoadFiles).
+ * The slot a subtitle goes into without asking, if any: the one the caller names (the next episode keeps
+ * its slot), the one an extracted track was made for, or secondary for an English-named file while
+ * another language is being learned. Undefined means ask.
+ */
+export const knownSubtitleTarget = (
+  filePath: string,
+  appLang: string,
+  englishLang: string,
+  requested?: SubtitleTarget
+): SubtitleTarget | undefined => {
+  if (requested) return requested;
+  if (isEmbeddedSubtitlePath(filePath)) return getEmbeddedSubtitleTarget(filePath);
+  if (appLang !== englishLang && isEnglishSubtitleName(filePath)) return "secondary";
+  return undefined;
+};
+
+// Windows paths name the same file in any case (the drop gives `EP01.SRT`, the lookup builds `EP01.srt`).
+const samePathKey = (filePath: string) => (/^[a-z]:[\\/]|\\/i.test(filePath) ? filePath.toLowerCase() : filePath);
+
+/**
+ * Loads dropped or picked files one at a time: the first video, then the subtitles given with it, then
+ * those beside it that share its name. Further videos are ignored, since only one plays.
+ * `loadFile` takes one file per call (useLoadFiles' onLoadFiles).
  */
 export const loadMediaPaths = async (paths: string[], loadFile: (files: { path: string }[]) => unknown) => {
   const video = paths.find((filePath) => isVideo(filePath));
   const besideVideo = video ? await window.electronAPI.checkSubtitleFile(video) : [];
-  const ordered = video ? [video, ...paths.filter((filePath) => filePath !== video), ...besideVideo] : paths;
-  for (const filePath of new Set(ordered)) loadFile([{path: filePath}]);
+  const ordered = video ? [video, ...paths.filter((filePath) => !isVideo(filePath)), ...besideVideo] : paths;
+  const seen = new Set<string>();
+  for (const filePath of ordered) {
+    const key = samePathKey(filePath);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    loadFile([{path: filePath}]);
+  }
 };
 
 export const getEmbeddedSubtitleTarget = (filePath: string): SubtitleTarget => (

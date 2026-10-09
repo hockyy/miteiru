@@ -14,11 +14,9 @@ import {useSerialRunner} from "./useSerialRunner";
 import {isLearningSubtitleLanguage} from "../components/Subtitle/subtitleLanguageSupport";
 import {
   buildVideoSource,
-  getEmbeddedSubtitleTarget,
   getLanguageDisplayName,
-  isEmbeddedSubtitlePath,
-  isEnglishSubtitleName,
   isMiteiruTempSubtitle,
+  knownSubtitleTarget,
   normalizeDroppedPath,
   type SubtitleTarget
 } from "../utils/mediaUtils";
@@ -49,6 +47,8 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
   const [pendingSubtitle, setPendingSubtitle] = useState(null);
   const [pendingSubtitlePath, setPendingSubtitlePath] = useState('');
   const [subtitlePreprocessOptions, setSubtitlePreprocessOptions] = useState<SubtitlePreprocessOptions>(DEFAULT_SUBTITLE_PREPROCESS_OPTIONS);
+  // The all-caps choice each slot's subtitle was loaded with, so the next episode's is read the same way.
+  const slotPreprocessOptions = useRef<Partial<Record<SubtitleTarget, SubtitlePreprocessOptions>>>({});
   // Helper functions
   const resetSub = useCallback((subSetter) => {
     subSetter(new SubtitleContainer(''));
@@ -209,11 +209,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       return;
     }
 
-    // The slot is known without asking: the caller says (the next episode keeps its slot), the file
-    // was extracted for a slot, or its name says English while another language is being learned.
-    const knownTarget = target
-      ?? (isEmbeddedSubtitlePath(currentPath) ? getEmbeddedSubtitleTarget(currentPath) : undefined)
-      ?? (lang !== videoConstants.englishLang && isEnglishSubtitleName(currentPath) ? 'secondary' : undefined);
+    const knownTarget = knownSubtitleTarget(currentPath, lang, videoConstants.englishLang, target);
     if (knownTarget) {
       console.log('[useLoadFiles] Loading subtitle file directly:', loadedPath, knownTarget);
       if (knownTarget === 'secondary') {
@@ -246,7 +242,9 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
         showToast('Still loading subtitle, please wait!');
       }, TOAST_TIMEOUT);
 
-      const {tmpSub, subtitlePath} = await createSubtitleContainer(currentPath);
+      // A subtitle for a known slot is read the way that slot's last one was chosen to be.
+      const options = (target && slotPreprocessOptions.current[target]) || DEFAULT_SUBTITLE_PREPROCESS_OPTIONS;
+      const {tmpSub, subtitlePath} = await createSubtitleContainer(currentPath, options);
       routeLoadedSubtitle(tmpSub, subtitlePath, currentPath, target);
     } catch (error) {
       console.error('[useLoadFiles] Failed to load subtitle file:', error);
@@ -341,15 +339,16 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     }
   }, [changeTimeTo, player, setEnableSeeker, videoSrc.path])
 
+  // Reloading puts the subtitle back in its slot without asking.
   const reloadLastPrimarySubtitle = useCallback(() => {
-    if (lastPrimarySubPath) {
-      onLoadFiles(lastPrimarySubPath);
+    if (lastPrimarySubPath[0]?.path) {
+      onLoadFiles([{path: lastPrimarySubPath[0].path, target: 'primary'}]);
     }
   }, [lastPrimarySubPath, onLoadFiles]);
 
   const reloadLastSecondarySubtitle = useCallback(() => {
-    if (lastSecondarySubPath) {
-      onLoadFiles(lastSecondarySubPath);
+    if (lastSecondarySubPath[0]?.path) {
+      onLoadFiles([{path: lastSecondarySubPath[0].path, target: 'secondary'}]);
     }
   }, [lastSecondarySubPath, onLoadFiles]);
 
@@ -364,14 +363,16 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
   const loadPendingSubtitleAs = useCallback(async (target: 'primary' | 'secondary') => {
     if (!pendingSubtitle) return;
     try {
-      if (subtitlePreprocessOptions.titleCaseAllCaps) {
-        const {tmpSub} = await createSubtitleContainer(pendingSubtitlePath, subtitlePreprocessOptions);
-        if (target === 'primary') loadSubtitleAsPrimary(tmpSub, pendingSubtitlePath);
-        else loadSubtitleAsSecondary(tmpSub, pendingSubtitlePath);
-      } else {
-        if (target === 'primary') loadSubtitleAsPrimary(pendingSubtitle, pendingSubtitlePath);
-        else loadSubtitleAsSecondary(pendingSubtitle, pendingSubtitlePath);
-      }
+      // The pending subtitle was read with the default options; read it again only if they changed
+      // (unticking the all-caps fix used to keep the sentence-case copy).
+      const changed = Boolean(subtitlePreprocessOptions.titleCaseAllCaps) !==
+        Boolean(DEFAULT_SUBTITLE_PREPROCESS_OPTIONS.titleCaseAllCaps);
+      const tmpSub = changed
+        ? (await createSubtitleContainer(pendingSubtitlePath, subtitlePreprocessOptions)).tmpSub
+        : pendingSubtitle;
+      if (target === 'primary') loadSubtitleAsPrimary(tmpSub, pendingSubtitlePath);
+      else loadSubtitleAsSecondary(tmpSub, pendingSubtitlePath);
+      slotPreprocessOptions.current[target] = subtitlePreprocessOptions;
       cleanupModal();
     } catch (error) {
       console.error('[useLoadFiles] Failed to preprocess subtitle:', error);

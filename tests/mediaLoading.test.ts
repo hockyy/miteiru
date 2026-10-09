@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import {afterEach, test} from "node:test";
-import {isEnglishSubtitleName, loadMediaPaths} from "../renderer/utils/mediaUtils";
+import {isEnglishSubtitleName, knownSubtitleTarget, loadMediaPaths} from "../renderer/utils/mediaUtils";
 
 const globalWithWindow = globalThis as unknown as { window?: unknown };
 
@@ -36,6 +36,29 @@ test("loadMediaPaths loads every subtitle when no video is given, one per call",
   // onLoadFiles reads only the first file of each call, so two subtitles in one call lost the second.
   assert.deepEqual(await loaded(["/subs/a.srt", "/subs/a.en.srt"]), [[{path: "/subs/a.srt"}], [{path: "/subs/a.en.srt"}]]);
   assert.deepEqual(await loaded([]), []);
+});
+
+test("loadMediaPaths plays only the first video and loads a file once whatever its case on Windows", async () => {
+  withSubtitlesBeside({"C:\\show\\Ep01.mkv": ["C:\\show\\Ep01.srt"]});
+  // A second video would replace the first and receive its subtitles.
+  assert.deepEqual(await loaded(["C:\\show\\Ep01.mkv", "C:\\show\\Ep02.mkv", "C:\\show\\EP01.SRT"]), [
+    [{path: "C:\\show\\Ep01.mkv"}],
+    [{path: "C:\\show\\EP01.SRT"}]
+  ]);
+  // POSIX paths keep their case: these are two files.
+  withSubtitlesBeside({});
+  assert.deepEqual(await loaded(["/subs/A.srt", "/subs/a.srt"]), [[{path: "/subs/A.srt"}], [{path: "/subs/a.srt"}]]);
+});
+
+test("knownSubtitleTarget: the requested slot, then an extracted track's, then English to secondary", () => {
+  const japanese = "ja";
+  const english = "en";
+  assert.equal(knownSubtitleTarget("C:\\v\\show.en.srt", japanese, english, "primary"), "primary");
+  assert.equal(knownSubtitleTarget("C:\\Temp\\miteiru_subtitle_1_sec_2.srt", japanese, english), "secondary");
+  assert.equal(knownSubtitleTarget("C:\\Temp\\miteiru_subtitle_1_2.srt", japanese, english), "primary");
+  assert.equal(knownSubtitleTarget("C:\\v\\show.en.srt", japanese, english), "secondary");
+  assert.equal(knownSubtitleTarget("C:\\v\\show.en.srt", english, english), undefined);
+  assert.equal(knownSubtitleTarget("C:\\v\\show.srt", japanese, english), undefined);
 });
 
 test("isEnglishSubtitleName reads the language tag before the extension", () => {
