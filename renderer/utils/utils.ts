@@ -112,8 +112,7 @@ export const sortAndFilterTopXPercentToJson = (frequency, x: number) => {
     return obj;
   }, {});
 }
-export const getRelativeTime = (timestamp: number): string => {
-  const now = new Date().getTime();
+export const getRelativeTime = (timestamp: number, now: number = Date.now()): string => {
   const updatedDate = new Date(timestamp).getTime();
   const diffTime = updatedDate - now;
   const absDiffTime = Math.abs(diffTime);

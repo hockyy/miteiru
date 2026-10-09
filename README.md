@@ -36,7 +36,7 @@ While I strive to maintain a safe and secure application, I cannot be held respo
 <table style="border: none;">
   <tr>
     <td><img src="renderer/public/images/logo.png" alt="Miteiru Logo" /></td>
-    <td> Miteiru is an open source Electron video player for learning Japanese, Mandarin, Cantonese, and Vietnamese. It tokenizes subtitles (Kuromoji, Jieba, optional <a href="https://taku910.github.io/mecab/">MeCab</a>), shows readings and dictionary info from bundled <a href="https://github.com/scriptin/jmdict-simplified">JMDict</a>, CC-CEDICT, and VNEDict, and is heavily inspired by <a href="https://ookii-tsuki.github.io/Anisubber/">Anisubber</a>.
+    <td> Miteiru is an open source Electron video player for learning Japanese, Mandarin, Cantonese, and Vietnamese. It tokenizes subtitles (Kuromoji, Jieba), showsreadings and dictionary info from bundled <a href="https://github.com/scriptin/jmdict-simplified">JMDict</a>, CC-CEDICT, and VNEDict, and is heavily inspired by <a href="https://ookii-tsuki.github.io/Anisubber/">Anisubber</a>.
 
 📚 **Language details:** [Language Documentation](README_LANGUAGES.md)</td>
   </tr>
@@ -106,19 +106,5 @@ npm run script:download-language-assets -- mandarin han-character-core
 ```
 
 `MITEIRU_FORCE_ASSET_DOWNLOAD=1` redownloads existing zips.
-
-## Optional MeCab
-
-Built-in Kuromoji is enough for Japanese. MeCab is optional.
-
-```bash
-brew install mecab          # macOS
-sudo apt install mecab      # Ubuntu
-which mecab                 # path to paste into Miteiru
-```
-
-Windows binaries: [SourceForge](https://sourceforge.net/projects/mecab/). JMDict is already bundled; you can point at a custom dump from [jmdict-simplified](https://github.com/scriptin/jmdict-simplified/releases) if you want.
-
-To change the MeCab dictionary, edit `mecabrc` (`/opt/homebrew/etc/mecabrc` on macOS, `C:\Program Files (x86)\MeCab\etc\mecabrc` on Windows, `/etc/mecabrc` on Ubuntu) and set `dicdir` to ipadic, jumandic, or unidic. Miteiru accepts `chamame`, `chasen`, and Jumandic output. [UniDic](https://clrd.ninjal.ac.jp/unidic/en/).
 
 https://user-images.githubusercontent.com/19528709/236619520-076c863a-6c14-4f6e-8f9b-5d1e660fd646.mp4

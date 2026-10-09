@@ -1,11 +1,9 @@
 import React from 'react';
 import { Button } from '../Utils/Button';
-import SmoothCollapse from '../Utils/SmoothCollapse';
 import {
   HOME_BODY,
   HOME_HEADER,
   HOME_ICON_BADGE,
-  HOME_INNER_PANEL,
   HOME_SECTION,
   HOME_SECTION_LABEL,
   HOME_SHELL,
@@ -32,10 +30,7 @@ interface MainMenuProps {
   selectedLanguageMode?: LanguageMode;
   isLoadingLanguage: boolean;
   ableToProceedToVideo: boolean;
-  mecab: string;
   onLanguageChange: (modeId: number) => void;
-  onMecabChange: (path: string) => void;
-  onSelectMecabPath: () => void;
   onOpenVideo: () => void;
   onOpenLearn: () => void;
   onOpenFlash: () => void;
@@ -75,10 +70,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
   selectedLanguageMode,
   isLoadingLanguage,
   ableToProceedToVideo,
-  mecab,
   onLanguageChange,
-  onMecabChange,
-  onSelectMecabPath,
   onOpenVideo,
   onOpenLearn,
   onOpenFlash,
@@ -123,19 +115,6 @@ export const MainMenu: React.FC<MainMenuProps> = ({
             <p className="text-xs font-semibold text-blue-900">{selectedLanguageMode.description}</p>
           )}
 
-          <SmoothCollapse expanded={tokenizerMode === 1}>
-            <div className={`${HOME_INNER_PANEL} p-2.5`}>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                <Button onPress={onSelectMecabPath}>Mecab path</Button>
-                <input
-                  className={`${MEANING_FIELD_INPUT} rounded-xl text-xs`}
-                  type="text"
-                  value={mecab}
-                  onChange={(e) => onMecabChange(e.target.value)}
-                />
-              </div>
-            </div>
-          </SmoothCollapse>
         </div>
       </section>
 

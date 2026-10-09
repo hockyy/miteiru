@@ -1,7 +1,6 @@
 import { useCallback, useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import useLanguageManager from './useLanguageManager';
-import { defaultMecabPath, MECAB_PATH_STORE_KEY } from '../utils/mecabPath';
 
 interface LanguageCheckResult {
   ok: number;
@@ -61,9 +60,7 @@ export const useLanguageLoader = () => {
     setCheck(checkingMessage);
     
     try {
-      // Read at call time: a click can come before the home screen's stored path has loaded.
-      const mecabPath = await window.electronStore.get(MECAB_PATH_STORE_KEY, defaultMecabPath());
-      const res = await window.ipc.invoke(mode.channel, { mecabPath });
+      const res = await window.ipc.invoke(mode.channel);
       setCheck(res);
 
       if (res.ok === 1) {

@@ -167,13 +167,14 @@ describe("sortAndFilterTopXPercentToJson", () => {
 
 describe("getRelativeTime", () => {
   it("describes past and future timestamps", () => {
-    const now = Date.now();
-    assert.equal(getRelativeTime(now - 30 * 1000), "Just now");
-    assert.equal(getRelativeTime(now + 30 * 1000), "In a moment");
-    assert.equal(getRelativeTime(now - 5 * 60 * 1000), "5 minutes ago");
-    assert.equal(getRelativeTime(now - 60 * 60 * 1000), "1 hour ago");
-    assert.equal(getRelativeTime(now - 2 * 24 * 60 * 60 * 1000), "2 days ago");
-    assert.equal(getRelativeTime(now + 3 * 24 * 60 * 60 * 1000), "3 days from now");
+    // A fixed "now": reading the clock separately made "3 days from now" flake to 2 days under load.
+    const now = Date.UTC(2026, 0, 1);
+    assert.equal(getRelativeTime(now - 30 * 1000, now), "Just now");
+    assert.equal(getRelativeTime(now + 30 * 1000, now), "In a moment");
+    assert.equal(getRelativeTime(now - 5 * 60 * 1000, now), "5 minutes ago");
+    assert.equal(getRelativeTime(now - 60 * 60 * 1000, now), "1 hour ago");
+    assert.equal(getRelativeTime(now - 2 * 24 * 60 * 60 * 1000, now), "2 days ago");
+    assert.equal(getRelativeTime(now + 3 * 24 * 60 * 60 * 1000, now), "3 days from now");
   });
 });
 

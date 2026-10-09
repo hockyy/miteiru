@@ -1,17 +1,7 @@
 import { useCallback, useState } from 'react';
-import { useStoreData } from './useStoreData';
-import { defaultMecabPath, MECAB_PATH_STORE_KEY } from '../utils/mecabPath';
 
 export const useCacheManager = () => {
-  // Persisted so language loading can send it to main.
-  const [mecab, setMecab] = useStoreData(MECAB_PATH_STORE_KEY, defaultMecabPath());
   const [isRemovingCache, setIsRemovingCache] = useState(false);
-
-  const handleSelectMecabPath = useCallback(() => {
-    window.ipc.invoke('pickFile', ['*']).then((val) => {
-      if (!val.canceled) setMecab(val.filePaths[0]);
-    });
-  }, [setMecab]);
 
   const handleRemoveCache = useCallback(async () => {
     if (isRemovingCache) {
@@ -38,10 +28,7 @@ export const useCacheManager = () => {
   }, [isRemovingCache]);
 
   return {
-    mecab,
-    setMecab,
     isRemovingCache,
-    handleSelectMecabPath,
     handleRemoveCache
   };
 };

@@ -50,7 +50,7 @@ function Home() {
     handleOpenLearn,
     handleOpenFlash,
   } = useLanguageLoader();
-  const { mecab, setMecab, isRemovingCache, handleSelectMecabPath, handleRemoveCache } = useCacheManager();
+  const { isRemovingCache, handleRemoveCache } = useCacheManager();
 
   const [cacheCheck, setCacheCheck] = useState({ ok: 0, message: '🐸 ゲロゲロ' });
   const [liveCaptionsSupported, setLiveCaptionsSupported] = useState(false);
@@ -138,10 +138,7 @@ function Home() {
             selectedLanguageMode={selectedLanguageMode}
             isLoadingLanguage={isLoadingLanguage}
             ableToProceedToVideo={ableToProceedToVideo}
-            mecab={mecab}
             onLanguageChange={setTokenizerMode}
-            onMecabChange={setMecab}
-            onSelectMecabPath={handleSelectMecabPath}
             onOpenVideo={handleLanguageButtonClick}
             onOpenLearn={handleOpenLearn}
             onOpenFlash={handleOpenFlash}

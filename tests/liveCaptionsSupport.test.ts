@@ -85,7 +85,6 @@ describe("getLiveCaptionsBridgeCandidates", () => {
 describe("getLiveCaptionsAppleLocale", () => {
   it("maps Japanese tokenizers to ja_JP", () => {
     assert.deepEqual(getLiveCaptionsAppleLocale("kuromoji"), {locale: "ja_JP", languageCode: "ja"});
-    assert.deepEqual(getLiveCaptionsAppleLocale("mecab"), {locale: "ja_JP", languageCode: "ja"});
   });
 
   it("maps Mandarin and Cantonese", () => {

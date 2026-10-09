@@ -86,7 +86,6 @@ export const getLiveCaptionsBridgeCandidates = ({
 
 const tokenizerLanguageCodes: Record<string, string> = {
   kuromoji: "ja",
-  mecab: "ja",
   cantonese: "yue",
   jieba: "zh-CN",
   vietnamese: "vi"
