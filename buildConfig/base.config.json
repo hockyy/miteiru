@@ -1,0 +1,12 @@
+{
+  "beforePack": "./scripts/compressLanguageAssets.js",
+  "files": [
+    "app/**/*",
+    "!**/.DS_Store",
+    "!**/node_modules/classic-level/deps{,/**}",
+    "!**/node_modules/classic-level/build/Release/obj{,/**}",
+    "!**/node_modules/classic-level/build/Release/*.{exp,iobj,ipdb,lib,pdb}",
+    "!**/node_modules/kuromoji/{dict,test,demo}{,/**}",
+    "!**/node_modules/@node-rs/jieba/{dict.txt,idf.txt}"
+  ]
+}

@@ -1,5 +1,5 @@
 import path from "path";
-import fs from "node:fs";
+import {assetExists} from "../../helpers/assetFiles";
 import Japanese from "../japanese";
 import Chinese from "../chinese";
 import Vietnamese from "../vietnamese";
@@ -7,8 +7,9 @@ import {LanguagePlugin, LanguagePluginContext, LanguagePluginLoadResult} from ".
 
 const languageAssetsRoot = path.join(__dirname, "language-assets");
 
+// Packaged builds keep large files gzipped (see helpers/assetFiles.ts), so a `.gz` copy counts.
 const firstExistingPath = (...candidates: string[]) => (
-  candidates.find((candidate) => fs.existsSync(candidate)) ?? candidates[0]
+  candidates.find((candidate) => candidate && assetExists(candidate)) ?? candidates[0]
 );
 
 const assetDirectory = (pluginId: string, relativePath: string, legacyDirectory: string) => firstExistingPath(
