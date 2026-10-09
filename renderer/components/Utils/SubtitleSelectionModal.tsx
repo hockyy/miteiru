@@ -2,7 +2,6 @@ import React from 'react';
 import { BookOpen, FileText, Languages } from 'lucide-react';
 import { Button } from './Button';
 import { SubtitlePreprocessOptions } from '../../types/subtitlePreprocess';
-import {getLanguageEmoji} from "../../utils/mediaUtils";
 import {ModalShell} from "./ModalShell";
 
 interface SubtitleSelectionModalProps {
@@ -45,7 +44,7 @@ const SubtitleSelectionModal: React.FC<SubtitleSelectionModalProps> = ({
             <div className="rounded-xl border border-blue-300/20 bg-blue-950/25 p-3 shadow-lg shadow-black/20">
               <div className="mb-1 flex items-center gap-2">
                 <BookOpen className="h-4 w-4 text-blue-300" />
-                <h3 className="text-sm font-medium text-white">Primary · {getLanguageEmoji(currentAppLanguage)} {currentAppLanguage}</h3>
+                <h3 className="text-sm font-medium text-white">Primary · {currentAppLanguage}</h3>
               </div>
               <div className="mb-3 text-xs text-gray-400">
                 The language you are learning: readings, meanings and word tracking.
