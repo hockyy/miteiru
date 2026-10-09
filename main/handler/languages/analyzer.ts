@@ -45,15 +45,17 @@ export const parseJapaneseVerbs = async (
     let last = i;
     while (last + 1 < res.length && continuesVerb(res[last + 1])) last++;
     const basicForm = res[i].basicForm;
-    const surfaceUpTo = (end: number) => res.slice(i, end + 1).map((token) => token.origin).join('');
-    while (last > i && !isConjugationOf(surfaceUpTo(last), basicForm)) last--;
+    // surfaces[k]: the chain's first k + 1 tokens.
+    const surfaces: string[] = [];
+    for (let k = i; k <= last; k++) surfaces.push((surfaces.at(-1) ?? '') + res[k].origin);
+    while (last > i && !isConjugationOf(surfaces[last - i], basicForm)) last--;
     if (last === i) {
       newRes.push(res[i]);
       continue;
     }
     const chain = res.slice(i, last + 1);
     newRes.push({
-      origin: surfaceUpTo(last),
+      origin: surfaces[last - i],
       hiragana: chain.map((token) => token.hiragana).join(''),
       basicForm,
       pos: res[i].pos,

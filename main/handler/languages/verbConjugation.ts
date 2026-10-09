@@ -199,6 +199,8 @@ const teForms = (text: string): Form[] => {
     // Giving and receiving: てもらう, ていただく, てくれる, てくださる, てあげる.
     verb(text + "もらう", "godan"), verb(text + "いただく", "godan"), verb(text + "くれる", "ichidan"),
     verb(text + "くださる", "godan"), verb(text + "あげる", "ichidan"),
+    // Honorific and humble: ていらっしゃる, ておられる, てまいる.
+    verb(text + "いらっしゃる", "godan"), verb(text + "おられる", "ichidan"), verb(text + "まいる", "godan"),
     final(text + "は"), final(text + "も"), final(contracted), final(text + "ください"),
     {kind: "adjective", text: text + "ほしい"}
   ];
