@@ -136,3 +136,36 @@ test("learning content stops at the next chunk after the subtitle is replaced", 
     assert.equal(subtitle.lines.filter((line) => Array.isArray(line.content)).length, 64);
   });
 });
+
+test("a line that fails to tokenize leaves the rest of the subtitle processed", async () => {
+  await withGlossIpc(async () => {
+    const subtitle = fakeSubtitle(Array.from({length: 40}, () => ["学生"]));
+    subtitle.lines[3].fillContentSeparations = async () => {
+      throw new Error("tokenizer failed");
+    };
+    await fillSubtitleWithLearningContent(subtitle as never, async () => []);
+    assert.equal(typeof subtitle.lines[3].content, "string");
+    assert.deepEqual(subtitle.lines[39].meaning, ["gloss:学生"]);
+  });
+});
+
+test("an empty gloss reply is not cached, so later chunks ask again", async () => {
+  const globals = globalThis as Record<string, unknown>;
+  const saved = globals.window;
+  let calls = 0;
+  globals.window = {
+    ipc: {
+      // The first reply comes back empty, as when the dictionary is still opening.
+      invoke: async (_channel: string, batch: {target: string}[]) => (++calls === 1 ? [] : batch.map(({target}) => `gloss:${target}`))
+    }
+  };
+  try {
+    const subtitle = fakeSubtitle(Array.from({length: 64}, () => ["学生"]));
+    await fillSubtitleWithLearningContent(subtitle as never, async () => []);
+    assert.deepEqual(subtitle.lines[0].meaning, [""]);
+    assert.deepEqual(subtitle.lines[63].meaning, ["gloss:学生"]);
+  } finally {
+    if (saved === undefined) delete globals.window;
+    else globals.window = saved;
+  }
+});
