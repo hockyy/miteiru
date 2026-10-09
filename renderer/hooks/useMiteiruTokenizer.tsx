@@ -1,6 +1,7 @@
 import {useCallback, useEffect, useState} from 'react';
 import {useStoreData} from "./useStoreData";
 import {getLanguageModeByTokenizerMode} from "../languages/manifest";
+import {setLearningLanguage} from "../utils/fonts";
 
 const useMiteiruTokenizer = (): {
   tokenizeMiteiru: (sentence: string, toneType?: string) => Promise<any[]>,
@@ -18,9 +19,7 @@ const useMiteiruTokenizer = (): {
   }, []);
   const lang = getLanguageModeByTokenizerMode(tokenizerMode)?.languageCode ?? '';
   // The default subtitle font follows the language being learned (globals.css).
-  useEffect(() => {
-    if (lang) document.documentElement.dataset.learningLang = lang;
-  }, [lang]);
+  useEffect(() => setLearningLanguage(lang), [lang]);
   const tokenizeMiteiru = useCallback(async (sentence) => {
     if (!sentence) {
       return [];

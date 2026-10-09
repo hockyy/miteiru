@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState} from "react";
 import {createPortal} from "react-dom";
-import {fontLabel, FontOption, fontStackFor, listInstalledFonts} from "../../utils/fonts";
+import {buildFontItems, fontLabel, FontItem, FontOption, listInstalledFonts} from "../../utils/fonts";
 
 interface FontPickerProps {
   value: string;
@@ -13,15 +13,8 @@ interface FontPickerProps {
   sample?: string;
 }
 
-interface Item {
-  key: string;
-  value: string;
-  label: string;
-  note?: string;
-}
+type Item = FontItem;
 
-// Installed fonts listed below the recommendations, at most this many for a query.
-const MAX_INSTALLED_SHOWN = 60;
 const LIST_MAX_HEIGHT = 320;
 
 // Where the list goes: under the input, or above it when there is more room there.
@@ -87,25 +80,7 @@ export const FontPicker = ({value, onChange, options, label, tone = "dark", samp
     if (open && installed.length === 0) listInstalledFonts().then(setInstalled);
   }, [open, installed.length]);
 
-  const items = useMemo(() => {
-    const needle = query.trim().toLowerCase();
-    const matches = (text: string) => !needle || text.toLowerCase().includes(needle);
-    const installedSet = new Set(installed);
-    const recommended: Item[] = options
-      .filter((option) => !option.requires || installed.length === 0 || installedSet.has(option.requires))
-      .filter((option) => matches(option.label) || matches(option.note))
-      .map((option) => ({key: `r:${option.value}`, value: option.value, label: option.label, note: option.note}));
-    const recommendedFamilies = new Set(options.map((option) => option.requires).filter(Boolean));
-    const others: Item[] = installed
-      .filter((family) => !recommendedFamilies.has(family) && matches(family))
-      .slice(0, MAX_INSTALLED_SHOWN)
-      .map((family) => ({key: `i:${family}`, value: fontStackFor(family), label: family}));
-    const typed = query.trim();
-    const custom: Item[] = typed && !installedSet.has(typed) && !options.some((option) => option.label === typed)
-      ? [{key: "custom", value: fontStackFor(typed), label: typed, note: "Use this font name"}]
-      : [];
-    return {recommended, others, custom, all: [...recommended, ...others, ...custom]};
-  }, [installed, options, query]);
+  const items = useMemo(() => buildFontItems(options, installed, query), [installed, options, query]);
 
   const close = useCallback(() => {
     setOpen(false);
@@ -119,6 +94,7 @@ export const FontPicker = ({value, onChange, options, label, tone = "dark", samp
   }, [close, onChange]);
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (["ArrowDown", "ArrowUp", "Enter", "Escape"].includes(event.key)) event.stopPropagation();
     if (event.key === "ArrowDown" || event.key === "ArrowUp") {
       event.preventDefault();
       setOpen(true);
@@ -192,6 +168,7 @@ export const FontPicker = ({value, onChange, options, label, tone = "dark", samp
       {open && placement && createPortal(
         <ul id={listId} role="listbox" aria-label={label}
             style={{position: "fixed", ...placement}}
+            onMouseDown={(event) => event.preventDefault()}
             className={`z-[300] overflow-y-auto rounded-xl border py-1 shadow-2xl ${colors.list}`}>
           {renderGroup("Recommended", items.recommended, 0)}
           {renderGroup("Installed on this computer", items.others, items.recommended.length)}

@@ -79,6 +79,46 @@ export const withCurrentDefaultFont = <T extends { text?: { fontFamily?: string 
   return {...styling, text: {...styling.text, fontFamily: DEFAULT_SUBTITLE_FONT}};
 };
 
+/** Marks the language being learned on the root element, which orders the default CJK fonts. */
+export const setLearningLanguage = (lang: string) => {
+  if (lang) document.documentElement.dataset.learningLang = lang;
+};
+
+export interface FontItem {
+  key: string;
+  value: string;
+  label: string;
+  note?: string;
+}
+
+// Installed fonts listed below the recommendations, at most this many for a query.
+const MAX_INSTALLED_SHOWN = 60;
+
+/**
+ * The picker's entries for `query`: recommendations (installed ones only, once the installed fonts
+ * are known), then other installed fonts, then the typed name itself unless it names one of those.
+ */
+export const buildFontItems = (options: FontOption[], installed: string[], query: string) => {
+  const needle = query.trim().toLowerCase();
+  const matches = (text = "") => !needle || text.toLowerCase().includes(needle);
+  const installedSet = new Set(installed);
+  const recommended: FontItem[] = options
+    .filter((option) => !option.requires || installed.length === 0 || installedSet.has(option.requires))
+    .filter((option) => matches(option.label) || matches(option.note))
+    .map((option) => ({key: `r:${option.value}`, value: option.value, label: option.label, note: option.note}));
+  const recommendedFamilies = new Set(options.map((option) => option.requires).filter(Boolean));
+  const others: FontItem[] = installed
+    .filter((family) => !recommendedFamilies.has(family) && matches(family))
+    .slice(0, MAX_INSTALLED_SHOWN)
+    .map((family) => ({key: `i:${family}`, value: fontStackFor(family), label: family}));
+  const typed = query.trim();
+  const named = installedSet.has(typed) || options.some((option) => option.label === typed || option.requires === typed);
+  const custom: FontItem[] = typed && !named
+    ? [{key: "custom", value: fontStackFor(typed), label: typed, note: "Use this font name"}]
+    : [];
+  return {recommended, others, custom, all: [...recommended, ...others, ...custom]};
+};
+
 let installedFonts: Promise<string[]> | null = null;
 
 /** Families of the fonts installed on this computer, sorted; empty where the browser can't tell. */
