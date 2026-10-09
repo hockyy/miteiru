@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from "react";
 import {ChineseSentence, JapaneseSentence, PlainSentence} from "./Sentence";
 import {CJKStyling} from "../../utils/CJKStyling";
 import {getLyricsWindow, Line, NO_MEANING, SubtitleContainer} from "./DataStructures";
-import {buildRubyCopyHtml, getSubtitleTokenPresentation} from "./subtitleLanguageSupport";
+import {buildRubyCopyHtml, getSubtitleTokenPresentation, wordSeparator} from "./subtitleLanguageSupport";
 import {adjustTimeWithShift} from "../../utils/utils";
 import type {PlaybackClock} from "../../utils/playbackClock";
 
@@ -240,7 +240,7 @@ const LyricsLine = ({
               getLearningStateClass={getLearningStateClass}
               changeLearningState={changeLearningState}
             />
-            {index + 1 < line.content.length && subtitleStyling.showSpace ? " " : " "}
+            {wordSeparator(val, Boolean(subtitleStyling.showSpace))}
           </React.Fragment>
         );
       })}
