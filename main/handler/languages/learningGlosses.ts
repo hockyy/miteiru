@@ -1,4 +1,4 @@
-import {toHiragana, toKatakana} from "wanakana";
+import {isKanji, toHiragana, toKatakana} from "wanakana";
 import {kanjiBeginning, readingBeginning, type JmdictWord} from "../../dictionary/jmdictDb";
 import {charAnywhere, charBeginning} from "../../dictionary/chineseDictionaryDb";
 import type {DictionaryDb} from "../../dictionary/levelDictionary";
@@ -79,7 +79,9 @@ export const japaneseLearningGloss = async (
   const exact = rankJapaneseMatches([...byReading, ...await kanjiBeginning(db, `${target}-`)], target, tags);
   const entry = findJapaneseEntry(exact, target, reading);
   if (entry) return firstGloss(entry);
-  const prefixed = await kanjiBeginning(db, target, SPELLING_PREFIX_FALLBACK);
+  // Spellings start with kanji; a kana word (a name, slang) missing from JMdict has nothing to find.
+  if (![...target].some((character) => isKanji(character))) return "";
+  const prefixed= await kanjiBeginning(db, target, SPELLING_PREFIX_FALLBACK);
   return pickJapaneseGloss(rankJapaneseMatches([...byReading, ...prefixed], target, tags), target, reading);
 };
 

@@ -103,6 +103,9 @@ test("japaneseLearningGloss reads exact spellings, not every word that starts wi
       word("102", ["人"], ["にん"], "counter for people", "suf"),
       word("103", ["成る"], ["なる"], "to become", "v5r"),
       word("104", [], ["なるほど"], "I see", "exp"),
+      // 数 has entries for several readings; the one matching the token's reading wins.
+      word("105", ["屡々", "数"], ["しばしば"], "often", "adv"),
+      word("106", ["数"], ["かず"], "number"),
     ]
   }), "utf8");
   const {db} = await setupJmdict(path.join(directory, "jmdict-db"), file);
@@ -111,6 +114,11 @@ test("japaneseLearningGloss reads exact spellings, not every word that starts wi
     assert.equal(await japaneseLearningGloss(db, tags, {target: "人形", reading: "にんぎょう"}), "doll");
     assert.equal(await japaneseLearningGloss(db, tags, {target: "なるほど", reading: "なるほど"}), "I see");
     assert.equal(await japaneseLearningGloss(db, tags, {target: "成る", reading: "なる"}), "to become");
+    // No word is spelled 成: fall back to spellings starting with it, matched by reading.
+    assert.equal(await japaneseLearningGloss(db, tags, {target: "成", reading: "なる"}), "to become");
+    assert.equal(await japaneseLearningGloss(db, tags, {target: "数", reading: "かず"}), "number");
+    // A kana word missing from JMdict gets no gloss (and no spelling scan).
+    assert.equal(await japaneseLearningGloss(db, tags, {target: "ナルトス", reading: "なるとす"}), "");
     assert.equal(await japaneseLearningGloss(db, tags, {target: "", reading: ""}), "");
     assert.equal(await japaneseLearningGloss(db, tags, {target: "*", reading: ""}), "");
   } finally {
