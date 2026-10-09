@@ -1,3 +1,5 @@
+import {DEFAULT_SUBTITLE_FONT} from "./fonts";
+
 /** A copy of `styling` with one (possibly nested) field set, e.g. `withStylingPath(s, "text.color", "#fff")`. */
 export const withStylingPath = <T>(styling: T, path: string, value: unknown): T => {
   const copy = JSON.parse(JSON.stringify(styling));
@@ -63,7 +65,7 @@ export const defaultMeaningBoxStyling: CJKStyling = {
     hoverColor: "#5474ff",
     fontSize: "24px",
     weight: 200,
-    fontFamily: "Arial"
+    fontFamily: DEFAULT_SUBTITLE_FONT
   },
   background: "#00000000",
   position: "0vh",
@@ -90,14 +92,14 @@ export const defaultNoteExampleStyling: CJKStyling = {
     hoverColor: "#15803d",
     fontSize: "22px",
     weight: 600,
-    fontFamily: "Arial, Hiragino Sans, Meiryo, sans-serif",
+    fontFamily: DEFAULT_SUBTITLE_FONT,
   },
   textMeaning: {
     color: "#4b5563",
     hoverColor: "#15803d",
     fontSize: "14px",
     weight: 400,
-    fontFamily: "Arial, sans-serif",
+    fontFamily: DEFAULT_SUBTITLE_FONT,
   },
   background: "#00000000",
   position: "0vh",
@@ -125,14 +127,14 @@ export const defaultPrimarySubtitleStyling: CJKStyling = {
     hoverColor: "#00ffda",
     fontSize: "55px",
     weight: 600,
-    fontFamily: "Arial"
+    fontFamily: DEFAULT_SUBTITLE_FONT
   },
   textMeaning: {
     color: "#fadddd",
     hoverColor: "#00ffda",
     fontSize: "35px",
     weight: 400,
-    fontFamily: "Arial"
+    fontFamily: DEFAULT_SUBTITLE_FONT
   },
   background: "#000000ab",
   position: "1vh",
@@ -161,14 +163,14 @@ export const defaultLearningStyling: CJKStyling = {
     hoverColor: "#00ffda",
     fontSize: "42px",
     weight: 600,
-    fontFamily: "Arial"
+    fontFamily: DEFAULT_SUBTITLE_FONT
   },
   textMeaning: {
     color: "#fadddd",
     hoverColor: "#00ffda",
     fontSize: "35px",
     weight: 600,
-    fontFamily: "Arial"
+    fontFamily: DEFAULT_SUBTITLE_FONT
   },
   learning: true,
   background: "#000000ab",
@@ -195,7 +197,7 @@ export const defaultSecondarySubtitleStyling: CJKStyling = {
     hoverColor: "#00ffda",
     fontSize: "52px",
     weight: 600,
-    fontFamily: "Arial"
+    fontFamily: DEFAULT_SUBTITLE_FONT
   },
   background: "#0000009c",
   position: "10vh",

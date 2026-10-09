@@ -15,9 +15,35 @@ html {
   scrollbar-width: none;
 }
 
+/*
+ * Fonts (renderer/utils/fonts.ts). Noto Sans JP, SC and TC and Nunito are bundled (pages/_app.tsx).
+ * The same character is drawn differently in Japanese and in simplified or traditional Chinese, so
+ * the learning language's Noto comes first; useMiteiruTokenizer sets data-learning-lang.
+ * --miteiru-app-font is the user's interface font (useAppFont), if they picked one.
+ */
+:root {
+  --miteiru-cjk-font: "Noto Sans JP Variable", "Noto Sans SC Variable", "Noto Sans TC Variable";
+  --miteiru-subtitle-font: var(--miteiru-cjk-font), "Nunito Variable", sans-serif;
+  --miteiru-ui-font: "Nunito Variable", var(--miteiru-cjk-font), system-ui, sans-serif;
+}
+
+:root[data-learning-lang="zh-CN"] {
+  --miteiru-cjk-font: "Noto Sans SC Variable", "Noto Sans TC Variable", "Noto Sans JP Variable";
+}
+
+:root[data-learning-lang="yue"] {
+  --miteiru-cjk-font: "Noto Sans TC Variable", "Noto Sans SC Variable", "Noto Sans JP Variable";
+}
+
 @layer base {
   body {
     @apply bg-gray-900 text-white;
+    font-family: var(--miteiru-app-font, var(--miteiru-ui-font));
+  }
+
+  /* Form controls do not inherit the font by default. */
+  button, input, select, textarea {
+    font-family: inherit;
   }
 }
 

@@ -1,5 +1,8 @@
 import React from 'react';
 import { Button } from '../Utils/Button';
+import { FontPicker } from '../Utils/FontPicker';
+import { useAppFont } from '../../hooks/useAppFont';
+import { APP_FONT_OPTIONS } from '../../utils/fonts';
 import {
   HOME_BODY,
   HOME_INNER_LABEL,
@@ -55,6 +58,22 @@ interface HomeSystemPanelProps {
   onRemoveDictCaches: () => void;
 }
 
+/** The interface font, for every screen. Subtitle fonts are set per subtitle in the video settings. */
+const AppearancePanel = () => {
+  const [appFont, setAppFont] = useAppFont();
+  return (
+    <details className={HOME_INNER_PANEL} open>
+      <summary className={`${HOME_INNER_LABEL} cursor-pointer rounded-t-2xl`}>Appearance</summary>
+      <div className="space-y-2 bg-blue-50 px-3 py-2.5 text-sm text-blue-900">
+        <div className="font-bold">Miteiru font</div>
+        <FontPicker value={appFont} onChange={setAppFont} options={APP_FONT_OPTIONS} label="Miteiru font"
+                    tone="light" sample="Aa あ 字"/>
+        <p className="text-[11px] text-blue-800">Subtitle fonts are in the video settings (X), under Look.</p>
+      </div>
+    </details>
+  );
+};
+
 export const HomeSystemPanel: React.FC<HomeSystemPanelProps> = ({
   liveCaptionsSymbol,
   liveCaptionsMessage,
@@ -76,9 +95,9 @@ export const HomeSystemPanel: React.FC<HomeSystemPanelProps> = ({
 }) => (
   <details className={`${HOME_SHELL} group`}>
     <summary className={`${HOME_SECTION_LABEL} flex cursor-pointer list-none items-center justify-between gap-3 rounded-t-3xl [&::-webkit-details-marker]:hidden`}>
-      <span>System &amp; tools</span>
+      <span>Settings &amp; tools</span>
       <span className="text-[11px] font-semibold normal-case tracking-normal text-blue-800 group-open:hidden">
-        Live CC · FFmpeg · caches
+        Font · Live CC · FFmpeg · caches
       </span>
       <span className="hidden text-[11px] font-semibold normal-case tracking-normal text-blue-800 group-open:inline">
         Collapse
@@ -93,6 +112,8 @@ export const HomeSystemPanel: React.FC<HomeSystemPanelProps> = ({
           <StatusPill symbol={checkSymbol[cacheCheckOk]} message={cacheCheckMessage} variant="slate" />
         )}
       </div>
+
+      <AppearancePanel/>
 
       <details className={HOME_INNER_PANEL}>
         <summary className={`${HOME_INNER_LABEL} cursor-pointer rounded-t-2xl`}>Optional media tools</summary>

@@ -16,11 +16,21 @@ function publishStoreKey(key: string, value: unknown) {
   storeListeners.get(key)?.forEach((listener) => listener(value));
 }
 
-export const useStoreData = <T,>(key: string, defaultValue: T): [T, (value: T) => Promise<void>, boolean] => {
+/**
+ * A value kept in the settings store under `key`. `migrate`, if given, updates a stored value from an
+ * older format as it is read (the store keeps the old one until the value is next saved).
+ */
+export const useStoreData = <T,>(
+  key: string,
+  defaultValue: T,
+  migrate?: (stored: T) => T
+): [T, (value: T) => Promise<void>, boolean] => {
   const [data, setData] = useState<T>(defaultValue);
   const [isLoaded, setIsLoaded] = useState(false);
   const defaultValueRef = useRef<T>(defaultValue);
   defaultValueRef.current = defaultValue;
+  const migrateRef = useRef(migrate);
+  migrateRef.current = migrate;
 
   useEffect(() => {
     let cancelled = false;
@@ -29,7 +39,7 @@ export const useStoreData = <T,>(key: string, defaultValue: T): [T, (value: T) =
       if (cancelled) {
         return;
       }
-      setData(() => storeData as T);
+      setData(() => (migrateRef.current ? migrateRef.current(storeData as T) : storeData as T));
       setIsLoaded(true);
     }).catch(() => {
       if (!cancelled) {
