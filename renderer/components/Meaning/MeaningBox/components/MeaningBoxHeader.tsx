@@ -6,6 +6,7 @@ import { OutlinedStar } from './shared/OutlinedStar';
 import { RomajiedContent } from './RomajiedContent';
 import { getStarColor } from '../constants';
 import type { defaultMeaningBoxStyling } from '../../../../utils/CJKStyling';
+import { DEFAULT_SUBTITLE_FONT } from '../../../../utils/fonts';
 import type { RomajiedGroup } from '../types';
 
 type MeaningBoxHeaderProps = {
@@ -89,7 +90,7 @@ export const MeaningBoxHeader = ({
 
       <div
         className="flex min-w-0 flex-wrap items-center justify-center gap-3"
-        style={{ fontFamily: 'Arial', fontSize: 'clamp(30px, 4vw, 40px)' }}
+        style={{ fontFamily: DEFAULT_SUBTITLE_FONT, fontSize: 'clamp(30px, 4vw, 40px)' }}
       >
         {romajiedData.map(({ key, romajied }) => (
           <RomajiedContent

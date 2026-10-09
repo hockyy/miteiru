@@ -10,9 +10,11 @@ import Toggle from "./Toggle";
 import {Button} from "../Utils/Button";
 import {GistManager} from "../Data/GistManager";
 import {SubtitleMode} from "../../utils/utils";
-import {SidebarSection, SidebarSettingRow, SidebarShell, SIDEBAR_FIELD_INPUT} from "./SidebarShell";
+import {SidebarSection, SidebarSettingRow, SidebarShell} from "./SidebarShell";
 import {useExportAllAnkiCards} from "../../hooks/useExportAllAnkiCards";
 import {videoConstants} from "../../utils/constants";
+import {FontPicker} from "../Utils/FontPicker";
+import {SUBTITLE_FONT_OPTIONS} from "../../utils/fonts";
 
 /** Sets one (possibly nested) field of a subtitle style, e.g. `update("text.color", "#fff")`. */
 const useStylingUpdate = (styling: CJKStyling, setStyling: (styling: CJKStyling) => void) =>
@@ -160,10 +162,10 @@ export const SubtitleLookSettings = ({subtitleStyling, setSubtitleStyling, defau
     if (window.confirm(`Reset the ${name} subtitle style to the defaults?`)) setSubtitleStyling(defaultStyling);
   }, [defaultStyling, name, setSubtitleStyling]);
   return <div className="flex flex-col gap-3">
-    <div className="flex flex-row items-center gap-3 text-sm text-white/85">
+    <div className="flex flex-col gap-1.5 text-sm text-white/85">
       Font
-      <input className={SIDEBAR_FIELD_INPUT} aria-label="Font" value={subtitleStyling.text.fontFamily}
-             onChange={(event) => update("text.fontFamily", event.target.value)}/>
+      <FontPicker value={subtitleStyling.text.fontFamily} onChange={(value) => update("text.fontFamily", value)}
+                  options={SUBTITLE_FONT_OPTIONS} label={`${name} subtitle font`}/>
     </div>
     <SliderRow label="Size" valueLabel={subtitleStyling.text.fontSize} min={10} max={100} step={1}
                value={parseInt(subtitleStyling.text.fontSize)} onChange={(value) => update("text.fontSize", `${value}px`)}/>

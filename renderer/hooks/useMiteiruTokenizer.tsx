@@ -16,6 +16,11 @@ const useMiteiruTokenizer = (): {
       setMode(val);
     });
   }, []);
+  const lang = getLanguageModeByTokenizerMode(tokenizerMode)?.languageCode ?? '';
+  // The default subtitle font follows the language being learned (globals.css).
+  useEffect(() => {
+    if (lang) document.documentElement.dataset.learningLang = lang;
+  }, [lang]);
   const tokenizeMiteiru = useCallback(async (sentence) => {
     if (!sentence) {
       return [];
@@ -25,7 +30,7 @@ const useMiteiruTokenizer = (): {
   return {
     tokenizeMiteiru,
     tokenizerMode,
-    lang: getLanguageModeByTokenizerMode(tokenizerMode)?.languageCode ?? '',
+    lang,
     toneType,
     setToneType,
   };
