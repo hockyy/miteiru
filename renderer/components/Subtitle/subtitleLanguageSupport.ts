@@ -20,7 +20,8 @@ interface SubtitleLanguageSupport {
   lookup: (token: any) => LearningLookup | null;
 }
 
-const chineseSupport = (glossChannel: string): SubtitleLanguageSupport => ({
+// Languages whose words are counted and looked up by their surface form.
+const surfaceFormSupport = (glossChannel: string): SubtitleLanguageSupport => ({
   glossChannel,
   frequencyKey: (token) => token.origin,
   lookup: (token) => (token.origin ? {target: token.origin} : null)
@@ -38,9 +39,9 @@ const subtitleLanguageSupportByLang: Record<string, SubtitleLanguageSupport> = {
       return {target, reading: token.hiragana ?? ""};
     }
   },
-  [languageCodes.mandarin]: chineseSupport("learningGlossesChinese"),
-  [languageCodes.cantonese]: chineseSupport("learningGlossesChinese"),
-  [languageCodes.vietnamese]: chineseSupport("learningGlossesVietnamese")
+  [languageCodes.mandarin]: surfaceFormSupport("learningGlossesChinese"),
+  [languageCodes.cantonese]: surfaceFormSupport("learningGlossesChinese"),
+  [languageCodes.vietnamese]: surfaceFormSupport("learningGlossesVietnamese")
 };
 
 export const getSubtitleLanguageSupport = (language: string) => subtitleLanguageSupportByLang[language];
@@ -83,8 +84,16 @@ const fillLearningContent = async (
   }
 
   if (requests.length > 0) {
-    const glosses: string[] = await window.ipc.invoke(support.glossChannel, requests);
-    requests.forEach((lookup, index) => cache.set(glossKey(lookup), glosses?.[index] ?? ""));
+    let glosses: unknown;
+    try {
+      glosses = await window.ipc.invoke(support.glossChannel, requests);
+    } catch (error) {
+      console.error("[learning] gloss lookup failed:", error);
+    }
+    // A failed or empty reply (dictionary still opening) is not cached, so later chunks ask again.
+    if (Array.isArray(glosses) && glosses.length === requests.length) {
+      requests.forEach((lookup, index) => cache.set(glossKey(lookup), String(glosses[index] ?? "")));
+    }
   }
   for (const {line, index, key} of slots) line.meaning[index] = cache.get(key) ?? "";
 };
@@ -121,7 +130,11 @@ export const fillSubtitleWithLearningContent = async (
   const cache: GlossCache = new Map();
   for (let start = 0; start < subtitle.lines.length && shouldContinue(); start += LEARNING_CHUNK_LINES) {
     const chunk = subtitle.lines.slice(start, start + LEARNING_CHUNK_LINES);
-    await Promise.all(chunk.map((line) => line.fillContentSeparations(tokenizeMiteiru)));
+    // A line that fails to tokenize stays plain text; the rest of the subtitle carries on.
+    const tokenized = await Promise.allSettled(chunk.map((line) => line.fillContentSeparations(tokenizeMiteiru)));
+    tokenized.forEach((result, index) => {
+      if (result.status === "rejected") console.error("[learning] could not tokenize:", chunk[index].content, result.reason);
+    });
     await fillLearningContent(chunk, support, subtitle.frequency, cache);
   }
   subtitle.progress = "done";
