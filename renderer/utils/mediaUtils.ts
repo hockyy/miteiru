@@ -1,6 +1,7 @@
 import type {MediaTrack} from "../types/media";
 import {getLanguageDisplayName as getManifestLanguageDisplayName} from "../languages/manifest";
 import {isLocalPath, isYoutube} from "./utils";
+import {NORMALIZED_SUBTITLE_PREFIX} from "./constants";
 
 export type SubtitleTarget = "primary" | "secondary";
 
@@ -31,6 +32,14 @@ export const buildVideoSource = (currentPath: string, pathUri: string) => isYout
 
 export const isEmbeddedSubtitlePath = (filePath: string) => (
   filePath.includes("miteiru_subtitle_") || filePath.includes("miteiru_youtube_")
+);
+
+/**
+ * Whether a subtitle is a file Miteiru wrote to the temp folder (a track extracted from the video,
+ * YouTube captions, a sentence-case copy) rather than one of the user's files.
+ */
+export const isMiteiruTempSubtitle = (filePath: string) => (
+  isEmbeddedSubtitlePath(filePath) || getFileNameFromPath(filePath).startsWith(NORMALIZED_SUBTITLE_PREFIX)
 );
 
 export const getEmbeddedSubtitleTarget = (filePath: string): SubtitleTarget => (

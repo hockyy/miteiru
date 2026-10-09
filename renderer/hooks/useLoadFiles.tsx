@@ -9,7 +9,7 @@ import {SubtitlePreprocessOptions} from "../types/subtitlePreprocess";
 import {v4 as uuidv4} from 'uuid';
 import {TOAST_TIMEOUT} from "../components/VideoPlayer/Toast";
 import {isLocalPath, isSubtitle, isVideo, isYoutube} from "../utils/utils";
-import {findPositionDeltaInFolder, isTempSubtitleCopy} from "../utils/folderUtils";
+import {findPositionDeltaInFolder} from "../utils/folderUtils";
 import {useSerialRunner} from "./useSerialRunner";
 import {isLearningSubtitleLanguage} from "../components/Subtitle/subtitleLanguageSupport";
 import {
@@ -17,6 +17,7 @@ import {
   getEmbeddedSubtitleTarget,
   getLanguageDisplayName,
   isEmbeddedSubtitlePath,
+  isMiteiruTempSubtitle,
   normalizeDroppedPath
 } from "../utils/mediaUtils";
 import {findCachedYoutubeLyricsPath} from "../utils/lyricsUtils";
@@ -285,8 +286,8 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
   }, [loadEmbeddedSubtitle]);
 
   /**
-   * Loads the video `delta` files away in the same folder and moves each subtitle the same number of
-   * files along in its own folder; true if there was such a video. With none, the subtitles stay.
+   * Loads the video `delta` files away in the same folder and moves each loaded subtitle the same
+   * number of files along in its own folder; true if there was such a video. With none, nothing moves.
    */
   const onVideoChangeHandler = useCallback(async (delta: number = 1) => {
     if (!videoSrc.path || !isLocalPath(videoSrc.path)) return false;
@@ -295,19 +296,21 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       setEnableSeeker(true);
       return false;
     }
+    // Step from the file each subtitle was loaded from: the loaded one may be a sentence-case copy
+    // in the temp folder, whose neighbours are unrelated files. Files Miteiru extracted to the temp
+    // folder have no next episode beside them.
+    const sources = [
+      [primarySub.path, lastPrimarySubPath[0]?.path],
+      [secondarySub.path, lastSecondarySubPath[0]?.path]
+    ].filter(([loaded, source]) => loaded && source && !isMiteiruTempSubtitle(source)).map(([, source]) => source);
     await onLoadFiles([{path: nextVideo}]);
-    const subtitles = [primarySub.path, secondarySub.path].filter(Boolean);
-    // A subtitle re-encoded to UTF-8 is a copy in the temp folder, whose neighbours are unrelated
-    // files; use the subtitles named after the next video instead, as a dropped video does.
-    if (subtitles.some(isTempSubtitleCopy)) {
-      for (const path of await window.electronAPI.checkSubtitleFile(nextVideo)) await onLoadFiles([{path}]);
-    }
-    for (const path of subtitles.filter((subtitle) => !isTempSubtitleCopy(subtitle))) {
-      const nextSubtitle = await findPositionDeltaInFolder(path, delta);
+    for (const source of sources) {
+      const nextSubtitle = await findPositionDeltaInFolder(source, delta);
       if (nextSubtitle !== '') await onLoadFiles([{path: nextSubtitle}]);
     }
     return true;
-  }, [videoSrc.path, primarySub.path, secondarySub.path, onLoadFiles, setEnableSeeker]);
+  }, [videoSrc.path, primarySub.path, secondarySub.path, lastPrimarySubPath, lastSecondarySubPath, onLoadFiles,
+    setEnableSeeker]);
 
   useEffect(() => {
     if (player) {

@@ -38,7 +38,8 @@ export const useVideoPlayingToggle = (player, metadata) => {
 }
 
 // Elements that Space activates itself; toggling playback as well would do two things at once.
-const SPACE_ACTIVATED = 'button, a[href], summary, select, input, [role="button"], [role="checkbox"], [role="switch"]';
+// A range slider does nothing on Space, so after setting the volume Space still plays and pauses.
+const SPACE_ACTIVATED = 'button, a[href], summary, select, input:not([type="range"]), [role="button"], [role="checkbox"], [role="switch"]';
 
 export const useVideoKeyboardControls = (togglePlay, deltaTime, setPrimaryShift,
                                          setSecondaryShift, setInfo, backToHead, setIsPlaying) => {

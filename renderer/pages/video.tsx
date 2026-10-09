@@ -274,9 +274,10 @@ function Video() {
       setToastInfo, backToHead, setIsPlaying);
   usePlayNextAfterEnd(player, onVideoChangeHandler, setEnableSeeker, setIsPlaying);
 
-  // While a video plays, the controls fade out when the mouse rests; not while a panel is open.
-  const {controlsRef} = useIdleControls<HTMLDivElement>(Boolean(isPlaying),
-      !showSidebar && !showVocabSidebar && !showCommandPalette && meaning === '');
+  // While a video plays, the controls fade out when the mouse rests; not while a panel or dialog is open.
+  const panelOpen = showSidebar || showVocabSidebar || showCommandPalette || meaning !== '' ||
+      showSubtitleModal || showLyricsSearch || showTrackSelectionModal || showAudioReencodeModal || showReencodeProgress;
+  const {controlsRef} = useIdleControls<HTMLDivElement>(hasVideo && Boolean(isPlaying), !panelOpen);
 
   // Pause player when media selection modals open
   useEffect(() => {

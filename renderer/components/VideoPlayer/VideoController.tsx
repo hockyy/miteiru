@@ -36,7 +36,12 @@ export const VideoController = ({
     }
   }, [enableSeeker, changeTimeTo])
   const getBufferedEnd = useCallback(() => player?.bufferedEnd?.() ?? 0, [player]);
-  return <div>
+  // A control clicked with the mouse takes no focus, so Space keeps playing and pausing instead of
+  // pressing it again (keyboard focus with Tab still works).
+  const keepFocusOff = useCallback((event: React.MouseEvent) => {
+    if (event.target instanceof Element && event.target.closest("button")) event.preventDefault();
+  }, []);
+  return <div onMouseDown={keepFocusOff}>
     <div className={"w-[100vw] h-14 content-center -mb-4"}>
       <SeekBar clock={clock} durationMs={duration} onSeek={timeSeekerHandler} getBufferedEnd={getBufferedEnd}/>
     </div>
@@ -46,7 +51,7 @@ export const VideoController = ({
       <div className={"flex flex-row items-center justify-between pt-1"}>
         <div className={"flex w-1/3 hidden md:flex"}>
           <Volume player={player}/>
-          <div className={"flex flex-row px-4 justify-end content-end w-32 animation"}>
+          <div className={"flex flex-row px-2 lg:px-4 justify-end content-end lg:w-32 whitespace-nowrap animation"}>
             <div><PlaybackTime clock={clock}/></div>
             &nbsp;
             <div>/</div>

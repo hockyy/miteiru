@@ -8,7 +8,7 @@ import {
   NORMALIZED_SUBTITLE_PREFIX,
   normalizedSubtitleOutputPath
 } from "../main/helpers/subtitleCaches";
-import {isTempSubtitleCopy} from "../renderer/utils/folderUtils";
+import {isMiteiruTempSubtitle} from "../renderer/utils/mediaUtils";
 
 describe("isNormalizedSubtitlePath", () => {
   it("detects miteiru normalized temp files including stacked names", () => {
@@ -22,15 +22,17 @@ describe("isNormalizedSubtitlePath", () => {
       true
     );
   });
-  it("matches the renderer's check, which sees Windows and POSIX paths", () => {
+  it("is one of the temp subtitles the renderer never steps through, on Windows and POSIX paths", () => {
     for (const filePath of [
       `C:\\Users\\me\\AppData\\Local\\Temp\\${NORMALIZED_SUBTITLE_PREFIX}0089622176c3300f.srt`,
-      `/tmp/${NORMALIZED_SUBTITLE_PREFIX}abc.srt`
+      `/tmp/${NORMALIZED_SUBTITLE_PREFIX}abc.srt`,
+      "C:\\Temp\\miteiru_subtitle_1787979208175_2.srt",
+      "/tmp/miteiru_youtube_abc/1hI-7vj2FhE.en.vtt"
     ]) {
-      assert.equal(isTempSubtitleCopy(filePath), true, filePath);
+      assert.equal(isMiteiruTempSubtitle(filePath), true, filePath);
     }
     for (const filePath of ["C:\\Videos\\ep01.srt", "/home/me/ep01.srt", `/videos/${NORMALIZED_SUBTITLE_PREFIX}/ep01.srt`, ""]) {
-      assert.equal(isTempSubtitleCopy(filePath), false, filePath);
+      assert.equal(isMiteiruTempSubtitle(filePath), false, filePath);
     }
   });
 });
