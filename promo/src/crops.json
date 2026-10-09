@@ -1,0 +1,173 @@
+{
+ "sub_ja": [
+  "jp-playing",
+  [
+   950,
+   18,
+   1300,
+   378
+  ]
+ ],
+ "sub_zh": [
+  "zh-playing",
+  [
+   1088,
+   18,
+   1024,
+   316
+  ]
+ ],
+ "sub_yue": [
+  "yue-playing",
+  [
+   1130,
+   18,
+   942,
+   316
+  ]
+ ],
+ "sub_vi": [
+  "vi-playing",
+  [
+   974,
+   18,
+   1252,
+   252
+  ]
+ ],
+ "sub_learning": [
+  "jp-learning",
+  [
+   950,
+   18,
+   1300,
+   378
+  ]
+ ],
+ "sub_verb": [
+  "jp-line3",
+  [
+   604,
+   18,
+   1992,
+   378
+  ]
+ ],
+ "word_card": [
+  "jp-meaning",
+  [
+   1386,
+   283,
+   427,
+   300
+  ]
+ ],
+ "dictionary": [
+  "jp-meaning",
+  [
+   435,
+   630,
+   1300,
+   560
+  ]
+ ],
+ "pitch": [
+  "jp-meaning-2",
+  [
+   470,
+   1286,
+   420,
+   160
+  ]
+ ],
+ "quick_actions": [
+  "jp-meaning",
+  [
+   455,
+   1310,
+   900,
+   80
+  ]
+ ],
+ "inflection": [
+  "jp-verb-3",
+  [
+   435,
+   740,
+   1700,
+   760
+  ]
+ ],
+ "kanji_info": [
+  "jp-kanji",
+  [
+   474,
+   736,
+   2262,
+   864
+  ]
+ ],
+ "flashcard": [
+  "flashcards",
+  [
+   400,
+   282,
+   2400,
+   870
+  ]
+ ],
+ "karaoke": [
+  "karaoke",
+  [
+   240,
+   400,
+   2720,
+   1000
+  ]
+ ],
+ "settings_subs": [
+  "settings-subtitles",
+  [
+   2300,
+   0,
+   900,
+   1800
+  ]
+ ],
+ "gist": [
+  "settings-data",
+  [
+   2300,
+   1215,
+   900,
+   585
+  ]
+ ],
+ "learn_toggles": [
+  "learn",
+  [
+   26,
+   496,
+   1062,
+   246
+  ]
+ ],
+ "seek_tooltip": [
+  "seek-hover",
+  [
+   300,
+   1350,
+   1800,
+   450
+  ]
+ ],
+ "sub_en": [
+  "jp-playing",
+  [
+   886,
+   1440,
+   1430,
+   180
+  ]
+ ]
+}

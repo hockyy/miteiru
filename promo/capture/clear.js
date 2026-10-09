@@ -1,0 +1,1 @@
+(() => { let s = document.getElementById('promo-clear'); if (!s) { s = document.createElement('style'); s.id = 'promo-clear'; document.head.appendChild(s); } s.textContent = 'video.vjs-tech{opacity:0!important} .video-js{background-color:transparent!important} body{background:transparent!important}'; return 'clear'; })()

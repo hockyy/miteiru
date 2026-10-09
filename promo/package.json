@@ -1,0 +1,29 @@
+{
+  "name": "miteiru-promo",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "studio": "remotion studio",
+    "music": "python music/make_music.py",
+    "scenery": "remotion render src/index.ts Scenery media/scenery.mp4 --codec=h264 --crf=20",
+    "render": "remotion render src/index.ts Promo out/miteiru-promo.mp4 --codec=h264 --crf=17 --audio-bitrate=320k",
+    "thumbnail": "remotion still src/index.ts Thumbnail out/thumbnail.jpg --frame=30 --scale=0.6667 --image-format=jpeg --jpeg-quality=92",
+    "stills": "node stills.mjs"
+  },
+  "dependencies": {
+    "@fontsource-variable/noto-sans-jp": "5.3.0",
+    "@fontsource-variable/noto-sans-sc": "5.3.0",
+    "@fontsource-variable/noto-sans-tc": "5.3.0",
+    "@fontsource-variable/nunito": "5.3.0",
+    "@remotion/cli": "4.0.527",
+    "@remotion/paths": "^4.0.527",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "remotion": "4.0.527"
+  },
+  "devDependencies": {
+    "@types/react": "19.1.8",
+    "typescript": "5.8.3"
+  },
+  "description": "The Miteiru promo video and its YouTube thumbnail, made with Remotion."
+}
