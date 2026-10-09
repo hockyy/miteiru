@@ -96,7 +96,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
         <div className="space-y-3 bg-white px-4 py-3">
           <p className="text-xs font-medium text-blue-800">Pick a language once, then jump into any mode.</p>
 
-          <label htmlFor="language-select" className="block text-xs font-bold uppercase tracking-wide text-blue-900">
+          <label htmlFor="language-select" className="block text-sm font-bold text-blue-900">
             Language stack
           </label>
           <select

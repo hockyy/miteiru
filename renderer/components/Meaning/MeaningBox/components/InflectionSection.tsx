@@ -120,7 +120,7 @@ export const InflectionSection = ({
 
         {table.isInflected && table.ladder.length > 0 ? (
           <div className="rounded-lg border border-blue-500 bg-blue-50 px-3 py-2">
-            <div className="text-xs font-bold uppercase tracking-wide text-blue-900">
+            <div className="text-sm font-bold text-blue-900">
               Breakdown
             </div>
             <div className="mt-2 flex flex-wrap items-center gap-2 text-blue-950">
