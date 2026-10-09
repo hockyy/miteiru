@@ -56,11 +56,8 @@ export const extractVideoId = (url) => {
   return results[1];
 }
 
-const getFormattedNameFromPath = (path) => {
-  const pathList = path.split('/');
-  return path ? (' - ' + pathList[pathList.length - 1]) : ''
-
-}
+// " - <file name>" for the window title; Windows paths use backslashes.
+const getFormattedNameFromPath = (path) => path ? ` - ${path.split(/[\\/]/).pop()}` : '';
 
 export const getMiteiruAppName = () =>
   process.env.NODE_ENV === 'development' ? 'Miteiru (dev)' : 'Miteiru';
