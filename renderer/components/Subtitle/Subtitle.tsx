@@ -5,7 +5,7 @@ import {CJKStyling, defaultSecondarySubtitleStyling} from "../../utils/CJKStylin
 import {adjustTimeWithShift} from "../../utils/utils";
 import useSubtitleContainerStyle from "../../hooks/useSubtitleContainerStyle";
 import {getSubtitleOutlineStyle} from "../../utils/subtitleStroke";
-import {buildRubyCopyHtml, getSubtitleTokenPresentation} from "./subtitleLanguageSupport";
+import {buildRubyCopyHtml, getSubtitleTokenPresentation, wordSeparator} from "./subtitleLanguageSupport";
 import type {PlaybackClock} from "../../utils/playbackClock";
 
 interface CurrentSubtitleLine {
@@ -145,7 +145,7 @@ const buildPrimaryCaption = ({
                     changeLearningState={changeLearningState}
                 />
             )}
-            {index + 1 < content.length && subtitleStyling?.showSpace ? " " : " "}
+            {wordSeparator(val, Boolean(subtitleStyling?.showSpace))}
           </React.Fragment>
       );
     });

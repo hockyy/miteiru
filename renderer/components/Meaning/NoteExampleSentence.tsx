@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ChineseSentence, JapaneseSentence } from '../Subtitle/Sentence';
-import { getSubtitleTokenPresentation } from '../Subtitle/subtitleLanguageSupport';
+import { getSubtitleTokenPresentation, textWordSeparator } from '../Subtitle/subtitleLanguageSupport';
 import { CJKStyling, defaultNoteExampleStyling } from '../../utils/CJKStyling';
 
 type TokenizedWord = {
@@ -97,7 +97,7 @@ export const NoteExampleSentence: React.FC<NoteExampleSentenceProps> = ({
               basicForm={validBasicForm ? token.basicForm : ''}
               wordMeaning=""
             />
-            {index + 1 < tokens.length && styling.showSpace ? ' ' : ''}
+            {index + 1 < tokens.length ? textWordSeparator(token, Boolean(styling.showSpace)) : ''}
           </React.Fragment>
         );
       })}
