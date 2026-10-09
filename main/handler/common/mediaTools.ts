@@ -4,7 +4,7 @@ import path from "path";
 import * as fsPromises from "node:fs/promises";
 import {app} from "electron";
 
-type ToolName = "yt-dlp" | "ffmpeg" | "ffprobe";
+export type ToolName = "yt-dlp" | "ffmpeg" | "ffprobe";
 
 interface ToolConfig {
   name: ToolName;
@@ -95,6 +95,15 @@ export async function checkToolPath(tool: ToolConfig): Promise<{ available: bool
   }
 
   return {available: false, path: null, isInternal: false};
+}
+
+/** The command for a tool that must be present; throws a message saying where to put it when it is not. */
+export async function requireMediaTool(name: ToolName): Promise<string> {
+  const {available, path: toolPath} = await checkToolPath(findTool(name));
+  if (!available || !toolPath) {
+    throw new Error(`${name} was not found. Put ${findTool(name).executable_name} in ${getMiteiruToolsPath()} or on your PATH.`);
+  }
+  return toolPath;
 }
 
 export async function checkMediaTools(forceRefresh = false) {
