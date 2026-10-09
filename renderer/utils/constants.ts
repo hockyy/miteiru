@@ -6,8 +6,8 @@ import {
   speechLanguageCodes
 } from "../languages/manifest";
 
-// Subtitles re-encoded to UTF-8 load from a copy in the temp folder whose name starts with this
-// (main/helpers/subtitleCaches.ts).
+// A subtitle loaded with the all-caps fix is read from a sentence-case copy in the temp folder whose
+// name starts with this (main/helpers/subtitleCaches.ts).
 export const NORMALIZED_SUBTITLE_PREFIX = "miteiru_normalized_";
 
 export const videoConstants = {

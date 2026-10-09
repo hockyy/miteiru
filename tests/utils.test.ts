@@ -4,6 +4,8 @@ import {
   adjustTimeWithShift,
   extractVideoId,
   getColorGradient,
+  getMiteiruAppName,
+  getMiteiruVideoTitle,
   getRelativeTime,
   isArrayEndsWithMatcher,
   isDomainUri,
@@ -203,4 +205,9 @@ describe("getColorGradient", () => {
       assert.ok(channel >= 0 && channel <= 255, `channel out of range in ${color}`);
     }
   });
+});
+
+it("getMiteiruVideoTitle names each file without its folder, on Windows and POSIX paths", () => {
+  const title = getMiteiruVideoTitle("/videos/ep01.mkv", "C:\\Users\\me\\Videos\\ep01.ja.srt", "", true, false);
+  assert.equal(title, `${getMiteiruAppName()} - ep01.mkv - ep01.ja.srt-CJK✅-Other❌`);
 });

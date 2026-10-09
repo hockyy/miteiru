@@ -17,9 +17,12 @@ import {
   getEmbeddedSubtitleTarget,
   getLanguageDisplayName,
   isEmbeddedSubtitlePath,
+  isEnglishSubtitleName,
   isMiteiruTempSubtitle,
-  normalizeDroppedPath
+  normalizeDroppedPath,
+  type SubtitleTarget
 } from "../utils/mediaUtils";
+import {videoConstants} from "../utils/constants";
 import {findCachedYoutubeLyricsPath} from "../utils/lyricsUtils";
 
 const DEFAULT_SUBTITLE_PREPROCESS_OPTIONS: SubtitlePreprocessOptions = {
@@ -69,6 +72,8 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     if (!tmpSub) {
       throw new Error(`Subtitle parser returned no data for: ${subtitlePath}`);
     }
+    // The subtitle is named after the user's file (window title), not the sentence-case copy it was read from.
+    tmpSub.path = filePath;
     return {tmpSub, subtitlePath};
   }, [lang, primaryStyling.forceSimplified]);
 
@@ -197,17 +202,21 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     resetSub(setSecondarySub);
   }, [resetSub, setPrimarySub, setSecondarySub]);
 
-  const routeLoadedSubtitle = useCallback((tmpSub, loadedPath: string, currentPath: string) => {
+  const routeLoadedSubtitle = useCallback((tmpSub, loadedPath: string, currentPath: string, target?: SubtitleTarget) => {
     if (isYoutube(currentPath)) {
       console.log(`[useLoadFiles] YouTube video detected: ${currentPath}`);
       console.log('[useLoadFiles] Skipping auto-subtitle loading - user should select via modal');
       return;
     }
 
-    if (isEmbeddedSubtitlePath(currentPath)) {
-      console.log('[useLoadFiles] Loading subtitle file directly:', loadedPath);
-      const target = getEmbeddedSubtitleTarget(currentPath);
-      if (target === 'secondary') {
+    // The slot is known without asking: the caller says (the next episode keeps its slot), the file
+    // was extracted for a slot, or its name says English while another language is being learned.
+    const knownTarget = target
+      ?? (isEmbeddedSubtitlePath(currentPath) ? getEmbeddedSubtitleTarget(currentPath) : undefined)
+      ?? (lang !== videoConstants.englishLang && isEnglishSubtitleName(currentPath) ? 'secondary' : undefined);
+    if (knownTarget) {
+      console.log('[useLoadFiles] Loading subtitle file directly:', loadedPath, knownTarget);
+      if (knownTarget === 'secondary') {
         loadSubtitleAsSecondary(tmpSub, currentPath);
       } else {
         loadSubtitleAsPrimary(tmpSub, currentPath);
@@ -219,9 +228,9 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     setPendingSubtitlePath(currentPath);
     setShowSubtitleModal(true);
     showToast('Choose subtitle type...');
-  }, [loadSubtitleAsPrimary, loadSubtitleAsSecondary, showToast]);
+  }, [lang, loadSubtitleAsPrimary, loadSubtitleAsSecondary, showToast]);
 
-  const loadSubtitleFile = useCallback(async (currentPath: string) => {
+  const loadSubtitleFile = useCallback(async (currentPath: string, target?: SubtitleTarget) => {
     if (isYoutube(currentPath)) {
       console.log(`[useLoadFiles] YouTube video detected: ${currentPath}`);
       console.log('[useLoadFiles] Skipping auto-subtitle loading - user should select via modal');
@@ -238,7 +247,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       }, TOAST_TIMEOUT);
 
       const {tmpSub, subtitlePath} = await createSubtitleContainer(currentPath);
-      routeLoadedSubtitle(tmpSub, subtitlePath, currentPath);
+      routeLoadedSubtitle(tmpSub, subtitlePath, currentPath, target);
     } catch (error) {
       console.error('[useLoadFiles] Failed to load subtitle file:', error);
       showToast(`Failed to load subtitle: ${error.message}`);
@@ -271,7 +280,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       if (isYoutube(currentPath)) {
         await tryAutoLoadYoutubeLyrics(currentPath);
       } else if (isSubtitle(currentPath)) {
-        await loadSubtitleFile(currentPath);
+        await loadSubtitleFile(currentPath, acceptedFiles[0]?.target);
       }
     } catch (error) {
       console.error('[useLoadFiles] Error in file loading pipeline:', error);
@@ -299,14 +308,16 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     // Step from the file each subtitle was loaded from: the loaded one may be a sentence-case copy
     // in the temp folder, whose neighbours are unrelated files. Files Miteiru extracted to the temp
     // folder have no next episode beside them.
-    const sources = [
-      [primarySub.path, lastPrimarySubPath[0]?.path],
-      [secondarySub.path, lastSecondarySubPath[0]?.path]
-    ].filter(([loaded, source]) => loaded && source && !isMiteiruTempSubtitle(source)).map(([, source]) => source);
+    // The next episode's subtitles go into the same slots, without asking again.
+    const sources: [string, SubtitleTarget][] = [
+      [primarySub.path, lastPrimarySubPath[0]?.path, 'primary'] as const,
+      [secondarySub.path, lastSecondarySubPath[0]?.path, 'secondary'] as const
+    ].filter(([loaded, source]) => loaded && source && !isMiteiruTempSubtitle(source))
+      .map(([, source, target]) => [source, target]);
     await onLoadFiles([{path: nextVideo}]);
-    for (const source of sources) {
+    for (const [source, target] of sources) {
       const nextSubtitle = await findPositionDeltaInFolder(source, delta);
-      if (nextSubtitle !== '') await onLoadFiles([{path: nextSubtitle}]);
+      if (nextSubtitle !== '') await onLoadFiles([{path: nextSubtitle, target}]);
     }
     return true;
   }, [videoSrc.path, primarySub.path, secondarySub.path, lastPrimarySubPath, lastSecondarySubPath, onLoadFiles,
