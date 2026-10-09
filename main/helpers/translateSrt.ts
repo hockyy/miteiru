@@ -6,7 +6,7 @@ import {
 import type {GenerateSubtitlesProgress} from "../../renderer/types/generateSubtitles";
 import {asString, extractJsonArray} from "../../renderer/utils/parseJsonResponse";
 import {openRouterChatCompletion, withRetries} from "./openRouterHttp";
-import {throwIfAborted} from "./runCommand";
+import {isJobCancelled, throwIfAborted} from "./runCommand";
 import {cuesToSrt, parseSrtCues, siblingEnglishSrtPath, SrtCue} from "./srtFormat";
 
 type ProgressFn = (progress: GenerateSubtitlesProgress) => void;
@@ -88,6 +88,8 @@ export async function translateSrtToEnglish(options: {
     const startIndex = batchIndex * TRANSLATE_BATCH_SIZE;
     const numbered = batch.map((cue, offset) => `${startIndex + offset + 1}. ${cue.text}`).join("\n");
 
+    // The best incomplete answer, used if every attempt leaves cues out (they keep their source text).
+    let partial: Map<number, string> | null = null;
     const translated = await withRetries(async () => {
       const {content} = await openRouterChatCompletion({
         apiKey: options.apiKey,
@@ -105,10 +107,14 @@ export async function translateSrtToEnglish(options: {
         .map((_, offset) => startIndex + offset + 1)
         .filter((index) => !got.get(index));
       if (missing.length) {
+        if (!partial || got.size > partial.size) partial = got;
         throw new Error(`Missing translations for cues ${missing.slice(0, 8).join(", ")}`);
       }
       return got;
-    }, {signal: options.signal});
+    }, {signal: options.signal}).catch((error) => {
+      if (partial && !isJobCancelled(error)) return partial;
+      throw error;
+    });
 
     translated.forEach((text, index) => translations.set(index, text));
     done += batch.length;

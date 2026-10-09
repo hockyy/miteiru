@@ -31,6 +31,15 @@ describe("splitCues", () => {
   it("returns [] for empty text", () => {
     assert.deepEqual(splitCues("   ", 0, 1), []);
   });
+
+  it("keeps spaces between clauses and breaks long lines between words in spaced languages", () => {
+    assert.deepEqual(splitCues("Chào! Bạn khỏe không?", 0, 2, 42).map((cue) => cue.text), ["Chào! Bạn khỏe không?"]);
+    const long = "một hai ba bốn năm sáu bảy tám chín mười một hai ba bốn năm sáu bảy tám chín mười";
+    const lines = splitCues(long, 0, 4, 20).map((cue) => cue.text);
+    assert.equal(lines.join(" "), long);
+    for (const line of lines) assert.ok(!line.startsWith(" ") && !line.endsWith(" "), line);
+    assert.ok(lines.every((line) => long.split(" ").includes(line.split(" ")[0])), "no word is cut");
+  });
 });
 
 describe("cuesFromTranscription", () => {
