@@ -34,3 +34,19 @@ export function extractJsonString(raw: string): string | null {
 
   return trimmed.startsWith('{') ? trimmed : null;
 }
+
+/** Like extractJsonString, for responses whose payload is a JSON array (e.g. subtitle cue translations). */
+export function extractJsonArray(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  const body = fenced?.[1]?.trim() ?? trimmed;
+
+  // Grab the outermost [ ... ] if the model wrapped the array in prose.
+  const start = body.indexOf('[');
+  const end = body.lastIndexOf(']');
+  return start !== -1 && end > start ? body.slice(start, end + 1) : null;
+}
