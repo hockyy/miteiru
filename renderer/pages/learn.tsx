@@ -35,6 +35,7 @@ import {speechLanguageCodes} from "../languages/manifest";
 import useLiveCaptions from "../hooks/useLiveCaptions";
 import {LiveCaptionOverlay} from "../components/Subtitle/LiveCaptionOverlay";
 import {LearnLiveCaptionControl} from "../components/Learn/LearnLiveCaptionControl";
+import {withCurrentDefaultFont} from "../utils/fonts";
 import {
   MiteiruActionBar,
   MiteiruPanel,
@@ -54,7 +55,7 @@ function Learn() {
   const [primarySub, setPrimarySub] = useState(new SubtitleContainer(''))
   const [directInput, setDirectInput] = useState('');
   const [showSidebar, setShowSidebar] = useState(0)
-  const [primaryStyling, setPrimaryStyling] = useStoreData('user.styling.learning', defaultLearningStyling);
+  const [primaryStyling, setPrimaryStyling] = useStoreData('user.styling.learning', defaultLearningStyling, withCurrentDefaultFont);
   const [rubyContent, setRubyCopyContent] = useRubyCopy();
   const [sentences, setSentences] = useState<string[]>([]);
   const [sentenceInput, setSentenceInput] = useState('');
