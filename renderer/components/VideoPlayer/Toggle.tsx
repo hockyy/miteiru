@@ -1,6 +1,11 @@
 import {useCallback} from "react";
 
-export default function Toggle({onChange, isChecked}) {
+export default function Toggle({onChange, isChecked, label}: {
+  onChange: (checked: boolean) => void;
+  isChecked: boolean;
+  // Accessible name of the switch when no visible label wraps it.
+  label?: string;
+}) {
 
   const handleChange = useCallback((e) => {
     const isChecked = e.target.checked;
@@ -14,6 +19,8 @@ export default function Toggle({onChange, isChecked}) {
           <label className="inline-flex relative items-center cursor-pointer">
             <input
                 type="checkbox"
+                role="switch"
+                aria-label={label}
                 className="sr-only peer"
                 checked={isChecked}
                 onChange={handleChange}
