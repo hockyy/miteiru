@@ -24,7 +24,6 @@ interface VietnameseTokenResult {
 
 class Vietnamese {
   static dictionary: Map<string, string> = new Map();
-  static sortedTerms: string[] = [];
   static dictPath: string;
   static isLoaded = false;
 
@@ -63,9 +62,7 @@ class Vietnamese {
           }
         }
       }
-      
-      // Sort terms by length in descending order for longest match first
-      this.sortedTerms = Array.from(this.dictionary.keys()).sort((a, b) => b.length - a.length);
+
     } catch (e) {
       console.error('Error loading Vietnamese dictionary:', e);
       throw e;

@@ -219,51 +219,38 @@ Quick reference for token structures returned by each language's tokenizer.
 
 ## Vietnamese
 
-**Dictionary-based meanings with word separation:**
+**Dictionary word:** `origin` is the matched dictionary key; `separation` has one part per syllable,
+as written in the subtitle (punctuation and case kept). Parts carry no `meaning`.
 
 ```json
 {
     "origin": "Việt Nam",
     "meaning": "Vietnam, Vietnamese",
     "separation": [
-        { 
-            "main": "Việt", 
-            "meaning": "Vietnam, Vietnamese" 
-        },
-        { 
-            "main": " " 
-        },
-        { 
-            "main": "Nam", 
-            "meaning": "Vietnam, Vietnamese" 
-        }
+        { "main": "Việt" },
+        { "main": "Nam!" }
     ]
 }
 ```
 
-**Single character (no dictionary match):**
+**Case fallback:** a sentence-initial word matches its lowercase entry, and `origin` is that entry:
 ```json
 {
-    "origin": "dài",
-    "meaning": "long; to last (time)",
+    "origin": "tôi",
+    "meaning": "I",
     "separation": [
-        {
-            "main": "dài",
-            "meaning": "long; to last (time)"
-        }
+        { "main": "Tôi" }
     ]
 }
 ```
 
-**Punctuation and spaces:**
+**Unknown word or bare punctuation:** one token per syllable, with an empty `meaning`:
 ```json
 {
-    "origin": ",",
+    "origin": "-",
     "meaning": "",
     "separation": [
-        {
-            "main": ","
-        }
+        { "main": "-" }
     ]
 }
 ```
@@ -286,7 +273,7 @@ Quick reference for token structures returned by each language's tokenizer.
 - **Japanese**: `hiragana`, `romaji` in separation
 - **Chinese**: `pinyin` at token and separation level
 - **Cantonese**: `jyutping` at token and separation level  
-- **Vietnamese**: `meaning` at token and separation level
+- **Vietnamese**: `meaning` at token level (learning mode shows the line's glosses as the reading)
 
 ### Optional Fields
 - `basicForm` - Lemma/dictionary form (Japanese)
@@ -294,7 +281,8 @@ Quick reference for token structures returned by each language's tokenizer.
 - `meaning` - Translation (Vietnamese, used in learning)
 
 ### Whitespace and Punctuation
-All languages handle whitespace and punctuation by creating separate tokens:
+Japanese and Chinese handle whitespace and punctuation by creating separate tokens (Vietnamese splits on
+whitespace instead and keeps punctuation attached to a syllable in that syllable's `separation` part):
 
 ```json
 {
