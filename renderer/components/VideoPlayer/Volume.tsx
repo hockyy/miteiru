@@ -45,13 +45,13 @@ export const Volume = ({player}) => {
   };
 
   return (
-      <div className={"animation flex flex-row w-fit gap-4 items-center cursor-pointer px-4"}>
+      <div className={"animation flex flex-row w-fit gap-2 lg:gap-4 items-center cursor-pointer px-2 lg:px-4"}>
         <button className={"w-fit h-5 justify-self-start animation"} onClick={toggleMute}
                 aria-label={volume === 0 ? "Unmute" : "Mute"} title={volume === 0 ? "Unmute" : "Mute"}>
           {VolumeLogo[Math.trunc(volume * 4)]}
         </button>
 
-        <div className={"flex w-20 justify-center items-center"}>
+        <div className={"flex w-16 lg:w-20 justify-center items-center"}>
           <input
               className={"slider"}
               type="range"
