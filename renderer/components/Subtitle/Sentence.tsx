@@ -288,7 +288,7 @@ export const KanjiSentence = ({
             </StyledSentence>
           })}
         </span>
-        <rt className={"unselectable"}>{val.hiragana ?? ''}</rt>
+        <rt className={"unselectable"}>{subtitleStyling.showFurigana ? (val.hiragana ?? '') : ''}</rt>
       </ruby>
     })}
   </>

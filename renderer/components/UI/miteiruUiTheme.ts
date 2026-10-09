@@ -115,7 +115,7 @@ export const MEANING_GLOSS = 'px-4 py-3 text-base font-semibold leading-relaxed 
 export const MEANING_GLOSS_INDEX = 'font-bold text-blue-800 mr-2';
 
 export const UI_ACTION_BTN =
-  'inline-flex min-w-0 max-w-full items-center justify-center gap-1 rounded-lg border border-yellow-300 bg-yellow-100 px-2.5 py-1 text-xs font-bold text-blue-900 transition-colors hover:bg-yellow-200 disabled:cursor-not-allowed disabled:opacity-50';
+  'inline-flex min-w-0 max-w-full items-center justify-center gap-1 rounded-lg border border-blue-200 bg-white px-2.5 py-1 text-xs font-bold text-blue-900 shadow-[0_1px_0_0_#dbeafe] transition-colors hover:bg-yellow-100 disabled:cursor-not-allowed disabled:opacity-50';
 
 export const MEANING_ACTION_BTN = UI_ACTION_BTN;
 

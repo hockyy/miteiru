@@ -20,8 +20,9 @@ export const MeaningBoxShell = ({
 }: MeaningBoxShellProps) => (
   <div
     onClick={onClose}
-    className="fixed bottom-0 top-0 z-[20] flex items-center justify-center bg-blue-900/25 p-2 transition-[left,right] duration-300 ease-out"
+    className="fixed bottom-0 z-[20] flex items-center justify-center bg-blue-900/25 p-2 transition-[left,right] duration-300 ease-out"
     style={{
+      top: sidebarInsets.top ?? '0',
       left: sidebarInsets.left ?? '0',
       right: sidebarInsets.right ?? '0',
     }}

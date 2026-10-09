@@ -5,6 +5,8 @@ import type { defaultMeaningBoxStyling } from '../../../utils/CJKStyling';
 export type SidebarInsets = {
   left?: string;
   right?: string;
+  // Space kept clear above the panel (the Flashcards header).
+  top?: string;
 };
 
 export type MeaningBoxProps = {
