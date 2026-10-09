@@ -286,6 +286,17 @@ function Video() {
     }
   }, [onLoadFiles, setToastInfo]);
 
+  // Subtitles sit between the open side panels rather than under them (Subtitle reads these).
+  useEffect(() => {
+    const root = document.documentElement.style;
+    root.setProperty('--subtitle-inset-left', showVocabSidebar ? VOCAB_SIDEBAR_WIDTH : '0px');
+    root.setProperty('--subtitle-inset-right', showSidebar ? RIGHT_SIDEBAR_WIDTH : '0px');
+  }, [showSidebar, showVocabSidebar]);
+  useEffect(() => () => {
+    document.documentElement.style.removeProperty('--subtitle-inset-left');
+    document.documentElement.style.removeProperty('--subtitle-inset-right');
+  }, []);
+
   // While a video plays, the controls fade out when the mouse rests; not while a panel or dialog is open.
   const panelOpen = showSidebar || showVocabSidebar || showCommandPalette || meaning !== '' ||
       showSubtitleModal || showLyricsSearch || showTrackSelectionModal || showAudioReencodeModal || showReencodeProgress;

@@ -75,7 +75,9 @@ export const LiveCaptionControl = memo(({
   if (!supported) return null;
 
   return (
-    <div className={`group fixed bottom-20 right-4 z-20 pb-2 text-left ${className}`}>
+    // Keeps clear of the settings panel when it is open (the video page sets the inset).
+    <div className={`group fixed bottom-20 z-20 pb-2 text-left transition-[right] duration-300 ease-out ${className}`}
+         style={{right: 'calc(var(--subtitle-inset-right, 0px) + 1rem)'}}>
       <button
         type="button"
         onClick={onToggle}
