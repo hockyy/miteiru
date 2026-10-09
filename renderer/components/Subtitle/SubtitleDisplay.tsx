@@ -4,12 +4,13 @@ import {ScrollingLyrics} from "./ScrollingLyrics";
 import {SubtitleContainer} from "./DataStructures";
 import {CJKStyling} from "../../utils/CJKStyling";
 import {SubtitleMode} from "../../utils/utils";
+import type {PlaybackClock} from "../../utils/playbackClock";
 
 interface SubtitleDisplayProps {
   // Primary subtitle props
   showPrimarySub: boolean;
   setMeaning: (newMeaning: string) => void;
-  currentTime: number;
+  clock: PlaybackClock;
   primarySub: SubtitleContainer;
   primaryShift: number;
   primaryStyling: CJKStyling;
@@ -36,7 +37,7 @@ export const SubtitleDisplay = ({
   // Primary props
   showPrimarySub,
   setMeaning,
-  currentTime,
+  clock,
   primarySub,
   primaryShift,
   primaryStyling,
@@ -65,7 +66,7 @@ export const SubtitleDisplay = ({
       <>
         {showPrimarySub && (
           <ScrollingLyrics
-            currentTime={currentTime}
+            clock={clock}
             subtitle={primarySub}
             shift={primaryShift}
             setMeaning={setMeaning}
@@ -86,7 +87,7 @@ export const SubtitleDisplay = ({
       {showPrimarySub && (
         <PrimarySubtitle
           setMeaning={setMeaning}
-          currentTime={currentTime}
+          clock={clock}
           subtitle={primarySub}
           shift={primaryShift}
           subtitleStyling={primaryStyling}
@@ -100,7 +101,7 @@ export const SubtitleDisplay = ({
       )}
       {showSecondarySub && (
         <SecondarySubtitle
-          currentTime={currentTime}
+          clock={clock}
           subtitle={secondarySub}
           shift={secondaryShift}
           subtitleStyling={secondaryStyling}

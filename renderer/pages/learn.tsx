@@ -327,7 +327,6 @@ function Learn() {
                       tokenizeMiteiru={tokenizeMiteiru}
                       changeLearningState={changeLearningState}
                       getLearningState={getLearningState}
-                      onMoveToAnalyzer={handleMoveToAnalyzer}
                       sidebarInsets={{
                         left: showVocabSidebar ? VOCAB_SIDEBAR_WIDTH : "0",
                         right: showSidebar ? RIGHT_SIDEBAR_WIDTH : "0",

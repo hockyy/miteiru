@@ -1,9 +1,10 @@
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {ChineseSentence, JapaneseSentence, PlainSentence} from "./Sentence";
 import {CJKStyling} from "../../utils/CJKStyling";
-import {SubtitleContainer} from "./DataStructures";
+import {getLyricsWindow, Line, SubtitleContainer} from "./DataStructures";
 import {buildRubyCopyHtml, getSubtitleTokenPresentation} from "./subtitleLanguageSupport";
 import {adjustTimeWithShift} from "../../utils/utils";
+import type {PlaybackClock} from "../../utils/playbackClock";
 
 interface LyricsLine {
   content: any[] | string;
@@ -14,7 +15,7 @@ interface LyricsLine {
 }
 
 interface ScrollingLyricsProps {
-  currentTime: number;
+  clock: PlaybackClock;
   subtitle: SubtitleContainer;
   shift: number;
   setMeaning: (newMeaning: string) => void;
@@ -31,8 +32,24 @@ const Measurement = {
   lineHeight : 100
 }
 
+// Shared so an unchanged line keeps the same identity (and does not re-render).
+const NO_MEANING: string[] = [];
+
+interface LyricsWindow {
+  // Index (in the subtitle) of the first visible line.
+  start: number;
+  // Position of the current line among the visible ones, or -1 between lines.
+  current: number;
+  lines: LyricsLine[];
+}
+
+const EMPTY_WINDOW: LyricsWindow = {start: 0, current: -1, lines: []};
+
+const sameLines = (shown: LyricsLine[], visible: Line[]) => shown.length === visible.length
+  && shown.every((line, index) => line.content === visible[index].content && line.meaning === (visible[index].meaning ?? NO_MEANING));
+
 export const ScrollingLyrics = ({
-  currentTime,
+  clock,
   subtitle,
   shift,
   setMeaning,
@@ -44,72 +61,38 @@ export const ScrollingLyrics = ({
   linesVisible = 3,
   currentLinePosition = 1
 }: ScrollingLyricsProps) => {
-  const [displayLines, setDisplayLines] = useState<LyricsLine[]>([]);
-  const [currentLineIndex, setCurrentLineIndex] = useState(-1);
+  const [{lines: displayLines, current: currentLineIndex}, setLyricsWindow] = useState<LyricsWindow>(EMPTY_WINDOW);
+  const shownRef = useRef(EMPTY_WINDOW);
 
-  const getLyricsWindow = useCallback((adjustedTime: number) => {
-    if (!subtitle.lines || subtitle.lines.length === 0) {
-      return { lines: [], currentIndex: -1 };
-    }
-
-    const allLines: LyricsLine[] = subtitle.lines.map((line, index) => ({
-      content: line.content,
-      meaning: line.meaning || [],
-      startTime: line.timeStart,
-      endTime: line.timeEnd,
-      index
-    }));
-
-    // Find current line
-    const currentIndex = allLines.findIndex(line =>
-      line.startTime <= adjustedTime && adjustedTime <= line.endTime
-    );
-
-    if (currentIndex === -1) {
-      // No current line, find the next upcoming line
-      const nextIndex = allLines.findIndex(line => line.startTime > adjustedTime);
-      if (nextIndex === -1) {
-        // Show the last few lines if we're past everything
-        const startIndex = Math.max(0, allLines.length - linesVisible);
-        return {
-          lines: allLines.slice(startIndex),
-          currentIndex: -1
-        };
-      }
-
-      const startIndex = Math.max(0, nextIndex - currentLinePosition);
-      const endIndex = Math.min(allLines.length, startIndex + linesVisible);
-
-      return {
-        lines: allLines.slice(startIndex, endIndex),
-        currentIndex: -1
-      };
-    }
-
-    // Calculate window around current line
-    const startIndex = Math.max(0, currentIndex - currentLinePosition);
-    const endIndex = Math.min(allLines.length, startIndex + linesVisible);
-
-    return {
-      lines: allLines.slice(startIndex, endIndex),
-      currentIndex: currentIndex - startIndex
-    };
-  }, [subtitle.lines, linesVisible, currentLinePosition]);
-
+  // Runs on every clock tick; re-renders only when the window moves or a visible line gets tokens or glosses.
   useEffect(() => {
-    const adjustedTime = adjustTimeWithShift(currentTime, shift);
-    const { lines, currentIndex } = getLyricsWindow(adjustedTime);
-    setDisplayLines(lines);
-    setCurrentLineIndex(currentIndex);
+    const update = () => {
+      const {start, current} = getLyricsWindow(subtitle.lines, adjustTimeWithShift(clock.get(), shift), linesVisible, currentLinePosition);
+      const visible = (subtitle.lines ?? []).slice(start, start + linesVisible);
+      const shown = shownRef.current;
+      if (shown.start === start && shown.current === current && sameLines(shown.lines, visible)) return;
 
-    // Set external content for the current line
-    if (currentIndex >= 0 && currentIndex < lines.length) {
-      const currentLine = lines[currentIndex];
-      if (setExternalContent) {
-        setExternalContent(Array.isArray(currentLine.content) ? currentLine.content : []);
+      const next: LyricsWindow = {
+        start,
+        current,
+        lines: visible.map((line, index) => ({
+          content: line.content,
+          meaning: line.meaning ?? NO_MEANING,
+          startTime: line.timeStart,
+          endTime: line.timeEnd,
+          index: start + index
+        }))
+      };
+      shownRef.current = next;
+      setLyricsWindow(next);
+      if (current >= 0 && setExternalContent) {
+        const content = next.lines[current].content;
+        setExternalContent(Array.isArray(content) ? content : []);
       }
-    }
-  }, [currentTime, shift, getLyricsWindow, setExternalContent]);
+    };
+    update();
+    return clock.subscribe(update);
+  }, [clock, shift, subtitle, linesVisible, currentLinePosition, setExternalContent]);
 
   return (
     <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-10">
@@ -135,7 +118,8 @@ export const ScrollingLyrics = ({
       >
         {displayLines.map((line, index) => (
           <LyricsLine
-            key={`${line.index}-${index}`}
+            // Keyed by subtitle line, so a line keeps its element (and transition) as the window scrolls.
+            key={line.index}
             line={line}
             isCurrent={index === currentLineIndex}
             isPast={index < currentLineIndex}

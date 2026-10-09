@@ -1,6 +1,6 @@
-import "react-video-seek-slider/styles.css"
-import {VideoSeekSlider} from "react-video-seek-slider";
 import React, {useCallback} from "react";
+import {SeekBar} from "./SeekBar";
+import {usePlaybackValue, type PlaybackClock} from "../../utils/playbackClock";
 import SmoothCollapse from "../Utils/SmoothCollapse";
 import {Volume} from "./Volume";
 import SettingsController from "./SettingsController";
@@ -16,7 +16,7 @@ export const VideoController = ({
                                   deltaTime,
                                   togglePlay,
                                   player,
-                                  currentTime,
+                                  clock,
                                   showController,
                                   setShowSidebar,
                                   enableSeeker,
@@ -35,13 +35,10 @@ export const VideoController = ({
       changeTimeTo(seekedTime / 1000)
     }
   }, [enableSeeker, changeTimeTo])
+  const getBufferedEnd = useCallback(() => player?.bufferedEnd?.() ?? 0, [player]);
   return <div>
     <div className={"w-[100vw] h-14 content-center -mb-4"}>
-      <VideoSeekSlider
-          max={duration}
-          currentTime={currentTime * 1000}
-          onChange={timeSeekerHandler}
-      />
+      <SeekBar clock={clock} durationMs={duration} onSeek={timeSeekerHandler} getBufferedEnd={getBufferedEnd}/>
     </div>
     <SmoothCollapse className={"bg-gray-800/70 h-fit unselectable"}
                     eagerRender={true}
@@ -50,7 +47,7 @@ export const VideoController = ({
         <div className={"flex w-1/3 hidden lg:flex"}>
           <Volume player={player}/>
           <div className={"flex flex-row px-4 justify-end content-end w-32 animation"}>
-            <div>{toTime(currentTime)}</div>
+            <div><PlaybackTime clock={clock}/></div>
             &nbsp;
             <div>/</div>
             &nbsp;
@@ -95,3 +92,6 @@ export const VideoController = ({
 
     </SmoothCollapse></div>
 }
+
+// Re-renders once a second, not on every clock tick.
+const PlaybackTime = ({clock}: { clock: PlaybackClock }) => <>{toTime(usePlaybackValue(clock, Math.floor))}</>;

@@ -1,75 +1,75 @@
 import React, {useEffect, useMemo, useRef, useState} from "react";
-import {getLineByTime, SubtitleContainer} from "./DataStructures";
+import {findLineIndexAt, SubtitleContainer} from "./DataStructures";
 import {ChineseSentence, JapaneseSentence, PlainSentence} from "./Sentence";
 import {CJKStyling, defaultSecondarySubtitleStyling} from "../../utils/CJKStyling";
 import {adjustTimeWithShift} from "../../utils/utils";
 import useSubtitleContainerStyle from "../../hooks/useSubtitleContainerStyle";
 import {getSubtitleOutlineStyle} from "../../utils/subtitleStroke";
 import {buildRubyCopyHtml, getSubtitleTokenPresentation} from "./subtitleLanguageSupport";
+import type {PlaybackClock} from "../../utils/playbackClock";
 
 interface CurrentSubtitleLine {
   content: any[] | string;
   meaning: any[];
 }
 
+// Shared so an unchanged empty line keeps the same identity (and does not re-render).
+const NO_MEANING: any[] = [];
+
 const emptySubtitleLine: CurrentSubtitleLine = {
   content: '',
-  meaning: []
+  meaning: NO_MEANING
 };
 
-const isTimeInCache = (timeCache: number[] | undefined, currentAdjustedTime: number) => (
-  timeCache
-  && timeCache.length === 2
-  && timeCache[0] <= currentAdjustedTime
-  && currentAdjustedTime <= timeCache[1]
+const sameTimeCache = (left: number[] | undefined, right: number[]) => (
+  left !== undefined && left.length === right.length && left.every((time, index) => time === right[index])
 );
 
+/**
+ * The line shown at the clock's time (or at a fixed `currentTime` where there is no video). Runs a
+ * binary search on every clock tick and re-renders only when the line, its tokens or its glosses
+ * change, so tokens appear as soon as the background analysis reaches the current line.
+ */
 const useCurrentSubtitleLine = ({
-  currentTime,
+  clock,
+  currentTime = 0,
   subtitle,
   shift,
   timeCache,
-  setTimeCache,
-  logErrors = false
+  setTimeCache
 }: {
-  currentTime: number,
+  clock?: PlaybackClock,
+  currentTime?: number,
   subtitle: SubtitleContainer,
   shift: number,
   timeCache?: number[],
-  setTimeCache?: (cache: number[]) => void,
-  logErrors?: boolean
+  setTimeCache?: (cache: number[]) => void
 }) => {
   const [line, setLine] = useState(emptySubtitleLine);
-  const cachedSubtitleRef = useRef<SubtitleContainer | null>(null);
-  const currentAdjustedTime = useMemo(() => adjustTimeWithShift(currentTime, shift), [currentTime, shift]);
+  const shownRef = useRef(emptySubtitleLine);
 
+  // Also re-run when the caller resets the time cache: that is how it asks for a refresh while paused.
   useEffect(() => {
-    const updateTimeCache = (nextCache: number[]) => {
-      if (!setTimeCache) return;
-      const hasSameCache = timeCache
-        && timeCache.length === nextCache.length
-        && timeCache.every((cachedTime, index) => cachedTime === nextCache[index]);
-      if (!hasSameCache) setTimeCache(nextCache);
+    let reportedCache = timeCache;
+    const update = () => {
+      const adjustedTime = adjustTimeWithShift(clock ? clock.get() : currentTime, shift);
+      const index = findLineIndexAt(subtitle.lines, adjustedTime);
+      const found = index >= 0 ? subtitle.lines[index] : null;
+      const content = found ? found.content : '';
+      const meaning = found?.meaning ?? NO_MEANING;
+      if (shownRef.current.content !== content || shownRef.current.meaning !== meaning) {
+        shownRef.current = content === '' && meaning === NO_MEANING ? emptySubtitleLine : {content, meaning};
+        setLine(shownRef.current);
+      }
+      const nextCache = found ? [found.timeStart, found.timeEnd] : [];
+      if (setTimeCache && !sameTimeCache(reportedCache, nextCache)) {
+        reportedCache = nextCache;
+        setTimeCache(nextCache);
+      }
     };
-
-    if (cachedSubtitleRef.current === subtitle && isTimeInCache(timeCache, currentAdjustedTime)) {
-      return;
-    }
-
-    try {
-      const nextLine = getLineByTime(subtitle, currentAdjustedTime);
-      cachedSubtitleRef.current = subtitle;
-      setLine({
-        content: nextLine.content,
-        meaning: nextLine.meaning
-      });
-      updateTimeCache(nextLine.timePair ?? []);
-    } catch (error) {
-      if (logErrors) console.error(error);
-      setLine(emptySubtitleLine);
-      updateTimeCache([]);
-    }
-  }, [currentAdjustedTime, logErrors, setTimeCache, subtitle, timeCache]);
+    update();
+    return clock?.subscribe(update);
+  }, [clock, currentTime, setTimeCache, shift, subtitle, timeCache]);
 
   return line;
 };
@@ -155,6 +155,7 @@ const buildPrimaryCaption = ({
 };
 
 export const PrimarySubtitle = ({
+                                  clock,
                                   currentTime,
                                   subtitle,
                                   shift,
@@ -167,7 +168,8 @@ export const PrimarySubtitle = ({
                                   setExternalContent,
                                   setRubyCopyContent
                                 }: {
-                                  currentTime: number,
+                                  clock?: PlaybackClock,
+                                  currentTime?: number,
                                   subtitle: SubtitleContainer,
                                   shift: number,
                                   setMeaning: (newMeaning: string) => void,
@@ -180,7 +182,7 @@ export const PrimarySubtitle = ({
                                   setRubyCopyContent: any;
                                 }
 ) => {
-  const line = useCurrentSubtitleLine({currentTime, subtitle, shift, timeCache, setTimeCache});
+  const line = useCurrentSubtitleLine({clock, currentTime, subtitle, shift, timeCache, setTimeCache});
   const {
     caption,
     rubyCopyContent
@@ -205,14 +207,14 @@ export const PrimarySubtitle = ({
 };
 
 export const SecondarySubtitle = ({
-                                    currentTime,
+                                    clock,
                                     subtitle,
                                     shift,
                                     subtitleStyling = defaultSecondarySubtitleStyling,
                                     timeCache,
                                     setTimeCache
                                   }: {
-                                    currentTime: number,
+                                    clock: PlaybackClock,
                                     subtitle: SubtitleContainer,
                                     shift: number,
                                     subtitleStyling?: CJKStyling,
@@ -220,14 +222,7 @@ export const SecondarySubtitle = ({
                                     setTimeCache?: (cache: number[]) => void;
                                   }
 ) => {
-  const line = useCurrentSubtitleLine({
-    currentTime,
-    subtitle,
-    shift,
-    timeCache,
-    setTimeCache,
-    logErrors: true
-  });
+  const line = useCurrentSubtitleLine({clock, subtitle, shift, timeCache, setTimeCache});
   const caption = useMemo(() => {
     const content = line.content;
     if (content === '' || content.length === 0) {
