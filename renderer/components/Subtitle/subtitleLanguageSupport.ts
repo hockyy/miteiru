@@ -140,6 +140,8 @@ export const fillSubtitleWithLearningContent = async (
       if (result.status === "rejected") console.error("[learning] could not tokenize:", chunk[index].content, result.reason);
     });
     await fillLearningContent(chunk, support, subtitle.frequency, cache);
+    // Lets a shown line pick up its tokens now, even while the video is paused.
+    subtitle.notifyChanged?.();
   }
   subtitle.progress = "done";
   return true;
