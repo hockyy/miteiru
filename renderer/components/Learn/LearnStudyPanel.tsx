@@ -25,6 +25,7 @@ import {
   MiteiruActionBar,
   MiteiruPanel,
   UI_ACTION_BTN,
+  UI_ACTION_BTN_PRIMARY,
   UI_HINT_TEXT,
   UI_STUDY_COLUMN_BG,
   UI_TEXTAREA,
@@ -68,12 +69,13 @@ export const LearnStudyPanel: React.FC<LearnStudyPanelProps> = ({
     'learn.translation.details',
     defaultTranslationDetailOptions,
   );
-  const detailOptions = normalizeTranslationDetailOptions(storedDetailOptions);
+  const detailOptions = useMemo(() => normalizeTranslationDetailOptions(storedDetailOptions), [storedDetailOptions]);
 
   const isJapanese = lang === languageCodes.japanese;
 
   const {
     result: translationResult,
+    resultDetails: translationResultDetails,
     errorMessage: translationErrorMessage,
     isTranslating,
     hasResults,
@@ -228,50 +230,29 @@ export const LearnStudyPanel: React.FC<LearnStudyPanelProps> = ({
           top={
             <div className="space-y-1.5">
               <p className={UI_HINT_TEXT}>Include with translation. Leave these off for a faster result.</p>
-              <div className="flex flex-wrap gap-1.5">
-                {TRANSLATION_REGISTER_TOGGLES.map((option) => {
-                  const enabled = Boolean(detailOptions[option.key]);
-                  const locked = enabled && enabledRegisterCount <= 1;
-                  return (
-                    <button
-                      key={option.key}
-                      type="button"
-                      aria-pressed={enabled}
-                      disabled={!detailOptionsLoaded || isTranslating || locked}
-                      title={locked ? 'Keep at least one style' : undefined}
-                      onClick={() => toggleDetailOption(option.key)}
-                      className={`rounded-lg border px-2 py-1 text-xs font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-                        enabled
-                          ? 'border-blue-700 bg-yellow-200 text-blue-900'
-                          : 'border-blue-300 bg-white text-blue-500'
-                      }`}
-                    >
-                      {enabled ? '✓ ' : ''}{option.label}
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {TRANSLATION_NOTE_TOGGLES.map((option) => {
-                  const enabled = Boolean(detailOptions[option.key]);
-                  return (
-                    <button
-                      key={option.key}
-                      type="button"
-                      aria-pressed={enabled}
-                      disabled={!detailOptionsLoaded || isTranslating}
-                      onClick={() => toggleDetailOption(option.key)}
-                      className={`rounded-lg border px-2 py-1 text-xs font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-                        enabled
-                          ? 'border-blue-700 bg-yellow-200 text-blue-900'
-                          : 'border-blue-300 bg-white text-blue-500'
-                      }`}
-                    >
-                      {enabled ? '✓ ' : ''}{option.label}
-                    </button>
-                  );
-                })}
-              </div>
+              {[TRANSLATION_REGISTER_TOGGLES, TRANSLATION_NOTE_TOGGLES].map((row, rowIndex) => (
+                <div key={rowIndex} className="flex flex-wrap gap-1.5">
+                  {row.map((option) => {
+                    const enabled = Boolean(detailOptions[option.key]);
+                    const isRegister = rowIndex === 0;
+                    // A translation needs at least one register.
+                    const locked = isRegister && enabled && enabledRegisterCount <= 1;
+                    return (
+                      <button
+                        key={option.key}
+                        type="button"
+                        aria-pressed={enabled}
+                        disabled={!detailOptionsLoaded || isTranslating || locked}
+                        title={locked ? 'Keep at least one style' : undefined}
+                        onClick={() => toggleDetailOption(option.key)}
+                        className={enabled ? UI_ACTION_BTN_PRIMARY : UI_ACTION_BTN}
+                      >
+                        {enabled ? '✓ ' : ''}{option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
             </div>
           }
         >
@@ -350,8 +331,8 @@ export const LearnStudyPanel: React.FC<LearnStudyPanelProps> = ({
                 isLoading={isTranslating}
                 errorMessage={translationErrorMessage ?? undefined}
                 pronunciationLabel={pronunciationLabel}
-                detailOptions={detailOptions}
-                loadingSubMessage={getTranslationLoadingSubMessage(detailOptions)}
+                detailOptions={translationResultDetails}
+                loadingSubMessage={getTranslationLoadingSubMessage(translationResultDetails)}
                 onMoveToAnalyzer={onMoveToAnalyzer}
               />
             )}

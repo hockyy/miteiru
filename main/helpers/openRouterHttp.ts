@@ -10,6 +10,18 @@ export type OpenRouterChatMessage = {
   content: string;
 };
 
+/** An OpenRouter error response; 4xx other than 408/429 will not succeed on retry. */
+export class OpenRouterHttpError extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message);
+    this.name = "OpenRouterHttpError";
+  }
+
+  get retryable() {
+    return this.status >= 500 || this.status === 408 || this.status === 429;
+  }
+}
+
 const readErrorBody = async (response: Response) => {
   try {
     const text = await response.text();
@@ -19,30 +31,14 @@ const readErrorBody = async (response: Response) => {
   }
 };
 
+// The job's signal and the request timeout together. AbortSignal.any drops its listeners on the job
+// signal when the request ends, which a hand-made controller per request did not.
 const abortSignal = (signal?: AbortSignal, timeoutMs?: number) => {
-  const signals: AbortSignal[] = [];
-  if (signal) {
-    signals.push(signal);
-  }
-  if (timeoutMs && timeoutMs > 0) {
-    signals.push(AbortSignal.timeout(timeoutMs));
-  }
+  const signals = [signal, timeoutMs && timeoutMs > 0 ? AbortSignal.timeout(timeoutMs) : undefined].filter(Boolean);
   if (signals.length === 0) {
     return undefined;
   }
-  if (signals.length === 1) {
-    return signals[0];
-  }
-  const controller = new AbortController();
-  const onAbort = () => controller.abort();
-  for (const item of signals) {
-    if (item.aborted) {
-      controller.abort();
-      break;
-    }
-    item.addEventListener("abort", onAbort, {once: true});
-  }
-  return controller.signal;
+  return signals.length === 1 ? signals[0] : AbortSignal.any(signals);
 };
 
 const requestJson = async (
@@ -68,7 +64,8 @@ const requestJson = async (
     if (options.signal?.aborted) {
       throw new JobCancelledError();
     }
-    if (error instanceof Error && error.name === "AbortError") {
+    // AbortSignal.timeout rejects with TimeoutError; a combined signal with AbortError.
+    if (error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError")) {
       throw new Error("OpenRouter request timed out");
     }
     throw error;
@@ -76,7 +73,7 @@ const requestJson = async (
 
   if (!response.ok) {
     const details = await readErrorBody(response);
-    throw new Error(`OpenRouter ${response.status}: ${details || response.statusText}`);
+    throw new OpenRouterHttpError(`OpenRouter ${response.status}: ${details || response.statusText}`, response.status);
   }
   return response.json();
 };
@@ -144,7 +141,8 @@ export async function withRetries<T>(
       return await fn();
     } catch (error) {
       lastError = error;
-      if (error instanceof JobCancelledError) {
+      // A cancelled job, or a request OpenRouter rejects (bad key, model or body), fails at once.
+      if (error instanceof JobCancelledError || (error instanceof OpenRouterHttpError && !error.retryable)) {
         throw error;
       }
       if (attempt === attempts - 1) {

@@ -21,15 +21,21 @@ type ProgressFn = (progress: GenerateSubtitlesProgress) => void;
 
 const toHongKongTraditional = OpenCC.Converter({from: "cn", to: "hk"});
 
+/**
+ * Runs `fn` over `items`, `limit` at a time, in order of results. The first failure aborts the
+ * signal given to the others, so their in-flight requests stop instead of being paid for.
+ */
 async function mapLimit<T, R>(
   items: T[],
   limit: number,
   signal: AbortSignal,
-  fn: (item: T, index: number) => Promise<R>
+  fn: (item: T, index: number, signal: AbortSignal) => Promise<R>
 ): Promise<R[]> {
   const results = new Array<R>(items.length);
   let next = 0;
   let firstError: unknown;
+  const failed = new AbortController();
+  const workSignal = AbortSignal.any([signal, failed.signal]);
 
   const worker = async () => {
     while (true) {
@@ -42,10 +48,13 @@ async function mapLimit<T, R>(
         return;
       }
       try {
-        results[index] = await fn(items[index], index);
+        results[index] = await fn(items[index], index, workSignal);
       } catch (error) {
-        firstError = error;
-        throw error;
+        if (!firstError) {
+          firstError = error;
+          failed.abort();
+        }
+        throw firstError;
       }
     }
   };
@@ -119,14 +128,14 @@ export async function generateSourceSubtitles(options: {
     let completed = 0;
     const language = asrLanguageForAppLang(options.lang);
     const maxChars = maxCueCharsForAppLang(options.lang);
-    const cueGroups = await mapLimit(chunks, ASR_CONCURRENCY, options.signal, async (chunk) => {
+    const cueGroups = await mapLimit(chunks, ASR_CONCURRENCY, options.signal, async (chunk, _index, signal) => {
       const chunkPath = path.join(workDir, `chunk-${String(chunk.index).padStart(3, "0")}.mp3`);
       await extractAudioChunk({
         inputPath: extracted.audioPath,
         outputPath: chunkPath,
         start: chunk.start,
         length: chunk.length,
-        signal: options.signal
+        signal
       });
       const audioBase64 = await fs.readFile(chunkPath, {encoding: "base64"});
       await fs.unlink(chunkPath).catch(() => undefined);
@@ -137,9 +146,9 @@ export async function generateSourceSubtitles(options: {
         audioBase64,
         format: "mp3",
         language,
-        signal: options.signal,
+        signal,
         timeoutMs: ASR_REQUEST_TIMEOUT_MS
-      }), {signal: options.signal});
+      }), {signal});
 
       completed += 1;
       options.onProgress({

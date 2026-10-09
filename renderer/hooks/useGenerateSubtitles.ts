@@ -54,6 +54,8 @@ export function useGenerateSubtitles({
   }, [videoPath]);
 
   useEffect(() => {
+    // Not exposed until the feature is wired into the preload.
+    if (!window.electronAPI.generateSubtitles) return undefined;
     return window.electronAPI.generateSubtitles.onProgress((next) => {
       setProgress(next);
       if (next.sourceSrtPath) {

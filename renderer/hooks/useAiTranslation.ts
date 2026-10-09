@@ -29,6 +29,8 @@ export function useAiTranslation({
   openRouterModel,
 }: UseAiTranslationOptions) {
   const [result, setResult] = useState<AITranslationResult | null>(null);
+  // What the shown result was asked to include; toggles changed afterwards apply to the next request.
+  const [resultDetails, setResultDetails] = useState<TranslationDetailOptions>(defaultTranslationDetailOptions);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isTranslating, setIsTranslating] = useState(false);
 
@@ -73,6 +75,7 @@ export function useAiTranslation({
     setIsTranslating(true);
     setResult(null);
     setErrorMessage(null);
+    setResultDetails(detailOptions);
 
     try {
       const rawResponse = await streamOpenRouterCompletion(
@@ -104,6 +107,7 @@ export function useAiTranslation({
 
   return {
     result,
+    resultDetails,
     errorMessage,
     isTranslating,
     hasResults,

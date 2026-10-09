@@ -56,15 +56,19 @@ export function splitCues(
   if (parts.length === 0) {
     parts = [cleaned];
   }
+  // Languages written with spaces (Vietnamese, English) keep them between clauses and are only
+  // broken between words; CJK text has neither.
+  const spaced = cleaned.includes(" ");
+  const separator = spaced ? " " : "";
 
   const merged: string[] = [];
   let buffer = "";
   for (const part of parts) {
-    if (buffer && buffer.length + part.length > maxChars) {
+    if (buffer && buffer.length + separator.length + part.length > maxChars) {
       merged.push(buffer);
       buffer = part;
     } else {
-      buffer += part;
+      buffer = buffer ? buffer + separator + part : part;
     }
   }
   if (buffer) {
@@ -75,8 +79,10 @@ export function splitCues(
   for (const part of merged) {
     let remaining = part;
     while (remaining.length > maxChars * 2) {
-      lines.push(remaining.slice(0, maxChars));
-      remaining = remaining.slice(maxChars);
+      const lastSpace = spaced ? remaining.lastIndexOf(" ", maxChars) : -1;
+      const cut = lastSpace > 0 ? lastSpace : maxChars;
+      lines.push(remaining.slice(0, cut).trim());
+      remaining = remaining.slice(cut).trim();
     }
     if (remaining) {
       lines.push(remaining);
