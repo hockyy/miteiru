@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   cleanHearingImpaired,
   convertSubtitlesToEntries,
-  getLineByTime,
+  findLineIndexAt,
   Line,
   SubtitleContainer,
 } from '../renderer/components/Subtitle/DataStructures.ts';
@@ -179,7 +179,7 @@ test('createFromArrayEntries clamps overlapping lines monotonically', () => {
   assert.ok(container.lines[0].timeStart < container.lines[1].timeStart);
 });
 
-test('getLineByTime returns the active line or empty content in gaps', () => {
+test('findLineIndexAt returns the active line or -1 in gaps', () => {
   const container = new SubtitleContainer();
   SubtitleContainer.createFromArrayEntries(
     container,
@@ -190,10 +190,10 @@ test('getLineByTime returns the active line or empty content in gaps', () => {
     'ja',
     true,
   );
-  assert.equal(getLineByTime(container, 1500).content, 'first');
-  assert.equal(getLineByTime(container, 10100).content, 'second');
-  assert.equal(getLineByTime(container, 5000).content, '');
-  assert.equal(getLineByTime(new SubtitleContainer(), 0).content, '');
+  assert.equal(container.lines[findLineIndexAt(container.lines, 1500)].content, 'first');
+  assert.equal(container.lines[findLineIndexAt(container.lines, 10100)].content, 'second');
+  assert.equal(findLineIndexAt(container.lines, 5000), -1);
+  assert.equal(findLineIndexAt(new SubtitleContainer().lines, 0), -1);
 });
 
 test('convertSubtitlesToEntries converts float seconds to milliseconds', () => {
