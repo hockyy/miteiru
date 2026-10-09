@@ -55,7 +55,7 @@ export const MeaningBoxHeader = ({
         <span className="hidden sm:inline">Previous</span>
       </Button>
 
-      <div className="rounded-full border border-blue-600 bg-white px-3 py-1 text-xs font-bold text-blue-900 shadow-sm">
+      <div className="rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-bold text-blue-900">
         Sense {meaningIndex + 1}
         <span className="font-medium text-blue-500"> / {otherMeaningsCount}</span>
       </div>
@@ -77,7 +77,7 @@ export const MeaningBoxHeader = ({
         type="button"
         onClick={onSpeak}
         disabled={!speechSupported}
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-blue-700 bg-yellow-200 text-base text-blue-900 shadow-[0_2px_0_0_#1d4ed8] transition-all hover:-translate-y-0.5 hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-40"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-yellow-300 bg-yellow-100 text-base text-blue-900 shadow-[0_2px_0_0_#fde68a] transition-all hover:-translate-y-0.5 hover:bg-yellow-200 disabled:cursor-not-allowed disabled:opacity-40"
         aria-label={speaking ? 'Stop speaking' : 'Pronounce this word'}
         title={speaking ? 'Stop speaking' : 'Pronounce this word'}
       >
@@ -103,7 +103,7 @@ export const MeaningBoxHeader = ({
         <button
           type="button"
           onClick={() => changeLearningState(meaning)}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-blue-700 bg-white shadow-[0_2px_0_0_#1d4ed8] transition-all hover:-translate-y-0.5 hover:bg-yellow-100"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-blue-300 bg-white shadow-[0_2px_0_0_#bfdbfe] transition-all hover:-translate-y-0.5 hover:bg-yellow-50"
           aria-label="Change learning status"
           title="Change learning status"
         >

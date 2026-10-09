@@ -1,11 +1,21 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import Head from 'next/head';
+import {useRouter} from 'next/router';
 import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
 import MeaningBox from '../components/Meaning/MeaningBox';
 import {Button} from "../components/Utils/Button";
 import {getMiteiruAppName, getRelativeTime} from "../utils/utils";
 import useLearningState from "../hooks/useLearningState";
 import useLearningKeyBind from "../hooks/useLearningKeyBind";
+import {
+  HOME_BODY,
+  HOME_HEADER,
+  HOME_ICON_BADGE,
+  HOME_SECTION,
+  HOME_SECTION_LABEL,
+  HOME_SHELL,
+  UI_PAGE_BG
+} from "../components/UI/miteiruUiTheme";
 
 interface LearningStateEntry {
   level: number;
@@ -18,6 +28,8 @@ type Difficulty = 'hard' | 'good' | 'easy' | 'banish';
 
 const VocabFlashCards: React.FC = () => {
   const {lang, tokenizeMiteiru} = useMiteiruTokenizer();
+  const router = useRouter();
+  const [loaded, setLoaded] = useState(false);
 
   const [sortedVocab, setSortedVocab] = useState<SortedVocabEntry[]>([]);
   const [currentWord, setCurrentWord] = useState<SortedVocabEntry | null>(null);
@@ -43,6 +55,8 @@ const VocabFlashCards: React.FC = () => {
       }
     } catch (error) {
       console.error('Error loading vocabulary:', error);
+    } finally {
+      setLoaded(true);
     }
   }, [lang]);
 
@@ -102,22 +116,19 @@ const VocabFlashCards: React.FC = () => {
     const [, state] = currentWord;
 
     return (
-        <div className={'flex flex-col text-center bg-blue-200 gap-2 p-2 m-3'}>
-          <div className={"font-bold"}>
-            Card No. {index + 1} of {sortedVocab.length}
+        <div className={`${HOME_SECTION} m-3 flex flex-col items-center gap-2 p-3 text-center text-blue-950`}>
+          <div className="text-sm font-bold">
+            Card {index + 1} of {sortedVocab.length}
           </div>
-          <div className="text-sm text-blue-900 font-bold">
-            Next review: {new Date(state.updTime).toLocaleString()}
-          </div>
-          <div className="text-sm text-blue-700 italic">
-            ({getRelativeTime(state.updTime)})
+          <div className="text-xs text-blue-800">
+            Review due {getRelativeTime(state.updTime)} · {new Date(state.updTime).toLocaleString()}
           </div>
           {!showAnswer ? (
               <Button type="primary" onPress={() => setShowAnswer(true)}>
-                Show Answer
+                Show answer
               </Button>
           ) : (
-              <div className={'flex flex-row justify-center gap-4'}>
+              <div className={'flex flex-row flex-wrap justify-center gap-2'}>
                 <Button type="secondary"
                                onPress={() => handleAnswer('hard')}>
                   Hard 🧠
@@ -146,12 +157,39 @@ const VocabFlashCards: React.FC = () => {
         <Head>
           <title>{getMiteiruAppName()} - Vocabulary Flash Cards</title>
         </Head>
-        <div
-            className="flex flex-col items-center justify-center bg-blue-50 text-black min-h-screen p-6 gap-3">
-          <h1 className="text-3xl font-bold mb-6">Vocabulary Flash Cards</h1>
-          {sortedVocab.length === 0 ? (
-              <div>No Cards Available</div>
-          ) : (
+        <div className={`${UI_PAGE_BG} flex flex-col items-center gap-4`}>
+          <section className={HOME_SHELL}>
+            <header className={HOME_HEADER}>
+              <div className="flex items-center gap-3">
+                <div className={HOME_ICON_BADGE}>🃏</div>
+                <div>
+                  <div className="text-sm font-black tracking-tight text-blue-950">Flashcards</div>
+                  <div className="text-[11px] font-bold text-blue-800">
+                    {sortedVocab.length > 0 ? `${sortedVocab.length} words to review` : 'Review the words you learn'}
+                  </div>
+                </div>
+              </div>
+              <Button type="secondary" size="small" onPress={() => router.push('/home')}
+                      title="Back to the home page (Ctrl + H)">
+                ← Home
+              </Button>
+            </header>
+            {loaded && sortedVocab.length === 0 && (
+                <div className={HOME_BODY}>
+                  <section className={HOME_SECTION}>
+                    <div className={HOME_SECTION_LABEL}>No cards yet</div>
+                    <div className="space-y-3 bg-white px-4 py-3 text-sm text-blue-900">
+                      <p>
+                        Cards are the words you mark while watching or reading. Click a word in a subtitle and
+                        set how well you know it; it shows up here to review.
+                      </p>
+                      <Button type="primary" onPress={() => router.push('/video')}>Open a video</Button>
+                    </div>
+                  </section>
+                </div>
+            )}
+          </section>
+          {sortedVocab.length === 0 ? null : (
               currentWord && (
                   <MeaningBox
                       lang={lang}
