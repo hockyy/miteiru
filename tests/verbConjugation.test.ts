@@ -90,3 +90,22 @@ test("the analyzer groups a verb with its conjugation chain", async () => {
   // ので / なら / し stay separate, as before.
   assert.deepEqual(await group("行くので"), ["行く", "ので"]);
 });
+
+test("auxiliary verbs Kuromoji tags as suffix or dependent verbs join the verb, based on the main verb", async () => {
+  Japanese.kuromojiDictPath = path.join(process.cwd(), "node_modules", "kuromoji", "dict");
+  const tokenizer = await Japanese.loadKuromojiTokenizer();
+  const group = async (sentence: string) => (await parseJapaneseVerbs(
+    Japanese.processKuromojinToSeparations(tokenizer.tokenizeForSentence(sentence))
+  )).map((token) => `${token.origin}(${token.basicForm})`);
+
+  assert.deepEqual(await group("寿司を食べさせられなかった"), ["寿司(寿司)", "を(を)", "食べさせられなかった(食べる)"]);
+  assert.deepEqual(await group("手紙が書かれる"), ["手紙(手紙)", "が(が)", "書かれる(書く)"]);
+  assert.deepEqual(await group("もう行っちゃった"), ["もう(もう)", "行っちゃった(行く)"]);
+  assert.deepEqual(await group("本を読んでる"), ["本(本)", "を(を)", "読んでる(読む)"]);
+  assert.deepEqual(await group("友達に読ませてもらった"), ["友達(友達)", "に(に)", "読ませてもらった(読む)"]);
+  assert.deepEqual(await group("書いとく"), ["書いとく(書く)"]);
+  assert.deepEqual(await group("窓が開けてある"), ["窓(窓)", "が(が)", "開けてある(開ける)"]);
+  // 〜てやる and 〜たりする start their own word; a noun before する stays separate.
+  assert.deepEqual(await group("教えてやる"), ["教えて(教える)", "やる(やる)"]);
+  assert.deepEqual(await group("勉強させられた"), ["勉強(勉強)", "させられた(する)"]);
+});
