@@ -2,7 +2,6 @@
 import {useEffect, useMemo} from 'react';
 import {setGlobalSubtitleId, SubtitleContainer} from "../components/Subtitle/DataStructures";
 import {useRouter} from "next/router";
-import useLanguageManager from "./useLanguageManager";
 import {isTextEntryTarget} from "../utils/keyboardTargets";
 
 export default function useKeyBind(
@@ -26,7 +25,6 @@ export default function useKeyBind(
     setShowLyricsSearch
 ) {
   const router = useRouter();
-  const { clearLanguage } = useLanguageManager();
   
 
   // Define all commands with their metadata
@@ -47,8 +45,8 @@ export default function useKeyBind(
       currentKey: 'H',
       modifiers: ['Ctrl'],
       category: 'Navigation',
+      // Home keeps the language in use selected (it is the remembered "last used" one).
       handler: async () => {
-        clearLanguage();
         await router.push('/home');
       }
     },
@@ -245,7 +243,7 @@ export default function useKeyBind(
      setSecondarySub, setPrimaryStyling, setShowPrimarySub,
      setShowSecondarySub, undo, primaryStyling, openGoogleTranslate, openDeepL,
      reloadLastSecondarySubtitle, reloadLastPrimarySubtitle, setShowVocabSidebar,
-     rubyContent, contentString, setShowLyricsSearch, clearLanguage
+     rubyContent, contentString, setShowLyricsSearch
    ]);
 
   useEffect(() => {

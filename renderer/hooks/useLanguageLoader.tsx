@@ -26,7 +26,6 @@ export const useLanguageLoader = () => {
   const {
     lastLanguageMode,
     setLanguage,
-    clearLanguage,
     migratedFromRemovedMode,
     languageModes
   } = useLanguageManager();
@@ -112,7 +111,6 @@ export const useLanguageLoader = () => {
     loadLanguage,
     handleLanguageButtonClick,
     handleOpenLearn,
-    handleOpenFlash,
-    clearLanguage
+    handleOpenFlash
   };
 };

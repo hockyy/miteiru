@@ -1,6 +1,5 @@
 import {useEffect} from 'react';
 import {useRouter} from "next/router";
-import useLanguageManager from "./useLanguageManager";
 import {isTextEntryTarget} from "../utils/keyboardTargets";
 
 export default function useLearningKeyBind(
@@ -11,7 +10,6 @@ export default function useLearningKeyBind(
     setShowVocabSidebar?: (updater: (value: boolean) => boolean) => void,
 ) {
   const router = useRouter();
-  const { clearLanguage } = useLanguageManager();
   
   useEffect(() => {
     const handleKeyPress = async (event) => {
@@ -20,7 +18,7 @@ export default function useLearningKeyBind(
       if (event.code === "Escape") {
         setMeaning("");
       } else if (event.code === "KeyH" && event.ctrlKey && !event.shiftKey) {
-        clearLanguage();
+        // Home keeps the language in use selected (it is the remembered "last used" one).
         await router.push('/home');
       } else if (event.code === "KeyL" && event.ctrlKey && !event.shiftKey) {
         await router.push('/video');
@@ -46,6 +44,6 @@ export default function useLearningKeyBind(
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [router, rubyContent, setMeaning, setShowSidebar, setShowVocabSidebar, undo, clearLanguage]);
+  }, [router, rubyContent, setMeaning, setShowSidebar, setShowVocabSidebar, undo]);
 
 }

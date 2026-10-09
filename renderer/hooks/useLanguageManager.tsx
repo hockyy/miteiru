@@ -43,10 +43,6 @@ const useLanguageManager = () => {
     setLastLanguageMode(modeId);
   }, [setLastLanguageMode]);
 
-  const clearLanguage = useCallback(() => {
-    setLastLanguageMode(null);
-  }, [setLastLanguageMode]);
-
   const getLanguageById = useCallback((id: number): LanguageMode | undefined => {
     return LANGUAGE_MODES.find(mode => mode.id === id);
   }, []);
@@ -63,7 +59,6 @@ const useLanguageManager = () => {
   return {
     lastLanguageMode,
     setLanguage,
-    clearLanguage,
     getLanguageById,
     hasLastLanguage,
     getLastLanguage,
