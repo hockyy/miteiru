@@ -5,7 +5,7 @@ Miteiru is a multi-language subtitle learning application that supports various 
 ## Supported Languages
 
 ### 🇯🇵 Japanese
-- **Tokenizers**: Kuromoji, MeCab (advanced morphological analyzers)
+- **Tokenizer**: Kuromoji (built in, IPADIC; MeCab support was removed because it needed a separate install)
 - **Features**: Furigana, Romaji, Advanced POS analysis, Verb conjugation, Mixed script handling
 - **Dictionaries**: JMDict (Japanese-English), KanjiDic
 - **Script Support**: Hiragana, Katakana, Kanji, Mixed compounds
@@ -43,7 +43,6 @@ Miteiru is a multi-language subtitle learning application that supports various 
 1. Launch Miteiru
 2. Select your preferred language from the home screen:
    - **Kuromoji - Japanese** 🐣 - Fast Japanese tokenizer
-   - **MeCab - Japanese** 👹 - Advanced Japanese tokenizer  
    - **Jieba - Cantonese** 🥘 - Cantonese with Jyutping
    - **Jieba - Chinese** 🐉 - Mandarin with Pinyin
    - **Vietnamese** 🇻🇳 - Vietnamese with English meanings
@@ -70,7 +69,7 @@ Miteiru automatically detects subtitle language based on filename:
 
 ## Token Structure by Language
 
-### Japanese (Kuromoji/MeCab)
+### Japanese (Kuromoji)
 ```json
 {
     "origin": "我",

@@ -24,8 +24,12 @@ export const LANGUAGE_MODES: LanguageMode[] = languageModes.map(({
   description
 }));
 
+// MeCab (mode 1) was removed: Kuromoji uses the same IPADIC dictionary without an external install.
+const REMOVED_MODE_REPLACEMENTS: Record<number, number> = {1: 0};
+
 const useLanguageManager = () => {
-  const [lastLanguageMode, setLastLanguageMode] = useStoreData('app.lastLanguageMode', null);
+  const [storedLanguageMode, setLastLanguageMode] = useStoreData('app.lastLanguageMode', null);
+  const lastLanguageMode = REMOVED_MODE_REPLACEMENTS[storedLanguageMode] ?? storedLanguageMode;
 
   const setLanguage = useCallback((modeId: number | null) => {
     setLastLanguageMode(modeId);

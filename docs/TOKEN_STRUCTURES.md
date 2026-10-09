@@ -2,7 +2,7 @@
 
 Quick reference for token structures returned by each language's tokenizer.
 
-## Japanese (Kuromoji/MeCab)
+## Japanese (Kuromoji)
 
 **Rich morphological analysis with readings and grammar:**
 

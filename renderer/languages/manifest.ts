@@ -19,17 +19,6 @@ export const languageModes = [
     dependencies: ["han-character-core"]
   },
   {
-    id: 1,
-    pluginId: "japanese-mecab",
-    name: "Mecab - Japanese",
-    channel: "loadMecab",
-    emoji: "👹",
-    description: "準備OK、船長！🫡",
-    tokenizerMode: "mecab",
-    languageCode: languageCodes.japanese,
-    dependencies: ["han-character-core"]
-  },
-  {
     id: 2,
     pluginId: "cantonese-jieba",
     name: "Jieba - Cantonese",

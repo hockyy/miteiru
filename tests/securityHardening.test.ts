@@ -9,9 +9,7 @@ import {isAppUrl, isInsideDirectory, isLyricsFilePath, isWebUrl} from "../main/h
 import {readStrokeSvg} from "../main/helpers/strokeSvg";
 import {createMiteiruFileResponse} from "../main/miteiruProtocol";
 import {MediaAnalyzer} from "../main/helpers/mediaAnalyzer";
-import {getFurigana} from "../main/handler/languages/japaneseAnalysis";
 import {renderSubtitleHtml} from "../renderer/utils/subtitleHtml";
-import {defaultMecabPath} from "../renderer/utils/mecabPath";
 
 test("only Miteiru's own pages count as app URLs", () => {
   assert.equal(isAppUrl("app://./video"), true);
@@ -109,14 +107,3 @@ test("only extracted subtitle files in the temp folder may be cleaned up", () =>
   assert.equal(MediaAnalyzer.isTempSubtitlePath(undefined), false);
 });
 
-test("a missing MeCab binary yields no tokens instead of throwing", () => {
-  assert.deepEqual(getFurigana("見た", path.join(os.tmpdir(), "no-such-mecab-binary")), []);
-});
-
-test("the Windows MeCab default path keeps its backslashes", () => {
-  (globalThis as Record<string, unknown>).window = {electronAPI: {platform: "win32"}};
-  assert.equal(defaultMecabPath(), "C:\\Program Files (x86)\\MeCab\\bin\\mecab.exe");
-  (globalThis as Record<string, unknown>).window = {electronAPI: {platform: "darwin"}};
-  assert.equal(defaultMecabPath(), "/opt/homebrew/bin/mecab");
-  delete (globalThis as Record<string, unknown>).window;
-});

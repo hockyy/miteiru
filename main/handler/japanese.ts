@@ -5,7 +5,7 @@ import path from "path";
 import {readJsonFile} from "../utils";
 import fs from "node:fs";
 import kuromoji, {type Tokenizer} from "kuromoji";
-import {getFurigana, processKuromojinToSeparations, KuromojinWord} from "./languages/japaneseAnalysis";
+import {processKuromojinToSeparations, KuromojinWord} from "./languages/japaneseAnalysis";
 import {buildInflectionTable, type InflectionTableRequest} from "./languages/inflectionTable";
 import {readStrokeSvg} from "../helpers/strokeSvg";
 import {glossAll, japaneseLearningGloss, rankJapaneseMatches} from "./languages/learningGlosses";
@@ -131,8 +131,6 @@ class Japanese {
   }
 
   static processKuromojinToSeparations = processKuromojinToSeparations;
-
-  static getFurigana = getFurigana;
 
   /** Starts loading the Kuromoji dictionary at launch so the first analysis is fast. */
   static preloadKuromoji() {

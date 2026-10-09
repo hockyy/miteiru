@@ -13,7 +13,6 @@ import Vietnamese from "./handler/vietnamese";
 import Learning from "./handler/learning";
 import {registerAnalyzerHandlers} from "./handler/languages/analyzerHandlers";
 import {startAnalyzerServer, AnalyzerServerHandle} from "./handler/languages/analyzerServer";
-import {DEFAULT_MECAB_COMMAND} from "./helpers/mecabCommand";
 import {getStore} from "./handler/common/storeHandlers";
 import {
   applyYouTubeEmbedRequestHeaders,
@@ -49,7 +48,6 @@ if (!isProd) {
   registerYouTubeHeaderWorkaround();
   const appDataDirectory = app.getPath('userData');
   let tokenizerCommand = ''
-  let mecabCommand = DEFAULT_MECAB_COMMAND;
   let analyzerServer: AnalyzerServerHandle | null = null;
   const packageJsonPath = path.join(app.getAppPath(), 'package.json');
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath).toString());
@@ -59,10 +57,6 @@ if (!isProd) {
     notifyLiveCaptionsLanguageChange();
   }
   const getTokenizer = () => tokenizerCommand;
-  const setMecabCommand = (value: string) => {
-    mecabCommand = value;
-  };
-  const getMecabCommand = () => mecabCommand;
   const getToneType = async () => {
     const store = await getStore();
     return store.get('toneType', 'num') as string;
@@ -79,8 +73,8 @@ if (!isProd) {
   })
 
   registerCommonHandlers(getTokenizer, packageJson, appDataDirectory);
-  registerStartupHandlers(setTokenizer, appDataDirectory, setMecabCommand);
-  registerAnalyzerHandlers({getTokenizer, getToneType, getMecabCommand});
+  registerStartupHandlers(setTokenizer, appDataDirectory);
+  registerAnalyzerHandlers({getTokenizer, getToneType});
   Japanese.registerHandlers();
   Chinese.registerHandlers();
   Vietnamese.registerHandlers();
@@ -95,8 +89,7 @@ if (!isProd) {
       appDataDirectory,
       version: packageJson.version,
       getTokenizer,
-      getToneType,
-      getMecabCommand
+      getToneType
     });
     console.log(`[AnalyzerServer] Listening on ${analyzerServer.registration.host}:${analyzerServer.registration.port}`);
   } catch (error) {

@@ -33,16 +33,6 @@ export function registerBasicHandlers({
   packageJson,
   appDataDirectory
 }: RegisterCommonHandlersArgs) {
-  ipcMain.handle("pickFile", async (event, allowed) => {
-    return await dialog.showOpenDialog({
-      properties: ["openFile"],
-      filters: [{
-        name: "Allowed Extensions",
-        extensions: allowed
-      }]
-    });
-  });
-
   ipcMain.handle("readFile", async (event, allowed) => {
     const {
       filePaths,

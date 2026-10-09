@@ -1,4 +1,3 @@
-import {spawnSync} from "child_process";
 import {isKana, isKanji, isMixed, toHiragana, toRomaji} from "wanakana";
 
 export interface MiteiruJapaneseWord {
@@ -36,22 +35,6 @@ export interface KuromojinWord {
   reading: string;
   pronunciation: string;
 }
-
-type ParseResponse = {
-  ok: boolean;
-  pairs: MiteiruJapaneseWord[];
-  launched?: boolean;
-};
-
-type RunResponse = {
-  ok: boolean;
-  splittedSentences: string[];
-  /** False when MeCab could not be started or timed out, so other output formats won't help. */
-  launched?: boolean;
-};
-
-const notOkRunAndSplitResponse: RunResponse = {ok: false, splittedSentences: []};
-const notOkParseResponse: ParseResponse = {ok: false, pairs: []};
 
 const anyOneTrue = (word: string, func: (value: string) => boolean) => {
   for (const ch of word) {
@@ -125,111 +108,6 @@ const splitOkuriganaCompact = (text: string, reading?: string, spokenReading?: s
   }
 
   return stored;
-};
-
-const runAndSplit = (text: string, mecabCommand: string, outputFormat: string): RunResponse => {
-  const normalizedText = text.replace(/[^\S\n]/g, " ").trim();
-  // No shell: the command is a path, and quoting it into a shell line would let a crafted path
-  // run other commands.
-  const result = spawnSync(mecabCommand, outputFormat !== "" ? ["-O", outputFormat] : [], {
-    input: normalizedText,
-    timeout: 30000
-  });
-  if (result.error || !result.stdout) return {...notOkRunAndSplitResponse, launched: false};
-
-  const sentences = result.stdout.toString();
-  const splittedSentences = sentences.split("\n");
-  if (splittedSentences.length === 0 || splittedSentences[0].includes(`unkown format type [${outputFormat}]`)) {
-    return notOkRunAndSplitResponse;
-  }
-
-  while (splittedSentences.length > 0 && splittedSentences[splittedSentences.length - 1] === "") {
-    splittedSentences.pop();
-  }
-
-  return {ok: true, splittedSentences};
-};
-
-const normalizeReading = (value: string) => isKana(value) ? toHiragana(value, {passRomaji: true}) : value;
-
-const parseChamame = (text: string, mecabCommand: string): ParseResponse => {
-  const {ok, splittedSentences, launched} = runAndSplit(text, mecabCommand, "chamame");
-  if (launched === false) return {...notOkParseResponse, launched};
-  if (splittedSentences.length === 0 || !ok) return notOkParseResponse;
-
-  const pairs: MiteiruJapaneseWord[] = [];
-  for (const tmpWord of splittedSentences) {
-    let word = tmpWord;
-    if (word[0] === "B") {
-      word = word.substring(1);
-      pairs.push({origin: "\n", hiragana: "\n", basicForm: "\n", pos: ""});
-    }
-    const splittedWord = word.trim().split("\t");
-    pairs.push({
-      origin: splittedWord[0],
-      hiragana: normalizeReading(splittedWord[1]),
-      basicForm: splittedWord[3],
-      pos: splittedWord[4]
-    });
-  }
-  return {ok: true, pairs};
-};
-
-const parseChasen = (text: string, mecabCommand: string): ParseResponse => {
-  const {ok, splittedSentences} = runAndSplit(text, mecabCommand, "chasen");
-  if (splittedSentences.length === 0 || !ok) return notOkParseResponse;
-
-  const pairs: MiteiruJapaneseWord[] = [];
-  for (const word of splittedSentences) {
-    if (word === "EOS") continue;
-    const splittedWord = word.trim().split("\t");
-    pairs.push({
-      origin: splittedWord[0],
-      hiragana: normalizeReading(splittedWord[1]),
-      basicForm: splittedWord[2],
-      pos: splittedWord[3]
-    });
-  }
-  return {ok: true, pairs};
-};
-
-const parseEmpty = (text: string, mecabCommand: string): ParseResponse => {
-  const {ok, splittedSentences} = runAndSplit(text, mecabCommand, "");
-  if (splittedSentences.length === 0 || !ok) return notOkParseResponse;
-
-  const pairs: MiteiruJapaneseWord[] = [];
-  for (const word of splittedSentences) {
-    if (word === "EOS") continue;
-    const splittedFeature = word.trim().split("\t");
-    const origin = splittedFeature[0];
-    const splittedWord = splittedFeature[1].split(",");
-    pairs.push({
-      origin,
-      hiragana: normalizeReading(splittedWord[5]),
-      basicForm: splittedWord[4],
-      pos: splittedWord[0]
-    });
-  }
-  return {ok: true, pairs};
-};
-
-export const separateJapaneseWords = (
-  pairs: MiteiruJapaneseWord[]
-): MiteiruJapaneseWordWithSeparations[] => pairs.map((wordPair) => ({
-  ...wordPair,
-  separation: splitOkuriganaCompact(wordPair.origin, wordPair.hiragana)
-}));
-
-export const getFurigana = (text: string, mecabCommand = "mecab"): MiteiruJapaneseWordWithSeparations[] => {
-  let res = parseChamame(text, mecabCommand);
-  if (res.launched === false) return [];
-  if (!res.ok) {
-    res = parseChasen(text, mecabCommand);
-    if (!res.ok) {
-      res = parseEmpty(text, mecabCommand);
-    }
-  }
-  return separateJapaneseWords(res.pairs);
 };
 
 // Unknown words have no reading; keep the old empty-reading behavior for them.

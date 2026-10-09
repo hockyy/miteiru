@@ -29,7 +29,7 @@ Current asset ownership:
 
 ## Existing Language Implementations
 
-### Japanese (Kuromoji & MeCab)
+### Japanese (Kuromoji)
 
 **Token Structure:**
 ```json
