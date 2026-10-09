@@ -4,10 +4,10 @@ This document details the Vietnamese language implementation in Miteiru.
 
 ## Overview
 
-Vietnamese support was added to Miteiru with the following features:
-- Longest-match suffix tokenization algorithm
-- Vietnamese-English dictionary lookup (54,375+ entries)
-- Word-level meaning annotation
+Vietnamese support provides:
+- Longest-match tokenization over syllables, from the end of the line
+- Vietnamese-English dictionary lookup (VNEDict, 54,375+ entries)
+- Word-level meaning annotation in learning mode
 - Subtitle processing and rendering
 - Learning mode integration
 
@@ -22,79 +22,69 @@ Vietnamese tokens follow this structure:
     "origin": "Việt Nam",
     "meaning": "Vietnam, Vietnamese",
     "separation": [
-        { "main": "Việt", "meaning": "Vietnam, Vietnamese" },
-        { "main": " " },
-        { "main": "Nam", "meaning": "Vietnam, Vietnamese" }
+        { "main": "Việt" },
+        { "main": "Nam!" }
     ]
 }
 ```
 
 **Fields:**
-- `origin`: Original Vietnamese text
-- `meaning`: English translation from dictionary
-- `separation`: Array of word components with individual meanings
+- `origin`: The matched dictionary key, so lookups and learning state use it directly. It can differ
+  from the subtitle text in case ("Tôi" → `tôi`) and never includes surrounding punctuation.
+- `meaning`: The dictionary translation, or `""` when the word is not in the dictionary.
+- `separation`: One `{main}` part per syllable, exactly as written in the subtitle (case and
+  punctuation kept, e.g. `"Nam!"`). Parts carry no `meaning`.
 
 ### Tokenization Algorithm
 
-**Longest-Match Suffix Parsing:**
+`Vietnamese.tokenizeLongestSuffix` in `main/handler/vietnamese.ts`:
 
-1. Start from the beginning of the sentence
-2. For each position, try to find the longest dictionary match
-3. If match found, add token with full meaning
-4. If no match, add single character token
-5. Continue until end of sentence
+1. Split the line on whitespace into syllables. Each syllable keeps its raw text and is split into
+   leading punctuation, core, and trailing punctuation (`"Nga,"` → core `Nga`, trailing `,`).
+2. Walk from the last syllable to the first. At syllable `i`, try spans `j..i` from the longest
+   (`j = 0`) to the shortest (`j = i`) and take the first whose cores, joined with spaces, are a
+   dictionary entry.
+3. A span may not cross punctuation: only its first syllable may have leading punctuation and only
+   its last may have trailing punctuation, so `nước, Nga` never matches `nước Nga`.
+4. Each candidate is looked up as written, then with a lowercase first letter (sentence-initial
+   `Nước Nga` → `nước Nga`), then all lowercase (`Hôm nay` → `hôm nay`).
+5. A syllable with no match becomes its own token with an empty `meaning`; bare punctuation
+   (`-`) is a token too.
+6. Tokens are collected right to left and reversed at the end.
 
 ```typescript
-static tokenizeLongestSuffix(sentence: string): VietnameseTokenResult[] {
-  const result: VietnameseTokenResult[] = [];
-  let i = 0;
-  
-  while (i < sentence.length) {
-    let matched = false;
-    
-    // Try longest match first (dictionary sorted by length desc)
-    for (const term of this.sortedTerms) {
-      if (sentence.slice(i).startsWith(term)) {
-        const meaning = this.dictionary.get(term) || '';
-        
-        // Split multi-word terms by spaces
-        const words = term.split(/(\s+)/);
-        const separation = words.map(word => ({
-          main: word,
-          meaning: word.trim() ? meaning : undefined
-        }));
-        
-        result.push({
-          origin: term,
-          meaning: meaning,
-          separation: separation
-        });
-        
-        i += term.length;
-        matched = true;
-        break;
-      }
-    }
-    
-    if (!matched) {
-      // Add single character if no match
-      const char = sentence[i];
-      result.push({
-        origin: char,
-        meaning: '',
-        separation: [{ main: char }]
-      });
-      i += 1;
+// Simplified from Vietnamese.tokenizeLongestSuffix
+for (let i = chunks.length - 1; i >= 0; i--) {
+  let matched = false;
+  for (let j = 0; j <= i; j++) {
+    if (!canSpan(j, i)) continue;                       // no punctuation inside the span
+    const key = findDictionaryKey(cores(j, i).join(' '));  // exact, first letter lowercased, all lowercase
+    if (key) {
+      result.push({origin: key, meaning: dictionary.get(key), separation: raws(j, i).map((main) => ({main}))});
+      matched = true;
+      i = j;
+      break;
     }
   }
-  
-  return result;
+  if (!matched) result.push({origin: chunks[i].core || chunks[i].raw, meaning: '', separation: [{main: chunks[i].raw}]});
 }
+result.reverse();
 ```
+
+**Examples** (from `tests/vietnameseTokenizer.test.ts`):
+
+| Subtitle | Tokens (`origin` ← shown text) |
+|---|---|
+| `Nga, rồi.` | `Nga` ← `Nga,` · `rồi` ← `rồi.` |
+| `Tôi yêu Việt Nam!` | `tôi` ← `Tôi` · `yêu` · `Việt Nam` ← `Việt Nam!` |
+| `Nước Nga, rồi.` | `nước Nga` ← `Nước Nga,` · `rồi` ← `rồi.` |
+| `nước, Nga` | `nước` ← `nước,` · `Nga` (no match across the comma) |
+| `- Xin  chào...` | `-` · `Xin` · `chào` ← `chào...` (unknown words keep an empty meaning) |
 
 ### Dictionary Format
 
-The Vietnamese dictionary (`app/vietnamese/vnedict.txt`) uses this format:
+The dictionary (`language-assets/vietnamese/vietnamese/vnedict.txt`, part of the `vietnamese`
+language asset) uses one entry per line:
 
 ```
 Vietnamese term : English translation
@@ -109,173 +99,109 @@ nói đến : to talk about
 - Includes grammatical annotations and usage notes
 - UTF-8 encoding with Vietnamese diacritics
 
+Each line is split on ` : ` and the first two parts (term, translation) are trimmed and stored in a `Map`; the few malformed lines with a second ` : ` lose what follows it.
+
 ### File Structure
 
 ```
-app/vietnamese/
-└── vnedict.txt              # Vietnamese-English dictionary
+language-assets/vietnamese/
+└── vietnamese/vnedict.txt          # Vietnamese-English dictionary
 
 main/handler/
-└── vietnamese.ts            # Main language handler
+├── vietnamese.ts                   # Dictionary loading, tokenizer, queryVietnamese / learningGlossesVietnamese
+└── languages/
+    ├── registry.ts                 # "vietnamese" language plugin (asset path, setup)
+    ├── analyzer.ts                 # analyzeText → Vietnamese.tokenizeLongestSuffix
+    └── learningGlosses.ts          # pickVietnameseGloss (short learning-mode meaning)
 
 renderer/
-├── hooks/
-│   ├── useLanguageManager.tsx    # Added Vietnamese to language list
-│   └── useMiteiruTokenizer.tsx   # Added Vietnamese tokenization
-├── components/Subtitle/
-│   ├── DataStructures.ts         # Vietnamese subtitle processing
-│   ├── Subtitle.tsx             # Vietnamese rendering support  
-│   └── ScrollingLyrics.tsx      # Vietnamese lyrics support
-└── utils/
-    └── constants.ts             # Vietnamese language constants
+├── languages/manifest.ts           # Vietnamese language mode and language code "vi"
+└── components/Subtitle/
+    └── subtitleLanguageSupport.ts  # Learning-mode support (frequency key, gloss channel)
 ```
 
 ### Integration Points
 
-**1. Language Selection (`useLanguageManager.tsx`):**
+**1. Language mode (`renderer/languages/manifest.ts`):**
 ```typescript
 {
   id: 4,
-  name: 'Vietnamese',
-  channel: 'loadVietnamese',
-  emoji: '🇻🇳',
-  description: 'Chúc may mắn! 🌟'
+  pluginId: "vietnamese",
+  name: "Vietnamese",
+  channel: "loadVietnamese",
+  tokenizerMode: "vietnamese",
+  languageCode: languageCodes.vietnamese
 }
 ```
 
-**2. Tokenization (`useMiteiruTokenizer.tsx`):**
+**2. Tokenization:** the renderer calls the shared `analyzeText` IPC channel, which dispatches on
+the active tokenizer mode:
 ```typescript
-} else if (tokenizerMode === "vietnamese") {
-  res = await window.ipc.invoke('tokenizeUsingVietnamese', sentence);
+if (tokenizerMode === "vietnamese") {
+  if (!Vietnamese.isLoaded) throw new Error("Vietnamese dictionary not loaded");
+  return Vietnamese.tokenizeLongestSuffix(sentence);
 }
 ```
 
-**3. Subtitle Processing (`DataStructures.ts`):**
-```typescript
-async adjustVietnamese(tokenizeMiteiru: (string) => Promise<any[]>) {
-  const promises = [];
-  for (let i = 0; i < this.lines.length; i++) {
-    if (globalSubtitleId !== this.id) return;
-    const line = this.lines[i];
-    promises.push(line.fillContentSeparations(tokenizeMiteiru));
-    promises.push(line.fillContentWithLearningVietnamese(this.frequency));
-    this.progress = `${((i + 1) * 100 / this.lines.length).toFixed(2)}%`;
-  }
-  await Promise.all(promises);
-  this.progress = 'done';
-}
-```
+**3. Meaning panel:** `queryVietnamese` returns the exact dictionary entry, if any:
+`[{content, meaning}]`.
 
-**4. Language Constants (`constants.ts`):**
-```typescript
-vietnameseLang: 'vi',
-varLang: {
-  "vi": ["vi"]
-},
-ocrLang: {
-  "vi": "vie",
-}
-```
+### Primary and Secondary Subtitles
 
-### Subtitle Language Detection
-
-Vietnamese implements the requested subtitle language detection algorithm:
-
-```typescript
-// In SubtitleContainer.create()
-const isForcedEnglish = filename.includes('.en.');
-
-// Language assignment
-isForcedEnglish ? videoConstants.englishLang : lang
-```
-
-**Logic:**
-- If filename contains `.en.` → English (secondary subtitle)
-- If filename doesn't contain `.en.` → Native language (Vietnamese → primary subtitle)
-
-**Examples:**
-- `movie.srt` → Vietnamese (primary)
-- `movie.vi.srt` → Vietnamese (primary) 
-- `movie.en.srt` → English (secondary)
+When a subtitle is dropped, Miteiru asks whether to load it as the primary subtitle (tokenized and
+analyzed for learning) or the secondary one (shown as plain reference text).
 
 ### Rendering Integration
 
-**Sentence Detection:**
-```typescript
-const isVietnameseSentence = val.separation && !val.jyutping && !val.pinyin && !val.hiragana;
-```
+Tokens are classified by `getSubtitleTokenPresentation` in `subtitleLanguageSupport.ts`. A token
+with a `separation` array but no `hiragana`, `pinyin`, or `jyutping` is Vietnamese; it is rendered
+with the `ChineseSentence` component and its ruby reading is the token's learning-mode meaning:
 
-**Component Usage:**
-Vietnamese reuses the `ChineseSentence` component which provides:
-- Word-level hover tooltips
-- Click to copy functionality
-- Learning state integration
-- Meaning display support
-
-**Ruby HTML Generation:**
 ```typescript
-} else if (isVietnameseSentence) {
-  reading = part.meaning || '';
+{
+  matches: (token) => Array.isArray(token?.separation),
+  presentation: {sentenceKind: "chinese", getRubyReading: (part) => part?.meaning || ""}
 }
 ```
-
-This enables Vietnamese meanings to appear in hover tooltips and ruby text formatting.
 
 ### Learning Mode Integration
 
-Vietnamese integrates with Miteiru's learning system:
+`fillSubtitleWithLearningContent` (`subtitleLanguageSupport.ts`) processes a subtitle 32 lines at a
+time:
 
-**Dictionary Lookup:**
-```typescript
-async fillContentWithLearningVietnamese(frequency) {
-  this.meaning = Array(this.content.length).fill('');
-  for (let i = 0; i < this.content.length; i++) {
-    const word = this.content[i];
-    const target = word.origin;
-    frequency.set(target, (frequency.get(target) ?? 0) + 1);
-    await window.ipc.invoke('queryVietnamese', target, 3).then(val => {
-      // Process dictionary results and assign meanings
-    })
-  }
-}
-```
+1. Each line is tokenized through `analyzeText`.
+2. Every token's `origin` is counted in the subtitle's word frequency table.
+3. Words not seen earlier in the subtitle are sent in one `learningGlossesVietnamese` call. Main looks
+   each up exactly and returns the shortest meaningful part of the translation (≤ 15 characters,
+   notes in parentheses and brackets removed; `pickVietnameseGloss`).
+4. The glosses become the line's `meaning` array, shown under the words.
 
-**Features:**
-- Word frequency tracking
-- Dictionary search with relevance scoring
-- Meaning cleanup and formatting
-- Learning state management
+### Performance
 
-### Performance Optimizations
-
-1. **Dictionary Sorting**: Terms sorted by length (longest first) for efficient matching
-2. **Map-based Lookup**: Uses JavaScript Map for O(1) dictionary access
-3. **Lazy Loading**: Dictionary loaded only when Vietnamese mode selected
-4. **Memory Management**: Large dictionary loaded once and reused
+1. **Map lookup:** each candidate span is one `Map` lookup (up to three with the case fallbacks).
+2. **Short spans:** a line has few syllables, so trying every span is cheap.
+3. **Lazy loading:** the dictionary loads when Vietnamese mode is selected and is reused.
+4. **Batched glosses:** learning mode looks each distinct word up once per subtitle.
 
 ### Testing & Validation
 
-The Vietnamese implementation has been tested with:
-- Various Vietnamese text inputs
-- Subtitle file loading (.srt, .vtt formats)
-- Dictionary lookup functionality
-- Learning mode integration
-- Language switching
+`tests/vietnameseTokenizer.test.ts` pins the tokenizer: punctuation around syllables, the lowercase
+fallbacks, no matches across punctuation, and unknown words and bare punctuation.
+`tests/learningGlosses.test.ts` covers the learning-mode gloss.
 
 ### Known Limitations
 
 1. **Compound Words**: Some Vietnamese compound words may not be in dictionary
 2. **Proper Nouns**: Modern proper nouns may be missing from dictionary
 3. **Colloquialisms**: Informal expressions may not be covered
-4. **Tokenization Edge Cases**: Very long sentences may have performance impact
+4. **Ambiguous Spans**: Longest match from the end can pick a different split than a speaker would
 
 ### Future Improvements
 
 1. **Enhanced Dictionary**: Add more modern terms and expressions
 2. **Tone Support**: Add Vietnamese tone marking support
 3. **Grammar Analysis**: Implement basic Vietnamese grammar analysis
-4. **Performance**: Optimize tokenization for very long texts
-5. **Cultural Context**: Add cultural context annotations
+4. **Cultural Context**: Add cultural context annotations
 
 ---
 
