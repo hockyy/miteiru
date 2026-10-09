@@ -41,7 +41,9 @@ export const SeekBar = ({clock, durationMs, onSeek, getBufferedEnd}: SeekBarProp
   const showProgress = useCallback((fraction: number) => {
     if (progressRef.current) progressRef.current.style.transform = `scaleX(${fraction})`;
     if (thumbRailRef.current) thumbRailRef.current.style.transform = `translateX(${fraction * 100}%)`;
-    rootRef.current?.setAttribute("aria-valuenow", String(Math.round(fraction * durationRef.current / 1000)));
+    const seconds = fraction * durationRef.current / 1000;
+    rootRef.current?.setAttribute("aria-valuenow", String(Math.round(seconds)));
+    rootRef.current?.setAttribute("aria-valuetext", toTime(seconds));
   }, []);
 
   const fractionAt = (clientX: number) => {
@@ -115,6 +117,13 @@ export const SeekBar = ({clock, durationMs, onSeek, getBufferedEnd}: SeekBarProp
     seekTo(fraction, false);
   };
 
+  // Arrow keys already seek ±2 s from anywhere on the page (useVideoKeyboardControls); Home/End jump.
+  const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== "Home" && event.key !== "End") return;
+    event.preventDefault();
+    seekTo(event.key === "Home" ? 0 : 1, true);
+  };
+
   const onPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
     if (!draggingRef.current) return;
     const fraction = fractionAt(event.clientX);
@@ -129,10 +138,12 @@ export const SeekBar = ({clock, durationMs, onSeek, getBufferedEnd}: SeekBarProp
       ref={rootRef}
       className="seek-bar"
       role="slider"
+      tabIndex={0}
       aria-label="Seek"
       aria-valuemin={0}
       aria-valuemax={Math.round(durationMs / 1000)}
       aria-valuenow={0}
+      onKeyDown={onKeyDown}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}

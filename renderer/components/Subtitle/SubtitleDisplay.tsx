@@ -75,6 +75,8 @@ export const SubtitleDisplay = ({
             getLearningStateClass={getLearningStateClass}
             setExternalContent={setExternalContent}
             setRubyCopyContent={setRubyCopyContent}
+            timeCache={primaryTimeCache}
+            setTimeCache={setPrimaryTimeCache}
           />
         )}
       </>

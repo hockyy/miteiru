@@ -158,6 +158,9 @@ export const setGlobalSubtitleId = (id) => {
 /** Whether `id` belongs to the primary subtitle currently shown (others stop their processing). */
 export const isCurrentSubtitle = (id: string) => globalSubtitleId === id;
 
+/** The gloss list of a line without glosses; shared so views can compare it by identity. */
+export const NO_MEANING: string[] = [];
+
 export class SubtitleContainer {
   id: string;
   lines: Line[];
@@ -166,6 +169,19 @@ export class SubtitleContainer {
   progress: string = '';
 
   frequency: Map<string, number>;
+  private readonly changeListeners = new Set<() => void>();
+
+  /** Runs `listener` whenever analysis gives lines tokens or glosses; returns the unsubscribe function. */
+  onChange(listener: () => void) {
+    this.changeListeners.add(listener);
+    return () => {
+      this.changeListeners.delete(listener);
+    };
+  }
+
+  notifyChanged() {
+    this.changeListeners.forEach((listener) => listener());
+  }
 
   constructor(content: string = '', language: string = languageCodes.japanese) {
     this.frequency = new Map();
