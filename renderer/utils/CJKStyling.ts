@@ -1,3 +1,13 @@
+/** A copy of `styling` with one (possibly nested) field set, e.g. `withStylingPath(s, "text.color", "#fff")`. */
+export const withStylingPath = <T>(styling: T, path: string, value: unknown): T => {
+  const copy = JSON.parse(JSON.stringify(styling));
+  const keys = path.split(".");
+  let target = copy;
+  for (const key of keys.slice(0, -1)) target = target[key];
+  target[keys[keys.length - 1]] = value;
+  return copy;
+};
+
 interface StrokeStyling {
   /** Outline width from settings slider — rendered via text-shadow (see utils/subtitleStroke.ts). */
   width: string
