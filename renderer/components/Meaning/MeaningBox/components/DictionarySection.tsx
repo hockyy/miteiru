@@ -6,7 +6,10 @@ type DictionarySectionProps = {
   meaningContent: React.ReactNode;
 };
 
-/** The word's senses, then its characters (kanji/hanzi breakdown), under one labelled section. */
+/**
+ * Character details and word senses under one labelled section. Character details exist only when a
+ * single kanji/hanzi was looked up (often clicked to drill into a word), so they come first.
+ */
 export const DictionarySection = ({
   characterContent,
   meaningContent,
@@ -19,8 +22,8 @@ export const DictionarySection = ({
     <section className={MEANING_SECTION}>
       <div className={MEANING_SECTION_LABEL}>Dictionary</div>
       <div className="space-y-3 p-4">
-        {meaningContent}
         {characterContent}
+        {meaningContent}
       </div>
     </section>
   );

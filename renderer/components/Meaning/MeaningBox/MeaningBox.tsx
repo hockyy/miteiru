@@ -31,7 +31,7 @@ import type { MeaningBoxProps } from './types';
  *
  * Composed of:
  * - {@link MeaningBoxHeader} — navigation, TTS, headword ruby
- * - {@link DictionarySection} — word senses, then kanji/hanzi
+ * - {@link DictionarySection} — kanji/hanzi (single-character lookups) + word senses
  * - {@link QuickActionsSection} — clipboard + Anki export
  * - {@link PitchAccentSection} — Japanese pitch contour per headword variant
  * - {@link UserNotesSection} — personal notes (also used for Anki backs)
