@@ -35,18 +35,38 @@ export function extractJsonString(raw: string): string | null {
   return trimmed.startsWith('{') ? trimmed : null;
 }
 
-/** Like extractJsonString, for responses whose payload is a JSON array (e.g. subtitle cue translations). */
+/**
+ * Like extractJsonString, for responses whose payload is a JSON array (e.g. subtitle cue translations).
+ * Tries each fenced block, the whole reply, then each "[" up to the last "]", and returns the first
+ * candidate that parses as an array; a reply that is a JSON object yields null, not an inner array.
+ */
 export function extractJsonArray(raw: string): string | null {
   const trimmed = raw.trim();
   if (!trimmed) {
     return null;
   }
 
-  const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
-  const body = fenced?.[1]?.trim() ?? trimmed;
+  const parsesAs = (candidate: string) => {
+    try {
+      const value = JSON.parse(candidate);
+      return Array.isArray(value) ? 'array' : 'other';
+    } catch {
+      return 'invalid';
+    }
+  };
 
-  // Grab the outermost [ ... ] if the model wrapped the array in prose.
-  const start = body.indexOf('[');
-  const end = body.lastIndexOf(']');
-  return start !== -1 && end > start ? body.slice(start, end + 1) : null;
+  const fences = [...trimmed.matchAll(/```(?:json)?\s*([\s\S]*?)```/gi)].map((match) => match[1].trim());
+  for (const candidate of [...fences, trimmed]) {
+    const kind = parsesAs(candidate);
+    if (kind === 'array') return candidate;
+    if (kind === 'other') return null;
+  }
+
+  // Prose around the array: try each opening bracket (a few) up to the last closing one.
+  const end = trimmed.lastIndexOf(']');
+  for (let start = trimmed.indexOf('['), tries = 0; start !== -1 && start < end && tries < 20; start = trimmed.indexOf('[', start + 1), tries++) {
+    const candidate = trimmed.slice(start, end + 1);
+    if (parsesAs(candidate) === 'array') return candidate;
+  }
+  return null;
 }

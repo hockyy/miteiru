@@ -97,9 +97,14 @@ export async function checkToolPath(tool: ToolConfig): Promise<{ available: bool
   return {available: false, path: null, isInternal: false};
 }
 
-/** The command for a tool that must be present; throws a message saying where to put it when it is not. */
+/**
+ * The command for a tool that must be present; throws a message saying where to put it when it is not.
+ * Uses checkMediaTools' 30-second cache, so a run that needs several tools checks them once.
+ */
 export async function requireMediaTool(name: ToolName): Promise<string> {
-  const {available, path: toolPath} = await checkToolPath(findTool(name));
+  const cached = (await checkMediaTools())?.details?.[name];
+  // A cached "missing" may be stale (the tool was just added), so that case is checked again.
+  const {available, path: toolPath} = cached?.available ? cached : await checkToolPath(findTool(name));
   if (!available || !toolPath) {
     throw new Error(`${name} was not found. Put ${findTool(name).executable_name} in ${getMiteiruToolsPath()} or on your PATH.`);
   }
