@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import {test} from "node:test";
 import {
+  buildFontItems,
   DEFAULT_SUBTITLE_FONT,
   firstFontFamily,
   fontLabel,
@@ -48,4 +49,25 @@ test("installed fonts are listed once each, sorted, and empty where the system c
   } finally {
     delete globalWithWindow.window;
   }
+});
+
+test("the picker lists installed recommendations once, other installed fonts, then a typed name", () => {
+  const installed = ["Arial", "Meiryo", "UD Digi Kyokasho N", "UD Digi Kyokasho NP"];
+  const all = buildFontItems(SUBTITLE_FONT_OPTIONS, installed, "");
+  const labels = all.recommended.map(({label}) => label);
+  assert.ok(labels.includes("Noto Sans JP") && labels.includes("UD Digi Kyokasho") && labels.includes("Meiryo"));
+  assert.ok(!labels.includes("Hiragino Sans"), "recommended fonts that are not installed are left out");
+  assert.deepEqual(all.others.map(({label}) => label), ["Arial", "UD Digi Kyokasho NP"], "recommended families are not repeated");
+  assert.deepEqual(all.custom, []);
+
+  const typed = buildFontItems(SUBTITLE_FONT_OPTIONS, installed, "kyo");
+  assert.deepEqual(typed.recommended.map(({label}) => label), ["UD Digi Kyokasho"]);
+  assert.deepEqual(typed.others.map(({label}) => label), ["UD Digi Kyokasho NP"]);
+  assert.equal(typed.custom[0].label, "kyo");
+  // An installed or recommended family is chosen from its own entry, not offered again as typed.
+  assert.deepEqual(buildFontItems(SUBTITLE_FONT_OPTIONS, installed, "UD Digi Kyokasho N").custom, []);
+  assert.deepEqual(buildFontItems(SUBTITLE_FONT_OPTIONS, installed, "Arial").custom, []);
+
+  // Without the installed list (API unavailable), every recommendation is offered.
+  assert.equal(buildFontItems(SUBTITLE_FONT_OPTIONS, [], "").recommended.length, SUBTITLE_FONT_OPTIONS.length);
 });
