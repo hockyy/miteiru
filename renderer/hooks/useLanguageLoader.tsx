@@ -27,8 +27,15 @@ export const useLanguageLoader = () => {
     lastLanguageMode,
     setLanguage,
     clearLanguage,
+    migratedFromRemovedMode,
     languageModes
   } = useLanguageManager();
+
+  useEffect(() => {
+    if (migratedFromRemovedMode) {
+      setCheck({ok: 0, message: 'MeCab was removed; Kuromoji uses the same dictionary and needs no setup.'});
+    }
+  }, [migratedFromRemovedMode]);
 
   useEffect(() => {
     if (lastLanguageMode === null || lastLanguageMode === undefined) {

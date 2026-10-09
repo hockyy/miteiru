@@ -128,7 +128,9 @@ const handleAnalyze = async (
     return;
   }
 
-  if (body.tokenizer && body.tokenizer !== active.tokenizerMode) {
+  // MeCab was removed; clients that still ask for it get Kuromoji, which uses the same dictionary.
+  const requestedTokenizer = body.tokenizer === "mecab" ? "kuromoji" : body.tokenizer;
+  if (requestedTokenizer && requestedTokenizer !== active.tokenizerMode) {
     sendJson(res, 409, {
       ok: false,
       error: `Requested tokenizer ${body.tokenizer} does not match active tokenizer ${active.tokenizerMode}.`,
