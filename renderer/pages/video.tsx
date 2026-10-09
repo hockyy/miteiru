@@ -278,8 +278,13 @@ function Video() {
   const router = useRouter();
   const goHome = useCallback(() => router.push('/home'), [router]);
   const openFiles = useCallback(async () => {
-    await loadMediaPaths(await window.electronAPI.pickMediaFiles(), onLoadFiles);
-  }, [onLoadFiles]);
+    try {
+      await loadMediaPaths(await window.electronAPI.pickMediaFiles(), onLoadFiles);
+    } catch (error) {
+      console.error('[video] opening files failed', error);
+      setToastInfo({message: `Could not open the files: ${error.message}`, update: String(Date.now())});
+    }
+  }, [onLoadFiles, setToastInfo]);
 
   // While a video plays, the controls fade out when the mouse rests; not while a panel or dialog is open.
   const panelOpen = showSidebar || showVocabSidebar || showCommandPalette || meaning !== '' ||
