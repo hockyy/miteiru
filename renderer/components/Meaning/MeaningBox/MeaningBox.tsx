@@ -168,6 +168,13 @@ const MeaningBox = ({
     );
   }, [lang, meaningContent, showMeaning, tags]);
 
+  // A flashcard's front (showMeaning false) shows the word only: its reading, pitch, notes and
+  // conjugations would give the answer away.
+  const headerStyling = useMemo(
+    () => (showMeaning ? subtitleStyling : {...subtitleStyling, showFurigana: false}),
+    [showMeaning, subtitleStyling]
+  );
+
   if (!isOpen) {
     return <>{ankiExportModal}</>;
   }
@@ -187,7 +194,7 @@ const MeaningBox = ({
             romajiedData={romajiedData}
             lang={lang}
             setMeaning={setMeaning}
-            subtitleStyling={subtitleStyling}
+            subtitleStyling={headerStyling}
             speaking={speaking}
             speechSupported={supported}
             onSpeak={handleSpeak}
@@ -205,7 +212,7 @@ const MeaningBox = ({
           onExportAnki={exportToAnki}
         />
 
-        <UserNotesSection
+        {showMeaning && <UserNotesSection
           term={meaning}
           lang={lang}
           tokenizeMiteiru={tokenizeMiteiru}
@@ -215,16 +222,16 @@ const MeaningBox = ({
           onAIGenerate={generateNoteWithAI}
           isGenerating={isGeneratingNote}
           onNavigateToTerm={handleNavigateToTerm}
-        />
+        />}
 
-        <PitchAccentSection romajiedData={romajiedData} lang={lang} />
+        {showMeaning && <PitchAccentSection romajiedData={romajiedData} lang={lang} />}
 
         <DictionarySection
           characterContent={characterPanel}
           meaningContent={meaningPanel}
         />
 
-        {lang === videoConstants.japaneseLang && inflectionTable ? (
+        {showMeaning && lang === videoConstants.japaneseLang && inflectionTable ? (
           <InflectionSection
             table={inflectionTable}
             lang={lang}

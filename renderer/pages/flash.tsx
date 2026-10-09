@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
 import Head from 'next/head';
 import {useRouter} from 'next/router';
 import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
@@ -30,6 +30,16 @@ const VocabFlashCards: React.FC = () => {
   const {lang, tokenizeMiteiru} = useMiteiruTokenizer();
   const router = useRouter();
   const [loaded, setLoaded] = useState(false);
+  // The card panel is an overlay; it starts below the header so Home stays reachable.
+  const headerRef = useRef<HTMLElement>(null);
+  const [headerBottom, setHeaderBottom] = useState(0);
+  useLayoutEffect(() => {
+    const update = () => setHeaderBottom(Math.ceil(headerRef.current?.getBoundingClientRect().bottom ?? 0));
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+  const cardInsets = useMemo(() => ({top: `${headerBottom + 8}px`}), [headerBottom]);
 
   const [sortedVocab, setSortedVocab] = useState<SortedVocabEntry[]>([]);
   const [currentWord, setCurrentWord] = useState<SortedVocabEntry | null>(null);
@@ -46,16 +56,17 @@ const VocabFlashCards: React.FC = () => {
     try {
       if (!lang) return;
       const loadedState = await window.ipc.invoke('loadLearningState', lang);
+      // Most overdue first, as handleAnswer keeps them.
       const sorted = Object.entries(loadedState).sort((a, b) =>
-          (b[1] as LearningStateEntry).updTime - (a[1] as LearningStateEntry).updTime
+          (a[1] as LearningStateEntry).updTime - (b[1] as LearningStateEntry).updTime
       ) as SortedVocabEntry[];
       setSortedVocab(sorted);
       if (sorted.length > 0) {
         setCurrentWord(sorted[0]);
       }
+      setLoaded(true);
     } catch (error) {
       console.error('Error loading vocabulary:', error);
-    } finally {
       setLoaded(true);
     }
   }, [lang]);
@@ -158,7 +169,7 @@ const VocabFlashCards: React.FC = () => {
           <title>{getMiteiruAppName()} - Vocabulary Flash Cards</title>
         </Head>
         <div className={`${UI_PAGE_BG} flex flex-col items-center gap-4`}>
-          <section className={HOME_SHELL}>
+          <section className={HOME_SHELL} ref={headerRef}>
             <header className={HOME_HEADER}>
               <div className="flex items-center gap-3">
                 <div className={HOME_ICON_BADGE}>🃏</div>
@@ -197,6 +208,7 @@ const VocabFlashCards: React.FC = () => {
                       setMeaning={() => {
                       }}
                       tokenizeMiteiru={tokenizeMiteiru}
+                      sidebarInsets={cardInsets}
                       customComponent={customComponent}
                       changeLearningState={changeLearningState}
                       getLearningState={getLearningState}
