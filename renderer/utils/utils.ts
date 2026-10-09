@@ -1,3 +1,4 @@
+import type {CSSProperties} from "react";
 import {videoConstants} from "./constants";
 
 export const isArrayEndsWithMatcher = (path, arrayMatcher) => {
@@ -89,6 +90,12 @@ export const joinString = (arr, separator = '; ') => {
   })
   return total;
 }
+
+/** Style for a `.slider` range input: `--fill` is how far along its track the value is. */
+export const rangeFillStyle = (value: number, min: number, max: number): CSSProperties => {
+  const fraction = max > min ? (value - min) / (max - min) : 0;
+  return {"--fill": `${Math.min(100, Math.max(0, fraction * 100))}%`} as CSSProperties;
+};
 
 export const adjustTimeWithShift = (currentTime: number, shift: number) => {
   return Math.trunc(currentTime * 1000) - shift
