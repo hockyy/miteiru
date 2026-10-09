@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import {describe, it} from "node:test";
-import {asString, asStringArray, extractJsonString} from "../renderer/utils/parseJsonResponse";
+import {asString, asStringArray, extractJsonArray, extractJsonString} from "../renderer/utils/parseJsonResponse";
 
 describe("asString", () => {
   it("trims strings and rejects non-strings", () => {
@@ -44,5 +44,15 @@ describe("extractJsonString", () => {
     assert.equal(extractJsonString(""), null);
     assert.equal(extractJsonString("   "), null);
     assert.equal(extractJsonString("no json here"), null);
+  });
+});
+
+describe("extractJsonArray", () => {
+  it("reads fenced, raw and prose-wrapped arrays", () => {
+  assert.equal(extractJsonArray('```json\n[{"i":1,"en":"hi"}]\n```'), '[{"i":1,"en":"hi"}]');
+  assert.equal(extractJsonArray('Here you go: [{"i":2}] done'), '[{"i":2}]');
+  assert.equal(extractJsonArray('[]'), '[]');
+  assert.equal(extractJsonArray('{"not": "an array"}'), null);
+  assert.equal(extractJsonArray('   '), null);
   });
 });
