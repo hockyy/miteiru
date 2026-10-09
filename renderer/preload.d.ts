@@ -17,6 +17,10 @@ interface ElectronApi {
   getUserDataPath: () => Promise<string>;
   joinPath: (...pathSegments: string[]) => Promise<string>;
   checkFile: (filePath: string) => Promise<boolean>;
+  /** Subtitles beside a video that share its name (`ep01.srt`, `ep01.en.srt` for `ep01.mkv`). */
+  checkSubtitleFile: (videoFilePath: string) => Promise<string[]>;
+  /** Videos and subtitles chosen in the system file picker; empty when cancelled. */
+  pickMediaFiles: () => Promise<string[]>;
   [key: string]: any;
 }
 

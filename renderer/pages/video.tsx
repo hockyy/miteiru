@@ -1,4 +1,5 @@
 import React, {useCallback, useEffect, useMemo} from "react";
+import {useRouter} from "next/router";
 import VideoJS from "../components/VideoPlayer/VideoJS";
 import MiteiruDropzone from "../components/VideoPlayer/MiteiruDropzone";
 import MeaningBox from "../components/Meaning/MeaningBox";
@@ -45,7 +46,7 @@ import useLiveCaptions from "../hooks/useLiveCaptions";
 import {LiveCaptionOverlay} from "../components/Subtitle/LiveCaptionOverlay";
 import {LiveCaptionControl} from "../components/Subtitle/LiveCaptionControl";
 import {useMediaTrackSubtitleSelection} from "../hooks/useMediaTrackSubtitleSelection";
-import {getFileNameFromPath} from "../utils/mediaUtils";
+import {getFileNameFromPath, loadMediaPaths} from "../utils/mediaUtils";
 
 function Video() {
   const {
@@ -274,6 +275,12 @@ function Video() {
       setToastInfo, backToHead, setIsPlaying);
   usePlayNextAfterEnd(player, onVideoChangeHandler, setEnableSeeker, setIsPlaying);
 
+  const router = useRouter();
+  const goHome = useCallback(() => router.push('/home'), [router]);
+  const openFiles = useCallback(async () => {
+    await loadMediaPaths(await window.electronAPI.pickMediaFiles(), onLoadFiles);
+  }, [onLoadFiles]);
+
   // While a video plays, the controls fade out when the mouse rests; not while a panel or dialog is open.
   const panelOpen = showSidebar || showVocabSidebar || showCommandPalette || meaning !== '' ||
       showSubtitleModal || showLyricsSearch || showTrackSelectionModal || showAudioReencodeModal || showReencodeProgress;
@@ -311,6 +318,8 @@ function Video() {
                 setMeaning={setMeaning}
                 tokenizeMiteiru={tokenizeMiteiru}
                 onRefresh={generateDailyWords}
+                onOpenFiles={openFiles}
+                onHome={goHome}
             />
           )}
 

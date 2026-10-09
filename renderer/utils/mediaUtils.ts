@@ -1,6 +1,6 @@
 import type {MediaTrack} from "../types/media";
 import {getLanguageDisplayName as getManifestLanguageDisplayName} from "../languages/manifest";
-import {isLocalPath, isYoutube} from "./utils";
+import {isLocalPath, isVideo, isYoutube} from "./utils";
 import {NORMALIZED_SUBTITLE_PREFIX} from "./constants";
 
 export type SubtitleTarget = "primary" | "secondary";
@@ -41,6 +41,20 @@ export const isEmbeddedSubtitlePath = (filePath: string) => (
 export const isMiteiruTempSubtitle = (filePath: string) => (
   isEmbeddedSubtitlePath(filePath) || getFileNameFromPath(filePath).startsWith(NORMALIZED_SUBTITLE_PREFIX)
 );
+
+/** Whether a subtitle's name marks it as English: `show.en.srt`, `show.eng.ass`, `show.english.vtt`. */
+export const isEnglishSubtitleName = (filePath: string) => /\.(en|eng|english)(-[a-z]+)?\.[^.]+$/i.test(getFileNameFromPath(filePath));
+
+/**
+ * Loads dropped or picked files one at a time: the video first, then the subtitles given with it, then
+ * those beside it that share its name. `loadFile` takes one file per call (useLoadFiles' onLoadFiles).
+ */
+export const loadMediaPaths = async (paths: string[], loadFile: (files: { path: string }[]) => unknown) => {
+  const video = paths.find((filePath) => isVideo(filePath));
+  const besideVideo = video ? await window.electronAPI.checkSubtitleFile(video) : [];
+  const ordered = video ? [video, ...paths.filter((filePath) => filePath !== video), ...besideVideo] : paths;
+  for (const filePath of new Set(ordered)) loadFile([{path: filePath}]);
+};
 
 export const getEmbeddedSubtitleTarget = (filePath: string): SubtitleTarget => (
   filePath.includes("secondary") || filePath.includes("_sec_") ? "secondary" : "primary"

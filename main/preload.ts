@@ -42,6 +42,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
   checkSubtitleFile: (videoFilePath: string) =>
       ipcRenderer.invoke('check-subtitle-file', videoFilePath),
+  pickMediaFiles: (): Promise<string[]> => ipcRenderer.invoke('pick-media-files'),
   parseSubtitle: (filename: string) => ipcRenderer.invoke('parse-subtitle', filename),
   preprocessSubtitleCapitalization: (filename: string) => ipcRenderer.invoke('preprocess-subtitle-capitalization', filename),
   findPositionDeltaInFolder: (path: string, delta: number = 1) =>

@@ -1,5 +1,7 @@
 import React, {useCallback, useEffect, useMemo, useRef} from "react";
-import {isVideo, isYoutube} from "../../utils/utils";
+import {isYoutube} from "../../utils/utils";
+import {loadMediaPaths} from "../../utils/mediaUtils";
+import {isTextEntryTarget} from "../../utils/keyboardTargets";
 
 export const MiteiruDropzone = ({
                                   onDrop,
@@ -7,14 +9,16 @@ export const MiteiruDropzone = ({
                                 }) => {
   const dropRef = useRef<HTMLDivElement>(null);
 
+  // Dropping works anywhere in the window (over the empty page, a dialog or the video), except into a
+  // text field, which keeps its own drop.
   const handleDrag = useCallback((e: DragEvent) => {
+    if (isTextEntryTarget(e.target)) return;
     e.preventDefault();
-    e.stopPropagation();
   }, []);
 
   const handleDrop = useCallback((e: DragEvent) => {
+    if (isTextEntryTarget(e.target)) return;
     e.preventDefault();
-    e.stopPropagation();
     const dt = e.dataTransfer;
     if (!dt) return;
 
@@ -24,22 +28,9 @@ export const MiteiruDropzone = ({
     if (isYoutube(url)) {
       onDrop([{path: url}]);
     } else if (files.length) {
-      const filesWithPath = files.map(file => ({
-        path: window.electronAPI.getPath(file)
-      }));
-      console.log('[file-drop] resolved files', filesWithPath);
-      const videoFile = files.find(file => isVideo(file.name));
-      if (videoFile) {
-        const videoFilePath = window.electronAPI.getPath(videoFile);
-        window.electronAPI.checkSubtitleFile(videoFilePath).then(subtitleFilePath => {
-          onDrop([{path: videoFilePath}]);
-          for (const subPath of subtitleFilePath) {
-            onDrop([{path: subPath}]);
-          }
-        });
-      } else {
-        onDrop(filesWithPath);
-      }
+      const paths = files.map((file) => window.electronAPI.getPath(file));
+      console.log('[file-drop] resolved files', paths);
+      loadMediaPaths(paths, onDrop);
     }
   }, [onDrop]);
 
@@ -81,18 +72,23 @@ export const MiteiruDropzone = ({
   }, [deltaTime]);
 
   useEffect(() => {
+    window.addEventListener('dragover', handleDrag);
+    window.addEventListener('drop', handleDrop);
+    return () => {
+      window.removeEventListener('dragover', handleDrag);
+      window.removeEventListener('drop', handleDrop);
+    };
+  }, [handleDrag, handleDrop]);
+
+  useEffect(() => {
     const div = dropRef.current;
     if (div) {
-      div.addEventListener('dragover', handleDrag);
-      div.addEventListener('drop', handleDrop);
       div.addEventListener('dblclick', handleDoubleClick);
       return () => {
-        div.removeEventListener('dragover', handleDrag);
-        div.removeEventListener('drop', handleDrop);
         div.removeEventListener('dblclick', handleDoubleClick);
       };
     }
-  }, [handleDrag, handleDrop, handleDoubleClick]);
+  }, [handleDoubleClick]);
 
   const divStyle = useMemo(() => ({
     zIndex: 4,
