@@ -7,13 +7,18 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { Button } from '../Utils/Button';
 import { languageCodes } from '../../languages/manifest';
 import { useAiTranslation } from '../../hooks/useAiTranslation';
+import { useStoreData } from '../../hooks/useStoreData';
 import { useGrammarAiNotes } from '../../hooks/useGrammarAiNotes';
 import { useGrammarNotes } from '../../hooks/useGrammarNotes';
 import { useGrammarStudy } from '../../hooks/useGrammarStudy';
 import { openRouterMessages } from '../../utils/openRouterClient';
 import {
+  defaultTranslationDetailOptions,
   getPronunciationLabel,
+  getTranslationLoadingSubMessage,
   getTranslationTargetLang,
+  normalizeTranslationDetailOptions,
+  TranslationDetailOptions,
 } from '../../utils/aiTranslationPrompts';
 import { splitIntoLines } from '../../utils/textUtils';
 import {
@@ -29,6 +34,18 @@ import { GrammarStudyControls } from './GrammarStudyControls';
 import { GrammarStudyResults } from './GrammarStudyResults';
 
 type ActiveStudyPanel = 'translation' | 'grammar' | null;
+
+const TRANSLATION_REGISTER_TOGGLES: { key: keyof TranslationDetailOptions; label: string }[] = [
+  { key: 'formal', label: 'Formal' },
+  { key: 'neutral', label: 'Neutral' },
+  { key: 'casual', label: 'Casual' },
+];
+
+const TRANSLATION_NOTE_TOGGLES: { key: keyof TranslationDetailOptions; label: string }[] = [
+  { key: 'grammar', label: 'Grammar notes' },
+  { key: 'glossary', label: 'Glossary' },
+  { key: 'wordingNotes', label: 'Wording notes' },
+];
 
 interface LearnStudyPanelProps {
   lang: string;
@@ -47,6 +64,11 @@ export const LearnStudyPanel: React.FC<LearnStudyPanelProps> = ({
 }) => {
   const [sourceInput, setSourceInput] = useState('');
   const [activePanel, setActivePanel] = useState<ActiveStudyPanel>(null);
+  const [storedDetailOptions, setStoredDetailOptions, detailOptionsLoaded] = useStoreData(
+    'learn.translation.details',
+    defaultTranslationDetailOptions,
+  );
+  const detailOptions = normalizeTranslationDetailOptions(storedDetailOptions);
 
   const isJapanese = lang === languageCodes.japanese;
 
@@ -104,8 +126,8 @@ export const LearnStudyPanel: React.FC<LearnStudyPanelProps> = ({
     clearCurrent();
     clearGrammarAiError();
     setActivePanel('translation');
-    translate(sourceSentences);
-  }, [clearCurrent, clearGrammarAiError, sourceSentences, translate]);
+    translate(sourceSentences, detailOptions);
+  }, [clearCurrent, clearGrammarAiError, detailOptions, sourceSentences, translate]);
 
   const pickRandomGrammar = useCallback(() => {
     clearResults();
@@ -164,6 +186,22 @@ export const LearnStudyPanel: React.FC<LearnStudyPanelProps> = ({
     [currentStudyEntry?.userData?.examples, onAppendToAnalyzer, onMoveToAnalyzer],
   );
 
+  const enabledRegisterCount = Number(detailOptions.formal)
+    + Number(detailOptions.neutral)
+    + Number(detailOptions.casual);
+
+  const toggleDetailOption = useCallback((key: keyof TranslationDetailOptions) => {
+    const isRegister = key === 'formal' || key === 'neutral' || key === 'casual';
+    if (isRegister && detailOptions[key] && enabledRegisterCount <= 1) {
+      return;
+    }
+
+    void setStoredDetailOptions({
+      ...detailOptions,
+      [key]: !detailOptions[key],
+    });
+  }, [detailOptions, enabledRegisterCount, setStoredDetailOptions]);
+
   const showTranslationResults =
     activePanel === 'translation' && (hasResults || isTranslating || Boolean(translationErrorMessage));
 
@@ -186,7 +224,57 @@ export const LearnStudyPanel: React.FC<LearnStudyPanelProps> = ({
           />
         </MiteiruPanel>
 
-        <MiteiruActionBar>
+        <MiteiruActionBar
+          top={
+            <div className="space-y-1.5">
+              <p className={UI_HINT_TEXT}>Include with translation. Leave these off for a faster result.</p>
+              <div className="flex flex-wrap gap-1.5">
+                {TRANSLATION_REGISTER_TOGGLES.map((option) => {
+                  const enabled = Boolean(detailOptions[option.key]);
+                  const locked = enabled && enabledRegisterCount <= 1;
+                  return (
+                    <button
+                      key={option.key}
+                      type="button"
+                      aria-pressed={enabled}
+                      disabled={!detailOptionsLoaded || isTranslating || locked}
+                      title={locked ? 'Keep at least one style' : undefined}
+                      onClick={() => toggleDetailOption(option.key)}
+                      className={`rounded-lg border px-2 py-1 text-xs font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                        enabled
+                          ? 'border-blue-700 bg-yellow-200 text-blue-900'
+                          : 'border-blue-300 bg-white text-blue-500'
+                      }`}
+                    >
+                      {enabled ? '✓ ' : ''}{option.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {TRANSLATION_NOTE_TOGGLES.map((option) => {
+                  const enabled = Boolean(detailOptions[option.key]);
+                  return (
+                    <button
+                      key={option.key}
+                      type="button"
+                      aria-pressed={enabled}
+                      disabled={!detailOptionsLoaded || isTranslating}
+                      onClick={() => toggleDetailOption(option.key)}
+                      className={`rounded-lg border px-2 py-1 text-xs font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                        enabled
+                          ? 'border-blue-700 bg-yellow-200 text-blue-900'
+                          : 'border-blue-300 bg-white text-blue-500'
+                      }`}
+                    >
+                      {enabled ? '✓ ' : ''}{option.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          }
+        >
           <Button type="primary" size="small" onPress={translateWithAI} disabled={isTranslating}>
             {isTranslating ? 'Translating…' : 'Translate with AI'}
           </Button>
@@ -262,6 +350,8 @@ export const LearnStudyPanel: React.FC<LearnStudyPanelProps> = ({
                 isLoading={isTranslating}
                 errorMessage={translationErrorMessage ?? undefined}
                 pronunciationLabel={pronunciationLabel}
+                detailOptions={detailOptions}
+                loadingSubMessage={getTranslationLoadingSubMessage(detailOptions)}
                 onMoveToAnalyzer={onMoveToAnalyzer}
               />
             )}

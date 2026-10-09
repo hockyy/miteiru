@@ -1,6 +1,10 @@
 /** Renders translation cards or loading/error states. Parent: AITranslationPanel.tsx */
 import React from 'react';
 import {AITranslationResult} from '../../types/aiTranslation';
+import {
+  defaultTranslationDetailOptions,
+  TranslationDetailOptions,
+} from '../../utils/aiTranslationPrompts';
 import {TranslationSentenceCard} from './TranslationSentenceCard';
 import {LearnErrorMessage} from './LearnErrorMessage';
 import {CuteLoadingAnimation} from './CuteLoadingAnimation';
@@ -10,6 +14,8 @@ interface AITranslationResultsProps {
   isLoading?: boolean;
   errorMessage?: string;
   pronunciationLabel: string;
+  detailOptions?: TranslationDetailOptions;
+  loadingSubMessage?: string;
   onMoveToAnalyzer: (text: string) => void;
 }
 
@@ -18,6 +24,8 @@ export const AITranslationResults: React.FC<AITranslationResultsProps> = ({
   isLoading = false,
   errorMessage,
   pronunciationLabel,
+  detailOptions = defaultTranslationDetailOptions,
+  loadingSubMessage = 'Translations, grammar notes, and glossary on the way',
   onMoveToAnalyzer,
 }) => {
   if (errorMessage) {
@@ -28,7 +36,7 @@ export const AITranslationResults: React.FC<AITranslationResultsProps> = ({
     return (
       <CuteLoadingAnimation
         message="Translating your sentences..."
-        subMessage="Translations, grammar notes, and glossary on the way"
+        subMessage={loadingSubMessage}
       />
     );
   }
@@ -46,6 +54,7 @@ export const AITranslationResults: React.FC<AITranslationResultsProps> = ({
           sentence={sentence}
           index={index}
           pronunciationLabel={pronunciationLabel}
+          detailOptions={detailOptions}
           onMoveToAnalyzer={onMoveToAnalyzer}
         />
       ))}

@@ -8,8 +8,11 @@ import { AITranslationResult } from '../types/aiTranslation';
 import {
   buildTranslationSystemPrompt,
   buildTranslationUserPrompt,
+  defaultTranslationDetailOptions,
   getTranslationTargetLang,
   getUnsupportedLangMessage,
+  normalizeTranslationDetailOptions,
+  TranslationDetailOptions,
 } from '../utils/aiTranslationPrompts';
 import { openRouterMessages, streamOpenRouterCompletion } from '../utils/openRouterClient';
 import { parseAiTranslation } from '../utils/parseAiTranslation';
@@ -34,7 +37,11 @@ export function useAiTranslation({
     setErrorMessage(null);
   }, []);
 
-  const translate = useCallback(async (sentences: string[]) => {
+  const translate = useCallback(async (
+    sentences: string[],
+    details: TranslationDetailOptions = defaultTranslationDetailOptions,
+  ) => {
+    const detailOptions = normalizeTranslationDetailOptions(details);
     const nonEmptySentences = sentences.map(s => s.trim()).filter(Boolean);
     const targetLang = getTranslationTargetLang(lang);
 
@@ -72,7 +79,7 @@ export function useAiTranslation({
         openRouterApiKey,
         openRouterModel,
         [
-          { role: 'system', content: buildTranslationSystemPrompt(targetLang) },
+          { role: 'system', content: buildTranslationSystemPrompt(targetLang, detailOptions) },
           { role: 'user', content: buildTranslationUserPrompt(nonEmptySentences) },
         ],
       );
