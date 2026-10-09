@@ -1,4 +1,5 @@
 import {useState} from "react";
+import {rangeFillStyle} from "../../utils/utils";
 
 export const VolumeLogo = [
 
@@ -60,6 +61,7 @@ export const Volume = ({player}) => {
               max={1}
               step={0.02}
               value={volume}
+              style={rangeFillStyle(volume, 0, 1)}
               onChange={event => {
                 setVolume(event.target.valueAsNumber)
                 player.volume(event.target.valueAsNumber)

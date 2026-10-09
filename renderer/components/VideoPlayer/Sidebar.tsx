@@ -9,7 +9,7 @@ import {
 import Toggle from "./Toggle";
 import {Button} from "../Utils/Button";
 import {GistManager} from "../Data/GistManager";
-import {SubtitleMode} from "../../utils/utils";
+import {rangeFillStyle, SubtitleMode} from "../../utils/utils";
 import {SidebarSection, SidebarSettingRow, SidebarShell} from "./SidebarShell";
 import {useExportAllAnkiCards} from "../../hooks/useExportAllAnkiCards";
 import {videoConstants} from "../../utils/constants";
@@ -63,6 +63,7 @@ const SliderRow = ({label, valueLabel, min, max, step, value, onChange}: {
       <span className="text-white/60">{valueLabel}</span>
     </div>
     <input className="slider" type="range" aria-label={label} min={min} max={max} step={step} value={value}
+           style={rangeFillStyle(value, min, max)}
            onChange={(event) => onChange(event.target.valueAsNumber)}/>
   </div>
 );
