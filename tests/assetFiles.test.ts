@@ -52,8 +52,20 @@ test("packaged (gzipped) language assets read the same as the plain ones", async
   assert.equal(readAssetSync(path.join(root, "mandarin/chinese/zh.jieba.txt")).toString("utf8"), "人 10 n\n");
   assert.equal(await readStrokeSvg(path.join(root, "han-character-core/kanji"), "04eba.svg"), svg);
 
-  // Running again (another architecture in the same build) finds nothing left to do.
+  // Running again (another architecture in the same build) finds nothing left to do and keeps the copies.
   assert.equal(compressLanguageAssets(appDirectory).files, 0);
+  await fs.access(jmdictPath + ".gz");
+
+  // A fresh export without kanjidic: its old compressed copy is dropped, jmdict is compressed again.
+  await write("app/language-assets/japanese/dict/kanjidic.json.gz", "stale");
+  await write("app/language-assets/japanese/dict/jmdict.json", jmdict);
+  assert.equal(compressLanguageAssets(appDirectory).files, 1);
+  await assert.rejects(fs.access(path.join(root, "japanese/dict/kanjidic.json.gz")));
+  assert.equal(await readTextAsset(jmdictPath), jmdict);
+});
+
+test("packaging without downloaded language assets compresses nothing instead of failing", () => {
+  assert.equal(compressLanguageAssets(path.join(directory, "no-assets-app")).files, 0);
 });
 
 test("plain assets still read directly, and missing ones fail clearly", async () => {
