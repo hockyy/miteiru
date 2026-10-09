@@ -12,6 +12,7 @@ module.exports = [
       "renderer/.next/**",
       "renderer/public/**",
       "archived/**",
+      "promo/**",
       "resources/**",
       "native/**/bin/**",
       "native/**/obj/**"
