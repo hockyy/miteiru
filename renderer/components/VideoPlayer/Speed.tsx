@@ -4,11 +4,15 @@ const mappingSpeedFunction = (val) => (val <= 0 ? 1 / (1 - val) : (val + 1));
 export const Speed = ({player}) => {
 
   const [speed, setSpeed] = useState(0);
+  const resetSpeed = () => {
+    player.playbackRate(1);
+    setSpeed(0);
+  };
   return (
-      <div className={"animation flex flex-row w-fit gap-4 items-center cursor-pointer px-4"}>
+      <div className={"animation flex flex-row w-fit gap-2 lg:gap-4 items-center cursor-pointer px-2 lg:px-4"}>
         {player != null &&
-            <div
-                className={"h-5 justify-self-end"}>{mappingSpeedFunction(speed).toPrecision(2)}×</div>}
+            <button className={"h-5 justify-self-end whitespace-nowrap"} title="Reset to normal speed"
+                    onClick={resetSpeed}>{mappingSpeedFunction(speed).toPrecision(2)}×</button>}
         <div className={"flex w-20 lg:w-32 justify-center items-center"}>
           <input
               className={"slider"}
@@ -25,12 +29,8 @@ export const Speed = ({player}) => {
               }}
           />
         </div>
-        <button className={"h-5 justify-self-end"} title="Reset to normal speed" onClick={() => {
-          setSpeed(() => {
-            player.playbackRate(1);
-            return 0
-          })
-        }}>
+        {/* A label, and the same reset as the rate, where there is room for it. */}
+        <button className={"h-5 justify-self-end hidden lg:block"} title="Reset to normal speed" onClick={resetSpeed}>
           Speed
         </button>
       </div>
