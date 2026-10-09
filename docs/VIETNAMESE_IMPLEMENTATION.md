@@ -154,8 +154,8 @@ analyzed for learning) or the secondary one (shown as plain reference text).
 ### Rendering Integration
 
 Tokens are classified by `getSubtitleTokenPresentation` in `subtitleLanguageSupport.ts`. A token
-with a `separation` array but no `hiragana`, `pinyin`, or `jyutping` is Vietnamese; it is rendered
-with the `ChineseSentence` component and its ruby reading is the token's learning-mode meaning:
+with a `separation` array but no `hiragana`, `pinyin`, or `jyutping` is Vietnamese and is rendered
+with the `ChineseSentence` component:
 
 ```typescript
 {
@@ -163,6 +163,10 @@ with the `ChineseSentence` component and its ruby reading is the token's learnin
   presentation: {sentenceKind: "chinese", getRubyReading: (part) => part?.meaning || ""}
 }
 ```
+
+Vietnamese parts carry no `meaning`, so there is no per-part ruby reading (and the ruby copy, C,
+has empty readings). The learning-mode gloss is drawn under each word from the line's `meaning`
+array, passed to the sentence component as `wordMeaning`.
 
 ### Learning Mode Integration
 

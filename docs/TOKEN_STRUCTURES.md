@@ -273,7 +273,7 @@ as written in the subtitle (punctuation and case kept). Parts carry no `meaning`
 - **Japanese**: `hiragana`, `romaji` in separation
 - **Chinese**: `pinyin` at token and separation level
 - **Cantonese**: `jyutping` at token and separation level  
-- **Vietnamese**: `meaning` at token level (learning mode shows the line's glosses as the reading)
+- **Vietnamese**: `meaning` at token level only; in learning mode a short gloss from the line's `meaning` array is drawn under each word
 
 ### Optional Fields
 - `basicForm` - Lemma/dictionary form (Japanese)
