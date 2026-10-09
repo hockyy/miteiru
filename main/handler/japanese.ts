@@ -141,13 +141,16 @@ class Japanese {
 
   static registerHandlers() {
     ipcMain.handle('queryJapanese', async (event, query, limit) => {
-      let matches = []
       try {
-        matches = matches.concat(await readingBeginning(Japanese.Dict.db, query, limit));
-        matches = matches.concat(await kanjiBeginning(Japanese.Dict.db, query));
-        // matches = matches.concat(await readingAnywhere(JMDict.db, query, limit));
-        // matches = matches.concat(await kanjiAnywhere(JMDict.db, query));
-        return rankJapaneseMatches(matches, query, this.Dict.tags ?? {});
+        const db = Japanese.Dict.db;
+        // Every word read exactly as the query (`<reading>-<id>` keys), `limit` words whose reading starts
+        // with it, and every word whose spelling starts with it; the ranking puts exact matches first.
+        const matches = await Promise.all([
+          readingBeginning(db, `${query}-`),
+          readingBeginning(db, query, limit),
+          kanjiBeginning(db, query)
+        ]);
+        return rankJapaneseMatches(matches.flat(), query);
       } catch (e) {
         console.error(e)
         return []
@@ -159,7 +162,7 @@ class Japanese {
     ipcMain.handle('learningGlossesJapanese', async (_event, requests) => {
       const db = this.Dict.db;
       if (!db) return [];
-      return glossAll(requests, (request) => japaneseLearningGloss(db, this.Dict.tags ?? {}, request));
+      return glossAll(requests, (request) => japaneseLearningGloss(db, request));
     })
 
     ipcMain.handle('queryKanji', async (event, query) => {
