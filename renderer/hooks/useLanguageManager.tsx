@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useStoreData } from './useStoreData';
 import {languageModes} from "../languages/manifest";
 
@@ -30,6 +30,14 @@ const REMOVED_MODE_REPLACEMENTS: Record<number, number> = {1: 0};
 const useLanguageManager = () => {
   const [storedLanguageMode, setLastLanguageMode] = useStoreData('app.lastLanguageMode', null);
   const lastLanguageMode = REMOVED_MODE_REPLACEMENTS[storedLanguageMode] ?? storedLanguageMode;
+  // Set once when a removed mode is migrated, so the home screen can say why the selection changed.
+  const [migratedFromRemovedMode, setMigratedFromRemovedMode] = useState(false);
+
+  useEffect(() => {
+    if (!(storedLanguageMode in REMOVED_MODE_REPLACEMENTS)) return;
+    setMigratedFromRemovedMode(true);
+    setLastLanguageMode(REMOVED_MODE_REPLACEMENTS[storedLanguageMode]);
+  }, [storedLanguageMode, setLastLanguageMode]);
 
   const setLanguage = useCallback((modeId: number | null) => {
     setLastLanguageMode(modeId);
@@ -59,6 +67,7 @@ const useLanguageManager = () => {
     getLanguageById,
     hasLastLanguage,
     getLastLanguage,
+    migratedFromRemovedMode,
     languageModes: LANGUAGE_MODES
   };
 };
