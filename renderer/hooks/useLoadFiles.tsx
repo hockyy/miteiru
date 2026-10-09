@@ -9,7 +9,7 @@ import {SubtitlePreprocessOptions} from "../types/subtitlePreprocess";
 import {v4 as uuidv4} from 'uuid';
 import {TOAST_TIMEOUT} from "../components/VideoPlayer/Toast";
 import {isLocalPath, isSubtitle, isVideo, isYoutube} from "../utils/utils";
-import {findPositionDeltaInFolder} from "../utils/folderUtils";
+import {findPositionDeltaInFolder, isTempSubtitleCopy} from "../utils/folderUtils";
 import {useSerialRunner} from "./useSerialRunner";
 import {isLearningSubtitleLanguage} from "../components/Subtitle/subtitleLanguageSupport";
 import {
@@ -284,28 +284,29 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     }
   }, [loadEmbeddedSubtitle]);
 
+  /**
+   * Loads the video `delta` files away in the same folder and moves each subtitle the same number of
+   * files along in its own folder; true if there was such a video. With none, the subtitles stay.
+   */
   const onVideoChangeHandler = useCallback(async (delta: number = 1) => {
-    if (!isLocalPath(videoSrc.path)) return;
-    if (videoSrc.path) {
-      const nextVideo = findPositionDeltaInFolder(videoSrc.path, delta);
-      if (await nextVideo !== '') {
-        await onLoadFiles([{path: nextVideo}]);
-      } else {
-        setEnableSeeker(true);
-      }
+    if (!videoSrc.path || !isLocalPath(videoSrc.path)) return false;
+    const nextVideo = await findPositionDeltaInFolder(videoSrc.path, delta);
+    if (nextVideo === '') {
+      setEnableSeeker(true);
+      return false;
     }
-    if (primarySub.path) {
-      const nextPrimary = findPositionDeltaInFolder(primarySub.path, delta);
-      if (await nextPrimary !== '') {
-        await onLoadFiles([{path: nextPrimary}]);
-      }
+    await onLoadFiles([{path: nextVideo}]);
+    const subtitles = [primarySub.path, secondarySub.path].filter(Boolean);
+    // A subtitle re-encoded to UTF-8 is a copy in the temp folder, whose neighbours are unrelated
+    // files; use the subtitles named after the next video instead, as a dropped video does.
+    if (subtitles.some(isTempSubtitleCopy)) {
+      for (const path of await window.electronAPI.checkSubtitleFile(nextVideo)) await onLoadFiles([{path}]);
     }
-    if (secondarySub.path) {
-      const nextSecondary = findPositionDeltaInFolder(secondarySub.path, delta);
-      if (await nextSecondary !== '') {
-        await onLoadFiles([{path: nextSecondary}]);
-      }
+    for (const path of subtitles.filter((subtitle) => !isTempSubtitleCopy(subtitle))) {
+      const nextSubtitle = await findPositionDeltaInFolder(path, delta);
+      if (nextSubtitle !== '') await onLoadFiles([{path: nextSubtitle}]);
     }
+    return true;
   }, [videoSrc.path, primarySub.path, secondarySub.path, onLoadFiles, setEnableSeeker]);
 
   useEffect(() => {

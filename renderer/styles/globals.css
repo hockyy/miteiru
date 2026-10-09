@@ -175,6 +175,21 @@ video-js {
   opacity: 1;
 }
 
+/* Player controls fade out while a video plays and the mouse rests (useIdleControls). */
+.autohide {
+  transition: opacity 0.3s ease;
+}
+
+:root[data-controls-idle] .autohide {
+  opacity: 0;
+  pointer-events: none;
+}
+
+:root[data-controls-idle],
+:root[data-controls-idle] * {
+  cursor: none !important;
+}
+
 /*Play Pause Styling*/
 
 .playpause {

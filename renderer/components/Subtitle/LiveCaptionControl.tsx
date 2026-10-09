@@ -11,6 +11,7 @@ interface LiveCaptionControlProps {
   refreshIntervalMs: number;
   onRefreshIntervalChange: (refreshIntervalMs: number) => void;
   onToggle: () => void;
+  className?: string;
 }
 
 export const LiveCaptionControl = memo(({
@@ -22,7 +23,8 @@ export const LiveCaptionControl = memo(({
   debugMessages,
   refreshIntervalMs,
   onRefreshIntervalChange,
-  onToggle
+  onToggle,
+  className = ""
 }: LiveCaptionControlProps) => {
   const statusText = useMemo(() => error
     ? "Live Captions error"
@@ -73,7 +75,7 @@ export const LiveCaptionControl = memo(({
   if (!supported) return null;
 
   return (
-    <div className="group fixed bottom-20 right-4 z-20 pb-2 text-left">
+    <div className={`group fixed bottom-20 right-4 z-20 pb-2 text-left ${className}`}>
       <button
         type="button"
         onClick={onToggle}

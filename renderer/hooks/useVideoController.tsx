@@ -21,8 +21,24 @@ export const useVideoPlayingToggle = (player, metadata) => {
       }
     }
   }, [isPlaying, metadata, player]);
+  // Follow the player when something else plays or pauses it (media keys, a headset, the end of
+  // the video), so the button shows the real state and one press toggles.
+  useEffect(() => {
+    if (!player) return;
+    const onPlay = () => setIsPlaying(1);
+    const onPause = () => setIsPlaying(0);
+    player.on('play', onPlay);
+    player.on('pause', onPause);
+    return () => {
+      player.off('play', onPlay);
+      player.off('pause', onPause);
+    };
+  }, [player]);
   return {isPlaying, setIsPlaying, togglePlay};
 }
+
+// Elements that Space activates itself; toggling playback as well would do two things at once.
+const SPACE_ACTIVATED = 'button, a[href], summary, select, input, [role="button"], [role="checkbox"], [role="switch"]';
 
 export const useVideoKeyboardControls = (togglePlay, deltaTime, setPrimaryShift,
                                          setSecondaryShift, setInfo, backToHead, setIsPlaying) => {
@@ -35,6 +51,10 @@ export const useVideoKeyboardControls = (togglePlay, deltaTime, setPrimaryShift,
       const plainKey = !event.ctrlKey && !event.metaKey && !event.altKey;
       if (!plainKey && !event.code.startsWith("Bracket")) return;
       if (event.code === "KeyE") {
+        togglePlay()
+      } else if (event.code === "Space") {
+        if (event.target instanceof Element && event.target.closest(SPACE_ACTIVATED)) return;
+        event.preventDefault();
         togglePlay()
       } else if (event.code === "ArrowLeft") {
         deltaTime(-2)

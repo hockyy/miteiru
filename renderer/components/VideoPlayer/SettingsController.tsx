@@ -1,7 +1,7 @@
 import {Cogs} from "./Icons";
 
 export const SettingsController = ({setShowSidebar}) => {
-  return <button onClick={() => {
+  return <button aria-label="Settings" title="Settings (X)" onClick={() => {
     setShowSidebar(old => !old)
   }
   }>

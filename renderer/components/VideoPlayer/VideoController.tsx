@@ -44,7 +44,7 @@ export const VideoController = ({
                     eagerRender={true}
                     expanded={showController}>
       <div className={"flex flex-row items-center justify-between pt-1"}>
-        <div className={"flex w-1/3 hidden lg:flex"}>
+        <div className={"flex w-1/3 hidden md:flex"}>
           <Volume player={player}/>
           <div className={"flex flex-row px-4 justify-end content-end w-32 animation"}>
             <div><PlaybackTime clock={clock}/></div>
@@ -55,33 +55,36 @@ export const VideoController = ({
           </div>
 
         </div>
-        <div className={"flex w-full justify-center items-center gap-4 lg:w-1/3"}>
-          <button onClick={() => step(-1)}
+        <div className={"flex w-full justify-center items-center gap-4 md:w-1/3"}>
+          <button onClick={() => step(-1)} aria-label="Previous video" title="Previous video in the folder"
                   className={"flex flex-row items-center gap-1 animation h-5"}>
             {StepLeft}
           </button>
           <button onClick={() => {
             deltaTime(-10)
-          }} className={"flex flex-row items-center gap-1 animation h-5"}>
+          }} aria-label="Back 10 seconds" title="Back 10 seconds"
+                  className={"flex flex-row items-center gap-1 animation h-5"}>
             {ArrowLeft} 10
           </button>
-          <div
+          <button
               className={"animation justify-self-center place-self-center rounded-lg p-1 m-3 w-fit h-fit playpause " + videoConstants.playingClass[isPlaying]}
+              aria-label={isPlaying ? "Pause" : "Play"} title={isPlaying ? "Pause (Space)" : "Play (Space)"}
               onClick={togglePlay}>
             <div className="button"></div>
-          </div>
+          </button>
           <button onClick={() => {
             deltaTime(+10)
-          }} className={"flex flex-row items-center gap-1 animation h-5"}>
+          }} aria-label="Forward 10 seconds" title="Forward 10 seconds"
+                  className={"flex flex-row items-center gap-1 animation h-5"}>
             10 {ArrowRight}
           </button>
-          <button onClick={() => step(1)}
+          <button onClick={() => step(1)} aria-label="Next video" title="Next video in the folder"
                   className={"flex flex-row items-center gap-1 animation h-5"}>
             {StepRight}
           </button>
         </div>
-        <div className={"flex w-1/3 justify-end hidden lg:flex gap-2"}>
-          <button onClick={backToHead}
+        <div className={"flex w-1/3 justify-end hidden md:flex gap-2"}>
+          <button onClick={backToHead} aria-label="Repeat line" title="Repeat the current line (R)"
                   className={"flex flex-row items-center gap-1 animation h-5"}>
             {RepeatSubtitle}
           </button>
