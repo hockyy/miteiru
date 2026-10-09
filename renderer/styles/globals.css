@@ -250,23 +250,37 @@ button {
 
 /* Volume styling */
 
+/* Range inputs on the player's dark panels (volume, speed, video settings). They match the seek bar:
+   the part up to the value is blue. Set --fill (a percentage) on the input to draw it. */
 .slider {
   -webkit-appearance: none;
+  appearance: none;
   width: 100%;
-  height: 5px;
-  border-radius: 5px;
-  background: #d3d3d3;
+  height: 4px;
+  border-radius: 9999px;
+  background:
+    linear-gradient(90deg, #7dd3fc, #3b82f6) 0 0 / var(--fill, 0%) 100% no-repeat,
+    rgb(255 255 255 / 0.2);
   outline: none;
+  cursor: pointer;
 }
 
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 15px;
-  height: 15px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: #ffffff;
+  box-shadow: 0 0 0 3px #3b82f6;
   cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.slider:hover::-webkit-slider-thumb,
+.slider:focus-visible::-webkit-slider-thumb {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 3px #3b82f6, 0 0 12px 2px rgb(59 130 246 / 0.6);
 }
 
 
@@ -459,13 +473,22 @@ rt {
 .ruby-under-reading > rt:empty {
   display: none;
 }
-/* Video seek bar (components/VideoPlayer/SeekBar.tsx). Moving parts are transformed, never resized. */
+/* The player's bottom panel (VideoController): darkest at the bottom, fading out above the seek bar. */
+.player-panel {
+  background-image: linear-gradient(to top, rgb(2 6 23 / 0.9), rgb(15 23 42 / 0.72) 55%, rgb(15 23 42 / 0));
+}
+
+/* Video seek bar (components/VideoPlayer/SeekBar.tsx). Moving parts are transformed, never resized.
+   It shares the player's dark panel; the brand blues mark progress, as in the rest of Miteiru. */
 .seek-bar {
+  --seek-blue: #3b82f6;
+  --seek-sky: #7dd3fc;
   position: relative;
-  height: 18px;
+  height: 20px;
   cursor: pointer;
   touch-action: none;
   user-select: none;
+  outline: none;
 }
 
 .seek-bar__track {
@@ -473,11 +496,12 @@ rt {
   left: 0;
   right: 0;
   top: 50%;
-  height: 3px;
+  height: 4px;
   transform: translateY(-50%);
   overflow: hidden;
-  background-color: rgb(255 255 255 / 0.2);
-  transition: height 0.1s;
+  border-radius: 9999px;
+  background-color: rgb(255 255 255 / 0.16);
+  transition: height 0.15s ease;
 }
 
 .seek-bar__fill {
@@ -487,17 +511,26 @@ rt {
   transform: scaleX(0);
 }
 
+.seek-bar__buffered {
+  background-color: rgb(255 255 255 / 0.12);
+}
+
+/* Where the primary subtitle has lines: shows at a glance where the talking is. */
+.seek-bar__cues {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: rgb(186 230 253 / 0.38);
+}
+
 .seek-bar__hover {
-  background-color: rgb(255 255 255 / 0.5);
+  background-color: rgb(255 255 255 / 0.22);
   opacity: 0;
 }
 
-.seek-bar__buffered {
-  background-color: rgb(255 255 255 / 0.3);
-}
-
 .seek-bar__progress {
-  background-color: #f00;
+  background-image: linear-gradient(90deg, var(--seek-sky), var(--seek-blue));
 }
 
 .seek-bar__thumb-rail {
@@ -509,28 +542,54 @@ rt {
 .seek-bar__thumb {
   position: absolute;
   top: 3px;
-  left: -6px;
-  width: 12px;
-  height: 12px;
+  left: -7px;
+  width: 14px;
+  height: 14px;
   border-radius: 9999px;
-  background-color: #f00;
+  background-color: #fff;
+  box-shadow: 0 0 0 3px var(--seek-blue), 0 0 14px 2px rgb(59 130 246 / 0.7);
   opacity: 0;
-  transform: scale(0.4);
-  transition: transform 0.2s, opacity 0.2s;
+  transform: scale(0.3);
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s;
 }
 
 .seek-bar__tooltip {
   position: absolute;
   left: 0;
-  bottom: 18px;
-  padding: 5px 10px;
-  font-size: 16px;
-  line-height: 18px;
-  white-space: nowrap;
-  color: #ddd;
-  text-shadow: 1px 1px 1px #000;
+  bottom: 26px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  max-width: min(420px, 100%);
+  padding: 6px 12px;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 12px;
+  background-color: rgb(15 23 42 / 0.92);
+  box-shadow: 0 8px 24px -8px rgb(0 0 0 / 0.6);
+  color: #fff;
   pointer-events: none;
   opacity: 0;
+  transition: opacity 0.12s;
+}
+
+.seek-bar__tooltip-time {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 16px;
+  color: var(--seek-sky);
+  font-variant-numeric: tabular-nums;
+}
+
+.seek-bar__tooltip-line {
+  font-family: var(--miteiru-subtitle-font, inherit);
+  font-size: 14px;
+  line-height: 19px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .seek-bar:hover .seek-bar__hover,
@@ -540,9 +599,14 @@ rt {
 }
 
 .seek-bar:hover .seek-bar__thumb,
-.seek-bar[data-dragging] .seek-bar__thumb {
+.seek-bar[data-dragging] .seek-bar__thumb,
+.seek-bar:focus-visible .seek-bar__thumb {
   opacity: 1;
   transform: scale(1);
+}
+
+.seek-bar:focus-visible .seek-bar__track {
+  box-shadow: 0 0 0 2px rgb(125 211 252 / 0.6);
 }
 
 @media (hover: hover) {

@@ -418,7 +418,9 @@ function Video() {
                 enableSeeker={enableSeeker}
                 setEnableSeeker={setEnableSeeker}
                 onVideoChangeHandler={onVideoChangeHandler}
-                backToHead={backToHead}/>}
+                backToHead={backToHead}
+                primaryLines={primarySub.lines}
+                primaryShift={primaryShift}/>}
           </div>
           {tokenizerMode !== '' && <MiteiruDropzone onDrop={onLoadFiles} deltaTime={deltaTime}/>}
         </div>

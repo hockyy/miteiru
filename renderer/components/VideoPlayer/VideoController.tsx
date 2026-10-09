@@ -22,7 +22,9 @@ export const VideoController = ({
                                   enableSeeker,
                                   setEnableSeeker,
                                   onVideoChangeHandler,
-                                  backToHead
+                                  backToHead,
+                                  primaryLines,
+                                  primaryShift
                                 }) => {
   const step = useCallback((delta) => {
     if (enableSeeker) {
@@ -41,14 +43,16 @@ export const VideoController = ({
   const keepFocusOff = useCallback((event: React.MouseEvent) => {
     if (event.target instanceof Element && event.target.closest("button")) event.preventDefault();
   }, []);
-  return <div onMouseDown={keepFocusOff}>
-    <div className={"w-[100vw] h-14 content-center -mb-4"}>
-      <SeekBar clock={clock} durationMs={duration} onSeek={timeSeekerHandler} getBufferedEnd={getBufferedEnd}/>
+  // One panel: the seek bar sits inside it, inset to line up with the controls under it.
+  return <div onMouseDown={keepFocusOff} className={"player-panel w-[100vw] pt-6"}>
+    <div className={"px-4"}>
+      <SeekBar clock={clock} durationMs={duration} onSeek={timeSeekerHandler} getBufferedEnd={getBufferedEnd}
+               lines={primaryLines} shiftMs={primaryShift}/>
     </div>
-    <SmoothCollapse className={"bg-gray-800/70 h-fit unselectable"}
+    <SmoothCollapse className={"h-fit unselectable"}
                     eagerRender={true}
                     expanded={showController}>
-      <div className={"flex flex-row items-center justify-between pt-1"}>
+      <div className={"flex flex-row items-center justify-between pb-1"}>
         <div className={"flex w-1/3 hidden md:flex"}>
           <Volume player={player}/>
           <div className={"flex flex-row px-2 lg:px-4 justify-end content-end lg:w-32 whitespace-nowrap animation"}>

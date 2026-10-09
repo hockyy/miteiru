@@ -131,6 +131,8 @@ export class Line {
   timeStart: number;
   timeEnd: number;
   content: any[] | string;
+  // The line as written; `content` becomes tokens once analysed, which drop spaces between words.
+  readonly text: string;
   meaning: string[];
   static removeHearingImpairedFlag: boolean;
 
@@ -142,6 +144,7 @@ export class Line {
     } else {
       this.content = strContent;
     }
+    this.text = this.content as string;
   }
 
   async fillContentSeparations(tokenizeMiteiru: TokenizeMiteiru) {
