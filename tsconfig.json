@@ -23,6 +23,7 @@
     "node_modules",
     "renderer/next.config.ts",
     "app",
-    "dist"
+    "dist",
+    "promo"
   ]
 }
