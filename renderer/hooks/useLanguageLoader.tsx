@@ -1,6 +1,8 @@
 import { useCallback, useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import useLanguageManager from './useLanguageManager';
+import { languageModes as manifestLanguageModes } from '../languages/manifest';
+import { setLearningLanguage } from '../utils/fonts';
 
 interface LanguageCheckResult {
   ok: number;
@@ -45,6 +47,11 @@ export const useLanguageLoader = () => {
       setTokenizerMode(lastLanguageMode);
     }
   }, [lastLanguageMode, languageModes]);
+
+  // Home's Japanese and Chinese text uses the fonts of the selected language, as the other pages do.
+  useEffect(() => {
+    setLearningLanguage(manifestLanguageModes.find((mode) => mode.id === tokenizerMode)?.languageCode ?? '');
+  }, [tokenizerMode]);
 
   const selectTokenizerMode = useCallback((modeId: number) => {
     setTokenizerMode(modeId);
