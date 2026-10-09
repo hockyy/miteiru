@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from "react";
 import {ChineseSentence, JapaneseSentence, PlainSentence} from "./Sentence";
 import {CJKStyling} from "../../utils/CJKStyling";
-import {getLyricsWindow, Line, SubtitleContainer} from "./DataStructures";
+import {getLyricsWindow, Line, NO_MEANING, SubtitleContainer} from "./DataStructures";
 import {buildRubyCopyHtml, getSubtitleTokenPresentation} from "./subtitleLanguageSupport";
 import {adjustTimeWithShift} from "../../utils/utils";
 import type {PlaybackClock} from "../../utils/playbackClock";
@@ -24,6 +24,9 @@ interface ScrollingLyricsProps {
   getLearningStateClass?: (newMeaning: string) => string;
   setExternalContent?: (content: any[]) => void;
   setRubyCopyContent: any;
+  // The current line's [start, end] (shifted ms), [] between lines; back-to-head and auto-pause use it.
+  timeCache?: number[];
+  setTimeCache?: (cache: number[]) => void;
   linesVisible?: number;
   currentLinePosition?: number;
 }
@@ -31,9 +34,6 @@ interface ScrollingLyricsProps {
 const Measurement = {
   lineHeight : 100
 }
-
-// Shared so an unchanged line keeps the same identity (and does not re-render).
-const NO_MEANING: string[] = [];
 
 interface LyricsWindow {
   // Index (in the subtitle) of the first visible line.
@@ -58,6 +58,8 @@ export const ScrollingLyrics = ({
   getLearningStateClass = () => '',
   setExternalContent,
   setRubyCopyContent,
+  timeCache,
+  setTimeCache,
   linesVisible = 3,
   currentLinePosition = 1
 }: ScrollingLyricsProps) => {
@@ -66,9 +68,16 @@ export const ScrollingLyrics = ({
 
   // Runs on every clock tick; re-renders only when the window moves or a visible line gets tokens or glosses.
   useEffect(() => {
+    let reportedCache = timeCache;
     const update = () => {
       const {start, current} = getLyricsWindow(subtitle.lines, adjustTimeWithShift(clock.get(), shift), linesVisible, currentLinePosition);
       const visible = (subtitle.lines ?? []).slice(start, start + linesVisible);
+      const currentLine = current >= 0 ? visible[current] : null;
+      const nextCache = currentLine ? [currentLine.timeStart, currentLine.timeEnd] : [];
+      if (setTimeCache && !(reportedCache?.length === nextCache.length && reportedCache.every((time, index) => time === nextCache[index]))) {
+        reportedCache = nextCache;
+        setTimeCache(nextCache);
+      }
       const shown = shownRef.current;
       if (shown.start === start && shown.current === current && sameLines(shown.lines, visible)) return;
 
@@ -91,8 +100,13 @@ export const ScrollingLyrics = ({
       }
     };
     update();
-    return clock.subscribe(update);
-  }, [clock, shift, subtitle, linesVisible, currentLinePosition, setExternalContent]);
+    const unsubscribeClock = clock.subscribe(update);
+    const unsubscribeAnalysis = subtitle.onChange?.(update);
+    return () => {
+      unsubscribeClock();
+      unsubscribeAnalysis?.();
+    };
+  }, [clock, shift, subtitle, linesVisible, currentLinePosition, setExternalContent, timeCache, setTimeCache]);
 
   return (
     <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-10">

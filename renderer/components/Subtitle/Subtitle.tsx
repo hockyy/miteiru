@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useRef, useState} from "react";
-import {findLineIndexAt, SubtitleContainer} from "./DataStructures";
+import {findLineIndexAt, NO_MEANING, SubtitleContainer} from "./DataStructures";
 import {ChineseSentence, JapaneseSentence, PlainSentence} from "./Sentence";
 import {CJKStyling, defaultSecondarySubtitleStyling} from "../../utils/CJKStyling";
 import {adjustTimeWithShift} from "../../utils/utils";
@@ -12,9 +12,6 @@ interface CurrentSubtitleLine {
   content: any[] | string;
   meaning: any[];
 }
-
-// Shared so an unchanged empty line keeps the same identity (and does not re-render).
-const NO_MEANING: any[] = [];
 
 const emptySubtitleLine: CurrentSubtitleLine = {
   content: '',
@@ -68,7 +65,12 @@ const useCurrentSubtitleLine = ({
       }
     };
     update();
-    return clock?.subscribe(update);
+    const unsubscribeClock = clock?.subscribe(update);
+    const unsubscribeAnalysis = subtitle.onChange?.(update);
+    return () => {
+      unsubscribeClock?.();
+      unsubscribeAnalysis?.();
+    };
   }, [clock, currentTime, setTimeCache, shift, subtitle, timeCache]);
 
   return line;
