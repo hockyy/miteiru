@@ -1,10 +1,13 @@
 import assert from "node:assert/strict";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import {test} from "node:test";
-import type {JmdictWord} from "../main/dictionary/jmdictDb";
-import {rankJapaneseMatches} from "../main/handler/languages/learningGlosses";
+import {readingBeginning, setupJmdict, type JmdictWord} from "../main/dictionary/jmdictDb";
+import {rankJapaneseMatches, searchJapanese} from "../main/handler/languages/learningGlosses";
 
-// Entries copied from JMdict, trimmed to what the ranking reads. A trailing * marks a common
-// spelling or reading; each sense is its parts of speech.
+// Entries trimmed to what the ranking reads; those with seven-digit ids are copied from JMdict. A
+// trailing * marks a common spelling or reading; each sense is its parts of speech.
 const word = (id: string, kanji: string[], kana: string[], senses: string[][]): JmdictWord => {
   const element = (text: string) => ({common: text.endsWith("*"), text: text.replace(/\*$/, ""), tags: []});
   return {
@@ -113,11 +116,21 @@ test("a kanji query skips affixes and counters, then keeps JMdict's order", () =
 });
 
 test("a word whose main spelling is the query beats one that merely has it as a variant", () => {
-  // Both are common spellings of 所, but only 2 is spelled 所 first; JMdict order alone would pick 1.
+  // 尤も is a rare spelling of 最も "most" and the only spelling of 尤も "but then"; neither 尤も is
+  // common, and JMdict order alone would pick 最も.
   assertFirstInAnyOrder([
-    word("1", ["其処*", "所*"], ["そこ*"], [["pn"]]),
-    word("2", ["所*"], ["ところ*"], [["n"]])
-  ], "所", "2");
+    word("1293700", ["最も*", "尤も"], ["もっとも*", "もとも"], [["adv"]]),
+    word("1535810", ["尤も"], ["もっとも*"], [["conj"], ["adj-na", "n"]])
+  ], "尤も", "1535810");
+});
+
+test("among equally good matches the shorter headword comes first, then JMdict order", () => {
+  const prefixed = [
+    word("1", ["人工知能*"], ["じんこうちのう*"], [["n"]]),
+    word("2", ["人形*"], ["にんぎょう*"], [["n"]]),
+    word("3", ["人間*"], ["にんげん*"], [["n"]])
+  ];
+  assert.deepEqual(rankJapaneseMatches(prefixed, "人").map(({id}) => id), ["2", "3", "1"]);
 });
 
 test("exact matches come before longer words that start with the query", () => {
@@ -138,4 +151,43 @@ test("duplicates are dropped and remaining ties go to the lower JMdict id", () =
   assert.deepEqual(rankJapaneseMatches([], "上"), []);
   // An entry with no senses or readings does not throw.
   assert.equal(rankJapaneseMatches([{id: "9", kanji: [], kana: [], sense: []}], "x").length, 1);
+});
+
+test("searchJapanese reads every exact reading, then `limit` longer ones and every spelling", async () => {
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), "miteiru-search-test-"));
+  const file = path.join(directory, "jmdict.json");
+  await fs.writeFile(file, JSON.stringify({
+    version: "1", dictDate: "2026-01-01", dictRevisions: [], tags: {},
+    words: [
+      // いい: five archaic words index before the common one.
+      word("2571360", ["怡々"], ["いい"], [["adj-t", "adv-to"]]),
+      word("2672300", ["謂"], ["いい"], [["n"]]),
+      word("2672310", ["飯"], ["いい"], [["n"]]),
+      word("2672320", ["易々"], ["いい"], [["adj-t", "adv-to"]]),
+      word("2672330", ["唯々"], ["いい"], [["adj-t", "adv-to"]]),
+      word("2820690", [], ["いい*"], [["adj-ix"], ["adj-ix"], ["adj-ix"], ["adj-ix"]]),
+      word("1188430", [], ["いいえ*"], [["int"]]),
+      word("1188380", ["好い加減*"], ["いいかげん*"], [["adj-na"]]),
+      word("1580640", ["人*"], ["ひと*"], [["n"]]),
+      word("1366410", ["人*"], ["じん*"], [["suf"]]),
+      word("1583000", ["人形*"], ["にんぎょう*"], [["n"]])
+    ]
+  }), "utf8");
+  const {db} = await setupJmdict(path.join(directory, "jmdict-db"), file);
+  try {
+    const ids = async (query: string, limit?: number) => (await searchJapanese(db, query, limit)).map(({id}) => id);
+    // The first five reading matches, all the old lookup read, miss the common いい.
+    assert.ok(!(await readingBeginning(db, "いい", 5)).some(({id}) => id === "2820690"));
+    const withOneLonger = await ids("いい", 1);
+    assert.equal(withOneLonger[0], "2820690");
+    assert.equal(withOneLonger.length, 7);
+    assert.ok(withOneLonger.includes("1188430"), "one longer reading besides the exact ones");
+    assert.equal((await ids("いい", 0)).length, 6);
+    assert.equal((await ids("いい")).length, 8);
+    assert.deepEqual(await ids("人", 5), ["1580640", "1366410", "1583000"]);
+    assert.deepEqual(await ids("ない", 5), []);
+  } finally {
+    await db.close();
+    await fs.rm(directory, {recursive: true, force: true});
+  }
 });

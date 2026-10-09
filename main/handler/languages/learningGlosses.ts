@@ -22,16 +22,15 @@ const GRAMMAR_POS = new Set(["pn", "aux", "aux-v", "aux-adj", "cop"]);
  * Orders dictionary matches for a query, the word most likely meant first:
  * 1. spelled or read exactly as the query, 2. that exact spelling or reading is common,
  * 3. a standalone word rather than an affix or counter (人 → ひと, not じん "-ian"),
- * 4. the query is the word's main spelling (所 as ところ, not as a spelling of 其処),
+ * 4. the query is the word's main spelling (尤も "but then", not 最も "most" also spelled 尤も),
  * 5. any spelling or reading is common.
  * Then, for kana queries, words with a grammar use (いる → 居る, くれる → 呉れる) and the most
- * senses (とる → 取る, こと → 事); for kanji queries, JMdict order, which lists the native word
- * first (心 → こころ, 金 → かね); then the shorter headword. Duplicates are dropped.
+ * senses (とる → 取る, こと → 事); then the shorter headword (人形 before 人工知能); then JMdict
+ * order, which lists the native word first (心 → こころ, 金 → かね). Duplicates are dropped.
  * Measured on 167 frequent lookups: scripts/evaluateJmdictRanking.ts.
  */
 export const rankJapaneseMatches = (matches: JmdictWord[], query: string): JmdictWord[] => {
-  const seen = new Set<string>();
-  const unique = matches.filter((word) => !seen.has(word.id) && Boolean(seen.add(word.id)));
+  const unique = [...new Map(matches.map((word) => [word.id, word])).values()];
   const kanaQuery = isKana(query);
   const score = (word: JmdictWord): number[] => {
     const elements = [...word.kanji, ...word.kana];
@@ -47,17 +46,15 @@ export const rankJapaneseMatches = (matches: JmdictWord[], query: string): Jmdic
       mainSpelling ? 1 : 0,
       elements.some((element) => element.common) ? 1 : 0,
       kanaQuery && grammar ? 1 : 0,
-      kanaQuery ? word.sense.length : -Number(word.id),
-      kanaQuery ? -Number(word.id) : 0,
-      -Math.min(...elements.map((element) => element.text.length))
+      kanaQuery ? word.sense.length : 0,
+      -Math.min(...elements.map((element) => element.text.length)),
+      -Number(word.id)
     ];
   };
-  const scored = unique.map((word, index) => ({word, index, score: score(word)}));
+  const scored = unique.map((word) => ({word, score: score(word)}));
   scored.sort((a, b) => {
-    for (let key = 0; key < a.score.length; key++) {
-      if (a.score[key] !== b.score[key]) return b.score[key] - a.score[key];
-    }
-    return a.index - b.index;
+    const key = a.score.findIndex((value, index) => value !== b.score[index]);
+    return key < 0 ? 0 : b.score[key] - a.score[key];
   });
   return scored.map(({word}) => word);
 };
@@ -67,10 +64,22 @@ export const rankJapaneseMatches = (matches: JmdictWord[], query: string): Jmdic
  * matches the exact text only; a plain prefix read is capped and can miss them (いい has eight
  * archaic entries before the common one).
  */
-export const exactJapaneseMatches = async (db: DictionaryDb, query: string) => [
-  ...await readingBeginning(db, `${query}-`),
-  ...await kanjiBeginning(db, `${query}-`)
-];
+export const exactJapaneseMatches = async (db: DictionaryDb, query: string) =>
+  (await Promise.all([readingBeginning(db, `${query}-`), kanjiBeginning(db, `${query}-`)])).flat();
+
+/**
+ * Dictionary search results for `query`, best first: every word read exactly `query`, `limit` more
+ * whose reading starts with it (all when negative), and every word whose spelling starts with it.
+ */
+export const searchJapanese = async (db: DictionaryDb, query: string, limit = -1) => {
+  const [exactReadings, spellings] = await Promise.all([
+    readingBeginning(db, `${query}-`),
+    kanjiBeginning(db, query)
+  ]);
+  // "-" sorts before kana, so a reading prefix scan returns the `<query>-<id>` keys first: skip past them.
+  const readings = await readingBeginning(db, query, limit < 0 ? -1 : exactReadings.length + limit);
+  return rankJapaneseMatches([...exactReadings, ...readings, ...spellings], query);
+};
 
 /**
  * The entry a learning word refers to: preferably one spelled `target` and read `reading` (数 read

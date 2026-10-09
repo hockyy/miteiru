@@ -1,7 +1,7 @@
 /*
- * Prints the first `queryJapanese` result for frequent lookups under the ranking it used before
- * (queryJapanese's original comparator) and the current one (rankJapaneseMatches), marking the
- * words where they differ.
+ * Prints the first `queryJapanese` result for frequent lookups as it was before (the first few
+ * reading matches, sorted by queryJapanese's original comparator) and as it is now (searchJapanese),
+ * marking the words where they differ.
  *
  *   npx tsx scripts/evaluateJmdictRanking.ts <jmdict-db directory> [--holdout]
  *
@@ -10,8 +10,9 @@
  * that were not used to design the ranking.
  */
 import fs from "node:fs";
+import path from "node:path";
 import {getJmdictTags, kanjiBeginning, readingBeginning, setupJmdict, type JmdictWord} from "../main/dictionary/jmdictDb";
-import {rankJapaneseMatches} from "../main/handler/languages/learningGlosses";
+import {searchJapanese} from "../main/handler/languages/learningGlosses";
 
 // What a learner clicks or types most: frequent dictionary forms, function words and kanji.
 const TERMS = [
@@ -62,7 +63,8 @@ const describe = (word: JmdictWord | undefined) => word
 
 const main = async () => {
   const [dbPath, ...flags] = process.argv.slice(2);
-  if (!dbPath || !fs.existsSync(dbPath)) {
+  // Opening a directory that is not a LevelDB database would create one there.
+  if (!dbPath || !fs.existsSync(path.join(dbPath, "CURRENT"))) {
     console.error("Usage: npx tsx scripts/evaluateJmdictRanking.ts <jmdict-db directory> [--holdout]");
     process.exit(1);
   }
@@ -72,14 +74,10 @@ const main = async () => {
     let changed = 0;
     const terms = flags.includes("--holdout") ? HOLDOUT : TERMS;
     for (const term of terms) {
-      const [exactReadings, readings, spellings] = await Promise.all([
-        readingBeginning(db, `${term}-`),
-        readingBeginning(db, term, LIMIT),
-        kanjiBeginning(db, term)
-      ]);
       // Before, queryJapanese read only the first LIMIT reading matches, which can all be rare words.
+      const [readings, spellings] = await Promise.all([readingBeginning(db, term, LIMIT), kanjiBeginning(db, term)]);
       const before = describe(legacyRank([...readings, ...spellings], term, tags)[0]);
-      const after = describe(rankJapaneseMatches([...exactReadings, ...readings, ...spellings], term)[0]);
+      const after = describe((await searchJapanese(db, term, LIMIT))[0]);
       if (before !== after) changed++;
       console.log(`${before === after ? " " : "*"} ${term.padEnd(8, "　")} old: ${before.padEnd(42)} new: ${after}`);
     }

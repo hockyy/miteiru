@@ -1,5 +1,5 @@
 import {ipcMain} from "electron";
-import {getJmdictTags, kanjiBeginning, readingBeginning, setupJmdict} from "../dictionary/jmdictDb";
+import {getJmdictTags, setupJmdict} from "../dictionary/jmdictDb";
 import {searchKanji, setupKanjidic} from "../dictionary/kanjidicDb";
 import path from "path";
 import {readJsonFile} from "../utils";
@@ -8,7 +8,7 @@ import kuromoji, {type Tokenizer} from "kuromoji";
 import {processKuromojinToSeparations, KuromojinWord} from "./languages/japaneseAnalysis";
 import {buildInflectionTable, type InflectionTableRequest} from "./languages/inflectionTable";
 import {readStrokeSvg} from "../helpers/strokeSvg";
-import {glossAll, japaneseLearningGloss, rankJapaneseMatches} from "./languages/learningGlosses";
+import {glossAll, japaneseLearningGloss, searchJapanese} from "./languages/learningGlosses";
 
 const buildKuromojiTokenizer = (dicPath: string) => new Promise<Tokenizer>((resolve, reject) => {
   kuromoji.builder({dicPath}).build((error, tokenizer) => (error ? reject(error) : resolve(tokenizer)));
@@ -142,15 +142,7 @@ class Japanese {
   static registerHandlers() {
     ipcMain.handle('queryJapanese', async (event, query, limit) => {
       try {
-        const db = Japanese.Dict.db;
-        // Every word read exactly as the query (`<reading>-<id>` keys), `limit` words whose reading starts
-        // with it, and every word whose spelling starts with it; the ranking puts exact matches first.
-        const matches = await Promise.all([
-          readingBeginning(db, `${query}-`),
-          readingBeginning(db, query, limit),
-          kanjiBeginning(db, query)
-        ]);
-        return rankJapaneseMatches(matches.flat(), query);
+        return await searchJapanese(Japanese.Dict.db, query, limit);
       } catch (e) {
         console.error(e)
         return []
