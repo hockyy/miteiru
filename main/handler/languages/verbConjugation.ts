@@ -49,8 +49,9 @@ interface IrregularVerb {
 }
 
 const IRREGULAR_VERBS: [RegExp, IrregularVerb][] = [
-  [/(?:行|い|逝|往)く$/, {te: "って"}],
-  [/(?:問|と|請|乞|こ)う$/, {te: "うて"}],
+  // 行く and compounds (出て行く, 持っていく), and the contracted ていく (持ってく → 持ってって).
+  [/(?:行|逝|往)く$|^いく$|[てで]い?く$/, {te: "って"}],
+  [/(?:問|請|乞)う$|^(?:と|こ)う$/, {te: "うて"}],
   [/^ある$|^有る$|^在る$/, {negativeIsNai: true}],
   [/(?:下さ|くださ|為さ|なさ|いらっしゃ|仰しゃ|おっしゃ|御座|ござ)る$/, {honorific: true}],
   [/(?:呉れ|くれ)る$/, {bareImperative: true}],
@@ -60,7 +61,9 @@ const irregularFor = (verb: string) => IRREGULAR_VERBS.find(([pattern]) => patte
 
 /** Possible classes of a dictionary form; る-verbs may be godan or ichidan, so both are tried. */
 const classesOf = (verb: string): VerbClass[] => {
-  if (verb.endsWith("する") || verb === "為る") return ["suru"];
+  if (verb === "する" || verb === "為る") return ["suru"];
+  // 勉強する is a suru-verb; a kana word ending in する may also be godan (こする = 擦る, ゆする = 揺する).
+  if (verb.endsWith("する")) return /[ぁ-ゖ]する$/.test(verb) ? ["suru", "godan"] : ["suru"];
   // 来る and its compounds (持って来る, やってくる), but not 出来る, which is ichidan.
   if (verb === "くる" || verb.endsWith("てくる") || (verb.endsWith("来る") && !verb.endsWith("出来る"))) return ["kuru"];
   if (verb.endsWith("ずる")) return ["zuru"];
@@ -131,7 +134,8 @@ const godanForms = (text: string, irregular?: IrregularVerb): Form[] => {
     {kind: "masu", text: i + "ます"}, final(i), final(e), final(i + "ながら"),final(i + "なさい"), {kind: "adjective", text: i + "たい"},
     verb(i + "たがる", "godan"),
     {kind: "te", text: te}, ...taForms(te),
-    final(e + "ば"), final(stem + (ending === "る" ? "りゃ" : E_ROW[ending] + "ゃ")),
+    // Colloquial ば: 書けば → 書きゃ, 帰れば → 帰りゃ, 買えば → 買や.
+    final(e + "ば"), final(stem + (ending === "う" ? "や" : I_ROW[ending] + "ゃ")),
     final(irregular?.honorific ? i : e),
     final(stem + O_ROW[ending] + "う", "dictionary"), final(text + "まい"),
     verb(e + "る", "ichidan"), // potential
@@ -168,7 +172,9 @@ const adjectiveForms = (text: string): Form[] => {
     final(stem + "ければ"), final(stem + "きゃ"), final(stem + "かろう"),
     {kind: "masu", text: stem + "くあります"}, final(stem + "そう"), {kind: "adjective", text: stem + "くない"}
   ];
-  if (text.endsWith("ない")) forms.push(final(stem + "いで"), final(stem + "さそう"), final(stem + "くなる"));
+  // 〜くなる (食べなくなる, 食べたくなる) inflects as a verb: 食べなくなった.
+  forms.push(verb(stem + "くなる", "godan"));
+  if (text.endsWith("ない")) forms.push(final(stem + "いで"), final(stem + "さそう"));
   return forms;
 };
 
@@ -232,7 +238,8 @@ const PLAIN_FORM_ENDINGS: Record<PlainKind, string[]> = {
 
 const plainKindOf = (form: Form): PlainKind | null => {
   if (form.kind === "verb") return "dictionary";
-  if (form.kind === "adjective") return form.text.endsWith("ない") ? "negative" : "dictionary";
+  // ない, たい, らしい take the same endings; べきだ / まい follow only verbs.
+  if (form.kind === "adjective") return "negative";
   if (form.kind === "masu") return "polite";
   if (form.kind === "te") return "te";
   return form.plain;
