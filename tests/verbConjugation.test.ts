@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import path from "node:path";
 import {test} from "node:test";
 import {isConjugationOf} from "../main/handler/languages/verbConjugation";
@@ -15,10 +16,11 @@ const CONJUGATIONS: Record<string, string[]> = {
     "食べている", "食べてる", "食べていた", "食べてた", "食べています", "食べてます", "食べてません",
     "食べてしまう", "食べてしまった", "食べちゃう", "食べちゃった", "食べちまう", "食べておく", "食べとく",
     "食べてある", "食べてみる", "食べてください", "食べてほしい", "食べては", "食べちゃ", "食べても",
+    "食べなくなった", "食べたくなりました",
     "食べるね", "食べるよ", "食べるだろう", "食べるらしい", "食べるべきだ", "食べたよ", "食べただろう", "食べたらしい"
   ],
   書く: [
-    "書かない", "書きます", "書いて", "書いた", "書ける", "書かれる", "書かせる", "書かせられる", "書かされる",
+    "書きゃ", "書かない", "書きます", "書いて", "書いた", "書ける", "書かれる", "書かせる", "書かせられる", "書かされる",
     "書こう", "書け", "書けば", "書いちゃう", "書いとく", "書いてる", "書き", "書かず", "書かん"
   ],
   泳ぐ: ["泳いで", "泳いだ", "泳がない", "泳げる", "泳いじゃった", "泳いどく"],
@@ -27,8 +29,11 @@ const CONJUGATIONS: Record<string, string[]> = {
   死ぬ: ["死んで", "死んだ", "死なない", "死ねば"],
   遊ぶ: ["遊んで", "遊んだ", "遊ばない", "遊んじゃった", "遊んでる"],
   読む: ["読んで", "読んでる", "読んじゃう", "読まない", "読みたい", "読まれる"],
-  帰る: ["帰らない", "帰って", "帰ります", "帰れる", "帰ろう"],
-  買う: ["買わない", "買って", "買います", "買える", "買わされる"],
+  帰る: ["帰らない", "帰って", "帰ります", "帰れる", "帰ろう", "帰りゃ"],
+  買う: ["買わない", "買って", "買います", "買える", "買わされる", "買や"],
+  こする: ["こすって", "こすらない", "こすります"],
+  いこう: ["いこって", "いこわない"],
+  持ってく: ["持ってって", "持ってった"],
   行く: ["行って", "行った", "行かない", "行きます", "行ける", "行っちゃった"],
   ある: ["ない", "なかった", "あります", "ありません", "あって", "あった", "あれば"],
   する: ["しない", "します", "して", "した", "される", "させる", "させられる", "しよう", "しろ", "せよ", "すれば", "せず", "しちゃった"],
@@ -53,11 +58,21 @@ test("isConjugationOf recognises regular and irregular conjugations", () => {
 
 test("isConjugationOf rejects other words and malformed conjugations", () => {
   const notConjugations: [string, string][] = [
-    ["食べるので", "食べる"], ["食べるし", "食べる"], ["食べたべきだ", "食べる"], ["飲んだ", "食べる"],
+    ["食べるので", "食べる"], ["食べるし", "食べる"], ["食べたべきだ", "食べる"], ["食べたいまい", "食べる"],
+    ["行けゃ", "行く"], ["いこうて", "いこう"], ["飲んだ", "食べる"],
     ["食べ食べ", "食べる"], ["書きない", "書く"], ["書きて", "書く"], ["行いて", "行く"],
     ["あらない", "ある"], ["来らない", "来る"], ["しる", "する"], ["", "食べる"], ["食べる", ""]
   ];
   for (const [surface, base] of notConjugations) assert.equal(isConjugationOf(surface, base), false, `${surface} ← ${base}`);
+});
+
+// One case per ending pattern from a 1.75M-sentence corpus (1,773 common JMdict verbs x every kamiya
+// conjugation and auxiliary), where this engine and jp-verbs, which it replaced, gave the same answer.
+test("isConjugationOf keeps jp-verbs' answers across the conjugation corpus", () => {
+  const cases: [string, string, boolean][] = JSON.parse(fs.readFileSync(path.join(__dirname, "fixtures", "conjugation-corpus.json"), "utf8"));
+  const wrong = cases.filter(([surface, base, expected]) => isConjugationOf(surface, base) !== expected);
+  assert.deepEqual(wrong, []);
+  assert.ok(cases.length > 2500);
 });
 
 test("the analyzer groups a verb with its conjugation chain", async () => {
