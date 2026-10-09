@@ -3,7 +3,9 @@ import {test} from "node:test";
 import {
   buildRubyCopyHtml,
   fillSubtitleWithLearningContent,
-  getSubtitleTokenPresentation
+  getSubtitleTokenPresentation,
+  textWordSeparator,
+  wordSeparator
 } from "../renderer/components/Subtitle/subtitleLanguageSupport";
 import {isTextEntryTarget} from "../renderer/utils/keyboardTargets";
 import {languageCodes} from "../renderer/languages/manifest";
@@ -22,6 +24,25 @@ test("buildRubyCopyHtml uses each language's reading and escapes text", () => {
   assert.equal(buildRubyCopyHtml([japanese, mandarin], true).split("</ruby> <ruby>").length, 2);
   // A token without separations still contributes its text.
   assert.equal(buildRubyCopyHtml([{origin: "…"}, {origin: "&"}], false), "…&amp;");
+});
+
+test("Vietnamese words keep a full space; CJK words get a thin or hair space", () => {
+  const vietnamese = [
+    {origin: "hôm nay", separation: [{main: "Hôm"}, {main: "nay"}]},
+    {origin: "trời", separation: [{main: "trời"}]}
+  ];
+  const japanese = {origin: "今日", hiragana: "きょう", separation: [{main: "今日", hiragana: "きょう"}]};
+  const mandarin = {origin: "今天", pinyin: "jīntiān", separation: [{main: "今天", pinyin: "jīntiān"}]};
+
+  // "Hôm nay" and "trời" were drawn as "Hôm naytrời" with "Space between words" off (the default).
+  assert.equal(wordSeparator(vietnamese[0], false), " ");
+  assert.equal(wordSeparator(japanese, false), "\u200a");
+  assert.equal(wordSeparator(mandarin, true), "\u2009");
+  assert.equal(textWordSeparator(vietnamese[0], false), " ");
+  assert.equal(textWordSeparator(japanese, false), "");
+  assert.equal(textWordSeparator(japanese, true), " ");
+  assert.equal(buildRubyCopyHtml(vietnamese, false), "<ruby>Hôm<rt></rt></ruby><ruby>nay<rt></rt></ruby> <ruby>trời<rt></rt></ruby>");
+  assert.equal(buildRubyCopyHtml([japanese, japanese], false), "<ruby>今日<rt>きょう</rt></ruby><ruby>今日<rt>きょう</rt></ruby>");
 });
 
 test("a Japanese token with an empty reading is still presented as Japanese", () => {

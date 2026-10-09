@@ -151,6 +151,8 @@ type SubtitleSentenceKind = "japanese" | "chinese";
 
 interface SubtitleTokenPresentation {
   sentenceKind: SubtitleSentenceKind;
+  // Written with spaces between words (Vietnamese): words keep a full space whatever the setting.
+  spacedWords?: boolean;
   getRubyReading: (part: any) => string;
 }
 
@@ -176,6 +178,7 @@ const subtitleTokenPresentations: Array<{
     matches: (token) => Array.isArray(token?.separation),
     presentation: {
       sentenceKind: "chinese",
+      spacedWords: true,
       getRubyReading: (part) => part?.meaning || ""
     }
   }
@@ -191,6 +194,19 @@ export const getSubtitleTokenPresentation = (token: any) => (
 );
 
 /**
+ * What goes between two words on screen: a full space in languages written with spaces, otherwise a
+ * thin space ("Space between words" on) or a hair space (off), which only keeps rubies apart.
+ */
+export const wordSeparator = (token: any, showSpace: boolean) => (
+  getSubtitleTokenPresentation(token).spacedWords ? " " : showSpace ? "\u2009" : "\u200a"
+);
+
+/** What goes between two words in copied or plain text: a space where the language or the setting wants one. */
+export const textWordSeparator = (token: any, showSpace: boolean) => (
+  getSubtitleTokenPresentation(token).spacedWords || showSpace ? " " : ""
+);
+
+/**
  * Ruby HTML of a tokenized line, as copied for Anki. Text and readings are escaped, and each token
  * gets the reading its language uses (furigana, pinyin, jyutping or a Vietnamese gloss).
  */
@@ -202,4 +218,5 @@ export const buildRubyCopyHtml = (tokens: any[], showSpace: boolean): string => 
       .join('');
     return ruby || escapeHtml(token?.origin ?? '');
   })
-  .join(showSpace ? ' ' : '');
+  .map((html, index) => (index > 0 ? textWordSeparator(tokens[index - 1], showSpace) : '') + html)
+  .join('');
