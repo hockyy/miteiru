@@ -1,33 +1,93 @@
+import {isHiragana, isKatakana} from "wanakana";
 import {languageCodes} from "../../languages/manifest";
 import {escapeHtml} from "../../utils/html";
 import type {Line, SubtitleContainer} from "./DataStructures";
 
 export type TokenizeMiteiru = (text: string) => Promise<any[]>;
 
-type LearningContentFiller = (line: Line, frequency: Map<string, number>) => Promise<void>;
+/** A word to gloss (main's LearningGlossRequest): dictionary form plus, for Japanese, its reading. */
+interface LearningLookup {
+  target: string;
+  reading?: string;
+}
 
 interface SubtitleLanguageSupport {
-  fillLearningContent: LearningContentFiller;
+  // IPC channel answering a batch of lookups with one short gloss each.
+  glossChannel: string;
+  // The word a token counts as in the subtitle's frequency table.
+  frequencyKey: (token: any) => string;
+  // What to look up for a token, or null for words that get no gloss.
+  lookup: (token: any) => LearningLookup | null;
 }
+
+const chineseSupport = (glossChannel: string): SubtitleLanguageSupport => ({
+  glossChannel,
+  frequencyKey: (token) => token.origin,
+  lookup: (token) => (token.origin ? {target: token.origin} : null)
+});
 
 const subtitleLanguageSupportByLang: Record<string, SubtitleLanguageSupport> = {
   [languageCodes.japanese]: {
-    fillLearningContent: (line, frequency) => line.fillContentWithLearningKotoba(frequency)
+    glossChannel: "learningGlossesJapanese",
+    frequencyKey: (token) => token.basicForm,
+    lookup: (token) => {
+      const target = token.basicForm;
+      if (!target || target === "*") return null;
+      // Short kana words are particles and auxiliaries: no gloss.
+      if ((isHiragana(target) || isKatakana(target)) && target.length <= 3) return null;
+      return {target, reading: token.hiragana ?? ""};
+    }
   },
-  [languageCodes.mandarin]: {
-    fillLearningContent: (line, frequency) => line.fillContentWithLearningChinese(frequency)
-  },
-  [languageCodes.cantonese]: {
-    fillLearningContent: (line, frequency) => line.fillContentWithLearningChinese(frequency)
-  },
-  [languageCodes.vietnamese]: {
-    fillLearningContent: (line, frequency) => line.fillContentWithLearningVietnamese(frequency)
-  }
+  [languageCodes.mandarin]: chineseSupport("learningGlossesChinese"),
+  [languageCodes.cantonese]: chineseSupport("learningGlossesChinese"),
+  [languageCodes.vietnamese]: chineseSupport("learningGlossesVietnamese")
 };
 
 export const getSubtitleLanguageSupport = (language: string) => subtitleLanguageSupportByLang[language];
 
 export const isLearningSubtitleLanguage = (language: string) => Boolean(getSubtitleLanguageSupport(language));
+
+// Glosses already fetched during one subtitle's processing, by target and reading.
+type GlossCache = Map<string, string>;
+
+const glossKey = ({target, reading = ""}: LearningLookup) => `${target}\u0000${reading}`;
+
+/**
+ * Counts the words of tokenized lines and fills their glosses with one IPC call for all words not
+ * yet in `cache`. Subtitles repeat words constantly, so most chunks need few or no lookups.
+ */
+const fillLearningContent = async (
+  lines: Line[],
+  support: SubtitleLanguageSupport,
+  frequency: Map<string, number>,
+  cache: GlossCache
+) => {
+  const requests: LearningLookup[] = [];
+  const requested = new Set<string>();
+  const slots: { line: Line; index: number; key: string }[] = [];
+
+  for (const line of lines) {
+    if (!Array.isArray(line.content)) continue;
+    line.meaning = Array(line.content.length).fill("");
+    line.content.forEach((token, index) => {
+      const word = support.frequencyKey(token);
+      frequency.set(word, (frequency.get(word) ?? 0) + 1);
+      const lookup = support.lookup(token);
+      if (!lookup) return;
+      const key = glossKey(lookup);
+      slots.push({line, index, key});
+      if (cache.has(key) || requested.has(key)) return;
+      requested.add(key);
+      requests.push(lookup);
+    });
+  }
+
+  if (requests.length > 0) {
+    const glosses: string[] = await window.ipc.invoke(support.glossChannel, requests);
+    requests.forEach((lookup, index) => cache.set(glossKey(lookup), glosses?.[index] ?? ""));
+  }
+  for (const {line, index, key} of slots) line.meaning[index] = cache.get(key) ?? "";
+};
 
 export const fillLineWithLearningContent = async (
   line: Line,
@@ -39,32 +99,31 @@ export const fillLineWithLearningContent = async (
   if (!support) return false;
 
   await line.fillContentSeparations(tokenizeMiteiru);
-  await support.fillLearningContent(line, frequency);
+  await fillLearningContent([line], support, frequency, new Map());
   return true;
 };
 
-const LEARNING_CONCURRENCY = 8;
+// Lines tokenized together and glossed with one IPC call; the subtitle fills in from the start.
+const LEARNING_CHUNK_LINES = 32;
 
 export const fillSubtitleWithLearningContent = async (
   subtitle: SubtitleContainer,
   tokenizeMiteiru: TokenizeMiteiru,
   shouldContinue: () => boolean = () => true
 ) => {
-  if (!isLearningSubtitleLanguage(subtitle.language)) {
+  const support = getSubtitleLanguageSupport(subtitle.language);
+  if (!support) {
     subtitle.progress = "done";
     return false;
   }
 
-  // A few lines at a time, checking before each one: starting every line at once fired thousands of
-  // lookups up front, so loading another subtitle could not stop the old one.
-  let nextLine = 0;
-  const worker = async () => {
-    while (nextLine < subtitle.lines.length && shouldContinue()) {
-      const line = subtitle.lines[nextLine++];
-      await fillLineWithLearningContent(line, subtitle.language, tokenizeMiteiru, subtitle.frequency);
-    }
-  };
-  await Promise.all(Array.from({length: LEARNING_CONCURRENCY}, worker));
+  // Checked before every chunk, so loading another subtitle stops this one within a chunk.
+  const cache: GlossCache = new Map();
+  for (let start = 0; start < subtitle.lines.length && shouldContinue(); start += LEARNING_CHUNK_LINES) {
+    const chunk = subtitle.lines.slice(start, start + LEARNING_CHUNK_LINES);
+    await Promise.all(chunk.map((line) => line.fillContentSeparations(tokenizeMiteiru)));
+    await fillLearningContent(chunk, support, subtitle.frequency, cache);
+  }
   subtitle.progress = "done";
   return true;
 };

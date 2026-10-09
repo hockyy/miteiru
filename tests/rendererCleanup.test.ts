@@ -74,41 +74,65 @@ test("isTextEntryTarget treats sliders and checkboxes as non-text", () => {
   }
 });
 
-const fakeSubtitle = (lineCount: number, onLine: () => Promise<void>) => {
-  const filled: number[] = [];
-  const lines = Array.from({length: lineCount}, (_, index) => ({
-    fillContentSeparations: async () => {
-      await onLine();
-    },
-    fillContentWithLearningKotoba: async () => {
-      filled.push(index);
+// A subtitle whose lines tokenize to the given words, with window.ipc answering gloss batches.
+const fakeSubtitle = (lineWords: string[][], onTokenize: () => Promise<void> = async () => {}) => {
+  const lines = lineWords.map((words) => ({
+    content: words.join(""),
+    meaning: [] as string[],
+    async fillContentSeparations() {
+      await onTokenize();
+      this.content = words.map((word) => ({origin: word, basicForm: word, hiragana: ""}));
     }
   }));
-  return {subtitle: {language: languageCodes.japanese, lines, frequency: new Map(), progress: ""} as never, filled};
+  return {language: languageCodes.japanese, lines, frequency: new Map<string, number>(), progress: ""};
 };
 
-test("learning content is filled a few lines at a time", async () => {
-  let inFlight = 0;
-  let maxInFlight = 0;
-  const {subtitle, filled} = fakeSubtitle(50, async () => {
-    inFlight++;
-    maxInFlight = Math.max(maxInFlight, inFlight);
-    await new Promise((resolve) => setTimeout(resolve, 1));
-    inFlight--;
+const withGlossIpc = async (run: (requests: {target: string}[][]) => Promise<void>) => {
+  const globals = globalThis as Record<string, unknown>;
+  const saved = globals.window;
+  const requests: {target: string}[][] = [];
+  globals.window = {
+    ipc: {
+      invoke: async (channel: string, batch: {target: string}[]) => {
+        assert.equal(channel, "learningGlossesJapanese");
+        requests.push(batch);
+        return batch.map(({target}) => `gloss:${target}`);
+      }
+    }
+  };
+  try {
+    await run(requests);
+  } finally {
+    if (saved === undefined) delete globals.window;
+    else globals.window = saved;
+  }
+};
+
+test("learning glosses are fetched once per word, in one IPC call per chunk", async () => {
+  await withGlossIpc(async (requests) => {
+    // 100 lines repeating three words, plus a short kana particle that gets no gloss.
+    const subtitle = fakeSubtitle(Array.from({length: 100}, (_, i) => ["学生", "が", i % 2 ? "勉強" : "先生"]));
+    assert.equal(await fillSubtitleWithLearningContent(subtitle as never, async () => []), true);
+
+    assert.deepEqual(requests.flat().map(({target}) => target).sort(), ["先生", "勉強", "学生"]);
+    assert.ok(requests.length <= Math.ceil(100 / 32), `${requests.length} IPC calls`);
+    assert.deepEqual(subtitle.lines[1].meaning, ["gloss:学生", "", "gloss:勉強"]);
+    assert.deepEqual(subtitle.lines[99].meaning, ["gloss:学生", "", "gloss:勉強"]);
+    assert.equal(subtitle.frequency.get("学生"), 100);
+    assert.equal(subtitle.frequency.get("が"), 100);
+    assert.equal(subtitle.progress, "done");
   });
-  assert.equal(await fillSubtitleWithLearningContent(subtitle, async () => []), true);
-  assert.equal(filled.length, 50);
-  assert.ok(maxInFlight > 1 && maxInFlight <= 8, `max in flight ${maxInFlight}`);
-  assert.equal((subtitle as {progress: string}).progress, "done");
 });
 
-test("learning content stops soon after the subtitle is replaced", async () => {
-  let started = 0;
-  const {subtitle, filled} = fakeSubtitle(500, async () => {
-    started++;
-    await new Promise((resolve) => setTimeout(resolve, 1));
+test("learning content stops at the next chunk after the subtitle is replaced", async () => {
+  await withGlossIpc(async () => {
+    let tokenized = 0;
+    const subtitle = fakeSubtitle(Array.from({length: 500}, () => ["学生"]), async () => {
+      tokenized++;
+    });
+    await fillSubtitleWithLearningContent(subtitle as never, async () => [], () => tokenized < 40);
+    // The chunk running when the check fails finishes; no further chunk starts.
+    assert.equal(tokenized, 64);
+    assert.equal(subtitle.lines.filter((line) => Array.isArray(line.content)).length, 64);
   });
-  await fillSubtitleWithLearningContent(subtitle, async () => [], () => started < 20);
-  // Lines already started finish; no new ones begin once the check fails.
-  assert.ok(filled.length >= 20 && filled.length < 20 + 8, `filled ${filled.length}`);
 });

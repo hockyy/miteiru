@@ -1,4 +1,5 @@
-import {charAnywhere, charBeginning, hanzi, setupChineseDictionary} from "../dictionary/chineseDictionaryDb";
+import {hanzi, setupChineseDictionary} from "../dictionary/chineseDictionaryDb";
+import {chineseLearningGloss, glossAll, queryChineseDictionary} from "./languages/learningGlosses";
 import {ipcMain} from "electron";
 import path from "path";
 import fs from "node:fs";
@@ -162,30 +163,19 @@ class Chinese {
 
   static registerHandlers() {
     ipcMain.handle('queryChinese', async (event, query, limit) => {
-      let matches = []
       try {
-        matches = matches.concat(await charBeginning(Chinese.Dict.db, query, limit));
-        matches = matches.concat(await charAnywhere(Chinese.Dict.db, query, limit));
-        const ids = matches.map(o => o.id)
-        matches = matches.filter(({id}, index) => !ids.includes(id, index + 1))
-
-        // Swap the exact match to front
-        matches = matches.sort((a, b) => {
-              const commonA = (a.content.length);
-              const commonB = (b.content.length);
-              if (commonA !== commonB) return commonA - commonB;
-
-              const meaningA = (a.meaning.length);
-              const meaningB = (b.meaning.length);
-              if (meaningA !== meaningB) return meaningB - meaningA;
-              return a.content < b.content ? -1 : 1;
-            }
-        )
-        return matches
+        return await queryChineseDictionary(Chinese.Dict.db, query, limit);
       } catch (e) {
         console.error(e)
         return []
       }
+    })
+
+    // Short glosses for every word of a learning-mode subtitle chunk, in request order.
+    ipcMain.handle('learningGlossesChinese', async (_event, requests) => {
+      const db = Chinese.Dict.db;
+      if (!db) return [];
+      return glossAll(requests, (request) => chineseLearningGloss(db, request));
     })
 
     ipcMain.handle('queryHanzi', async (event, query) => {

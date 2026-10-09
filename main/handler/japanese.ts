@@ -8,6 +8,7 @@ import kuromoji, {type Tokenizer} from "kuromoji";
 import {getFurigana, processKuromojinToSeparations, KuromojinWord} from "./languages/japaneseAnalysis";
 import {buildInflectionTable, type InflectionTableRequest} from "./languages/inflectionTable";
 import {readStrokeSvg} from "../helpers/strokeSvg";
+import {glossAll, japaneseLearningGloss, rankJapaneseMatches} from "./languages/learningGlosses";
 
 const buildKuromojiTokenizer = (dicPath: string) => new Promise<Tokenizer>((resolve, reject) => {
   kuromoji.builder({dicPath}).build((error, tokenizer) => (error ? reject(error) : resolve(tokenizer)));
@@ -148,40 +149,20 @@ class Japanese {
         matches = matches.concat(await kanjiBeginning(Japanese.Dict.db, query));
         // matches = matches.concat(await readingAnywhere(JMDict.db, query, limit));
         // matches = matches.concat(await kanjiAnywhere(JMDict.db, query));
-        const ids = matches.map(o => o.id)
-        matches = matches.filter(({id}, index) => !ids.includes(id, index + 1))
-
-        // Swap the exact match to front
-        matches = matches.sort((a, b) => {
-              const commonA = (a.kanji.length ? a.kanji[0].common : 0);
-              const commonB = (b.kanji.length ? b.kanji[0].common : 0);
-              if (commonA !== commonB) return commonB - commonA;
-              // Get smallest kanji length in a and b, compare it
-              const smallestA = (a.kanji.length ? (a.kanji[0].text ?? ''.length) : 0);
-              const smallestB = (b.kanji.length ? (b.kanji[0].text ?? ''.length) : 0);
-              if (smallestA !== smallestB) return smallestA - smallestB;
-              const isVerbA = +(!this.Dict.tags[a.sense[0].partOfSpeech[0]].includes("verb"));
-              const isVerbB = +(!this.Dict.tags[b.sense[0].partOfSpeech[0]].includes("verb"));
-              if (isVerbA !== isVerbB) return isVerbA - isVerbB;
-              const isNounA = +(!this.Dict.tags[a.sense[0].partOfSpeech[0]].includes("noun"));
-              const isNounB = +(!this.Dict.tags[b.sense[0].partOfSpeech[0]].includes("noun"));
-              if (isNounA !== isNounB) return isNounA - isNounB;
-              if (a.kanji.length !== b.kanji.length) return a.kanji.length - b.kanji.length
-            }
-        )
-        for (let i = 0; i < matches.length; i++) {
-          if (matches[i].kanji.map(val => val.text ?? '').includes(query)) {
-            [matches[i], matches[0]] = [matches[0], matches[i]]
-            break;
-          }
-        }
-        return matches
+        return rankJapaneseMatches(matches, query, this.Dict.tags ?? {});
       } catch (e) {
         console.error(e)
         return []
       }
     })
 
+
+    // Short glosses for every word of a learning-mode subtitle chunk, in request order.
+    ipcMain.handle('learningGlossesJapanese', async (_event, requests) => {
+      const db = this.Dict.db;
+      if (!db) return [];
+      return glossAll(requests, (request) => japaneseLearningGloss(db, this.Dict.tags ?? {}, request));
+    })
 
     ipcMain.handle('queryKanji', async (event, query) => {
       if (!this.KanjiDict.db) return undefined;
