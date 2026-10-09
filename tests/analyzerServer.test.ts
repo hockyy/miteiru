@@ -103,6 +103,14 @@ test("analyze rejects mismatched optional language assertions", async () => {
   assert.match(response.body.error, /does not match active language/);
 });
 
+test("a client still asking for the removed MeCab tokenizer is served by Kuromoji", async () => {
+  const handle = await createServer({getTokenizer: () => "kuromoji"});
+  const response = await requestJson(handle, "/analyze", {text: "見た", tokenizer: "mecab"});
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body.tokens[0].tokenizerMode, "kuromoji");
+});
+
 test("analyze-batch returns one result per input", async () => {
   const handle = await createServer();
   const response = await requestJson(handle, "/analyze-batch", {texts: ["我", "你"]});
