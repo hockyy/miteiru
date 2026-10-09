@@ -9,10 +9,11 @@ export const Speed = ({player}) => {
         {player != null &&
             <div
                 className={"h-5 justify-self-end"}>{mappingSpeedFunction(speed).toPrecision(2)}×</div>}
-        <div className={"flex w-32 justify-center items-center"}>
+        <div className={"flex w-20 lg:w-32 justify-center items-center"}>
           <input
               className={"slider"}
               type="range"
+              aria-label="Playback speed"
               min={-1}
               max={2}
               step={0.02}
@@ -24,14 +25,14 @@ export const Speed = ({player}) => {
               }}
           />
         </div>
-        <div className={"h-5 justify-self-end"} onClick={() => {
+        <button className={"h-5 justify-self-end"} title="Reset to normal speed" onClick={() => {
           setSpeed(() => {
             player.playbackRate(1);
             return 0
           })
         }}>
           Speed
-        </div>
+        </button>
       </div>
   )
 }

@@ -1,8 +1,9 @@
 import crypto from "node:crypto";
 import os from "node:os";
 import path from "node:path";
+import {NORMALIZED_SUBTITLE_PREFIX} from "../../renderer/utils/constants";
 
-export const NORMALIZED_SUBTITLE_PREFIX = "miteiru_normalized_";
+export {NORMALIZED_SUBTITLE_PREFIX};
 
 export type FileIdentity = {
   mtimeMs: number;

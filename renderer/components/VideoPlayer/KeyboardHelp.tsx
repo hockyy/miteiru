@@ -2,7 +2,7 @@ const shortcutGroups = [
   {
     title: "Playback",
     items: [
-      {key: "E", description: "Toggle pause"},
+      {key: "Space / E", description: "Play / pause"},
       {key: "R", description: "Repeat current line"},
       {key: "Z", description: "Toggle video controls"},
       {key: "Ctrl + H", description: "Back to home"}

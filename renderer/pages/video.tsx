@@ -20,6 +20,7 @@ import {
   useVideoTimeChanger
 } from "../hooks/useVideoController";
 import {usePlayNextAfterEnd} from "../hooks/usePlayNextAfterEnd";
+import {useIdleControls} from "../hooks/useIdleControls";
 import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
 import useLearningState from "../hooks/useLearningState";
 import usePauseAndRepeat from "../hooks/usePauseAndRepeat";
@@ -271,7 +272,11 @@ function Video() {
       setShowVocabSidebar, rubyContent, contentString, setShowLyricsSearch);
   useVideoKeyboardControls(togglePlay, deltaTime, setPrimaryShift, setSecondaryShift,
       setToastInfo, backToHead, setIsPlaying);
-  usePlayNextAfterEnd(player, onVideoChangeHandler, setEnableSeeker);
+  usePlayNextAfterEnd(player, onVideoChangeHandler, setEnableSeeker, setIsPlaying);
+
+  // While a video plays, the controls fade out when the mouse rests; not while a panel is open.
+  const {controlsRef} = useIdleControls<HTMLDivElement>(Boolean(isPlaying),
+      !showSidebar && !showVocabSidebar && !showCommandPalette && meaning === '');
 
   // Pause player when media selection modals open
   useEffect(() => {
@@ -362,6 +367,7 @@ function Video() {
             />
           </div>
           <LiveCaptionControl
+              className="autohide"
               supported={liveCaptions.supported}
               running={liveCaptions.running}
               starting={liveCaptions.starting}
@@ -372,7 +378,7 @@ function Video() {
               onRefreshIntervalChange={liveCaptions.setRefreshIntervalMs}
               onToggle={liveCaptions.toggle}
           />
-          <div className={"flex flex-col justify-end bottom-0 z-[15] fixed"}>
+          <div className={"autohide flex flex-col justify-end bottom-0 z-[15] fixed"} ref={controlsRef}>
             {hasVideo && player && <VideoController
                 isPlaying={isPlaying}
                 duration={duration}

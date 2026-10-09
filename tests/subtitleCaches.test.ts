@@ -8,6 +8,7 @@ import {
   NORMALIZED_SUBTITLE_PREFIX,
   normalizedSubtitleOutputPath
 } from "../main/helpers/subtitleCaches";
+import {isTempSubtitleCopy} from "../renderer/utils/folderUtils";
 
 describe("isNormalizedSubtitlePath", () => {
   it("detects miteiru normalized temp files including stacked names", () => {
@@ -20,6 +21,17 @@ describe("isNormalizedSubtitlePath", () => {
       isNormalizedSubtitlePath(`${NORMALIZED_SUBTITLE_PREFIX}${NORMALIZED_SUBTITLE_PREFIX}abc.srt`),
       true
     );
+  });
+  it("matches the renderer's check, which sees Windows and POSIX paths", () => {
+    for (const filePath of [
+      `C:\\Users\\me\\AppData\\Local\\Temp\\${NORMALIZED_SUBTITLE_PREFIX}0089622176c3300f.srt`,
+      `/tmp/${NORMALIZED_SUBTITLE_PREFIX}abc.srt`
+    ]) {
+      assert.equal(isTempSubtitleCopy(filePath), true, filePath);
+    }
+    for (const filePath of ["C:\\Videos\\ep01.srt", "/home/me/ep01.srt", `/videos/${NORMALIZED_SUBTITLE_PREFIX}/ep01.srt`, ""]) {
+      assert.equal(isTempSubtitleCopy(filePath), false, filePath);
+    }
   });
 });
 

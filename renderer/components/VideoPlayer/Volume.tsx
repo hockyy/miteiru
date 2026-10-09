@@ -35,23 +35,27 @@ export const VolumeLogo = [
 export const Volume = ({player}) => {
 
   const [volume, setVolume] = useState(1);
+  // The level to return to when unmuting.
+  const [unmutedVolume, setUnmutedVolume] = useState(1);
+  const toggleMute = () => {
+    const newVolume = volume === 0 ? unmutedVolume : 0;
+    if (volume !== 0) setUnmutedVolume(volume);
+    player.volume(newVolume);
+    setVolume(newVolume);
+  };
 
   return (
       <div className={"animation flex flex-row w-fit gap-4 items-center cursor-pointer px-4"}>
-        <div className={"w-fit h-5 justify-self-start animation"} onClick={() => {
-          setVolume(old => {
-            const newVolume = old === 0 ? 0.5 : 0;
-            player.volume(newVolume)
-            return newVolume
-          })
-        }}>
+        <button className={"w-fit h-5 justify-self-start animation"} onClick={toggleMute}
+                aria-label={volume === 0 ? "Unmute" : "Mute"} title={volume === 0 ? "Unmute" : "Mute"}>
           {VolumeLogo[Math.trunc(volume * 4)]}
-        </div>
+        </button>
 
         <div className={"flex w-20 justify-center items-center"}>
           <input
               className={"slider"}
               type="range"
+              aria-label="Volume"
               min={0}
               max={1}
               step={0.02}
