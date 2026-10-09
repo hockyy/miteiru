@@ -12,6 +12,7 @@
  */
 
 import {ipcMain} from "electron";
+import {glossAll, pickVietnameseGloss} from "./languages/learningGlosses";
 import path from "path";
 import fs from "node:fs";
 
@@ -151,6 +152,12 @@ class Vietnamese {
         console.error('Vietnamese query error:', e);
         return [];
       }
+    });
+
+    // Short glosses for every word of a learning-mode subtitle chunk, in request order.
+    ipcMain.handle('learningGlossesVietnamese', async (_event, requests) => {
+      if (!this.isLoaded) return [];
+      return glossAll(requests, ({target}) => pickVietnameseGloss(this.dictionary.get(target) ?? ''));
     });
   }
 }

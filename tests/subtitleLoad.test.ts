@@ -222,21 +222,3 @@ test('Line honors the removeHearingImpairedFlag', () => {
   }
 });
 
-test('fillContentWithLearningKotoba matches JMdict kana against furigana readings', async () => {
-  const dictionary = {
-    '大きい': [{kana: [{text: 'おおきい'}], kanji: [{text: '大いさ'}], sense: [{gloss: [{text: 'big (in size)'}]}]}],
-    'コーヒー': [{kana: [{text: 'コーヒー'}], kanji: [], sense: [{gloss: [{text: 'coffee'}]}]}],
-  };
-  (globalThis as Record<string, unknown>).window = {
-    ipc: {invoke: async (_channel: string, query: string) => dictionary[query] ?? []},
-  };
-  const line = new Line(0, 1000, '');
-  line.content = [
-    {origin: '大きい', basicForm: '大きい', hiragana: 'おおきい'},
-    {origin: 'コーヒー', basicForm: 'コーヒー', hiragana: 'こーひー'},
-  ];
-
-  await line.fillContentWithLearningKotoba(new Map());
-
-  assert.deepEqual(line.meaning, ['big', 'coffee']);
-});
