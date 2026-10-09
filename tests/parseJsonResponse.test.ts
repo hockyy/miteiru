@@ -54,5 +54,10 @@ describe("extractJsonArray", () => {
   assert.equal(extractJsonArray('[]'), '[]');
   assert.equal(extractJsonArray('{"not": "an array"}'), null);
   assert.equal(extractJsonArray('   '), null);
+  // Brackets in the prose before the array, a JSON object payload, and an explanation fence first.
+  assert.equal(extractJsonArray('Note [1]: here is the list [{"i":1}]'), '[{"i":1}]');
+  assert.equal(extractJsonArray('{"cues": [1, 2]}'), null);
+  assert.equal(extractJsonArray('```text\nThinking\n```\n```json\n[{"i":3}]\n```'), '[{"i":3}]');
+  assert.equal(extractJsonArray('[1, 2,]'), null);
   });
 });
