@@ -7,7 +7,6 @@ import {MiteiruJapaneseWordWithSeparations} from "./japaneseAnalysis";
 export type AnalyzeTextOptions = {
   tokenizerMode: string;
   toneType?: string;
-  mecabCommand?: string;
 };
 
 export type AnalyzeTextResult = any[];
@@ -116,7 +115,7 @@ export const parseJapaneseVerbs = async (
 
 export const analyzeText = async (
   sentence: string,
-  {tokenizerMode, toneType = "num", mecabCommand}: AnalyzeTextOptions
+  {tokenizerMode, toneType = "num"}: AnalyzeTextOptions
 ): Promise<AnalyzeTextResult> => {
   if (!sentence) return [];
 
@@ -128,11 +127,6 @@ export const analyzeText = async (
 
   if (tokenizerMode === "cantonese") {
     return Chinese.getJyutpingForSentence(sentence, toneType);
-  }
-
-  if (tokenizerMode.includes("mecab")) {
-    const separated = Japanese.getFurigana(sentence, mecabCommand ?? tokenizerMode);
-    return parseJapaneseVerbs(separated);
   }
 
   if (tokenizerMode === "jieba") {

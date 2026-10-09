@@ -79,15 +79,6 @@ export const languagePlugins: LanguagePlugin[] = [
     setup: async ({appDataDirectory}) => Japanese.setup(getJapaneseSettings(appDataDirectory))
   },
   {
-    id: "japanese-mecab",
-    kind: "language",
-    name: "Mecab - Japanese",
-    tokenizerMode: "mecab",
-    languageCode: "ja",
-    dependencies: ["han-character-core"],
-    setup: async ({appDataDirectory}) => Japanese.setup(getJapaneseSettings(appDataDirectory))
-  },
-  {
     id: "cantonese-jieba",
     kind: "language",
     name: "Jieba - Cantonese",
@@ -117,7 +108,6 @@ export const languagePlugins: LanguagePlugin[] = [
 
 export const startupChannelPluginIds: Record<string, string> = {
   loadKuromoji: "japanese-kuromoji",
-  loadMecab: "japanese-mecab",
   loadCantonese: "cantonese-jieba",
   loadChinese: "mandarin-jieba",
   loadVietnamese: "vietnamese"
