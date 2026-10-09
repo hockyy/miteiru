@@ -43,21 +43,23 @@ export const MeaningBoxHeader = ({
   changeLearningState,
 }: MeaningBoxHeaderProps) => (
   <div className={MEANING_HEADER}>
-    <div className="flex w-full items-center justify-between gap-3">
+    {/* Other dictionary entries for the same text (homographs); hidden when there is just one. */}
+    {otherMeaningsCount > 1 && <div className="flex w-full items-center justify-between gap-3">
       <Button
         type="secondary"
         size="small"
         disabled={meaningIndex === 0}
         onPress={onPrevious}
         className="inline-flex items-center gap-1.5"
+        title="Previous dictionary entry"
       >
         <FaChevronLeft aria-hidden="true" />
         <span className="hidden sm:inline">Previous</span>
       </Button>
 
       <div className="rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-bold text-blue-900">
-        Sense {meaningIndex + 1}
-        <span className="font-medium text-blue-500"> / {otherMeaningsCount}</span>
+        Entry {meaningIndex + 1}
+        <span className="font-medium text-blue-500"> of {otherMeaningsCount}</span>
       </div>
 
       <Button
@@ -66,11 +68,12 @@ export const MeaningBoxHeader = ({
         disabled={meaningIndex >= otherMeaningsCount - 1}
         onPress={onNext}
         className="inline-flex items-center gap-1.5"
+        title="Next dictionary entry"
       >
         <span className="hidden sm:inline">Next</span>
         <FaChevronRight aria-hidden="true" />
       </Button>
-    </div>
+    </div>}
 
     <div className="flex w-full min-w-0 flex-wrap items-center justify-center gap-3">
       <button
