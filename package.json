@@ -71,7 +71,6 @@
     "chardet": "^2.2.0",
     "electron-store": "^11.0.2",
     "iconv-lite": "^0.7.2",
-    "jp-verbs": "^1.1.0",
     "kuromoji": "^0.1.2",
     "level": "^10.0.0",
     "pinyin-pro": "^3.27.0",

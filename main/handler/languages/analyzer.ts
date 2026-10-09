@@ -1,4 +1,4 @@
-import Conjugator from "jp-verbs";
+import {isConjugationOf} from "./verbConjugation";
 import Japanese from "../japanese";
 import Chinese from "../chinese";
 import Vietnamese from "../vietnamese";
@@ -60,8 +60,6 @@ export const parseJapaneseVerbs = async (
       accumVerb = accumIndex.reduce((pre, curval) => {
         return pre + res[curval].origin;
       }, '');
-      let currentUnconjugation: any[] = Conjugator.unconjugate(accumVerb);
-
       const baseIndex: number[] = [...accumIndex];
       do {
         const lastElement: number = baseIndex.pop();
@@ -79,11 +77,8 @@ export const parseJapaneseVerbs = async (
         baseVerb += res[baseIndex[j]].origin;
       }
       baseVerb += res[baseIndex[baseIndex.length - 1]].basicForm;
-      currentUnconjugation = currentUnconjugation.filter(result => {
-        return result.base === baseVerb;
-      });
-      if (currentUnconjugation.length > 0) {
-        conjugationResult = currentUnconjugation[0];
+      if (isConjugationOf(accumVerb, baseVerb)) {
+        conjugationResult = {base: baseVerb};
       }
 
       if (conjugationResult === null) {
