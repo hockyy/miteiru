@@ -83,10 +83,10 @@ describe("cuesToSrt / parseSrtCues", () => {
 describe("siblingEnglishSrtPath", () => {
   it("replaces the language tag with en", () => {
     assert.equal(
-      path.basename(siblingEnglishSrtPath("C:\\Users\\me\\Documents\\miteiru\\clip.yue.srt")),
-      "clip.en.srt"
+      siblingEnglishSrtPath(path.join("Documents", "miteiru", "clip.yue.srt")),
+      path.join("Documents", "miteiru", "clip.en.srt")
     );
-    assert.equal(path.basename(siblingEnglishSrtPath("/tmp/show.ja.srt")), "show.en.srt");
+    assert.equal(path.basename(siblingEnglishSrtPath(path.join("tmp", "show.ja.srt"))), "show.en.srt");
   });
 });
 
