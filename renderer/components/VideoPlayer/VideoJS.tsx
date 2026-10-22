@@ -5,6 +5,15 @@ import 'videojs-youtube';
 import {videoConstants} from "../../utils/constants";
 import type {PlaybackClock} from "../../utils/playbackClock";
 
+// cc_load_policy: 0 does not stop YouTube from switching its own captions on (it may for a
+// foreign-language video), and they would draw over Miteiru's. Unloading the captions module hides
+// them. Does nothing for html5 sources.
+const hideYouTubeCaptions = (player: any) => {
+  const ytPlayer = player.tech?.(true)?.ytPlayer;
+  if (typeof ytPlayer?.unloadModule !== "function") return;
+  ytPlayer.unloadModule("captions");
+  ytPlayer.unloadModule("cc");
+};
 
 export const VideoJS = ({options, onReady, clock}: { options: any; onReady: (player: any) => void; clock: PlaybackClock }) => {
   const videoRef = useRef(null);
@@ -70,6 +79,9 @@ export const VideoJS = ({options, onReady, clock}: { options: any; onReady: (pla
             iframe.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
           }
         };
+
+        // YouTube loads its captions module once the video plays, and the tech changes with the source.
+        player.on('playing', () => hideYouTubeCaptions(player));
 
         onReady?.(player);
         applyYouTubeIframeAttributes();

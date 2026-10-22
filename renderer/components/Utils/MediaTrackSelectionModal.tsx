@@ -1,10 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Subtitles, Play, Download, RefreshCw } from 'lucide-react';
 import { Button } from './Button';
 import { MediaTrack } from '../../types/media';
 import { useYoutubeSubtitles } from '../../hooks/useYoutubeSubtitles';
 import { SubtitlePreprocessOptions } from '../../types/subtitlePreprocess';
-import {getLanguageEmoji, getTrackLabel} from "../../utils/mediaUtils";
+import {getLanguageEmoji, getTrackLabel, pickDefaultSubtitleTracks, SubtitleCandidate} from "../../utils/mediaUtils";
 import {ModalShell} from "./ModalShell";
 
 interface MediaTrackSelectionModalProps {
@@ -14,6 +14,7 @@ interface MediaTrackSelectionModalProps {
   fileName: string;
   subtitleTracks: MediaTrack[];
   currentAppLanguage: string;
+  appLanguageCode: string; // e.g. zh-CN, used to preselect the tracks
   videoUrl?: string; // YouTube URL for fetching online subtitles
 }
 
@@ -34,6 +35,7 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
   fileName,
   subtitleTracks,
   currentAppLanguage,
+  appLanguageCode,
   videoUrl
 }) => {
   const [selectedPrimarySubtitle, setSelectedPrimarySubtitle] = useState<number | null>(null);
@@ -47,7 +49,8 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
   // Use YouTube subtitles hook
   const { 
     subtitles: youtubeSubtitles, 
-    isLoading: isLoadingYoutube, 
+    isLoading: isLoadingYoutube,
+    hasLoaded: hasLoadedYoutube,
     error: youtubeError,
     isYoutubeUrl,
     fetchAvailableSubtitles,
@@ -55,6 +58,8 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
   } = useYoutubeSubtitles();
 
   const isYouTubeUrl = Boolean(videoUrl && isYoutubeUrl(videoUrl));
+  // Once the user picks a track, the defaults stop overriding their choice.
+  const userPickedRef = useRef(false);
 
   // Fetch YouTube subtitles when modal opens for YouTube videos
   useEffect(() => {
@@ -63,6 +68,11 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
       setPreprocessOptions({
         titleCaseAllCaps: true
       });
+      userPickedRef.current = false;
+      setSelectedPrimarySubtitle(null);
+      setSelectedPrimaryType(null);
+      setSelectedSecondarySubtitle(null);
+      setSelectedSecondaryType(null);
       return;
     }
     
@@ -71,12 +81,31 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
     }
   }, [isOpen, isYouTubeUrl, videoUrl, fetchAvailableSubtitles, clearSubtitles]);
 
+  // Preselect the learning language on top and English underneath; YouTube tracks arrive after the modal opens.
+  useEffect(() => {
+    if (!isOpen || userPickedRef.current) return;
+
+    const candidates: SubtitleCandidate[] = [
+      ...subtitleTracks.map((track, index): SubtitleCandidate => ({type: 'embedded', index, language: track.language})),
+      ...(isYouTubeUrl
+        ? youtubeSubtitles.map((subtitle, index): SubtitleCandidate => ({type: 'youtube', index, language: subtitle.language}))
+        : [])
+    ];
+    const { primary, secondary } = pickDefaultSubtitleTracks(candidates, appLanguageCode);
+    setSelectedPrimarySubtitle(primary?.index ?? null);
+    setSelectedPrimaryType(primary?.type ?? null);
+    setSelectedSecondarySubtitle(secondary?.index ?? null);
+    setSelectedSecondaryType(secondary?.type ?? null);
+  }, [isOpen, isYouTubeUrl, subtitleTracks, youtubeSubtitles, appLanguageCode]);
+
   const handlePrimarySubtitleChange = useCallback((index: number | null, type: 'embedded' | 'youtube' | null) => {
+    userPickedRef.current = true;
     setSelectedPrimarySubtitle(index);
     setSelectedPrimaryType(type);
   }, []);
 
   const handleSecondarySubtitleChange = useCallback((index: number | null, type: 'embedded' | 'youtube' | null) => {
+    userPickedRef.current = true;
     setSelectedSecondarySubtitle(index);
     setSelectedSecondaryType(type);
   }, []);
@@ -298,7 +327,14 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
                 {/* Error state for YouTube */}
                 {isYouTubeUrl && youtubeError && (
                   <div className="text-center p-4 text-red-400 text-sm">
-                    {youtubeError}
+                    {`Couldn't load YouTube captions: ${youtubeError}`}
+                  </div>
+                )}
+
+                {/* Loaded fine, but the video has no captions */}
+                {isYouTubeUrl && hasLoadedYoutube && !isLoadingYoutube && !youtubeError && youtubeSubtitles.length === 0 && (
+                  <div className="text-center p-4 text-gray-400 text-sm">
+                    This video has no captions on YouTube.
                   </div>
                 )}
               </div>

@@ -145,3 +145,64 @@ export const getTrackLabel = (track: MediaTrack) => {
   if (track.default) parts.push("[Default]");
   return parts.join(" ");
 };
+
+export interface SubtitleCandidate {
+  type: "embedded" | "youtube";
+  index: number;
+  language?: string;
+}
+
+// ffprobe's ISO 639-2 tags, spelled the way YouTube does.
+const ISO_639_2_TO_YOUTUBE: Record<string, string> = {
+  chi: "zh", zho: "zh", cmn: "zh", jpn: "ja", eng: "en", vie: "vi"
+};
+
+// Subtitle languages that suit a learning language, best group first (`x-*` takes any region).
+// A learning language not listed here accepts its own base language, so ja and vi need no entry.
+const SUBTITLE_LANGUAGE_PREFERENCES: Record<string, string[][]> = {
+  "zh-cn": [["zh-hans", "zh-cn", "zh-sg"], ["zh"], ["zh-hant", "zh-tw", "zh-hk"], ["zh-*"]],
+  yue: [["yue"], ["zh-hk"], ["zh-hant", "zh-tw"], ["zh"]]
+};
+
+const baseLanguage = (code: string) => code.split("-")[0];
+
+const normalizeSubtitleLanguage = (language: string) => {
+  const [base, ...region] = language.toLowerCase().replace(/-orig$/, "").split("-");
+  return [ISO_639_2_TO_YOUTUBE[base] ?? base, ...region].join("-");
+};
+
+// 0 is the best match, -1 means the language does not suit appLang at all.
+const subtitleLanguageRank = (language: string, appLang: string) => {
+  const appCode = appLang.toLowerCase();
+  const groups = SUBTITLE_LANGUAGE_PREFERENCES[appCode] ?? [[baseLanguage(appCode), `${baseLanguage(appCode)}-*`]];
+  return groups.findIndex((group) => group.some((pattern) => (
+    pattern.endsWith("*") ? language.startsWith(pattern.slice(0, -1)) : language === pattern
+  )));
+};
+
+/**
+ * The tracks to preselect: primary is the best match for the language being learned, secondary is the
+ * first English one. Ties go to the earlier candidate, so pass embedded tracks first, then YouTube manual
+ * captions, then auto ones. Nothing goes underneath when English itself is being learned.
+ */
+export const pickDefaultSubtitleTracks = (
+  candidates: SubtitleCandidate[],
+  appLang: string
+): { primary: SubtitleCandidate | null; secondary: SubtitleCandidate | null } => {
+  const ranked = candidates.flatMap((candidate) => {
+    if (!candidate.language) return [];
+    const language = normalizeSubtitleLanguage(candidate.language);
+    return [{candidate, language, rank: subtitleLanguageRank(language, appLang)}];
+  });
+
+  let primary: (typeof ranked)[number] | null = null;
+  for (const entry of ranked) {
+    if (entry.rank >= 0 && (!primary || entry.rank < primary.rank)) primary = entry;
+  }
+
+  const secondary = baseLanguage(appLang.toLowerCase()) === "en"
+    ? undefined
+    : ranked.find((entry) => entry !== primary && baseLanguage(entry.language) === "en");
+
+  return {primary: primary?.candidate ?? null, secondary: secondary?.candidate ?? null};
+};

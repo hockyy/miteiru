@@ -448,6 +448,7 @@ function Video() {
             fileName={mediaFileName}
             subtitleTracks={mediaInfo.subtitleTracks}
             currentAppLanguage={currentAppLanguage}
+            appLanguageCode={lang}
             videoUrl={mediaVideoUrl}
         />
         <AudioReencodeModal
