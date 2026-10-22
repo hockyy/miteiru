@@ -8,7 +8,9 @@ import {
   getTrackLabel,
   getYoutubeVideoId,
   isEmbeddedSubtitlePath,
-  normalizeDroppedPath
+  normalizeDroppedPath,
+  pickDefaultSubtitleTracks,
+  type SubtitleCandidate
 } from "../renderer/utils/mediaUtils";
 
 describe("normalizeDroppedPath", () => {
@@ -125,5 +127,78 @@ describe("getTrackLabel", () => {
 
   it("falls back to the 1-based track index", () => {
     assert.equal(getTrackLabel({index: 2, type: "audio", codec: "aac"}), "Track 3");
+  });
+});
+
+describe("pickDefaultSubtitleTracks", () => {
+  const youtube = (...languages: string[]): SubtitleCandidate[] => (
+    languages.map((language, index) => ({type: "youtube", index, language}))
+  );
+  const picked = (candidates: SubtitleCandidate[], appLang: string) => {
+    const {primary, secondary} = pickDefaultSubtitleTracks(candidates, appLang);
+    return {primary: primary?.index ?? null, secondary: secondary?.index ?? null};
+  };
+
+  it("prefers the first simplified-style Mandarin track and English underneath", () => {
+    const peppa = youtube("zh", "zh-CN", "zh-HK", "zh-Hans", "zh-SG", "zh-TW", "zh-Hant", "en-GB");
+    assert.deepEqual(picked(peppa, "zh-CN"), {primary: 1, secondary: 7});
+  });
+
+  it("falls back from traditional-only lists to plain zh", () => {
+    assert.deepEqual(picked(youtube("zh-Hant", "zh", "en"), "zh-CN"), {primary: 1, secondary: 2});
+    assert.deepEqual(picked(youtube("zh-Hant", "en"), "zh-CN"), {primary: 0, secondary: 1});
+    assert.deepEqual(picked(youtube("zh-Foo", "en"), "zh-CN"), {primary: 0, secondary: 1});
+  });
+
+  it("accepts speech-recognition originals", () => {
+    assert.deepEqual(picked(youtube("zh-orig", "en"), "zh-CN"), {primary: 0, secondary: 1});
+    assert.deepEqual(picked(youtube("ja-orig", "en-orig"), "ja"), {primary: 0, secondary: 1});
+  });
+
+  it("prefers Hong Kong Chinese for Cantonese", () => {
+    assert.deepEqual(picked(youtube("zh-Hans", "zh-HK", "en"), "yue"), {primary: 1, secondary: 2});
+    assert.deepEqual(picked(youtube("zh", "zh-TW", "yue", "en"), "yue"), {primary: 2, secondary: 3});
+    assert.deepEqual(picked(youtube("zh", "zh-Hant"), "yue"), {primary: 1, secondary: null});
+  });
+
+  it("maps embedded ISO 639-2 tags", () => {
+    const embedded = (...languages: (string | undefined)[]): SubtitleCandidate[] => (
+      languages.map((language, index) => ({type: "embedded", index, language}))
+    );
+    assert.deepEqual(picked(embedded("eng", "jpn"), "ja"), {primary: 1, secondary: 0});
+    assert.deepEqual(picked(embedded("eng", "chi"), "zh-CN"), {primary: 1, secondary: 0});
+    assert.deepEqual(picked(embedded("eng", "zho"), "zh-CN"), {primary: 1, secondary: 0});
+    assert.deepEqual(picked(embedded("eng", "vie"), "vi"), {primary: 1, secondary: 0});
+    assert.deepEqual(picked(embedded("eng", "yue"), "yue"), {primary: 1, secondary: 0});
+  });
+
+  it("lets an embedded track win a tie with a YouTube one", () => {
+    const {primary} = pickDefaultSubtitleTracks([
+      {type: "embedded", index: 0, language: "jpn"},
+      {type: "youtube", index: 0, language: "ja"}
+    ], "ja");
+    assert.equal(primary?.type, "embedded");
+  });
+
+  it("returns no primary when nothing matches, but still finds English", () => {
+    assert.deepEqual(picked(youtube("en", "fr"), "ja"), {primary: null, secondary: 0});
+  });
+
+  it("puts nothing underneath when learning English", () => {
+    assert.deepEqual(picked(youtube("ja", "en", "en-GB"), "en"), {primary: 1, secondary: null});
+  });
+
+  it("does not use the primary as the secondary", () => {
+    assert.deepEqual(picked(youtube("en", "ja"), "ja"), {primary: 1, secondary: 0});
+  });
+
+  it("ignores tracks without a language", () => {
+    const candidates: SubtitleCandidate[] = [
+      {type: "embedded", index: 0},
+      {type: "embedded", index: 1, language: "und"},
+      {type: "embedded", index: 2, language: "jpn"}
+    ];
+    assert.deepEqual(picked(candidates, "ja"), {primary: 2, secondary: null});
+    assert.deepEqual(picked(candidates.slice(0, 2), "ja"), {primary: null, secondary: null});
   });
 });

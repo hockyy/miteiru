@@ -10,6 +10,8 @@ export interface YoutubeSubtitleOption {
 export interface YoutubeSubtitlesState {
   subtitles: YoutubeSubtitleOption[];
   isLoading: boolean;
+  // True once a listing finished, so an empty list can be told apart from one not asked for yet.
+  hasLoaded: boolean;
   error: string | null;
 }
 
@@ -17,6 +19,7 @@ export const useYoutubeSubtitles = () => {
   const [state, setState] = useState<YoutubeSubtitlesState>({
     subtitles: [],
     isLoading: false,
+    hasLoaded: false,
     error: null
   });
 
@@ -34,14 +37,21 @@ export const useYoutubeSubtitles = () => {
       return;
     }
 
-    setState(prev => ({ ...prev, isLoading: true, error: null, subtitles: [] }));
+    setState(prev => ({ ...prev, isLoading: true, hasLoaded: false, error: null, subtitles: [] }));
 
     try {
       console.log(`[useYoutubeSubtitles] Fetching available subtitles for ${videoId}`);
       
       // Use our new yt-dlp based subtitle listing
       const result = await window.ipc.invoke('getYoutubeSubtitleLanguages', videoId);
-      
+
+      // yt-dlp missing or failing comes back as an error beside an empty list; show why instead of "0 subtitles".
+      if (result?.error) {
+        console.error('[useYoutubeSubtitles] Could not list YouTube subtitles:', result.error);
+        setState(prev => ({ ...prev, subtitles: [], error: result.error, isLoading: false }));
+        return;
+      }
+
       if (result && result.languages) {
         const availableSubtitles: YoutubeSubtitleOption[] = result.languages.map((lang: any) => ({
           language: lang.code,
@@ -54,7 +64,8 @@ export const useYoutubeSubtitles = () => {
         setState(prev => ({ 
           ...prev, 
           subtitles: availableSubtitles,
-          isLoading: false 
+          isLoading: false,
+          hasLoaded: true
         }));
       } else {
         throw new Error('No subtitle data received from yt-dlp');
@@ -100,6 +111,7 @@ export const useYoutubeSubtitles = () => {
     setState({
       subtitles: [],
       isLoading: false,
+      hasLoaded: false,
       error: null
     });
   }, []);
