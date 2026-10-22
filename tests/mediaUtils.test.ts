@@ -180,8 +180,8 @@ describe("pickDefaultSubtitleTracks", () => {
     assert.equal(primary?.type, "embedded");
   });
 
-  it("returns no primary when nothing matches, but still finds English", () => {
-    assert.deepEqual(picked(youtube("en", "fr"), "ja"), {primary: null, secondary: 0});
+  it("picks nothing when no track matches the language being learned", () => {
+    assert.deepEqual(picked(youtube("en", "fr"), "ja"), {primary: null, secondary: null});
   });
 
   it("puts nothing underneath when learning English", () => {

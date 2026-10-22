@@ -18,16 +18,28 @@ const ytDlpErrorMessage = (stderr: string, code: number | null) => {
   return message ? message.replace(/^ERROR:\s*/, "") : `yt-dlp exited with code ${code}`;
 };
 
-const runYtDlp = (ytDlpPath: string, args: string[]) => new Promise<string>((resolve, reject) => {
+const YT_DLP_TIMEOUT_MS = 120_000;
+
+const runYtDlp =(ytDlpPath: string, args: string[]) => new Promise<string>((resolve, reject) => {
   const child = spawn(ytDlpPath, args);
   // The JSON listing can be several MB: collect the chunks and decode once.
   const stdout: Buffer[] = [];
   const stderr: Buffer[] = [];
 
+  // A stalled yt-dlp would otherwise leave the subtitle picker loading forever.
+  const timer = setTimeout(() => {
+    child.kill();
+    reject(new Error("yt-dlp did not finish within 2 minutes."));
+  }, YT_DLP_TIMEOUT_MS);
+
   child.stdout.on("data", (data) => stdout.push(data));
   child.stderr.on("data", (data) => stderr.push(data));
-  child.on("error", (err) => reject(new Error(`Failed to run yt-dlp: ${err.message}`)));
+  child.on("error", (err) => {
+    clearTimeout(timer);
+    reject(new Error(`Failed to run yt-dlp: ${err.message}`));
+  });
   child.on("close", (code) => {
+    clearTimeout(timer);
     if (code === 0) {
       resolve(Buffer.concat(stdout).toString("utf8"));
     } else {

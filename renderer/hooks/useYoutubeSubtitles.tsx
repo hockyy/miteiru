@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import {getYoutubeVideoId} from "../utils/mediaUtils";
 
 export interface YoutubeSubtitleOption {
@@ -22,6 +22,8 @@ export const useYoutubeSubtitles = () => {
     hasLoaded: false,
     error: null
   });
+  // Bumped per listing and on clear, so a slow listing for an earlier video can't overwrite a newer one.
+  const latestRequest = useRef(0);
 
   // Check if URL is a YouTube URL
   const isYoutubeUrl = useCallback((url: string): boolean => {
@@ -37,13 +39,15 @@ export const useYoutubeSubtitles = () => {
       return;
     }
 
+    const request = ++latestRequest.current;
     setState(prev => ({ ...prev, isLoading: true, hasLoaded: false, error: null, subtitles: [] }));
 
     try {
       console.log(`[useYoutubeSubtitles] Fetching available subtitles for ${videoId}`);
-      
+
       // Use our new yt-dlp based subtitle listing
       const result = await window.ipc.invoke('getYoutubeSubtitleLanguages', videoId);
+      if (request !== latestRequest.current) return;
 
       // yt-dlp missing or failing comes back as an error beside an empty list; show why instead of "0 subtitles".
       if (result?.error) {
@@ -72,7 +76,8 @@ export const useYoutubeSubtitles = () => {
       }
     } catch (error) {
       console.error('[useYoutubeSubtitles] Error fetching YouTube subtitles:', error);
-      setState(prev => ({ 
+      if (request !== latestRequest.current) return;
+      setState(prev => ({
         ...prev, 
         error: error.message || 'Failed to fetch YouTube subtitles',
         isLoading: false 
@@ -108,6 +113,7 @@ export const useYoutubeSubtitles = () => {
 
   // Clear current state
   const clearSubtitles = useCallback(() => {
+    latestRequest.current++;
     setState({
       subtitles: [],
       isLoading: false,
