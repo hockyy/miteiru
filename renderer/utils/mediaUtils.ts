@@ -183,7 +183,8 @@ const subtitleLanguageRank = (language: string, appLang: string) => {
 /**
  * The tracks to preselect: primary is the best match for the language being learned, secondary is the
  * first English one. Ties go to the earlier candidate, so pass embedded tracks first, then YouTube manual
- * captions, then auto ones. Nothing goes underneath when English itself is being learned.
+ * captions, then auto ones. Nothing goes underneath when English itself is being learned, or when no
+ * track matches the language being learned.
  */
 export const pickDefaultSubtitleTracks = (
   candidates: SubtitleCandidate[],
@@ -200,7 +201,8 @@ export const pickDefaultSubtitleTracks = (
     if (entry.rank >= 0 && (!primary || entry.rank < primary.rank)) primary = entry;
   }
 
-  const secondary = baseLanguage(appLang.toLowerCase()) === "en"
+  // English underneath only makes sense with something to learn on top of it.
+  const secondary = !primary || baseLanguage(appLang.toLowerCase()) === "en"
     ? undefined
     : ranked.find((entry) => entry !== primary && baseLanguage(entry.language) === "en");
 
