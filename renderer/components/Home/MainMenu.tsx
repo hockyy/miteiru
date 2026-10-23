@@ -1,5 +1,7 @@
 import React from 'react';
 import { Button } from '../Utils/Button';
+import { UI_LINK_PILL } from '../UI/miteiruUiTheme';
+import { MITEIRU_REPO_URL } from '../../utils/constants';
 import {
   HOME_BODY,
   HOME_HEADER,
@@ -12,6 +14,11 @@ import {
 } from './homeMenuTheme';
 
 const checkSymbol = ['❓', '✅', '🙃'] as const;
+
+// Opens the system browser (the main process only allows http/https), never the app window.
+const openRepository = () => {
+  window.electronAPI.openExternal(MITEIRU_REPO_URL);
+};
 
 interface LanguageMode {
   id: number;
@@ -85,8 +92,19 @@ export const MainMenu: React.FC<MainMenuProps> = ({
           <div className="text-[11px] font-bold text-blue-800">v{miteiruVersion}</div>
         </div>
       </div>
-      <div className={HOME_STATUS_PILL}>
-        {checkSymbol[checkOk]} {checkMessage}
+      <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
+        <div className={HOME_STATUS_PILL}>
+          {checkSymbol[checkOk]} {checkMessage}
+        </div>
+        <button
+          type="button"
+          className={UI_LINK_PILL}
+          title="Open Miteiru on GitHub. A star helps other learners find it"
+          onClick={openRepository}
+        >
+          <span aria-hidden="true">⭐</span>
+          Star on GitHub
+        </button>
       </div>
     </header>
 

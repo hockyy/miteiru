@@ -1,3 +1,5 @@
+import {MITEIRU_REPO_URL} from "./constants";
+
 /**
  * Shared OpenRouter endpoints and headers.
  * Used by renderer chat/streaming and main-process ASR/translate.
@@ -7,7 +9,7 @@ export const OPENROUTER_CHAT_URL = `${OPENROUTER_API_BASE}/chat/completions`;
 export const OPENROUTER_TRANSCRIBE_URL = `${OPENROUTER_API_BASE}/audio/transcriptions`;
 
 export const OPENROUTER_REQUEST_HEADERS = {
-  "HTTP-Referer": "https://github.com/hockyy/miteiru",
+  "HTTP-Referer": MITEIRU_REPO_URL,
   "X-Title": "Miteiru",
 };
 

@@ -10,6 +10,9 @@ import {
 // name starts with this (main/helpers/subtitleCaches.ts).
 export const NORMALIZED_SUBTITLE_PREFIX = "miteiru_normalized_";
 
+// The project's GitHub page (home header "Star on GitHub" link, OpenRouter HTTP-Referer).
+export const MITEIRU_REPO_URL = "https://github.com/hockyy/miteiru";
+
 export const videoConstants = {
   supportedVideoFormats: [
     'mkv', 'mp4', 'webm', 'ogg', 'mov', 'avi', 'flv', '3gp', 'wmv', 'wav', 'hls', 'mp3', 'mp2t', 'ts'
