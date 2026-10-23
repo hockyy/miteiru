@@ -17,7 +17,7 @@ with the reading on top, the meaning underneath and a full dictionary entry one 
 
 **[⬇️ Download](https://github.com/hockyy/miteiru/releases/latest)** · **[🌐 Website](https://miteiru.hocky.id)** · **[▶️ Watch the 36-second trailer](https://youtu.be/-yslFBRBM2c)**
 
-<img src="docs/images/demo.gif" width="800" alt="Miteiru playing a video: the Japanese subtitle shows furigana, romaji and meanings; clicking 天気 opens its dictionary entry, then the kanji breakdown, then the same scene in Vietnamese"/>
+<img src="https://github.com/user-attachments/assets/d4ff7157-d6f3-4b2e-8414-2a5559883f5b" width="800" alt="Miteiru playing a video: the Japanese subtitle shows furigana, romaji and meanings; clicking 天気 opens its dictionary entry, then the kanji breakdown, then the same scene in Vietnamese"/>
 
 <sub>見ている · 在看 · 睇緊 · đang xem: "watching", in the four languages Miteiru speaks</sub>
 
@@ -32,10 +32,10 @@ with the reading on top, the meaning underneath and a full dictionary entry one 
 
 ## Features
 
-<img src="docs/images/features-words.jpg" alt="Click any word, pitch accent, every conjugation, kanji broken down"/>
-<img src="docs/images/features-study.jpg" alt="Colour what you know, flashcards, one-click Anki cards, karaoke lyrics"/>
-<img src="docs/images/features-subtitles.jpg" alt="Two subtitles at once, every line on the seek bar, settings in plain words, fonts for every script"/>
-<img src="docs/images/features-media.jpg" alt="Local files and YouTube, AI translations, dictionaries offline, sync with a GitHub Gist"/>
+<img src="https://github.com/user-attachments/assets/3d326302-5b88-4411-afbf-d90999751239" alt="Click any word, pitch accent, every conjugation, kanji broken down"/>
+<img src="https://github.com/user-attachments/assets/9039a77d-8b6e-4810-8a22-53511fff1553" alt="Colour what you know, flashcards, one-click Anki cards, karaoke lyrics"/>
+<img src="https://github.com/user-attachments/assets/027c8bd5-215f-4dcc-8193-99e43d827bec" alt="Two subtitles at once, every line on the seek bar, settings in plain words, fonts for every script"/>
+<img src="https://github.com/user-attachments/assets/28ec9537-8f24-404b-bdde-3feb6d24ced9" alt="Local files and YouTube, AI translations, dictionaries offline, sync with a GitHub Gist"/>
 
 <details>
 <summary><b>Everything else</b></summary>
@@ -52,9 +52,9 @@ with the reading on top, the meaning underneath and a full dictionary entry one 
 ## Download
 
 <div align="center">
-<a href="https://github.com/hockyy/miteiru/releases/latest"><img width="9%" src="renderer/public/images/kiwi.png" alt="kiwi"/></a>
-<a href="https://github.com/hockyy/miteiru/releases/latest"><img width="60%" src="renderer/public/images/downloadBanner.gif" alt="Download Miteiru"/></a>
-<a href="https://github.com/hockyy/miteiru/releases/latest"><img width="7%" src="renderer/public/images/pome.png" alt="pomegranate"/></a>
+<a href="https://github.com/hockyy/miteiru/releases/latest"><img width="9%" src="https://github.com/user-attachments/assets/16dc7cea-a70b-43ec-bb9e-01d7ef5c57ea" alt="kiwi"/></a>
+<a href="https://github.com/hockyy/miteiru/releases/latest"><img width="60%" src="https://github.com/user-attachments/assets/4262c051-270c-43db-a701-3d6807de4696" alt="Download Miteiru"/></a>
+<a href="https://github.com/hockyy/miteiru/releases/latest"><img width="7%" src="https://github.com/user-attachments/assets/644a8c51-06d8-4895-9940-d2f66156e622" alt="pomegranate"/></a>
 </div>
 
 Get the newest version from **[Releases](https://github.com/hockyy/miteiru/releases/latest)**:
