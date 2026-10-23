@@ -34,13 +34,13 @@ with the reading on top, the meaning underneath and a full dictionary entry one 
 
 <img src="docs/images/features-words.jpg" alt="Click any word, pitch accent, every conjugation, kanji broken down"/>
 <img src="docs/images/features-study.jpg" alt="Colour what you know, flashcards, one-click Anki cards, karaoke lyrics"/>
+<img src="docs/images/features-subtitles.jpg" alt="Two subtitles at once, every line on the seek bar, settings in plain words, fonts for every script"/>
 <img src="docs/images/features-media.jpg" alt="Local files and YouTube, AI translations, dictionaries offline, sync with a GitHub Gist"/>
 
 <details>
 <summary><b>Everything else</b></summary>
 
-- Two subtitles at once, each with its own style and position, and `[` / `]` to fix their timing.
-- Every subtitle line marked on the seek bar; hover to read it.
+- `[` / `]` shift a subtitle's timing when it's out of sync.
 - Lyrics search on [LRCLIB](https://lrclib.net) for music videos.
 - Optional AI translations (formal, neutral or casual, with grammar notes), using your own OpenRouter key.
 - Notes on words, a vocabulary sidebar, and syncing your progress through a GitHub Gist.
@@ -152,7 +152,7 @@ npm run script:unpack-language-assets
 npm run script:download-language-assets -- mandarin han-character-core
 ```
 
-`MITEIRU_FORCE_ASSET_DOWNLOAD=1` redownloads existing zips. More notes are in [`docs/`](docs).
+`MITEIRU_FORCE_ASSET_DOWNLOAD=1` redownloads existing zips. More notes are in [`docs/`](docs), and contributions are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Credits and license
 
