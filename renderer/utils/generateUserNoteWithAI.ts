@@ -3,6 +3,7 @@ import {
   buildUserNoteUserPrompt,
   parseUserNoteAiResponse,
 } from './aiUserNotePrompts';
+import { MITEIRU_REPO_URL } from './constants';
 import type { MiteiruUserEntry } from '../hooks/useUserNotes';
 
 type GenerateUserNoteParams = {
@@ -28,7 +29,7 @@ export const generateUserNoteWithAI = async ({
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${openRouterApiKey}`,
-      'HTTP-Referer': 'https://github.com/hockyy/miteiru',
+      'HTTP-Referer': MITEIRU_REPO_URL,
       'X-Title': 'Miteiru',
     },
     body: JSON.stringify({
