@@ -27,7 +27,7 @@ Miteiru is a multi-language subtitle learning application that supports various 
 ### 🇭🇰 Cantonese  
 - **Tokenizer**: Jieba (Cantonese variant)
 - **Features**: Jyutping romanization, Tone symbols
-- **Dictionary**: CC-Canto
+- **Dictionary**: CantoDict
 - **Script Support**: Traditional Chinese
 - **Special Features**: Cantonese-specific tone mapping
 

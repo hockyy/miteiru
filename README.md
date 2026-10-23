@@ -1,85 +1,132 @@
-# Miteiru (見ている) / zai⁴kan⁴ (在看) / tai²gan² (睇緊) / đang xem
-
-[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-blue.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
-![GitHub release](https://img.shields.io/github/release/hockyy/miteiru.svg?color=purple)
-![Open Issues](https://img.shields.io/github/issues/hockyy/miteiru?color=green)
-![Contributors](https://img.shields.io/github/contributors/hockyy/miteiru)
-![Last Commit](https://img.shields.io/github/last-commit/hockyy/miteiru)
-![GitHub Stars](https://img.shields.io/github/stars/hockyy/miteiru.svg?color=yellow)
-![GitHub Forks](https://img.shields.io/github/forks/hockyy/miteiru.svg)
-
-## Disclaimers
-### About the Developer
-Hello! I'm **Hocky Yudhiono**, the developer behind **Miteiru**. I created this video player app with the goal of providing a reliable and user-friendly experience for watching your favorite videos.
-
-### Commitment to Security
-
-I am **dedicated to ensuring that Miteiru is secure and free from any malicious components**. However, if you encounter any security issues or vulnerabilities, please reach out to me privately at [miteiru@hocky.id](mailto:miteiru@hocky.id) or just submit a GitHub issue, and I will do my best to address and resolve them promptly.
-
-### Liability Disclaimer
-While I strive to maintain a safe and secure application, I cannot be held responsible for any unintended consequences or damages that may occur from using **Miteiru**. **Use the app at your own risk**.
-
-## Download ૮ ˶ᵔ ᵕ ᵔ˶ ა✩°｡ ⋆⸜
 <div align="center">
 
-<a href="https://github.com/hockyy/miteiru/releases/latest" target="_blank" rel="noopener noreferrer">
-<img width="9%" src="./renderer/public/images/kiwi.png" alt="kiwi"/>
-</a>
-<a href="https://github.com/hockyy/miteiru/releases/latest" target="_blank" rel="noopener noreferrer">
-<img width="60%" src="./renderer/public/images/downloadBanner.gif" alt="banner"/>
-</a>
-<a href="https://github.com/hockyy/miteiru/releases/latest" target="_blank" rel="noopener noreferrer">
-<img width="7%" src="./renderer/public/images/pome.png" alt="pomegranate"/>
-</a>
+<img src="renderer/public/images/logo.png" width="96" alt="Miteiru logo"/>
+
+# Miteiru 見ている
+
+**Learn Japanese, Mandarin, Cantonese and Vietnamese from what you watch.**
+
+A free video player that turns every subtitle word into something you can click,<br/>
+with the reading on top, the meaning underneath and a full dictionary entry one click away.
+
+[![Latest release](https://img.shields.io/github/v/release/hockyy/miteiru?color=7c3aed&label=release)](https://github.com/hockyy/miteiru/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/hockyy/miteiru/total?color=2563eb)](https://github.com/hockyy/miteiru/releases)
+[![Stars](https://img.shields.io/github/stars/hockyy/miteiru?color=eab308)](https://github.com/hockyy/miteiru/stargazers)
+[![Platforms](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-0ea5e9)](#download)
+[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/license-CC%20BY--NC--SA%204.0-64748b)](LICENSE.md)
+
+**[⬇️ Download](https://github.com/hockyy/miteiru/releases/latest)** · **[🌐 Website](https://miteiru.hocky.id)** · **[▶️ Watch the 36-second trailer](https://youtu.be/-yslFBRBM2c)**
+
+<img src="docs/images/demo.gif" width="800" alt="Miteiru playing a video: the Japanese subtitle shows furigana, romaji and meanings; clicking 天気 opens its dictionary entry, then the kanji breakdown, then the same scene in Vietnamese"/>
+
+<sub>見ている · 在看 · 睇緊 · đang xem: "watching", in the four languages Miteiru speaks</sub>
+
 </div>
 
-<table style="border: none;">
-  <tr>
-    <td><img src="renderer/public/images/logo.png" alt="Miteiru Logo" /></td>
-    <td> Miteiru is an open source Electron video player for learning Japanese, Mandarin, Cantonese, and Vietnamese. It tokenizes subtitles (Kuromoji, Jieba), showsreadings and dictionary info from bundled <a href="https://github.com/scriptin/jmdict-simplified">JMDict</a>, CC-CEDICT, and VNEDict, and is heavily inspired by <a href="https://ookii-tsuki.github.io/Anisubber/">Anisubber</a>.
+## Why Miteiru?
 
-📚 **Language details:** [Language Documentation](README_LANGUAGES.md)</td>
-  </tr>
-</table>
+- **Every word is clickable.** Subtitles are split into words (Kuromoji for Japanese, Jieba for Chinese) with furigana, pinyin or jyutping on top and short meanings underneath. Click a word for its full dictionary entry, pitch accent, conjugations and kanji breakdown.
+- **Your videos, your subtitles.** Drop in local files (`.mkv`, `.mp4`, `.mov` and anything else Chromium plays) with `.srt`, `.ass`, `.vtt` or `.lrc` subtitles, or paste a YouTube link and pick one of its caption tracks.
+- **Dictionaries ship with the app.** JMdict, KANJIDIC, CC-CEDICT, CantoDict and VNEDict work offline. No account, no subscription, no server.
+- **Made for immersion.** Your target language on top and English underneath, a key to repeat the current line, karaoke lyrics, colours for the words you know, flashcards and one-click Anki cards.
 
-## What can 見ている do?
+## Features
 
-- **Japanese, Mandarin, Cantonese, and Vietnamese** — tokenization, readings (furigana / pinyin / jyutping), and click-to-define
-- **Bundled dictionaries** — JMDict, KanjiDic, CC-CEDICT, CC-Canto, VNEDict, Japanese pitch accent
-- Local video files (whatever [Chromium](https://www.chromium.org/audio-video/) can play; some OSes also play **x265**) plus **YouTube** URLs
-- Primary + secondary (translation) subtitles, karaoke mode with LRCLIB lyrics search, Anki export, notes
-- Cross-platform: Windows, macOS, GNU/Linux
+<img src="docs/images/features-words.jpg" alt="Click any word, pitch accent, every conjugation, kanji broken down"/>
+<img src="docs/images/features-study.jpg" alt="Colour what you know, flashcards, one-click Anki cards, karaoke lyrics"/>
+<img src="docs/images/features-media.jpg" alt="Local files and YouTube, AI translations, dictionaries offline, sync with a GitHub Gist"/>
 
-## How to start immersing
+<details>
+<summary><b>Everything else</b></summary>
 
-- Pick a language on the home screen (dictionaries ship with the installer).
-- Drag in a video, or paste a YouTube URL with Ctrl+V. External subtitles can be dropped the same way; many anime subs live at https://kitsunekko.net/
-- YouTube Japanese only appears when the video has Japanese CC (including auto-generated).
-- `X` opens settings and `Z` toggles the video controls. Shortcuts are on the home screen; Ctrl+H goes back there.
+- Two subtitles at once, each with its own style and position, and `[` / `]` to fix their timing.
+- Every subtitle line marked on the seek bar; hover to read it.
+- Lyrics search on [LRCLIB](https://lrclib.net) for music videos.
+- Optional AI translations (formal, neutral or casual, with grammar notes), using your own OpenRouter key.
+- Notes on words, a vocabulary sidebar, and syncing your progress through a GitHub Gist.
+- Bundled subtitle fonts (Noto Sans JP, SC and TC), or any font installed on your computer.
+- **CC Live** subtitles a video that has none, using the system's live captions (Windows, and recent macOS on Apple silicon).
 
-![image](https://github.com/hockyy/miteiru/assets/19528709/6d8bcf4f-73dd-4cfb-8a6f-4bbf7e10a25a)
-![image](https://github.com/hockyy/miteiru/assets/19528709/b97c3ef1-18ee-40d4-a0ab-ff7d9de81d66)
-![image](https://github.com/hockyy/miteiru/assets/19528709/c5e21a69-6cdb-47c9-a842-ad97b81125be)
-![image](https://github.com/hockyy/miteiru/assets/19528709/46cd3065-29cf-4d0a-957b-62ef28386693)
-![image](https://github.com/hockyy/miteiru/assets/19528709/2b54c704-019d-47c1-b183-55ad350c4b18)
+</details>
 
-## Installation
+## Download
 
-Releases: https://github.com/hockyy/miteiru/releases
+<div align="center">
+<a href="https://github.com/hockyy/miteiru/releases/latest"><img width="9%" src="renderer/public/images/kiwi.png" alt="kiwi"/></a>
+<a href="https://github.com/hockyy/miteiru/releases/latest"><img width="60%" src="renderer/public/images/downloadBanner.gif" alt="Download Miteiru"/></a>
+<a href="https://github.com/hockyy/miteiru/releases/latest"><img width="7%" src="renderer/public/images/pome.png" alt="pomegranate"/></a>
+</div>
 
-### Mac
+Get the newest version from **[Releases](https://github.com/hockyy/miteiru/releases/latest)**:
 
-- Download the `.pkg`. Builds are unsigned (no Apple Developer Program), so macOS will warn about an unidentified developer. The code is open source — [open anyway](https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unidentified-developer-mh40616/mac), or build it yourself below.
+| Platform | File | Note |
+| --- | --- | --- |
+| Windows 10/11 | `miteiru-<version>-win-x64.exe` | The installer isn't code-signed, so SmartScreen may warn: **More info → Run anyway**. |
+| macOS (Apple silicon) | `miteiru-<version>-mac-arm64.pkg` | Not notarized (no paid Apple Developer account): [open it anyway](https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unidentified-developer-mh40616/mac). |
+| Linux | `.deb` or `.AppImage` | Built on Ubuntu 22.04 and 24.04. Pick yours; on other distributions, try the 22.04 AppImage. |
 
-![image](https://github.com/hockyy/miteiru/assets/19528709/a440a119-49cf-45f1-8c42-93289d20e01e)
+<details>
+<summary>macOS: what the warning looks like</summary>
 
-### Windows
+![The macOS dialog about an unidentified developer](https://github.com/hockyy/miteiru/assets/19528709/a440a119-49cf-45f1-8c42-93289d20e01e)
 
-- Download the NSIS installer (`.exe`). Some PCs flag it; the source is here if you want to verify.
+</details>
 
-### Linux
+## Quick start
 
-- `.deb` and AppImage for Ubuntu 22.04 and 24.04.
+1. Open Miteiru and pick your language. Its dictionaries are already included.
+2. Drag a video into the window (with its subtitle files, if you have them), or paste a YouTube link with **Ctrl+V**.
+3. In the subtitle picker, your language goes on top and English underneath. Change either if you like.
+4. Click any word. **R** repeats the line, **X** opens the settings, **Z** shows the controls and **Ctrl+H** goes home. Every shortcut is listed on the home screen.
+
+> [!TIP]
+> - **YouTube captions** come through [yt-dlp](https://github.com/yt-dlp/yt-dlp), and subtitles inside video files through FFmpeg. **Home → Settings & tools → Optional media tools** shows whether they're found and links to them.
+> - **Anime subtitles:** many Japanese ones are on [kitsunekko](https://kitsunekko.net/).
+
+## Languages
+
+| | 🇯🇵 Japanese | 🇨🇳 Mandarin | 🇭🇰 Cantonese | 🇻🇳 Vietnamese |
+| --- | --- | --- | --- | --- |
+| Words split by | Kuromoji | Jieba | Jieba (Cantonese) | Longest match |
+| Readings | Furigana, romaji | Pinyin | Jyutping | |
+| Dictionary | JMdict, KANJIDIC | CC-CEDICT | CantoDict | VNEDict |
+| Extras | Pitch accent, conjugations, kanji strokes | Simplified and traditional, hanzi strokes | Tone marks | A meaning under every word |
+
+More detail in [README_LANGUAGES.md](README_LANGUAGES.md).
+
+## FAQ
+
+<details>
+<summary><b>Is it really free?</b></summary>
+
+Yes: no account, no ads, no subscription. Miteiru is licensed under [CC BY-NC-SA 4.0](LICENSE.md): you may share and adapt it for non-commercial use, with credit, under the same license.
+
+</details>
+
+<details>
+<summary><b>Does it need the internet?</b></summary>
+
+Only for YouTube and the optional AI translation. Local videos, subtitles and dictionary lookups work offline.
+
+</details>
+
+<details>
+<summary><b>The YouTube subtitle list is empty</b></summary>
+
+The subtitle picker says why. Usually yt-dlp is missing or outdated. Put a current `yt-dlp` in Miteiru's tools folder or on your PATH, then load the link again.
+
+</details>
+
+<details>
+<summary><b>Found a bug or have an idea?</b></summary>
+
+[Open an issue](https://github.com/hockyy/miteiru/issues/new/choose) or start a thread in [Discussions](https://github.com/hockyy/miteiru/discussions).
+
+</details>
+
+## Support Miteiru
+
+If Miteiru helps you learn, **[give it a ⭐](https://github.com/hockyy/miteiru/stargazers)**: stars are how other learners find it. Telling your study group, class or Discord server about it helps even more.
 
 ## For developers
 
@@ -105,6 +152,10 @@ npm run script:unpack-language-assets
 npm run script:download-language-assets -- mandarin han-character-core
 ```
 
-`MITEIRU_FORCE_ASSET_DOWNLOAD=1` redownloads existing zips.
+`MITEIRU_FORCE_ASSET_DOWNLOAD=1` redownloads existing zips. More notes are in [`docs/`](docs).
 
-https://user-images.githubusercontent.com/19528709/236619520-076c863a-6c14-4f6e-8f9b-5d1e660fd646.mp4
+## Credits and license
+
+Dictionary data comes from JMdict and KANJIDIC ([EDRDG](https://www.edrdg.org/)), CC-CEDICT, CantoDict, VNEDict and KanjiVG, each under its own license.
+
+Miteiru is made by [Hocky Yudhiono](https://github.com/hockyy) and licensed under [CC BY-NC-SA 4.0](LICENSE.md). It is provided as is; use it at your own risk. Found a security issue? Email [miteiru@hocky.id](mailto:miteiru@hocky.id) or open an issue.
