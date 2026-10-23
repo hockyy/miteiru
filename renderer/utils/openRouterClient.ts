@@ -6,9 +6,10 @@
  */
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { streamText } from 'ai';
+import { MITEIRU_REPO_URL } from './constants';
 
 const MITEIRU_OPENROUTER_HEADERS = {
-  'HTTP-Referer': 'https://github.com/hockyy/miteiru',
+  'HTTP-Referer': MITEIRU_REPO_URL,
   'X-Title': 'Miteiru',
 };
 

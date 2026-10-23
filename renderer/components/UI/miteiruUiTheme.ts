@@ -13,6 +13,7 @@
  * | `Button secondary small` | Show/Hide toggles beside sidebar secret fields |
  * | `UI_TEXTAREA`            | Multi-line text entry |
  * | `UI_ACTION_BTN`          | Compact inline actions (prefer over raw `<button>`) |
+ * | `UI_LINK_PILL`           | Quiet pill button that opens a web page (home header "Star on GitHub") |
  * | `Button` (`Utils/Button`) | Primary/secondary actions in toolbars |
  * | `MiteiruActionBar`       | Voice select + small button grid (learn page pattern) |
  * | `MiteiruSubtitleSlot`    | Tokenized subtitle preview areas |
@@ -124,6 +125,10 @@ export const UI_ACTION_BTN_PRIMARY =
 
 export const UI_ACTION_BTN_LIVE =
   'inline-flex min-w-0 items-center justify-center rounded-lg border border-green-300 bg-green-100 px-2.5 py-1 text-xs font-bold text-green-900 transition-colors hover:bg-green-200 disabled:cursor-not-allowed disabled:opacity-50';
+
+/** Pill-shaped `<button>` for a quiet web link; about the height of `HOME_STATUS_PILL`. */
+export const UI_LINK_PILL =
+  'inline-flex shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full border border-blue-200 bg-white px-3 py-1.5 text-xs font-bold text-blue-900 transition-colors hover:bg-yellow-100 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1';
 
 export const MEANING_KBD =
   'rounded-md border border-blue-200 bg-white px-2 py-0.5 text-xs font-bold text-blue-800';
