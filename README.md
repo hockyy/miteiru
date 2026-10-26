@@ -16,11 +16,6 @@ with the reading on top, the meaning underneath and a full dictionary entry one 
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/license-CC%20BY--NC--SA%204.0-64748b)](LICENSE.md)
 
 **[⬇️ Download](https://github.com/hockyy/miteiru/releases/latest)** · **[🌐 Website](https://miteiru.hocky.id)** · **[▶️ Watch the 36-second trailer](https://youtu.be/-yslFBRBM2c)**
-
-<img src="https://github.com/user-attachments/assets/d4ff7157-d6f3-4b2e-8414-2a5559883f5b" width="800" alt="Miteiru playing a video: the Japanese subtitle shows furigana, romaji and meanings; clicking 天気 opens its dictionary entry, then the kanji breakdown, then the same scene in Vietnamese"/>
-
-<sub>見ている · 在看 · 睇緊 · đang xem: "watching", in the four languages Miteiru speaks</sub>
-
 </div>
 
 ## Why Miteiru?
