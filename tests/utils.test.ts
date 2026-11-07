@@ -210,4 +210,7 @@ describe("getColorGradient", () => {
 it("getMiteiruVideoTitle names each file without its folder, on Windows and POSIX paths", () => {
   const title = getMiteiruVideoTitle("/videos/ep01.mkv", "C:\\Users\\me\\Videos\\ep01.ja.srt", "", true, false);
   assert.equal(title, `${getMiteiruAppName()} - ep01.mkv - ep01.ja.srt-CJK✅-Other❌`);
+  // A YouTube video goes by its title, slashes and all, not by the end of its link.
+  const youtube = getMiteiruVideoTitle("https://www.youtube.com/watch?v=abc", "", "", true, true, "AC/DC - Thunderstruck");
+  assert.equal(youtube, `${getMiteiruAppName()} - AC/DC - Thunderstruck-CJK✅-Other✅`);
 });

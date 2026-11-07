@@ -8,16 +8,25 @@ import {NativePlayer} from "../../utils/nativePlayer";
  * stays transparent over the video. Same props and player API as VideoJS, so the page and its
  * hooks don't need to know which one is running.
  */
-export const NativeVideo = ({options, onReady, clock}: { options: any; onReady: (player: any) => void; clock: PlaybackClock }) => {
+export const NativeVideo = ({options, onReady, clock, onError}: {
+  options: any;
+  onReady: (player: any) => void;
+  clock: PlaybackClock;
+  /** mpv could not play the source (YouTubeVideo then switches to the YouTube embed). */
+  onError?: () => void;
+}) => {
   const elementRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<NativePlayer | null>(null);
   const onReadyRef = useRef(onReady);
   onReadyRef.current = onReady;
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
 
   useEffect(() => {
     const element = elementRef.current;
     const player = new NativePlayer(element);
     playerRef.current = player;
+    player.on('error', () => onErrorRef.current?.());
     let cancelled = false;
     document.documentElement.classList.add('miteiru-native-video');
     player.open()
@@ -27,7 +36,10 @@ export const NativeVideo = ({options, onReady, clock}: { options: any; onReady: 
           player.src(options.sources);
           player.updateRect();
         })
-        .catch((error) => console.error('[native-video] could not start the player', error));
+        .catch((error) => {
+          console.error('[native-video] could not start the player', error);
+          if (!cancelled) onErrorRef.current?.();
+        });
     const resize = new ResizeObserver(() => player.updateRect());
     resize.observe(element);
     return () => {

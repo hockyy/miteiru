@@ -8,7 +8,8 @@ export const isTauri = () => typeof window !== "undefined" && "__TAURI_INTERNALS
 export const nativeMediaPath = (path: string) => (/^\/[A-Za-z]:[\\/]/.test(path) ? path.slice(1) : path);
 
 type Listener = () => void;
-type Source = { src: string; path: string; type?: string };
+/** `src` names the video for the page (a file, a YouTube link); `path` is what mpv opens. */
+type Source = { src: string; path: string; type?: string; httpHeaders?: Record<string, string> };
 type PlayerEvent = {
   type: string;
   name?: string;
@@ -41,6 +42,8 @@ export class NativePlayer {
   private lastTime = 0;
   private lastTimeAt = 0;
   private unlisten: (() => void) | null = null;
+  /** Commands reach mpv in the order given: a seek after the loadfile it is for, a loadfile after its headers. */
+  private queue: Promise<unknown> = Promise.resolve();
 
   constructor(private readonly element: HTMLElement) {}
 
@@ -103,7 +106,9 @@ export class NativePlayer {
 
   private run(cmd: string, args: Record<string, unknown>) {
     if (this.disposed) return;
-    invoke(cmd, args).catch((e) => console.error(`[native-video] ${cmd} failed`, e));
+    this.queue = this.queue
+      .then(() => (this.disposed ? undefined : invoke(cmd, args)))
+      .catch((e) => console.error(`[native-video] ${cmd} failed`, e));
   }
 
   on(name: string, fn: Listener) {
@@ -126,6 +131,16 @@ export class NativePlayer {
     this.props.delete("duration");
     this.lastTime = 0;
     this.lastTimeAt = performance.now();
+    // A stream (YouTube through yt-dlp) brings the headers its URLs need. Local files need none,
+    // so whatever an earlier stream set can stay.
+    if (source.httpHeaders) {
+      const {"User-Agent": userAgent, ...others} = source.httpHeaders;
+      if (userAgent) this.run("player_set", {name: "user-agent", value: userAgent});
+      this.run("player_command", {args: ["change-list", "http-header-fields", "clr", ""]});
+      for (const [name, value] of Object.entries(others)) {
+        this.run("player_command", {args: ["change-list", "http-header-fields", "append", `${name}: ${value}`]});
+      }
+    }
     this.run("player_command", {args: ["loadfile", nativeMediaPath(source.path), "replace"]});
   }
 
