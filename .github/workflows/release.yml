@@ -121,10 +121,10 @@ jobs:
           fi
           notes="docs/whats-new/${tag#v}.md"
           if [ -f "$notes" ]; then
-            gh release create "$tag" --repo "${{ github.repository }}" \
+            gh release create "$tag" --repo "${{ github.repository }}" --draft --target "${{ github.sha }}" \
               --title "$tag" --notes-file "$notes"
           else
-            gh release create "$tag" --repo "${{ github.repository }}" \
+            gh release create "$tag" --repo "${{ github.repository }}" --draft --target "${{ github.sha }}" \
               --title "$tag" --generate-notes
           fi
 
@@ -331,10 +331,10 @@ jobs:
           fi
           notes="docs/whats-new/${tag#v}.md"
           if [ -f "$notes" ]; then
-            gh release create "$tag" --repo "${{ github.repository }}" \
+            gh release create "$tag" --repo "${{ github.repository }}" --draft --target "${{ github.sha }}" \
               --title "$tag" --notes-file "$notes"
           else
-            gh release create "$tag" --repo "${{ github.repository }}" \
+            gh release create "$tag" --repo "${{ github.repository }}" --draft --target "${{ github.sha }}" \
               --title "$tag" --generate-notes
           fi
 
@@ -351,9 +351,15 @@ jobs:
           fi
           gh release upload "${{ steps.meta.outputs.tag }}" "${files[@]}" \
             --repo "${{ github.repository }}" --clobber
-          # Safety net: ensure the release ends up published + latest.
-          gh release edit "${{ steps.meta.outputs.tag }}" \
-            --repo "${{ github.repository }}" --draft=false --latest
+          # A new release stays a draft until every platform's installer is on it, so nobody finds it
+          # without theirs. The build job that uploads last publishes it and marks it latest.
+          names=$(gh release view "${{ steps.meta.outputs.tag }}" --repo "${{ github.repository }}" --json assets -q '.assets[].name')
+          if grep -q -- '-setup\.exe$' <<<"$names" && grep -q '\.dmg$' <<<"$names" && grep -q '\.AppImage$' <<<"$names"; then
+            gh release edit "${{ steps.meta.outputs.tag }}" \
+              --repo "${{ github.repository }}" --draft=false --latest
+          else
+            echo "Not every platform's installer is on ${{ steps.meta.outputs.tag }} yet: left as it is."
+          fi
 
   # latest.json, which installed copies read to find this release (plugins.updater.endpoints in
   # src-tauri/tauri.conf.json). Built from the .sig files the build jobs uploaded; a rebuild of one
