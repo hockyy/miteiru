@@ -47,6 +47,6 @@ export const initRuntime = (info: SysInfo) => {
  */
 export const appRoot = () => {
   if (runtime.isPackaged || !runtime.exePath) return runtime.resources;
-  const parts = runtime.exePath.split(/[\/]+/);
+  const parts = runtime.exePath.split(/[\\/]+/);
   return parts.length > 4 ? parts.slice(0, -4).join('/') : runtime.resources;
 };

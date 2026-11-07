@@ -13,6 +13,7 @@ import * as shimFs from "../renderer/platform/backend/shims/fsImpl";
 import {ChildProcess, dispatchProcEvent, spawn} from "../renderer/platform/backend/shims/childProcess";
 import {setSys} from "../renderer/platform/backend/sys";
 import {fromBase64, toBase64} from "../renderer/platform/backend/shims/bytes";
+import {appRoot, initRuntime, runtime} from "../renderer/platform/backend/shims/runtime";
 
 test("the bridge's channel table covers every ipcRenderer.invoke and subscription in the preload", () => {
   const preload = fs.readFileSync("main/preload.ts", "utf8");
@@ -123,4 +124,18 @@ test("a failed spawn emits error (with code ENOENT) then close", async () => {
   child.on("close", (code: number) => events.push(`close:${code}`));
   await new Promise((resolve) => setTimeout(resolve, 10));
   assert.deepEqual(events, ["error:ENOENT", "close:-2"]);
+});
+
+test("appRoot is the repo root in a dev run on any platform and the resources when packaged", () => {
+  const saved = {...runtime};
+  try {
+    initRuntime({...saved, isPackaged: false, resources: "R", exePath: "C:\\repo\\src-tauri\\target\\debug\\miteiru.exe"});
+    assert.equal(appRoot(), "C:/repo");
+    initRuntime({...saved, isPackaged: false, resources: "R", exePath: "/home/me/repo/src-tauri/target/debug/miteiru"});
+    assert.equal(appRoot(), "/home/me/repo");
+    initRuntime({...saved, isPackaged: true, resources: "R", exePath: "/Applications/Miteiru.app/Contents/MacOS/miteiru"});
+    assert.equal(appRoot(), "R");
+  } finally {
+    initRuntime(saved);
+  }
 });
