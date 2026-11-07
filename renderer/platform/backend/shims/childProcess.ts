@@ -109,7 +109,8 @@ export class ChildProcess extends EventEmitter {
       : undefined;
     let id: number;
     try {
-      id = await sys('proc_spawn', {program, args, cwd: options.cwd, env, shell: Boolean(options.shell)});
+      if (options.shell) throw new Error('EPERM: Miteiru runs programs directly, never through a shell');
+      id = await sys('proc_spawn', {program, args, cwd: options.cwd, env});
     } catch (raw) {
       const error: NodeError & { spawnargs?: string[] } = nodeError(raw);
       error.code ??= 'ENOENT';
@@ -251,6 +252,7 @@ const collect = (child: ChildProcess, options: ExecOptions, command: string, cal
   return child;
 };
 
+/** A shell command line: refused, as proc_spawn has no shell (use spawn or execFile). */
 export function exec(command: string, optionsOrCallback?: ExecOptions | ExecCallback, maybeCallback?: ExecCallback) {
   const options = (typeof optionsOrCallback === 'function' ? {} : optionsOrCallback) ?? {};
   const callback = typeof optionsOrCallback === 'function' ? optionsOrCallback : maybeCallback;

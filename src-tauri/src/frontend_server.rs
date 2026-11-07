@@ -11,6 +11,19 @@ use std::path::PathBuf;
 use tauri::ipc::CapabilityBuilder;
 use tauri::{App, Manager, Url};
 
+/// Whether a request to one of Miteiru's local servers names that server as its host. A web page
+/// can make the browser send requests to 127.0.0.1 under its own domain (DNS rebinding); those
+/// carry that domain in Host and are refused.
+pub(crate) fn is_local_request(request: &tiny_http::Request, port: u16) -> bool {
+    let Some(host) = request.headers().iter().find(|h| h.field.equiv("Host")) else {
+        return false;
+    };
+    let host = host.value.as_str();
+    [format!("127.0.0.1:{port}"), format!("localhost:{port}")]
+        .iter()
+        .any(|allowed| host.eq_ignore_ascii_case(allowed))
+}
+
 fn port_file() -> PathBuf {
     crate::sys::info::user_data_dir().join("frontend-port")
 }
@@ -62,6 +75,10 @@ pub fn start(app: &App) -> Result<Url, String> {
         .name("miteiru-frontend".into())
         .spawn(move || {
             for request in server.incoming_requests() {
+                if !is_local_request(&request, port) {
+                    let _ = request.respond(tiny_http::Response::from_data(b"Misdirected request".to_vec()).with_status_code(421));
+                    continue;
+                }
                 let path = request.url().split(['?', '#']).next().unwrap_or("/").to_string();
                 let response = match assets.get(path) {
                     Some(asset) => {

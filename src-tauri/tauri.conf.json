@@ -25,12 +25,26 @@
       }
     ],
     "security": {
-      "csp": null,
+      "csp": {
+        "default-src": "'self'",
+        "script-src": "'self' https://www.youtube.com https://s.ytimg.com",
+        "style-src": "'self' 'unsafe-inline'",
+        "img-src": "'self' data: blob: https:",
+        "font-src": "'self' data:",
+        "media-src": "'self' data: blob:",
+        "frame-src": "https://www.youtube.com https://www.youtube-nocookie.com",
+        "connect-src": "'self' ipc: http://ipc.localhost https://vision.googleapis.com https://lrclib.net https://openrouter.ai",
+        "worker-src": "'self' blob:",
+        "object-src": "'none'",
+        "base-uri": "'self'",
+        "form-action": "'none'",
+        "frame-ancestors": "'none'"
+      },
+      "dangerousDisableAssetCspModification": [
+        "style-src"
+      ],
       "assetProtocol": {
-        "enable": true,
-        "scope": [
-          "**"
-        ]
+        "enable": false
       }
     }
   },
