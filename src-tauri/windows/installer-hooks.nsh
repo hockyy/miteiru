@@ -1,7 +1,7 @@
 ; Hooks for Tauri's NSIS installer (bundle.windows.nsis.installerHooks in tauri.windows.conf.json).
 
-; The first 8.0.0 build (published 2026-11-07) installed its language data here: 21,315 files in
-; language-assets. Later builds download languages instead, but an install over that build does not
+; The first 8.0.0 build (published 2026-11-07) installed its language data here: 21,301 files
+; (141 MiB) in language-assets. Later builds download languages instead, but an install over it does not
 ; always remove them: reinstalling the same version and silent installs (/S) skip the uninstall of the
 ; old copy. Miteiru would then take the leftovers for bundled data, never offer the packs, and rebuild
 ; its dictionaries from them. So the folder goes before any file is copied; the full offline build
