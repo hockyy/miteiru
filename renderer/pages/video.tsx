@@ -1,6 +1,8 @@
 import React, {useCallback, useEffect, useMemo} from "react";
 import {useRouter} from "next/router";
 import VideoJS from "../components/VideoPlayer/VideoJS";
+import {NativeVideo} from "../components/VideoPlayer/NativeVideo";
+import {isTauri} from "../utils/nativePlayer";
 import MiteiruDropzone from "../components/VideoPlayer/MiteiruDropzone";
 import MeaningBox from "../components/Meaning/MeaningBox";
 import {VideoController} from "../components/VideoPlayer/VideoController";
@@ -37,6 +39,7 @@ import LyricsSearchModal from "../components/Lyrics/LyricsSearchModal";
 import SubtitleSelectionModal from "../components/Utils/SubtitleSelectionModal";
 import MediaTrackSelectionModal from "../components/Utils/MediaTrackSelectionModal";
 import AudioReencodeModal from "../components/Utils/AudioReencodeModal";
+import AudioTrackModal from "../components/Utils/AudioTrackModal";
 import ReencodeProgressModal from "../components/Utils/ReencodeProgressModal";
 import CommandPalette from "../components/Utils/CommandPallete";
 import useWordOfTheDay from "../hooks/useWordOfTheDay";
@@ -190,7 +193,8 @@ function Video() {
     handleCloseTrackSelectionModal,
     handleCloseAudioReencodeModal,
     handleAudioReencodeConfirm,
-    handleAudioReencodeSkip
+    handleAudioReencodeSkip,
+    handleAudioTrackSelect
   } = useMediaAnalysis(videoSrc.path);
   const liveCaptions = useLiveCaptions();
   const visibleLiveCaption = liveCaptions.caption.trim();
@@ -350,7 +354,10 @@ function Video() {
           )}
 
           {hasVideo && (
-            <VideoJS options={videoOptions} onReady={readyCallback} clock={clock}/>
+            // The desktop shell plays local files with libmpv; YouTube stays in the page.
+            isTauri() && videoSrc.type !== 'video/youtube'
+                ? <NativeVideo options={videoOptions} onReady={readyCallback} clock={clock}/>
+                : <VideoJS options={videoOptions} onReady={readyCallback} clock={clock}/>
           )}
 
           <div>
@@ -451,16 +458,26 @@ function Video() {
             appLanguageCode={lang}
             videoUrl={mediaVideoUrl}
         />
-        <AudioReencodeModal
-            isOpen={showAudioReencodeModal}
-            onClose={handleCloseAudioReencodeModal}
-            onConfirm={handleAudioReencodeModalConfirm}
-            onSkip={handleAudioReencodeSkip}
-            fileName={mediaFileName}
-            audioTracks={mediaInfo.audioTracks}
-            videoTracks={mediaInfo.videoTracks || []}
-            currentAppLanguage={currentAppLanguage}
-        />
+        {isTauri() ? (
+            <AudioTrackModal
+                isOpen={showAudioReencodeModal}
+                onClose={handleAudioReencodeSkip}
+                onSelect={handleAudioTrackSelect}
+                fileName={mediaFileName}
+                audioTracks={mediaInfo.audioTracks}
+            />
+        ) : (
+            <AudioReencodeModal
+                isOpen={showAudioReencodeModal}
+                onClose={handleCloseAudioReencodeModal}
+                onConfirm={handleAudioReencodeModalConfirm}
+                onSkip={handleAudioReencodeSkip}
+                fileName={mediaFileName}
+                audioTracks={mediaInfo.audioTracks}
+                videoTracks={mediaInfo.videoTracks || []}
+                currentAppLanguage={currentAppLanguage}
+            />
+        )}
         <ReencodeProgressModal
             isOpen={showReencodeProgress}
             fileName={mediaFileName}

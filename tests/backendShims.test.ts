@@ -1,0 +1,126 @@
+import assert from "node:assert/strict";
+import crypto from "node:crypto";
+import fs from "node:fs";
+import {test} from "node:test";
+import {
+  ELECTRON_API_INVOKE_CHANNELS,
+  LIVE_CAPTIONS_EVENT_CHANNELS,
+  LIVE_CAPTIONS_INVOKE_CHANNELS,
+  STORE_CHANNELS
+} from "../renderer/platform/electronApiChannels";
+import {createHash} from "../renderer/platform/backend/shims/crypto";
+import * as shimFs from "../renderer/platform/backend/shims/fsImpl";
+import {ChildProcess, dispatchProcEvent, spawn} from "../renderer/platform/backend/shims/childProcess";
+import {setSys} from "../renderer/platform/backend/sys";
+import {fromBase64, toBase64} from "../renderer/platform/backend/shims/bytes";
+
+test("the bridge's channel table covers every ipcRenderer.invoke and subscription in the preload", () => {
+  const preload = fs.readFileSync("main/preload.ts", "utf8");
+  const invoked = new Set([...preload.matchAll(/ipcRenderer\.invoke\(\s*['"]([^'"]+)['"]/g)].map((match) => match[1]));
+  const subscribed = new Set([...preload.matchAll(/subscribe\(\s*['"]([^'"]+)['"]/g)].map((match) => match[1]));
+
+  const bridged = new Set<string>([
+    ...Object.values(ELECTRON_API_INVOKE_CHANNELS),
+    ...Object.values(LIVE_CAPTIONS_INVOKE_CHANNELS),
+    ...Object.values(STORE_CHANNELS)
+  ]);
+  assert.deepEqual([...invoked].filter((channel) => !bridged.has(channel)), []);
+  assert.deepEqual([...bridged].filter((channel) => !invoked.has(channel)), []);
+  assert.deepEqual([...subscribed].sort(), Object.values(LIVE_CAPTIONS_EVENT_CHANNELS).sort());
+});
+
+test("every electronAPI method name in the preload has a table entry", () => {
+  const preload = fs.readFileSync("main/preload.ts", "utf8");
+  const apiBlock = preload.slice(preload.indexOf("exposeInMainWorld('electronAPI'"), preload.indexOf("liveCaptions: {"));
+  const methods = [...apiBlock.matchAll(/^\s{2}(\w+):\s*(?:\(|async)/gm)].map((match) => match[1]);
+  const table = new Set<string>(Object.keys(ELECTRON_API_INVOKE_CHANNELS));
+  assert.deepEqual(methods.filter((method) => !table.has(method) && method !== "getPath"), []);
+});
+
+test("sync sha1 and sha256 digests match node:crypto", () => {
+  const inputs = ["", "abc", "日本語のテキスト", "x".repeat(55), "x".repeat(56), "x".repeat(64), "y".repeat(1000)];
+  for (const input of inputs) {
+    for (const algorithm of ["sha1", "sha256"]) {
+      assert.equal(
+        createHash(algorithm).update(input).digest("hex"),
+        crypto.createHash(algorithm).update(input).digest("hex"),
+        `${algorithm}(${input.slice(0, 8)}...)`
+      );
+    }
+  }
+  assert.equal(createHash("sha256").update("a").update("bc").digest("hex"), crypto.createHash("sha256").update("abc").digest("hex"));
+});
+
+test("base64 helpers round-trip bytes", () => {
+  const bytes = new Uint8Array(70000).map((_, index) => index % 256);
+  assert.deepEqual(fromBase64(toBase64(bytes)), bytes);
+});
+
+test("fs errors carry the Node code parsed from Rust's CODE: message", async () => {
+  setSys(async (cmd, args) => {
+    if (cmd === "fs_read_text") throw `EACCES: permission denied, open '${args.path}'`;
+    if (cmd === "fs_stat") return null;
+    throw new Error(`unexpected ${cmd}`);
+  });
+  await assert.rejects(shimFs.readFile("C:/x", "utf8"), (error: NodeJS.ErrnoException) => error.code === "EACCES" && /permission denied/.test(error.message));
+  await assert.rejects(shimFs.stat("C:/missing"), (error: NodeJS.ErrnoException) => error.code === "ENOENT");
+  await assert.rejects(shimFs.access("C:/missing"), (error: NodeJS.ErrnoException) => error.code === "ENOENT");
+});
+
+test("fs.stat maps fs_stat to a Stats object", async () => {
+  setSys(async () => ({isFile: false, isDirectory: true, isSymbolicLink: false, size: 0, mtimeMs: 1700000000000, birthtimeMs: 1600000000000}));
+  const stats = await shimFs.stat("C:/dir");
+  assert.equal(stats.isDirectory(), true);
+  assert.equal(stats.isFile(), false);
+  assert.equal(stats.mtimeMs, 1700000000000);
+  assert.equal(stats.mtime.getTime(), 1700000000000);
+});
+
+test("writing text goes through fs_write_text and bytes through fs_write_bytes (with append)", async () => {
+  const calls: { cmd: string; args: Record<string, unknown> }[] = [];
+  setSys(async (cmd, args) => {
+    calls.push({cmd, args});
+    return null;
+  });
+  await shimFs.writeFile("C:/a.txt", "hello", "utf8");
+  await shimFs.appendFile("C:/a.txt", "more");
+  await shimFs.writeFile("C:/b.bin", Buffer.from([1, 2, 3]));
+  assert.deepEqual(calls[0], {cmd: "fs_write_text", args: {path: "C:/a.txt", text: "hello", append: false}});
+  assert.equal(calls[1].args.append, true);
+  assert.equal(calls[2].cmd, "fs_write_bytes");
+  assert.deepEqual(new Uint8Array(calls[2].args.data as ArrayBuffer), new Uint8Array([1, 2, 3]));
+});
+
+test("spawn delivers output that arrives before the spawn reply, then exit and close", async () => {
+  setSys(async (cmd) => {
+    if (cmd === "proc_spawn") {
+      // The event overtakes the reply, as it can in the real app.
+      dispatchProcEvent("data", {id: 41, stream: "stdout", data: toBase64(new TextEncoder().encode("hi "))});
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      return 41;
+    }
+    return null;
+  });
+  const child = spawn("tool", ["--version"]);
+  const events: string[] = [];
+  let output = "";
+  child.stdout.on("data", (chunk: Buffer) => { output += chunk.toString(); });
+  child.on("exit", (code: number) => events.push(`exit:${code}`));
+  child.on("close", (code: number) => events.push(`close:${code}`));
+  await child.whenStarted();
+  dispatchProcEvent("data", {id: 41, stream: "stdout", data: toBase64(new TextEncoder().encode("there"))});
+  dispatchProcEvent("exit", {id: 41, code: 0, signal: null});
+  assert.equal(output, "hi there");
+  assert.deepEqual(events, ["exit:0", "close:0"]);
+  assert.ok(child instanceof ChildProcess);
+});
+
+test("a failed spawn emits error (with code ENOENT) then close", async () => {
+  setSys(async () => { throw "ENOENT: spawn nope"; });
+  const child = spawn("nope");
+  const events: string[] = [];
+  child.on("error", (error: NodeJS.ErrnoException) => events.push(`error:${error.code}`));
+  child.on("close", (code: number) => events.push(`close:${code}`));
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  assert.deepEqual(events, ["error:ENOENT", "close:-2"]);
+});

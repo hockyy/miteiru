@@ -1,5 +1,4 @@
 import {BrowserWindow, dialog, ipcMain, shell} from "electron";
-import fs from "node:fs";
 import * as fsPromises from "node:fs/promises";
 import {access} from "node:fs/promises";
 import path, {basename, dirname, extname, join} from "path";
@@ -45,7 +44,7 @@ export function registerBasicHandlers({
       }]
     });
     if (filePaths.length > 0 && !canceled) {
-      return fs.readFileSync(filePaths[0], "utf-8");
+      return await fsPromises.readFile(filePaths[0], "utf-8");
     }
     return "";
   });
@@ -140,7 +139,7 @@ export function registerBasicHandlers({
     const folderPath = dirname(filePath);
 
     try {
-      const filesMatched = fs.readdirSync(folderPath)
+      const filesMatched = (await fsPromises.readdir(folderPath))
         .map(fileName => join(folderPath, fileName))
         .filter(filePattern => isArrayEndsWithMatcher(filePattern, matcher))
         .sort((a, b) => a.localeCompare(b, undefined, {numeric: true, sensitivity: "base"}));
@@ -234,7 +233,7 @@ export function registerBasicHandlers({
 
   ipcMain.handle("show-item-in-folder", async (event, filePath) => {
     try {
-      shell.showItemInFolder(filePath);
+      await shell.showItemInFolder(filePath);
       return { ok: true };
     } catch (error) {
       console.error("Error revealing file in folder:", error);

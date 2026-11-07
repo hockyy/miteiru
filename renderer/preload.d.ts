@@ -14,6 +14,11 @@ interface ElectronApi {
     onError: (callback: (error: string) => void) => () => void;
     onDebug: (callback: (message: string) => void) => () => void;
   };
+  /**
+   * Tauri only: subscribes to files dropped on the window (native paths) and to the drag hovering
+   * over it. Electron delivers files as DOM drop events instead, so this is undefined there.
+   */
+  onFileDrop?: (onDrop: (paths: string[]) => void, onHover?: (hovering: boolean) => void) => () => void;
   getUserDataPath: () => Promise<string>;
   joinPath: (...pathSegments: string[]) => Promise<string>;
   checkFile: (filePath: string) => Promise<boolean>;

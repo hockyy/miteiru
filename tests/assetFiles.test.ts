@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import {after, before, test} from "node:test";
-import {assetExists, readAsset, readAssetSync, readTextAsset} from "../main/helpers/assetFiles";
+import {assetExists, readAsset, readTextAsset} from "../main/helpers/assetFiles";
 import {readStrokeSvg} from "../main/helpers/strokeSvg";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const {compressLanguageAssets} = require("../scripts/compressLanguageAssets.js");
@@ -47,9 +47,9 @@ test("packaged (gzipped) language assets read the same as the plain ones", async
   assert.equal(await fs.readFile(path.join(root, "japanese/pitch/accents.json"), "utf8"), accents);
   assert.equal(await fs.readFile(path.join(root, "japanese/dict/base.dat.gz"), "utf8"), "already compressed");
 
-  assert.equal(assetExists(jmdictPath), true);
+  assert.equal(await assetExists(jmdictPath), true);
   assert.equal(await readTextAsset(jmdictPath), jmdict);
-  assert.equal(readAssetSync(path.join(root, "mandarin/chinese/zh.jieba.txt")).toString("utf8"), "人 10 n\n");
+  assert.equal((await readAsset(path.join(root, "mandarin/chinese/zh.jieba.txt"))).toString("utf8"), "人 10 n\n");
   assert.equal(await readStrokeSvg(path.join(root, "han-character-core/kanji"), "04eba.svg"), svg);
 
   // Running again (another architecture in the same build) finds nothing left to do and keeps the copies.
@@ -71,7 +71,7 @@ test("packaging without downloaded language assets compresses nothing instead of
 test("plain assets still read directly, and missing ones fail clearly", async () => {
   const plain = await write("plain/kanjidic.json", "{\"plain\": true}");
   assert.equal(await readTextAsset(plain), "{\"plain\": true}");
-  assert.equal(assetExists(path.join(directory, "plain/missing.json")), false);
+  assert.equal(await assetExists(path.join(directory, "plain/missing.json")), false);
   await assert.rejects(readAsset(path.join(directory, "plain/missing.json")), /ENOENT/);
   assert.equal(await readStrokeSvg(path.join(directory, "plain"), "0abcd.svg"), "");
 });

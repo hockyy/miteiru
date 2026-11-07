@@ -191,6 +191,13 @@ video-js {
   height: 100% !important;
 }
 
+/* Desktop shell: libmpv draws the video behind the page, so the page stays see-through. */
+html.miteiru-native-video,
+html.miteiru-native-video body,
+html.miteiru-native-video #__next {
+  background: transparent !important;
+}
+
 .animation {
   opacity: 0.7;
   transition: 0.2s ease-in-out;

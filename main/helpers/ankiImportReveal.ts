@@ -1,5 +1,4 @@
-import { spawn, spawnSync } from "node:child_process";
-import fs from "node:fs";
+import { spawn } from "node:child_process";
 import * as fsPromises from "node:fs/promises";
 import { homedir } from "node:os";
 import path from "node:path";
@@ -18,14 +17,22 @@ export interface RevealAnkiImportResult {
   error?: string;
 }
 
-const exists = (candidate: string) => {
+const exists = (candidate: string) => fsPromises.access(candidate).then(() => true, () => false);
+
+/** Runs a short command to completion; null when it cannot be started. */
+const runCapture = (command: string, args: string[]) => new Promise<{ status: number | null; stdout: string } | null>((resolve) => {
   try {
-    fs.accessSync(candidate);
-    return true;
+    const child = spawn(command, args, { stdio: ["ignore", "pipe", "ignore"] });
+    let stdout = "";
+    child.stdout?.on("data", (chunk) => {
+      stdout += chunk.toString();
+    });
+    child.once("error", () => resolve(null));
+    child.once("close", (status) => resolve({ status, stdout }));
   } catch {
-    return false;
+    resolve(null);
   }
-};
+});
 
 /** Strip path segments and unsafe characters from export filenames. */
 export const sanitizeAnkiFilename = (filename: string) => {
@@ -34,93 +41,71 @@ export const sanitizeAnkiFilename = (filename: string) => {
   return sanitized || "miteiru_anki_import.tsv";
 };
 
-const findWindowsAnki = (): AnkiInstall | null => {
-  const candidates = [
+const firstExisting = async (candidates: string[]) => {
+  for (const candidate of candidates) {
+    if (await exists(candidate)) return candidate;
+  }
+  return null;
+};
+
+const findWindowsAnki = async (): Promise<AnkiInstall | null> => {
+  const found = await firstExisting([
     process.env.LOCALAPPDATA
       ? path.join(process.env.LOCALAPPDATA, "Programs", "Anki", "anki.exe")
       : "",
     "C:\\Program Files\\Anki\\anki.exe",
     "C:\\Program Files (x86)\\Anki\\anki.exe",
-  ].filter(Boolean);
+  ].filter(Boolean));
 
-  for (const candidate of candidates) {
-    if (exists(candidate)) {
-      return { type: "open-path", path: candidate };
-    }
-  }
-
-  return null;
+  return found ? { type: "open-path", path: found } : null;
 };
 
-const findMacAnki = (): AnkiInstall | null => {
-  const candidates = [
+const findMacAnki = async (): Promise<AnkiInstall | null> => {
+  const found = await firstExisting([
     "/Applications/Anki.app",
     path.join(homedir(), "Applications", "Anki.app"),
-  ];
-
-  for (const candidate of candidates) {
-    if (exists(candidate)) {
-      return { type: "open-path", path: candidate };
-    }
+  ]);
+  if (found) {
+    return { type: "open-path", path: found };
   }
 
-  try {
-    const spotlight = spawnSync(
-      "mdfind",
-      ["kMDItemCFBundleIdentifier == \"net.ankiweb.dtop\""],
-      { encoding: "utf8" },
-    );
-    const match = spotlight.stdout
-      ?.split("\n")
-      .map((line) => line.trim())
-      .find((line) => line.endsWith(".app") && exists(line));
-    if (match) {
-      return { type: "open-path", path: match };
+  // mdfind unavailable (null) or no match: fall back to `open -a Anki`
+  const spotlight = await runCapture("mdfind", ["kMDItemCFBundleIdentifier == \"net.ankiweb.dtop\""]);
+  for (const line of spotlight?.stdout.split("\n").map((entry) => entry.trim()) ?? []) {
+    if (line.endsWith(".app") && await exists(line)) {
+      return { type: "open-path", path: line };
     }
-  } catch {
-    // mdfind unavailable — fall back to `open -a Anki`
   }
 
   return { type: "command", command: "open", args: ["-a", "Anki"] };
 };
 
-const findLinuxAnki = (): AnkiInstall | null => {
-  const pathCandidates = [
+const findLinuxAnki = async (): Promise<AnkiInstall | null> => {
+  const found = await firstExisting([
     "/usr/bin/anki",
     "/usr/local/bin/anki",
     path.join(homedir(), ".local", "bin", "anki"),
     "/snap/bin/anki",
-  ];
-
-  for (const candidate of pathCandidates) {
-    if (exists(candidate)) {
-      return { type: "open-path", path: candidate };
-    }
+  ]);
+  if (found) {
+    return { type: "open-path", path: found };
   }
 
-  try {
-    const whichResult = spawnSync("which", ["anki"], { encoding: "utf8" });
-    const resolved = whichResult.stdout?.trim();
-    if (whichResult.status === 0 && resolved && exists(resolved)) {
-      return { type: "open-path", path: resolved };
-    }
-  } catch {
-    // which not available
+  const whichResult = await runCapture("which", ["anki"]);
+  const resolved = whichResult?.stdout.trim();
+  if (whichResult?.status === 0 && resolved && await exists(resolved)) {
+    return { type: "open-path", path: resolved };
   }
 
-  try {
-    const flatpakInfo = spawnSync("flatpak", ["info", "net.anki.Anki"], { encoding: "utf8" });
-    if (flatpakInfo.status === 0) {
-      return { type: "command", command: "flatpak", args: ["run", "net.anki.Anki"] };
-    }
-  } catch {
-    // flatpak not available
+  const flatpakInfo = await runCapture("flatpak", ["info", "net.anki.Anki"]);
+  if (flatpakInfo?.status === 0) {
+    return { type: "command", command: "flatpak", args: ["run", "net.anki.Anki"] };
   }
 
   return null;
 };
 
-export const findAnkiInstall = (): AnkiInstall | null => {
+export const findAnkiInstall = (): Promise<AnkiInstall | null> => {
   if (process.platform === "win32") {
     return findWindowsAnki();
   }
@@ -166,7 +151,7 @@ export const revealFileInFolder = async (filePath: string) => {
   const absolutePath = path.resolve(filePath);
 
   try {
-    shell.showItemInFolder(absolutePath);
+    await shell.showItemInFolder(absolutePath);
     return { ok: true, openedFolderOnly: false };
   } catch (error) {
     console.warn("showItemInFolder failed, opening parent folder:", error);
@@ -207,7 +192,7 @@ export async function revealAnkiImportFile(
       };
     }
 
-    const ankiInstall = findAnkiInstall();
+    const ankiInstall = await findAnkiInstall();
     const ankiLaunched = ankiInstall ? await launchAnkiInstall(ankiInstall) : false;
 
     return {
