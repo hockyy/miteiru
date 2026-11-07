@@ -20,6 +20,12 @@ export type MeaningBoxProps = {
   getLearningState?: ((term: string) => number) | null;
   showMeaning?: boolean;
   sidebarInsets?: SidebarInsets;
+  /** Steps back to the previous word; shown as "← Back" when given. */
+  onBack?: (() => void) | null;
+  /** Shows a "Close (Esc)" button (the pages where Esc closes the popup). */
+  showCloseButton?: boolean;
+  /** The key that copies the whole sentence on this page ("C", "Ctrl+G"); the hint is left out when unset. */
+  sentenceCopyKey?: string | null;
 };
 
 /** Dictionary payload shape returned by `getMeaningEntries`. */

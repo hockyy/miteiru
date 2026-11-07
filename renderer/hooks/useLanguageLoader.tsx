@@ -60,7 +60,7 @@ export const useLanguageLoader = () => {
 
   const loadLanguage = useCallback(async (
     modeId: number,
-    destination: '/video' | '/learn' | '/flash' = '/video',
+    destination: '/video' | '/video?continue=1' | '/learn' | '/flash' = '/video',
   ) => {
     if (isLoadingLanguage) {
       console.log('[Language Load] Language loading already in progress, ignoring request');
@@ -95,6 +95,11 @@ export const useLanguageLoader = () => {
     await loadLanguage(tokenizerMode, '/video');
   }, [loadLanguage, tokenizerMode]);
 
+  // Opens the Watch page, which opens the last video where it stopped.
+  const handleContinueVideo = useCallback(async () => {
+    await loadLanguage(tokenizerMode, '/video?continue=1');
+  }, [loadLanguage, tokenizerMode]);
+
   const handleOpenLearn = useCallback(async () => {
     await loadLanguage(tokenizerMode, '/learn');
   }, [loadLanguage, tokenizerMode]);
@@ -120,6 +125,7 @@ export const useLanguageLoader = () => {
     // Actions
     loadLanguage,
     handleLanguageButtonClick,
+    handleContinueVideo,
     handleOpenLearn,
     handleOpenFlash
   };

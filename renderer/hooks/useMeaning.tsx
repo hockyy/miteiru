@@ -26,7 +26,11 @@ const useMeaning = () => {
     }
   }, [history]);
 
-  return { meaning, setMeaning, undo };
+  // The first word's history entry is the empty "no word" state: there is only something to go back
+  // to once another word has been opened from inside the popup.
+  const canGoBack = history !== null && history.value !== '';
+
+  return { meaning, setMeaning, undo, canGoBack };
 };
 
 export default useMeaning;

@@ -2,6 +2,9 @@ import React, {useCallback} from 'react';
 import {getColorGradient, getRelativeTime} from '../../utils/utils';
 import {Key} from '../VideoPlayer/KeyboardHelp';
 import {Button} from '../Utils/Button';
+import {ContinueWatchingButton} from '../VideoPlayer/ContinueWatchingButton';
+import {formatKeys} from '../../utils/platform';
+import type {LastVideo} from '../../utils/continueWatching';
 import {HOME_BODY, HOME_HEADER, HOME_ICON_BADGE, HOME_SECTION, HOME_SECTION_LABEL, HOME_SHELL} from '../UI/miteiruUiTheme';
 
 interface WordOfTheDayProps {
@@ -20,6 +23,9 @@ interface WordOfTheDayProps {
   // Opens the system file picker for videos and subtitles.
   onOpenFiles: () => void;
   onHome: () => void;
+  // The video watched last, if it can still be opened, and the action that opens it.
+  lastVideo?: LastVideo | null;
+  onContinue?: () => void;
 }
 
 /** The video page before a video is loaded: how to open one, and learned words to review. */
@@ -28,6 +34,8 @@ const WordOfTheDay: React.FC<WordOfTheDayProps> = ({
   setMeaning,
   onOpenFiles,
   onHome,
+  lastVideo = null,
+  onContinue,
 }) => {
   const handleWordClick = useCallback((word: string) => {
     setMeaning(word);
@@ -42,7 +50,7 @@ const WordOfTheDay: React.FC<WordOfTheDayProps> = ({
             <div className={HOME_ICON_BADGE}>🐸</div>
             <div className="text-sm font-black tracking-tight text-blue-950">Watch</div>
           </div>
-          <Button type="secondary" size="small" onPress={onHome} title="Back to the home page (Ctrl + H)">
+          <Button type="secondary" size="small" onPress={onHome} title={`Back to the home page (${formatKeys(['Ctrl', 'H'])})`}>
             ← Home
           </Button>
         </header>
@@ -56,11 +64,12 @@ const WordOfTheDay: React.FC<WordOfTheDayProps> = ({
           {/* A div, not a p: Key renders a div, which a p cannot hold. */}
           <div className="max-w-md text-sm font-medium leading-8 text-blue-800">
             Subtitles named like the video load with it. You can also paste a YouTube link
-            with <Key value="Ctrl + V" extraClass="inline-block align-middle leading-none"/>.
+            with <Key value={formatKeys(['Ctrl', 'V'])} extraClass="inline-block align-middle leading-none"/>.
           </div>
           <Button type="primary" onPress={onOpenFiles} className="px-6">
             Open video or subtitles…
           </Button>
+          {onContinue && <ContinueWatchingButton video={lastVideo} onContinue={onContinue}/>}
         </div>
       </section>
 

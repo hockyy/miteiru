@@ -38,6 +38,7 @@ export const ModalShell = ({
         <button
           type="button"
           onClick={onClose}
+          aria-label="Close"
           className="rounded-full p-2 text-white/60 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/40"
         >
           <X className="h-4 w-4" />

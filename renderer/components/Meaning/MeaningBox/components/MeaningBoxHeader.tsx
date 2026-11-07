@@ -24,6 +24,10 @@ type MeaningBoxHeaderProps = {
   onNext: () => void;
   getLearningState?: ((term: string) => number) | null;
   changeLearningState?: ((term: string) => void) | null;
+  /** Back to the previous word; the button shows only when there is one. */
+  onBack?: (() => void) | null;
+  /** Closes the popup; the button shows only when given. */
+  onClose?: (() => void) | null;
 };
 
 /** Sticky top bar: prev/next senses, TTS, headword ruby, learning star. */
@@ -42,8 +46,21 @@ export const MeaningBoxHeader = ({
   onNext,
   getLearningState,
   changeLearningState,
+  onBack = null,
+  onClose = null,
 }: MeaningBoxHeaderProps) => (
   <div className={MEANING_HEADER}>
+    {(onBack || onClose) && <div className="flex w-full items-center justify-between gap-3">
+      {onBack
+        ? <Button type="secondary" size="small" onPress={onBack} title="Back to the previous word (Backspace)">
+          ← Back
+        </Button>
+        : <span />}
+      {onClose && <Button type="secondary" size="small" onPress={onClose} title="Close (Esc)">
+        <span aria-hidden="true">✕</span> Close (Esc)
+      </Button>}
+    </div>}
+
     {/* Other dictionary entries for the same text (homographs); hidden when there is just one. */}
     {otherMeaningsCount > 1 && <div className="flex w-full items-center justify-between gap-3">
       <Button

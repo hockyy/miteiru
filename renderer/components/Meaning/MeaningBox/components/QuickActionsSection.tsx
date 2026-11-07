@@ -13,6 +13,8 @@ type QuickActionsSectionProps = {
   rubyHtmlContent: string;
   isExportingAnki: boolean;
   onExportAnki: () => void;
+  /** The key that copies the sentence on this page; the hint is left out without one. */
+  sentenceCopyKey?: string | null;
 };
 
 /** Copy shortcuts + Anki export (mirrors W / Shift+W keyboard bindings). */
@@ -21,6 +23,7 @@ export const QuickActionsSection = ({
   rubyHtmlContent,
   isExportingAnki,
   onExportAnki,
+  sentenceCopyKey = null,
 }: QuickActionsSectionProps) => (
   <section className={MEANING_SECTION}>
     <div className={MEANING_SECTION_LABEL}>Quick actions</div>
@@ -45,10 +48,10 @@ export const QuickActionsSection = ({
       >
         {isExportingAnki ? 'Exporting…' : 'Export to Anki'}
       </button>
-      <span className="ml-auto text-[11px] font-medium text-blue-700">
-        <kbd className={`${MEANING_KBD} text-[11px]`}>Ctrl+G</kbd>
+      {sentenceCopyKey && <span className="ml-auto text-[11px] font-medium text-blue-700">
+        <kbd className={`${MEANING_KBD} text-[11px]`}>{sentenceCopyKey}</kbd>
         <span className="ml-1.5">copies the sentence with ruby</span>
-      </span>
+      </span>}
     </div>
   </section>
 );

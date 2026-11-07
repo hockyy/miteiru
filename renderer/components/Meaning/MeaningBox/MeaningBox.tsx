@@ -48,6 +48,9 @@ const MeaningBox = ({
   getLearningState = null,
   showMeaning = true,
   sidebarInsets = {},
+  onBack = null,
+  showCloseButton = false,
+  sentenceCopyKey = null,
 }: MeaningBoxProps) => {
   const { speak, stop, speaking, supported } = useSpeech();
   const [selectedVoice] = useStoreData('tts.option.voice', '');
@@ -202,6 +205,8 @@ const MeaningBox = ({
             onNext={goToNextMeaning}
             getLearningState={getLearningState}
             changeLearningState={changeLearningState}
+            onBack={onBack}
+            onClose={showCloseButton ? handleClose : null}
           />
         }
       >
@@ -216,6 +221,7 @@ const MeaningBox = ({
           rubyHtmlContent={rubyHtmlContent}
           isExportingAnki={isExportingAnki}
           onExportAnki={exportToAnki}
+          sentenceCopyKey={sentenceCopyKey}
         />
 
         {showMeaning && <PitchAccentSection romajiedData={romajiedData} lang={lang} />}

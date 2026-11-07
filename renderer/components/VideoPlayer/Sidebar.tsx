@@ -293,7 +293,9 @@ export const Sidebar = ({
                           tokenizeMiteiru,
                           subtitleMode,
                           setSubtitleMode,
-                          setShowLyricsSearch
+                          setShowLyricsSearch,
+                          pauseOnLookup,
+                          setPauseOnLookup
                         }) => {
   const {exportAllAnkiCards, ankiExportModal} = useExportAllAnkiCards({lang, tokenizeMiteiru});
   const [tab, setTab] = useState<SettingsTab>("playback");
@@ -327,6 +329,9 @@ export const Sidebar = ({
       {tab === "playback" && <TabPanel group="settings" id="playback"><SidebarSection>
         <ToggleRow label="Pause after each line" hint="Stops at the end of every line, for shadowing or reading."
                    checked={autoPause} onChange={setAutoPause}/>
+        <ToggleRow label="Pause while I look up words"
+                   hint="The video waits while a word's meaning is open, then carries on when you close it."
+                   checked={pauseOnLookup} onChange={setPauseOnLookup}/>
         <ToggleRow label="Karaoke mode" hint="Scrolling lyrics instead of one line at a time."
                    checked={isKaraoke}
                    onChange={(value) => setSubtitleMode(value ? SubtitleMode.Karaoke : SubtitleMode.Normal)}/>

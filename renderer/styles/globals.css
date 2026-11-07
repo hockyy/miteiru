@@ -636,3 +636,8 @@ rt {
     height: 8px;
   }
 }
+
+/* The player's top bar (VideoTopBar): darkest at the top, fading out toward the video. */
+.player-topbar {
+  background-image: linear-gradient(to bottom, rgb(2 6 23 / 0.85), rgb(15 23 42 / 0.55) 55%, rgb(15 23 42 / 0));
+}
