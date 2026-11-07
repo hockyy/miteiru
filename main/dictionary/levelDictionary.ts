@@ -1,42 +1,64 @@
 import {assetExists, readTextAsset} from "../helpers/assetFiles";
+import {get as getTableValue, openTable, scan as scanTable} from "../helpers/dataTable";
 import {promises as fs} from "node:fs";
+import * as levelModule from "level";
 import {Level} from "level";
 
 /**
- * Shared LevelDB plumbing for the bundled dictionaries (JMdict, KANJIDIC, CC-CEDICT, CantoDict).
- * Replaces jmdict-wrapper, kanjidic-wrapper and cc-chinese-wrapper (all Unlicense) and keeps
- * their key layout. Databases without FORMAT_KEY (including every one those packages built)
- * are rebuilt once from the bundled JSON, which drops their stale and broken index keys.
+ * Shared plumbing for the bundled dictionaries (JMdict, KANJIDIC, CC-CEDICT, CantoDict). Replaces
+ * jmdict-wrapper, kanjidic-wrapper and cc-chinese-wrapper (all Unlicense) and keeps their key layout.
+ *
+ * Packaged builds ship each dictionary as a data table (`jmdict.pack` where `jmdict.json` would be;
+ * docs/DATA_FORMAT.md) holding exactly the keys the import below writes, and read it directly: no
+ * import, no copy, no first-load wait. Development and the tests have the JSON and import it into a
+ * `level` store once; databases without FORMAT_KEY (including every one those wrapper packages
+ * built) are rebuilt from the JSON, which drops their stale and broken index keys.
  */
-export type DictionaryDb = Level<string, string>;
 
-type DictionaryImport<T> = {
+/** What the dictionary queries use: a `Level<string, string>` and a table store both satisfy it. */
+export interface DictionaryDb {
+  get(key: string): Promise<string | undefined>;
+  getMany(keys: string[]): Promise<(string | undefined)[]>;
+  /** `limit` < 0 means all. */
+  values(options: { gte?: string; lt?: string; limit?: number }): { all(): Promise<string[]> };
+  close(): Promise<void>;
+}
+
+/** What `writeEntries` uses of a writer: the import writes through BatchWriter, the table build collects. */
+export interface EntryWriter {
+  put(key: string, value: string): Promise<void>;
+}
+
+export type DictionaryImport<T> = {
   /** Metadata keys whose presence marks a finished import; written after every entry. */
   metadataKeys: string[];
-  writeEntries: (raw: T, writer: BatchWriter) => Promise<void>;
+  writeEntries: (raw: T, writer: EntryWriter) => Promise<void>;
   metadata: (raw: T) => Record<string, string>;
   /**
-   * The desktop app's store imports this file itself (src-tauri/src/sys/dict_import.rs): the same
-   * keys, without parsing and sending 100 MB through the page. writeEntries stays for plain
-   * `level` (the tests). `metadata` then gets the file's version (and dictDate, if it has one) only.
+   * Development builds only: their store imports this file itself (src-tauri/src/sys/dict_import.rs),
+   * writing the same keys without parsing and sending 100 MB through the page. Packaged builds read
+   * tables and never import. writeEntries stays for plain `level` (the tests) and for the table build
+   * (scripts/data/buildDictionaryTables.ts). `metadata` then gets the file's version (and dictDate,
+   * if it has one) only.
    */
   nativeLayout?: "jmdict" | "kanjidic" | "chinese";
 };
 
 /** The desktop store (renderer/platform/backend/shims/level.ts); plain `level` has neither. */
-type DesktopStore = DictionaryDb & {
+type DesktopStore = Level<string, string> & {
   bulkLoad?: (on: boolean) => Promise<void>;
   importDictionary?: (path: string, layout: string) => Promise<Record<string, string>>;
 };
 
 const MAX_BATCH_SIZE = 10000;
-const FORMAT_KEY = "raw/miteiruDictionaryFormat";
-const FORMAT_VERSION = "1";
+export const FORMAT_KEY = "raw/miteiruDictionaryFormat";
+export const FORMAT_VERSION = "1";
+export const TABLE_SUFFIX = ".pack";
 
-export class BatchWriter {
+export class BatchWriter implements EntryWriter {
   private operations: { type: "put"; key: string; value: string }[] = [];
 
-  constructor(private readonly db: DictionaryDb) {}
+  constructor(private readonly db: Level<string, string>) {}
 
   async put(key: string, value: string) {
     this.operations.push({type: "put", key, value});
@@ -61,18 +83,105 @@ const readImportFile = async <T>(importPath: string): Promise<T> => {
   return JSON.parse(contents) as T;
 };
 
+/** The table that stands in for a dictionary's JSON file: `jmdict.json` becomes `jmdict.pack`. */
+export const tablePathFor = (importPath: string) => importPath.replace(/\.json$/i, "") + TABLE_SUFFIX;
+
+const exists = (target: string) => fs.access(target).then(() => true, () => false);
+
+/** Removes `dbPath` and the SQLite files the desktop store keeps beside it (`<dbPath>.sqlite3`, `-wal`, `-shm`). */
+export const removeDictionaryStore = async (dbPath: string) => {
+  await Promise.all([dbPath, `${dbPath}.sqlite3`, `${dbPath}.sqlite3-wal`, `${dbPath}.sqlite3-shm`]
+    .map((target) => fs.rm(target, {recursive: true, force: true})));
+};
+
 /**
- * Opens the dictionary database at `dbPath`, (re)building it from `importPath` (a JSON file)
- * when it is missing, from an older format, or was interrupted mid-import. Metadata and the
- * format marker are written last, so an interrupted import is redone on the next open.
+ * Deletes what 7.x and the first 8.x builds cached for a dictionary that now reads from a table:
+ * the LevelDB folder at `dbPath` (it has a CURRENT file) and the SQLite database beside it. Only
+ * ever called with a dictionary's own store path; learning data lives in the same folder.
+ */
+const removeLegacyCaches = async (dbPath: string) => {
+  try {
+    if (await exists(`${dbPath}/CURRENT`)) await fs.rm(dbPath, {recursive: true, force: true});
+    await Promise.all([`${dbPath}.sqlite3`, `${dbPath}.sqlite3-wal`, `${dbPath}.sqlite3-shm`]
+      .map((target) => fs.rm(target, {force: true})));
+  } catch (error) {
+    // Reading does not need the space back; a locked file is tried again on the next load.
+    console.warn(`Could not remove the old dictionary cache of ${dbPath}:`, error);
+  }
+};
+
+/** A table through the desktop shim (one IPC call per query) when it has one, else through the JS reader (Node). */
+const openTableStore = async (tablePath: string): Promise<DictionaryDb> => {
+  const desktop = (levelModule as { openReadOnlyTable?: (path: string) => Promise<DictionaryDb> }).openReadOnlyTable;
+  if (desktop) return desktop(tablePath);
+  await openTable(tablePath);
+  const text = (value: Buffer | null) => (value === null ? undefined : value.toString("utf8"));
+  return {
+    get: async (key) => text(await getTableValue(tablePath, key)),
+    getMany: async (keys) => {
+      const values: (string | undefined)[] = [];
+      for (const key of keys) values.push(text(await getTableValue(tablePath, key)));
+      return values;
+    },
+    // scan() returns nothing for a limit of 0 or less; here -1 means all, as in `level`.
+    values: ({gte, lt, limit = -1}) => ({
+      all: async () => limit === 0
+        ? []
+        : (await scanTable(tablePath, {gte, lt, limit: limit < 0 ? undefined : limit})).map(([, value]) => value.toString("utf8"))
+    }),
+    close: async () => undefined
+  };
+};
+
+const openFromTable = async <T>(
+  tablePath: string,
+  dbPath: string,
+  {metadataKeys}: DictionaryImport<T>
+): Promise<{ db: DictionaryDb; metadata: Record<string, string> }> => {
+  const db = await openTableStore(tablePath);
+  try {
+    const stored = await db.getMany([...metadataKeys, FORMAT_KEY]);
+    const metadata = Object.fromEntries(metadataKeys.map((key, index) => [key, stored[index]]));
+    // A table without its marker was cut short or built by something else: say so, do not guess.
+    if (metadataKeys.some((key) => metadata[key] === undefined) || stored[metadataKeys.length] !== FORMAT_VERSION) {
+      throw new Error(`Dictionary table ${tablePath} is broken: it has no complete format marker`);
+    }
+    await removeLegacyCaches(dbPath);
+    return {db, metadata};
+  } catch (error) {
+    await db.close();
+    throw error;
+  }
+};
+
+/**
+ * Opens a dictionary. The table beside `importPath` (`.json` replaced by `.pack`) is read directly
+ * when it exists. Otherwise the database at `dbPath` is (re)built from `importPath` (a JSON file)
+ * when it is missing, from an older format, or was interrupted mid-import. Metadata and the format
+ * marker are written last, so an interrupted import is redone on the next open.
  */
 export const openDictionary = async <T>(
   dbPath: string,
   importPath: string,
   dictionaryImport: DictionaryImport<T>
 ): Promise<{ db: DictionaryDb; metadata: Record<string, string> }> => {
+  const table = importPath ? tablePathFor(importPath) : "";
+  if (table && await exists(table)) return openFromTable(table, dbPath, dictionaryImport);
+  return importDictionary(dbPath, importPath, dictionaryImport);
+};
+
+const importDictionary = async <T>(
+  dbPath: string,
+  importPath: string,
+  dictionaryImport: DictionaryImport<T>
+): Promise<{ db: Level<string, string>; metadata: Record<string, string> }> => {
   const {metadataKeys} = dictionaryImport;
-  let db: DictionaryDb = new Level<string, string>(dbPath);
+  // Only the desktop store has importDictionary. A LevelDB folder at its path is a 7.x cache, which
+  // the first open would migrate into SQLite (kv_open): millions of rows the rebuild then discards.
+  if ((Level.prototype as DesktopStore).importDictionary && await exists(`${dbPath}/CURRENT`)) {
+    await fs.rm(dbPath, {recursive: true, force: true});
+  }
+  let db = new Level<string, string>(dbPath);
   try {
     const stored = await db.getMany([...metadataKeys, FORMAT_KEY]);
     const storedMetadata = Object.fromEntries(metadataKeys.map((key, index) => [key, stored[index]]));
@@ -93,9 +202,10 @@ export const openDictionary = async <T>(
       throw error;
     }
 
-    // Start from an empty directory so keys from an older format or a partial import go away.
+    // Start from an empty store so keys from an older format or a partial import go away: the
+    // folder, and the SQLite database the desktop store keeps beside it (which holds 7.x's keys).
     await db.close();
-    await fs.rm(dbPath, {recursive: true, force: true});
+    await removeDictionaryStore(dbPath);
     db = new Level<string, string>(dbPath);
 
     const store = db as DesktopStore;

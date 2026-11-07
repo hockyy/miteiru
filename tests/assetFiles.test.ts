@@ -27,41 +27,37 @@ const write = async (relative: string, contents: string) => {
 
 test("packaged (gzipped) language assets read the same as the plain ones", async () => {
   const appDirectory = path.join(directory, "app");
-  const jmdict = JSON.stringify({words: [{id: "1", kanji: [{text: "人"}]}]});
+  const words = "人 10 n\n";
   const svg = "<svg><path d=\"M1 1\"/></svg>";
   const accents = "{\"人\": [0]}";
-  await write("app/language-assets/japanese/dict/jmdict.json", jmdict);
+  await write("app/language-assets/mandarin/chinese/zh.jieba.txt", words);
   await write("app/language-assets/japanese/dict/base.dat.gz", "already compressed");
   await write("app/language-assets/japanese/pitch/accents.json", accents);
   await write("app/language-assets/han-character-core/kanji/04eba.svg", svg);
-  await write("app/language-assets/mandarin/chinese/zh.jieba.txt", "人 10 n\n");
 
   const totals = compressLanguageAssets(appDirectory);
-  assert.equal(totals.files, 3);
+  assert.equal(totals.files, 2);
 
   const root = path.join(appDirectory, "language-assets");
-  const jmdictPath = path.join(root, "japanese/dict/jmdict.json");
+  const wordsPath = path.join(root, "mandarin/chinese/zh.jieba.txt");
   // Originals are replaced; the renderer's URL-fetched files and existing .gz files are untouched.
-  await assert.rejects(fs.access(jmdictPath));
-  await fs.access(jmdictPath + ".gz");
+  await assert.rejects(fs.access(wordsPath));
+  await fs.access(wordsPath + ".gz");
   assert.equal(await fs.readFile(path.join(root, "japanese/pitch/accents.json"), "utf8"), accents);
   assert.equal(await fs.readFile(path.join(root, "japanese/dict/base.dat.gz"), "utf8"), "already compressed");
 
-  assert.equal(await assetExists(jmdictPath), true);
-  assert.equal(await readTextAsset(jmdictPath), jmdict);
-  assert.equal((await readAsset(path.join(root, "mandarin/chinese/zh.jieba.txt"))).toString("utf8"), "人 10 n\n");
+  assert.equal(await assetExists(wordsPath), true);
+  assert.equal(await readTextAsset(wordsPath), words);
   assert.equal(await readStrokeSvg(path.join(root, "han-character-core/kanji"), "04eba.svg"), svg);
 
   // Running again (another architecture in the same build) finds nothing left to do and keeps the copies.
   assert.equal(compressLanguageAssets(appDirectory).files, 0);
-  await fs.access(jmdictPath + ".gz");
+  await fs.access(wordsPath + ".gz");
 
-  // A fresh export without kanjidic: its old compressed copy is dropped, jmdict is compressed again.
-  await write("app/language-assets/japanese/dict/kanjidic.json.gz", "stale");
-  await write("app/language-assets/japanese/dict/jmdict.json", jmdict);
+  // A fresh export brings the plain file back: it is compressed again.
+  await write("app/language-assets/mandarin/chinese/zh.jieba.txt", words);
   assert.equal(compressLanguageAssets(appDirectory).files, 1);
-  await assert.rejects(fs.access(path.join(root, "japanese/dict/kanjidic.json.gz")));
-  assert.equal(await readTextAsset(jmdictPath), jmdict);
+  assert.equal(await readTextAsset(wordsPath), words);
 });
 
 test("packaging without downloaded language assets compresses nothing instead of failing", () => {

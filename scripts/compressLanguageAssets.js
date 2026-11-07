@@ -5,7 +5,11 @@
  *    set, `han-character-core/kanji.pack` and `hanzi.pack`, data tables (docs/DATA_FORMAT.md) built
  *    by scripts/data/buildStrokePacks.ts; the folder is removed, and with it the KanjiVG variants
  *    (`04e14-Kaisho.svg`) nothing can read;
- *  - the large dictionary files are gzipped in place, `<name>` becoming `<name>.gz`.
+ *  - each dictionary (JMdict, KANJIDIC, CC-CEDICT, CantoDict) becomes a table beside its JSON,
+ *    `jmdict.pack` and so on, built by scripts/data/buildDictionaryTables.ts with the keys the
+ *    first-load import used to write; the JSON is removed, and the app reads the table directly;
+ *  - the other large files the main process reads (the jieba word lists) are gzipped in place,
+ *    `<name>` becoming `<name>.gz`.
  * Only files read by the main process through main/helpers/assetFiles.ts are listed; files the
  * renderer fetches by URL (pitch accents, grammar) and anything read another way stay plain.
  *
@@ -19,9 +23,8 @@ const {execFileSync} = require('node:child_process');
 // Directory (under language-assets) → the files in it to compress. Add a file here only if the
 // main process reads it through readAsset/readTextAsset/readAssetSync.
 const TARGETS = [
-  ['japanese/dict', (name) => ['jmdict.json', 'kanjidic.json'].includes(name)],
-  ['mandarin/chinese', (name) => ['chinese.json', 'zh.jieba.txt'].includes(name)],
-  ['cantonese/cantonese', (name) => ['cantodict.json', 'yue.jieba.txt'].includes(name)],
+  ['mandarin/chinese', (name) => name === 'zh.jieba.txt'],
+  ['cantonese/cantonese', (name) => name === 'yue.jieba.txt'],
 ];
 
 const GZIP_SUFFIX = '.gz';
@@ -44,6 +47,27 @@ const packStrokes = (root) => {
     result.files += set.files;
     result.before += set.rawBytes;
     result.after += set.packBytes;
+  }
+  return result;
+};
+
+// Builds the dictionary tables the same way. The builder holds a whole dictionary in memory
+// (CC-CEDICT's substring index is 1.3 million keys), so it gets a larger heap than the default.
+const packDictionaries = (root) => {
+  const result = {files: 0, before: 0, after: 0};
+  const repo = path.resolve(__dirname, '..');
+  const output = execFileSync(
+    process.execPath,
+    ['--max-old-space-size=8192', '--import', 'tsx', path.join(__dirname, 'data', 'buildDictionaryTables.ts'), root],
+    {cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'], maxBuffer: 1 << 20}
+  );
+  const megabytes = (bytes) => (bytes / 1048576).toFixed(2);
+  const lastLine = output.trim().split(/\r?\n/).pop();
+  for (const table of JSON.parse(lastLine)) {
+    console.log(`[compressLanguageAssets] ${table.table}: ${table.entries} entries, ${table.blocks} blocks, ${megabytes(table.rawBytes)} MB JSON -> ${megabytes(table.packBytes)} MB`);
+    result.files++;
+    result.before += table.rawBytes;
+    result.after += table.packBytes;
   }
   return result;
 };
@@ -91,6 +115,7 @@ const compressLanguageAssets = (appDirectory) => {
     totals.after += result.after;
   };
   tally(packStrokes(root));
+  tally(packDictionaries(root));
   for (const [relative, isTarget] of TARGETS) {
     const result = compressDirectory(path.join(root, relative), isTarget);
     tally(result);

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-table-close"
+description = "Enables the table_close command without any pre-configured scope."
+commands.allow = ["table_close"]
+
+[[permission]]
+identifier = "deny-table-close"
+description = "Denies the table_close command without any pre-configured scope."
+commands.deny = ["table_close"]

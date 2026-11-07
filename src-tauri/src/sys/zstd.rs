@@ -7,7 +7,7 @@ use std::io::Read;
 /// hostile input from filling memory.
 const MAX_OUTPUT: u64 = 64 * 1024 * 1024;
 
-fn decompress(input: &[u8], cap: u64) -> Result<Vec<u8>, String> {
+pub(super) fn decompress(input: &[u8], cap: u64) -> Result<Vec<u8>, String> {
   let fail = |e: std::io::Error| format!("EINVAL: invalid argument, zstd decompress: {e}");
   let decoder = zstd::stream::read::Decoder::new(input).map_err(fail)?;
   let mut out = Vec::new();

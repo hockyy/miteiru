@@ -1,8 +1,8 @@
 // Release builds (`npm run tauri:build`, through src-tauri/tauri.release.conf.json): stages what ships
 // beside the executable in src-tauri/resources/:
-//   language-assets/  the dictionaries, large files gzipped (main/helpers/assetFiles.ts reads either
-//                     form), and the stroke data, one pack per set instead of 21,000 files
-//                     (docs/DATA_FORMAT.md)
+//   language-assets/  the dictionaries and the stroke data as data tables (docs/DATA_FORMAT.md: one
+//                     file per dictionary, one pack per stroke set instead of 21,000 files), and the
+//                     other large files gzipped (main/helpers/assetFiles.ts reads either form)
 //   libmpv/           this platform's libmpv and its licence (Linux uses the system libmpv)
 //   live-captions/    the live captions helper, when npm run build:live-captions built one
 import {copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, rmSync, writeFileSync} from 'node:fs';

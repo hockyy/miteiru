@@ -45,7 +45,7 @@ const value = await get(table, key);                    // null when the key is 
 const text = value ? codecFor((await openTable(table)).header.codec).decode(value) : "";
 ```
 
-`get` rejects with `ENOENT` when the table does not exist, which is how development (loose source files) and tests fall back; any other error means a damaged table. `main/helpers/strokeSvg.ts` is the worked example: a name check, the table, the codec, then the loose-file fallback. Do not add a Rust command for a dataset: the worker already reads ranges (`fs_read_range`) and decompresses (`zstd_decompress`).
+`get` rejects with `ENOENT` when the table does not exist, which is how development (loose source files) and tests fall back; any other error means a damaged table. `main/helpers/strokeSvg.ts` is the worked example: a name check, the table, the codec, then the loose-file fallback. A dataset read a record at a time (stroke SVGs) needs no Rust command: the worker already reads ranges (`fs_read_range`) and decompresses (`zstd_decompress`). A dataset queried hot, many times a second with range scans (the dictionaries, when glossing a subtitle file), needs the native reader (`table_get_many` and `table_values` in `src-tauri/src/sys/table.rs`), reached through `openReadOnlyTable` in `renderer/platform/backend/shims/level.ts`; another table needs no new command.
 
 ## 4. Verify it
 
@@ -59,6 +59,17 @@ const text = value ? codecFor((await openTable(table)).header.codec).decode(valu
 
 Every table's header records `source.name`, `source.url` and `source.license`, and the licence must allow redistribution in the installer. Also add the dataset to the credits in `README.md` ("Credits and license"), and keep any licence text the source requires beside the data. Do not pack a dataset whose licence you have not checked.
 
+## Adding a dictionary
+
+The four bundled dictionaries are tables whose keys are what their import writes (see [DATA_FORMAT.md](DATA_FORMAT.md), "Dictionary tables"). To add one:
+
+1. Write its **import definition** next to the others in `main/dictionary/` and export it, as `jmdictImport` is: `metadataKeys` (written last; their presence marks a complete store), `writeEntries(raw, writer)` (every `writer.put(key, value)` of the keys the queries read) and `metadata(raw)`. `setupX` calls `openDictionary(dbPath, importPath, xImport)`. The queries use only `get`, `getMany`, `values({gte, lt, limit})` and `close`, the `DictionaryDb` interface.
+2. Add **one entry** to `DICTIONARIES` in `scripts/data/buildDictionaryTables.ts`: the JSON's path under `language-assets`, the import definition, the dataset id and the source (name, link, licence; credit it in `README.md` too). Staging then writes `<name>.pack` beside the JSON, verifies it against the import and removes the JSON.
+3. Make the app's `importPath` the JSON path (as `main/handler/japanese.ts` does); `openDictionary` finds the `.pack` beside it. Test it by building a table from a small fixture with `buildDictionaryTable` and comparing it with the imported store, as `tests/dictionaryTables.test.ts` does.
+4. Add a real lookup to `checkLanguages` in `renderer/platform/smokeTest.ts`.
+
+Development (the JSON, no table) still imports into a store on first load. The Rust importer in `src-tauri/src/sys/dict_import.rs` (`nativeLayout`) only speeds that up for the three existing layouts; a new dictionary does not need it.
+
 ## What comes next
 
-Phase 2 of [#139](https://github.com/hockyy/miteiru/issues/139) moves the dictionaries (JMdict, KANJIDIC, CC-CEDICT, CantoDict, VNEDICT) onto the same tables, with the keys the first-load import writes today, so the app reads them directly instead of importing them into SQLite. After that, a new dictionary needs a converter to the Universal Dictionary schema (`main/dictionary/dictionary.schema.json`) and one build entry like the one above. Until then dictionaries stay gzipped JSON, imported on first load.
+VNEDICT is still gzipped text, and a converter to the Universal Dictionary schema (`main/dictionary/dictionary.schema.json`) would let new dictionaries share one import. Phase 3 of [#139](https://github.com/hockyy/miteiru/issues/139) compresses the tokenizer data (kuromoji `.dat`, jieba).

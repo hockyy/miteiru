@@ -1,3 +1,6 @@
+//! Development builds only: packaged builds read the dictionaries from data tables (sys/table.rs,
+//! docs/DATA_FORMAT.md) and never import. Without a table, the first load imports the JSON here.
+//!
 //! First-run dictionary import, in Rust. The bundled JMdict (110 MB of JSON) and KANJIDIC used to be
 //! parsed in the page's worker and sent here 10k keys at a time. Reading them here skips the JS work
 //! and the copies between the worker, the page and Rust.

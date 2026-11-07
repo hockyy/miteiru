@@ -279,4 +279,53 @@ export class Level<K = string, V = string> {
   }
 }
 
-export default {Level};
+/** What a read-only table store offers: the part of `Level` the dictionary queries use. */
+export interface ReadOnlyTable {
+  get(key: string): Promise<string | undefined>;
+  getMany(keys: string[]): Promise<(string | undefined)[]>;
+  /** Values in key order within [gte, lt); `limit` < 0 means all. */
+  values(options?: { gte?: string; lt?: string; limit?: number }): { all(): Promise<string[]> };
+  close(): Promise<void>;
+}
+
+/**
+ * Not in `level`: opens a data table (docs/DATA_FORMAT.md) read-only, through the Rust table engine
+ * (src-tauri/src/sys/table.rs). The bundled dictionaries are tables; each query is one IPC call,
+ * answered from Rust's block cache. Same return shapes as `Level`: a missing key is undefined.
+ */
+export const openReadOnlyTable = async (path: string): Promise<ReadOnlyTable> => {
+  let handle: number;
+  try {
+    handle = await sys('table_open', {path}) as number;
+  } catch (error) {
+    throw nodeError(error);
+  }
+  let open = true;
+  const live = () => {
+    if (!open) throw databaseNotOpen();
+    return handle;
+  };
+  return {
+    async get(key) {
+      const [value] = await sys('table_get_many', {handle: live(), keys: [key]}) as (string | null)[];
+      return value === null || value === undefined ? undefined : value;
+    },
+    async getMany(keys) {
+      if (keys.length === 0) return [];
+      const values = await sys('table_get_many', {handle: live(), keys}) as (string | null)[];
+      return values.map((value) => (value === null ? undefined : value));
+    },
+    values({gte, lt, limit = -1} = {}) {
+      return {
+        all: async () => await sys('table_values', {handle: live(), gte: gte ?? null, lt: lt ?? null, limit}) as string[]
+      };
+    },
+    async close() {
+      if (!open) return;
+      open = false;
+      await sys('table_close', {handle});
+    }
+  };
+};
+
+export default {Level, openReadOnlyTable};
