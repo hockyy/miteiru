@@ -1,4 +1,8 @@
-import {IpcHandler} from '../main/preload'
+interface IpcHandler {
+  send(channel: string, value: unknown): void;
+  on(channel: string, callback: (...args: unknown[]) => void): () => void;
+  invoke(channel: string, ...args: unknown[]): Promise<any>;
+}
 import type {LiveCaptionsApiState} from "./types/liveCaptions";
 
 interface ElectronApi {
@@ -14,10 +18,7 @@ interface ElectronApi {
     onError: (callback: (error: string) => void) => () => void;
     onDebug: (callback: (message: string) => void) => () => void;
   };
-  /**
-   * Tauri only: subscribes to files dropped on the window (native paths) and to the drag hovering
-   * over it. Electron delivers files as DOM drop events instead, so this is undefined there.
-   */
+  /** Subscribes to files dropped on the window (native paths) and to the drag hovering over it. */
   onFileDrop?: (onDrop: (paths: string[]) => void, onHover?: (hovering: boolean) => void) => () => void;
   getUserDataPath: () => Promise<string>;
   joinPath: (...pathSegments: string[]) => Promise<string>;
@@ -30,11 +31,6 @@ interface ElectronApi {
 }
 
 declare global {
-  /** Electron adds a filesystem path to dragged/dropped File objects. */
-  interface File {
-    readonly path?: string;
-  }
-
   interface Window {
     backend: IpcHandler;
     electronStore: any;

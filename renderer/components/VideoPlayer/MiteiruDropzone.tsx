@@ -14,8 +14,8 @@ export const MiteiruDropzone = ({
   const [draggingFiles, setDraggingFiles] = useState(false);
   const dragEndTimer = useRef<number | undefined>(undefined);
 
-  // Files dropped anywhere in the window (the empty page, a dialog, the video, even a text field) are
-  // opened; text dragged into a text field is left to the field.
+  // Dropped anywhere in the window (the empty page, a dialog, the video, even a text field); text
+  // dragged into a text field is left to the field.
   const keepsOwnDrop = (e: DragEvent) =>
     isTextEntryTarget(e.target) && !e.dataTransfer?.types.includes('Files');
 
@@ -37,20 +37,12 @@ export const MiteiruDropzone = ({
     const dt = e.dataTransfer;
     if (!dt) return;
 
+    // Dropped files arrive as paths through onFileDrop; only a dragged YouTube link comes through here.
     const url = dt.getData('text/plain');
-    const files = Array.from(dt.files);
-
-    if (isYoutube(url)) {
-      onDrop([{path: url}]);
-    } else if (files.length) {
-      const paths = files.map((file) => window.electronAPI.getPath(file));
-      console.log('[file-drop] resolved files', paths);
-      loadMediaPaths(paths, onDrop);
-    }
+    if (isYoutube(url)) onDrop([{path: url}]);
   }, [onDrop]);
 
-  // Under Tauri, files dropped on the window arrive as paths from the native drag-drop event instead
-  // of DOM drop events (the bridge provides onFileDrop; Electron's preload does not).
+  // Files dropped on the window arrive as paths from the native drag-drop event.
   useEffect(() => {
     const onFileDrop = window.electronAPI?.onFileDrop;
     if (!onFileDrop) return;

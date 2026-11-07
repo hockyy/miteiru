@@ -1,9 +1,14 @@
 import crypto from "crypto";
 import fs from "node:fs/promises";
-import http, {IncomingMessage, Server, ServerResponse} from "node:http";
 import path from "path";
 import {languagePlugins, getLanguagePluginByTokenizerMode} from "./registry";
 import {analyzeText} from "./analyzer";
+
+/**
+ * The local analyzer API (docs/ANALYZER_SERVER.md). This module answers requests; a transport owns
+ * the socket: the Tauri shell's Rust listener in the app (src-tauri/src/analyzer.rs), node:http in
+ * the tests.
+ */
 
 export interface AnalyzerServerRegistration {
   host: string;
@@ -17,44 +22,46 @@ export interface AnalyzerServerRegistration {
 export interface AnalyzerServerContext {
   appDataDirectory: string;
   version: string;
+  pid: number;
   getTokenizer: () => string;
   getToneType: () => Promise<string>;
   analyze?: typeof analyzeText;
 }
 
+export interface AnalyzerRequest {
+  method: string;
+  /** Path and query, e.g. `/analyze`. */
+  path: string;
+  /** The `X-Miteiru-Analyzer-Token` header, if sent. */
+  token?: string;
+  body: string;
+}
+
+export interface AnalyzerResponse {
+  status: number;
+  value: unknown;
+}
+
+/** Listens on 127.0.0.1 (port 0), hands each request to `handle`, and reports the port it got. */
+export type AnalyzerTransport = (
+  handle: (request: AnalyzerRequest) => Promise<AnalyzerResponse>
+) => Promise<{ port: number; close: () => Promise<void> }>;
+
 export interface AnalyzerServerHandle {
-  server: Server;
   registration: AnalyzerServerRegistration;
   registrationPath: string;
   close: () => Promise<void>;
 }
 
-const host = "127.0.0.1";
+export const ANALYZER_HOST = "127.0.0.1";
+export const ANALYZER_TOKEN_HEADER = "x-miteiru-analyzer-token";
 const registrationFilename = "analyzer-server.json";
-const tokenHeader = "x-miteiru-analyzer-token";
 
 export const getAnalyzerServerRegistrationPath = (appDataDirectory: string) => (
   path.join(appDataDirectory, registrationFilename)
 );
 
-const sendJson = (res: ServerResponse, statusCode: number, value: unknown) => {
-  const body = JSON.stringify(value);
-  res.writeHead(statusCode, {
-    "content-type": "application/json; charset=utf-8",
-    "content-length": Buffer.byteLength(body)
-  });
-  res.end(body);
-};
-
-const readJsonBody = async <T>(req: IncomingMessage): Promise<T> => {
-  const chunks: Buffer[] = [];
-  for await (const chunk of req) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-  }
-
-  if (chunks.length === 0) return {} as T;
-  return JSON.parse(Buffer.concat(chunks).toString("utf8")) as T;
-};
+const json = (status: number, value: unknown): AnalyzerResponse => ({status, value});
 
 const getActiveLanguage = (tokenizerMode: string) => {
   const plugin = getLanguagePluginByTokenizerMode(tokenizerMode);
@@ -89,146 +96,112 @@ const healthResponse = (context: AnalyzerServerContext, registration: AnalyzerSe
   };
 };
 
-const assertToken = (req: IncomingMessage, token: string) => {
-  const provided = req.headers[tokenHeader];
-  return provided === token;
-};
-
 const handleAnalyze = async (
-  req: IncomingMessage,
-  res: ServerResponse,
+  bodyText: string,
   context: AnalyzerServerContext,
   batch: boolean
-) => {
+): Promise<AnalyzerResponse> => {
   type AnalyzeBody = {
     text?: string;
     texts?: string[];
     lang?: string;
     tokenizer?: string;
   };
-
-  const body = await readJsonBody<AnalyzeBody>(req);
+  let body: AnalyzeBody;
+  try {
+    body = bodyText.trim() ? JSON.parse(bodyText) as AnalyzeBody : {};
+  } catch {
+    return json(400, {ok: false, error: "Expected a JSON body."});
+  }
   const tokenizerMode = context.getTokenizer();
   const active = getActiveLanguage(tokenizerMode);
 
   if (!tokenizerMode) {
-    sendJson(res, 409, {
-      ok: false,
-      error: "No analyzer language is selected in Miteiru."
-    });
-    return;
+    return json(409, {ok: false, error: "No analyzer language is selected in Miteiru."});
   }
 
   if (body.lang && body.lang !== active.languageCode) {
-    sendJson(res, 409, {
+    return json(409, {
       ok: false,
       error: `Requested language ${body.lang} does not match active language ${active.languageCode}.`,
       active
     });
-    return;
   }
 
   // MeCab was removed; clients that still ask for it get Kuromoji, which uses the same dictionary.
   const requestedTokenizer = body.tokenizer === "mecab" ? "kuromoji" : body.tokenizer;
   if (requestedTokenizer && requestedTokenizer !== active.tokenizerMode) {
-    sendJson(res, 409, {
+    return json(409, {
       ok: false,
       error: `Requested tokenizer ${body.tokenizer} does not match active tokenizer ${active.tokenizerMode}.`,
       active
     });
-    return;
   }
 
   const toneType = await context.getToneType();
-
+  const analyzer = context.analyze ?? analyzeText;
   if (batch) {
     if (!Array.isArray(body.texts)) {
-      sendJson(res, 400, {ok: false, error: "Expected JSON body with texts array."});
-      return;
+      return json(400, {ok: false, error: "Expected JSON body with texts array."});
     }
-
-    const analyzer = context.analyze ?? analyzeText;
     const results = await Promise.all(body.texts.map((text) => analyzer(text, {tokenizerMode, toneType})));
-    sendJson(res, 200, {ok: true, active, results});
-    return;
+    return json(200, {ok: true, active, results});
   }
 
   if (typeof body.text !== "string") {
-    sendJson(res, 400, {ok: false, error: "Expected JSON body with text string."});
-    return;
+    return json(400, {ok: false, error: "Expected JSON body with text string."});
   }
-
-  const analyzer = context.analyze ?? analyzeText;
   const tokens = await analyzer(body.text, {tokenizerMode, toneType});
-  sendJson(res, 200, {ok: true, active, tokens});
+  return json(200, {ok: true, active, tokens});
 };
 
-const routeRequest = async (
-  req: IncomingMessage,
-  res: ServerResponse,
+/** One request of the analyzer API. Never throws: failures become a 500 JSON response. */
+export const handleAnalyzerRequest = async (
+  request: AnalyzerRequest,
   context: AnalyzerServerContext,
   registration: AnalyzerServerRegistration
-) => {
-  const url = new URL(req.url ?? "/", `http://${host}`);
-
-  if (req.method === "GET" && url.pathname === "/health") {
-    sendJson(res, 200, healthResponse(context, registration));
-    return;
+): Promise<AnalyzerResponse> => {
+  try {
+    const url = new URL(request.path || "/", `http://${ANALYZER_HOST}`);
+    if (request.method === "GET" && url.pathname === "/health") {
+      return json(200, healthResponse(context, registration));
+    }
+    if (request.token !== registration.token) {
+      return json(401, {ok: false, error: "Unauthorized"});
+    }
+    if (request.method === "POST" && url.pathname === "/analyze") {
+      return await handleAnalyze(request.body, context, false);
+    }
+    if (request.method === "POST" && url.pathname === "/analyze-batch") {
+      return await handleAnalyze(request.body, context, true);
+    }
+    return json(404, {ok: false, error: "Not found"});
+  } catch (error) {
+    console.error("[AnalyzerServer]", error);
+    return json(500, {
+      ok: false,
+      error: error instanceof Error ? error.message : "Unexpected analyzer server error."
+    });
   }
-
-  if (!assertToken(req, registration.token)) {
-    sendJson(res, 401, {ok: false, error: "Unauthorized"});
-    return;
-  }
-
-  if (req.method === "POST" && url.pathname === "/analyze") {
-    await handleAnalyze(req, res, context, false);
-    return;
-  }
-
-  if (req.method === "POST" && url.pathname === "/analyze-batch") {
-    await handleAnalyze(req, res, context, true);
-    return;
-  }
-
-  sendJson(res, 404, {ok: false, error: "Not found"});
 };
 
-const listen = (server: Server) => new Promise<number>((resolve, reject) => {
-  server.once("error", reject);
-  server.listen(0, host, () => {
-    server.off("error", reject);
-    const address = server.address();
-    if (!address || typeof address === "string") {
-      reject(new Error("Analyzer server did not return a TCP address."));
-      return;
-    }
-    resolve(address.port);
-  });
-});
-
+/** Starts the API on `transport` and writes analyzer-server.json for clients to find it. */
 export const startAnalyzerServer = async (
-  context: AnalyzerServerContext
+  context: AnalyzerServerContext,
+  transport: AnalyzerTransport
 ): Promise<AnalyzerServerHandle> => {
   const token = crypto.randomBytes(32).toString("hex");
-  let registration: AnalyzerServerRegistration;
+  let registration: AnalyzerServerRegistration | undefined;
 
-  const server = http.createServer((req, res) => {
-    routeRequest(req, res, context, registration).catch((error) => {
-      console.error("[AnalyzerServer]", error);
-      sendJson(res, 500, {
-        ok: false,
-        error: error instanceof Error ? error.message : "Unexpected analyzer server error."
-      });
-    });
+  const {port, close} = await transport(async (request) => {
+    if (!registration) return json(503, {ok: false, error: "Analyzer server is starting."});
+    return handleAnalyzerRequest(request, context, registration);
   });
-
-  const port = await listen(server);
   registration = {
-    host,
+    host: ANALYZER_HOST,
     port,
     token,
-    pid: process.pid,
+    pid: context.pid,
     startedAt: Date.now(),
     version: context.version
   };
@@ -236,15 +209,5 @@ export const startAnalyzerServer = async (
   const registrationPath = getAnalyzerServerRegistrationPath(context.appDataDirectory);
   await fs.writeFile(registrationPath, `${JSON.stringify(registration, null, 2)}\n`, "utf8");
 
-  return {
-    server,
-    registration,
-    registrationPath,
-    close: () => new Promise<void>((resolve, reject) => {
-      server.close((error) => {
-        if (error) reject(error);
-        else resolve();
-      });
-    })
-  };
+  return {registration, registrationPath, close};
 };

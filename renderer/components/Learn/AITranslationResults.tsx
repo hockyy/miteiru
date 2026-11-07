@@ -1,4 +1,4 @@
-/** Renders translation cards or loading/error states. Parent: AITranslationPanel.tsx */
+/** Renders translation cards or loading/error states. Parent: LearnStudyPanel.tsx */
 import React from 'react';
 import {AITranslationResult} from '../../types/aiTranslation';
 import {

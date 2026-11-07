@@ -1,7 +1,7 @@
 name: CI
 
 # Manual only, like Release: start it from the Actions tab or with `gh workflow run CI`.
-# The same checks (npm run lint:smells, npm test) run locally before merging.
+# The same checks (npm run lint:smells, npm test, typecheck) run locally before merging.
 on:
   workflow_dispatch:
 
@@ -20,3 +20,5 @@ jobs:
       - run: npm ci
       - run: npm run lint:smells
       - run: npm test
+      - run: npx tsc -p renderer --noEmit
+      - run: node scripts/buildBackendWorker.mjs

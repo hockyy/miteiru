@@ -1,17 +1,10 @@
 /**
- * The Tauri backend: main/'s Electron handlers running in a Web Worker. main/ talks to the shims in
- * ./shims (aliased in by scripts/buildBackendWorker.mjs), which call Rust through the main thread.
- *
- * Mirrors main/main.ts's startup wiring. Skipped on purpose (Electron-only), as a TODO list:
- *  - TODO: miteiru:// and app:// protocols (media/subtitle streaming to the renderer) - Tauri's
- *    asset protocol or a Rust-side equivalent has to serve local media files.
- *  - TODO: the YouTube embed header workaround (session.webRequest) - needs a webview-level hook.
- *  - TODO: the analyzer HTTP server (startAnalyzerServer) - needs a Rust-side listener.
- *  - TODO: generate-subtitles handlers are not registered by main/ either (registerGenerateSubtitlesHandlers).
- *  - TODO: live-captions helper lookup (candidates under resources/live-captions) once it is bundled.
+ * The backend: main/'s handlers running in a Web Worker. main/ talks to the shims in ./shims (aliased
+ * in by scripts/buildBackendWorker.mjs), which call Rust through the main thread.
  */
-import {setSys} from './sys';
-import type {WorkerInbound, WorkerOutbound} from './protocol';
+import {setSys, sys} from './sys';
+import type {AnalyzerRequestEvent, WorkerInbound, WorkerOutbound} from './protocol';
+import type {AnalyzerRequest, AnalyzerResponse} from '../../../main/handler/languages/analyzerServer';
 import {SYS_WRITE_BYTES} from './protocol';
 import {appRoot, initRuntime, type SysInfo} from './shims/runtime';
 import {dispatchInvoke, dispatchSend, setEventSink} from './shims/electron';
@@ -132,6 +125,27 @@ const boot = async () => {
 
   Learning.setup();
   Learning.registerHandler();
+
+  // The local analyzer API (docs/ANALYZER_SERVER.md). Rust owns the socket and forwards requests here.
+  const {startAnalyzerServer} = await import('../../../main/handler/languages/analyzerServer');
+  await startAnalyzerServer(
+    {appDataDirectory, version: info.version, pid: info.pid, getTokenizer, getToneType},
+    async (handle) => {
+      analyzerHandle = handle;
+      return {port: await sys('analyzer_start') as number, close: async () => undefined};
+    }
+  ).catch((error) => console.error('[backend] the analyzer server did not start:', error));
+};
+
+let analyzerHandle: ((request: AnalyzerRequest) => Promise<AnalyzerResponse>) | null = null;
+
+const answerAnalyzer = async ({id, method, path, token, body}: AnalyzerRequestEvent) => {
+  await booted.catch(() => undefined);
+  const {status, value} = analyzerHandle
+    ? await analyzerHandle({method, path, token: token ?? undefined, body})
+    : {status: 503, value: {ok: false, error: 'Miteiru could not start its analyzer.'}};
+  await sys('analyzer_respond', {id, status, body: JSON.stringify(value)})
+    .catch((error) => console.error('[backend] analyzer reply failed:', error));
 };
 
 const booted = boot().then(
@@ -176,6 +190,9 @@ scope.onmessage = (event) => {
       return;
     case 'send':
       booted.then(() => dispatchSend(message.channel, message.args), () => undefined);
+      return;
+    case 'analyzer-request':
+      void answerAnalyzer(message.payload);
       return;
     case 'proc-event':
       dispatchProcEvent(message.event, message.payload as never);

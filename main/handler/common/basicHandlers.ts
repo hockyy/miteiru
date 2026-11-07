@@ -1,4 +1,4 @@
-import {BrowserWindow, dialog, ipcMain, shell} from "electron";
+import {dialog, ipcMain, shell} from "electron";
 import * as fsPromises from "node:fs/promises";
 import {access} from "node:fs/promises";
 import path, {basename, dirname, extname, join} from "path";
@@ -50,8 +50,8 @@ export function registerBasicHandlers({
   });
 
   // Videos and subtitles chosen in the system file picker (the video page's Open button).
-  ipcMain.handle("pick-media-files", async (event): Promise<string[]> => {
-    const options: Electron.OpenDialogOptions = {
+  ipcMain.handle("pick-media-files", async (): Promise<string[]> => {
+    const {filePaths, canceled} = await dialog.showOpenDialog({
       properties: ["openFile", "multiSelections"],
       filters: [
         {
@@ -60,9 +60,7 @@ export function registerBasicHandlers({
         },
         {name: "All files", extensions: ["*"]}
       ]
-    };
-    const window = BrowserWindow.fromWebContents(event.sender);
-    const {filePaths, canceled} = window ? await dialog.showOpenDialog(window, options) : await dialog.showOpenDialog(options);
+    });
     return canceled ? [] : filePaths;
   });
 

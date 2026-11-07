@@ -1,7 +1,7 @@
 /**
- * Every window.electronAPI method of main/preload.ts and the IPC channel it invokes. The Tauri bridge
- * builds window.electronAPI from this table, so a method added to the preload needs one line here
- * (tests/tauriBridgeChannels.test.ts fails when the two drift apart).
+ * Every window.electronAPI method and the backend channel it invokes. The Tauri bridge builds
+ * window.electronAPI from this table, so it is the single list of the renderer's backend API
+ * (tests/backendShims.test.ts checks each channel has a handler in main/).
  */
 export const ELECTRON_API_INVOKE_CHANNELS = {
   googleTranslate: 'gtrans',
@@ -13,7 +13,6 @@ export const ELECTRON_API_INVOKE_CHANNELS = {
   findPositionDeltaInFolder: 'find-position-delta-in-folder',
   analyzeMediaFile: 'analyze-media-file',
   extractEmbeddedSubtitle: 'extract-embedded-subtitle',
-  reencodeVideoWithAudioTrack: 'reencode-video-with-audio-track',
   cleanupTempSubtitle: 'cleanup-temp-subtitle',
   getUserDataPath: 'get-user-data-path',
   joinPath: 'join-path',

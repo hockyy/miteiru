@@ -2,47 +2,14 @@
   "private": true,
   "name": "miteiru",
   "description": "Miteiru",
-  "desktopName": "miteiru.desktop",
   "version": "7.6.3",
   "author": "Hocky Yudhiono <hocky.yudhiono@gmail.com>",
-  "main": "app/main.js",
   "homepage": "https://miteiru.hocky.id",
   "engines": {
     "node": ">=22.12.0"
   },
-  "build": {
-    "extends": "buildConfig/base.config.json",
-    "appId": "id.hocky.miteiru",
-    "artifactName": "miteiru-${version}-${os}-${arch}.${ext}",
-    "linux": {
-      "syncDesktopName": true
-    },
-    "mac": {
-      "icon": "resources/icon.icns",
-      "target": [
-        "pkg"
-      ],
-      "extraResources": [
-        {
-          "from": "resources/live-captions",
-          "to": "live-captions",
-          "filter": [
-            "**/*",
-            "!**/.gitkeep"
-          ]
-        }
-      ],
-      "extendInfo": {
-        "NSAudioCaptureUsageDescription": "Miteiru uses computer audio to show live captions.",
-        "NSMicrophoneUsageDescription": "Miteiru uses the microphone to show live captions.",
-        "NSScreenCaptureUsageDescription": "Miteiru reads computer audio for live captions."
-      }
-    }
-  },
   "scripts": {
-    "predev": "npm run script:copy && node scripts/buildLiveCaptionsBridge.js --if-needed",
     "update:safe": "node scripts/safeUpdate.js",
-    "script:copy": "node scripts/copy.js",
     "script:cleansvg": "node scripts/cleanSvg.js",
     "script:initrepo": "node scripts/initrepo.js",
     "script:saverepo": "node scripts/saverepo.js",
@@ -57,14 +24,8 @@
     "lint:smells": "node scripts/lint-smells.js",
     "lint:eslint": "eslint .",
     "build:live-captions": "node scripts/buildLiveCaptionsBridge.js",
-    "dev": "nextron --electron-options=\"--no-sandbox\"",
-    "build": "npm run build:live-captions && npm run script:clean-next && nextron build",
-    "build:macos": "npm run build:live-captions && npm run script:clean-next && nextron build --config=buildConfig/macos.config.json",
-    "build:nsis": "npm run build:live-captions && npm run script:clean-next && nextron build --config=buildConfig/nsis.config.json",
-    "build:linux22": "npm run script:clean-next && nextron build --config=buildConfig/linux22.config.json",
-    "build:linux24": "npm run script:clean-next && nextron build --config=buildConfig/linux24.config.json",
-    "build:linux26": "npm run script:clean-next && nextron build --config=buildConfig/linux26.config.json",
-    "postinstall": "electron-builder install-app-deps",
+    "dev": "tauri dev",
+    "build": "npm run tauri:build",
     "dev:renderer": "node scripts/devRenderer.mjs",
     "build:renderer": "node scripts/buildBackendWorker.mjs && next build renderer && node scripts/pruneRendererExport.mjs",
     "build:backend-worker": "node scripts/buildBackendWorker.mjs",
@@ -73,16 +34,9 @@
     "tauri:build": "tauri build --config src-tauri/tauri.release.conf.json"
   },
   "dependencies": {
-    "@node-rs/jieba": "^2.0.1",
     "@tauri-apps/api": "^2.12.4",
-    "@tauri-apps/plugin-dialog": "^2.8.4",
-    "@tauri-apps/plugin-http": "^2.8.3",
-    "@tauri-apps/plugin-opener": "^2.7.2",
     "chardet": "^2.2.0",
-    "electron-store": "^11.0.2",
     "iconv-lite": "^0.7.2",
-    "kuromoji": "^0.1.2",
-    "level": "^10.0.0",
     "pinyin-pro": "^3.27.0",
     "to-jyutping": "^3.1.1",
     "wanakana": "^5.3.1"
@@ -92,6 +46,7 @@
     "@fontsource-variable/noto-sans-sc": "^5.3.0",
     "@fontsource-variable/noto-sans-tc": "^5.3.0",
     "@fontsource-variable/nunito": "^5.3.0",
+    "@node-rs/jieba": "^2.0.1",
     "@openrouter/ai-sdk-provider": "^2.8.0",
     "@tailwindcss/postcss": "^4.2.2",
     "@tauri-apps/cli": "^2.12.4",
@@ -104,14 +59,10 @@
     "ajv": "^8.20.0",
     "archiver": "^8.0.0",
     "ass-compiler": "^0.1.15",
-    "autoprefixer": "^10.4.21",
     "axios": "^1.20.0",
     "buffer": "^6.0.3",
-    "electron": "^41.0.3",
-    "electron-builder": "^26.8.1",
     "esbuild": "^0.28.2",
     "eslint": "^9.36.0",
-    "eslint-config-next": "^16.2.1",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "events": "^3.3.0",
@@ -119,11 +70,11 @@
     "fs-extra": "^11.4.1",
     "html-minifier": "^4.0.0",
     "html-react-parser": "^6.0.1",
+    "kuromoji": "^0.1.2",
+    "level": "^10.0.0",
     "lucide-react": "^1.11.0",
     "next": "^16.2.1",
-    "nextron": "^10.0.0",
     "opencc-js": "^1.0.5",
-    "path-browserify": "^1.0.1",
     "pathe": "^2.0.3",
     "postcss": "^8.5.8",
     "react": "^19.2.4",
@@ -132,20 +83,16 @@
     "react-icons": "^5.5.0",
     "styled-components": "^6.1.19",
     "tailwindcss": "^4.2.2",
-    "ts-loader": "^9.5.4",
     "tsx": "^4.22.4",
     "typescript": "^5.9.2",
     "uuid": "^14.0.0",
     "video.js": "^8.23.4",
-    "videojs-youtube": "^3.0.1",
-    "webpack": "^5.101.3",
-    "webpack-cli": "^5.1.4"
+    "videojs-youtube": "^3.0.1"
   },
   "allowScripts": {
     "classic-level@1.4.1": true,
     "classic-level@3.0.0": true,
     "core-js-pure@3.49.0": true,
-    "electron@41.10.6": true,
     "unrs-resolver@1.12.2": true
   }
 }

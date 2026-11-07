@@ -68,7 +68,7 @@ const getState = (): LiveCaptionsApiState => ({
 
 const getBridgeCandidates = () => getLiveCaptionsBridgeCandidates({
   platform: process.platform,
-  resourcesPath: process.resourcesPath,
+  resourcesPath: (process as {resourcesPath?: string}).resourcesPath,
   cwd: process.cwd(),
   appPath: app.getAppPath()
 });

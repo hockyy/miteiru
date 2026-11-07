@@ -14,7 +14,10 @@ module.exports = [
       "archived/**",
       "resources/**",
       "native/**/bin/**",
-      "native/**/obj/**"
+      "native/**/obj/**",
+      "src-tauri/target/**",
+      "src-tauri/gen/**",
+      "src-tauri/resources/**"
     ]
   },
   {

@@ -19,7 +19,9 @@
         "height": 600,
         "minWidth": 640,
         "minHeight": 400,
-        "dragDropEnabled": true
+        "dragDropEnabled": true,
+        "create": false,
+        "zoomHotkeysEnabled": true
       }
     ],
     "security": {
@@ -39,6 +41,19 @@
       "../resources/icon.png",
       "../resources/icon.icns",
       "../resources/icon.ico"
-    ]
+    ],
+    "category": "Education",
+    "shortDescription": "Watch videos with interactive subtitles to learn Japanese, Chinese, Cantonese and Vietnamese.",
+    "macOS": {
+      "signingIdentity": "-",
+      "minimumSystemVersion": "11.0"
+    },
+    "linux": {
+      "deb": {
+        "depends": [
+          "libmpv2 | libmpv1"
+        ]
+      }
+    }
   }
 }

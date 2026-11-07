@@ -1,6 +1,6 @@
 /**
  * AI translation state + OpenRouter call for /learn left column.
- * UI shell: components/Learn/AITranslationPanel.tsx
+ * UI shell: components/Learn/LearnStudyPanel.tsx
  * For analysis instead of translation see hooks/useSentenceAnalysis.ts
  */
 import { useCallback, useState } from 'react';

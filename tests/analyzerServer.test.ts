@@ -8,6 +8,7 @@ import {
   getAnalyzerServerRegistrationPath,
   startAnalyzerServer
 } from "../main/handler/languages/analyzerServer";
+import {nodeHttpTransport} from "./helpers/analyzerHttpTransport";
 
 const handles: AnalyzerServerHandle[] = [];
 
@@ -20,6 +21,7 @@ const createServer = async (overrides: Partial<Parameters<typeof startAnalyzerSe
   const handle = await startAnalyzerServer({
     appDataDirectory,
     version: "test-version",
+    pid: process.pid,
     getTokenizer: () => "jieba",
     getToneType: async () => "num",
     analyze: async (text, options) => ([{
@@ -29,7 +31,7 @@ const createServer = async (overrides: Partial<Parameters<typeof startAnalyzerSe
       separation: [{main: text}]
     }]),
     ...overrides
-  });
+  }, nodeHttpTransport);
   handles.push(handle);
   return handle;
 };

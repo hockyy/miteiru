@@ -15,27 +15,24 @@ import {setSys} from "../renderer/platform/backend/sys";
 import {fromBase64, toBase64} from "../renderer/platform/backend/shims/bytes";
 import {appRoot, initRuntime, runtime} from "../renderer/platform/backend/shims/runtime";
 
-test("the bridge's channel table covers every ipcRenderer.invoke and subscription in the preload", () => {
-  const preload = fs.readFileSync("main/preload.ts", "utf8");
-  const invoked = new Set([...preload.matchAll(/ipcRenderer\.invoke\(\s*['"]([^'"]+)['"]/g)].map((match) => match[1]));
-  const subscribed = new Set([...preload.matchAll(/subscribe\(\s*['"]([^'"]+)['"]/g)].map((match) => match[1]));
-
-  const bridged = new Set<string>([
+test("every channel in the bridge's table has a handler or event in main/", () => {
+  const sources: string[] = [];
+  const walk = (dir: string) => {
+    for (const entry of fs.readdirSync(dir, {withFileTypes: true})) {
+      const full = `${dir}/${entry.name}`;
+      if (entry.isDirectory()) walk(full);
+      else if (entry.name.endsWith(".ts")) sources.push(fs.readFileSync(full, "utf8"));
+    }
+  };
+  walk("main");
+  const text = sources.join("\n");
+  const channels = [
     ...Object.values(ELECTRON_API_INVOKE_CHANNELS),
     ...Object.values(LIVE_CAPTIONS_INVOKE_CHANNELS),
+    ...Object.values(LIVE_CAPTIONS_EVENT_CHANNELS),
     ...Object.values(STORE_CHANNELS)
-  ]);
-  assert.deepEqual([...invoked].filter((channel) => !bridged.has(channel)), []);
-  assert.deepEqual([...bridged].filter((channel) => !invoked.has(channel)), []);
-  assert.deepEqual([...subscribed].sort(), Object.values(LIVE_CAPTIONS_EVENT_CHANNELS).sort());
-});
-
-test("every electronAPI method name in the preload has a table entry", () => {
-  const preload = fs.readFileSync("main/preload.ts", "utf8");
-  const apiBlock = preload.slice(preload.indexOf("exposeInMainWorld('electronAPI'"), preload.indexOf("liveCaptions: {"));
-  const methods = [...apiBlock.matchAll(/^\s{2}(\w+):\s*(?:\(|async)/gm)].map((match) => match[1]);
-  const table = new Set<string>(Object.keys(ELECTRON_API_INVOKE_CHANNELS));
-  assert.deepEqual(methods.filter((method) => !table.has(method) && method !== "getPath"), []);
+  ];
+  assert.deepEqual(channels.filter((channel) => !text.includes(`"${channel}"`) && !text.includes(`'${channel}'`)), []);
 });
 
 test("sync sha1 and sha256 digests match node:crypto", () => {

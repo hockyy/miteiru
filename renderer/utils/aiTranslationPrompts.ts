@@ -2,7 +2,7 @@
  * Prompts + language guards for AI translation (formal / neutral / casual).
  * Target langs: languages/manifest.ts languageCodes (ja, zh-CN, yue)
  * Parser + types: utils/parseAiTranslation.ts, types/aiTranslation.ts
- * Hook: hooks/useAiTranslation.ts | UI: components/Learn/AITranslationPanel.tsx
+ * Hook: hooks/useAiTranslation.ts | UI: components/Learn/LearnStudyPanel.tsx
  * Detail sections: components/Learn/TranslationDetailSections.tsx
  */
 import { getLanguageDisplayName, languageCodes } from '../languages/manifest';
