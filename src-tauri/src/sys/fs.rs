@@ -37,6 +37,24 @@ pub fn read_bytes(path: &str) -> Result<Vec<u8>, String> {
   fs::read(path).map_err(|e| fs_err(&e, "open", path))
 }
 
+/// A bundled language asset's bytes. Packaged builds keep the big ones gzipped beside the plain
+/// path (`zh.jieba.txt.gz`, `jmdict.json.gz`; scripts/compressLanguageAssets.js), development keeps
+/// them plain, so this reads whichever exists, as main/helpers/assetFiles.ts readAsset does.
+pub fn read_asset(path: &str) -> Result<Vec<u8>, String> {
+  use std::io::Read;
+  match fs::read(path) {
+    Ok(bytes) => Ok(bytes),
+    Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+      let gz = format!("{path}.gz");
+      let file = fs::File::open(&gz).map_err(|e| fs_err(&e, "open", path))?;
+      let mut out = Vec::new();
+      flate2::read::GzDecoder::new(file).read_to_end(&mut out).map_err(|e| fs_err(&e, "read", &gz))?;
+      Ok(out)
+    }
+    Err(e) => Err(fs_err(&e, "open", path)),
+  }
+}
+
 pub fn write_bytes(path: &str, data: &[u8], append: bool) -> Result<(), String> {
   if append {
     let mut f = fs::OpenOptions::new()

@@ -7,10 +7,11 @@ use std::sync::{Arc, Mutex};
 pub struct JiebaStore(Mutex<HashMap<String, Arc<Jieba>>>);
 
 impl JiebaStore {
-  /// Builds a Jieba from only the given dictionary file (it replaces the built-in one).
+  /// Builds a Jieba from only the given dictionary file (it replaces the built-in one). Packaged
+  /// builds ship it gzipped (`zh.jieba.txt.gz`), so it is read as a language asset.
   pub fn load(&self, key: &str, dict_path: &str) -> Result<(), String> {
-    let file = std::fs::File::open(dict_path).map_err(|e| super::fs_err(&e, "open", dict_path))?;
-    let jieba = Jieba::with_dict(&mut BufReader::new(file))
+    let bytes = super::fs::read_asset(dict_path)?;
+    let jieba = Jieba::with_dict(&mut BufReader::new(bytes.as_slice()))
       .map_err(|e| format!("EINVAL: invalid argument, jieba dictionary '{dict_path}': {e}"))?;
     self.0.lock().unwrap().insert(key.to_string(), Arc::new(jieba));
     Ok(())
@@ -61,5 +62,19 @@ mod tests {
     assert_eq!(store.cut("zh", "我爱北京天安门", false).unwrap(), ["我", "爱", "北京", "天安门"]);
     assert!(store.cut("other", "x", false).is_err());
     assert!(store.load("bad", d.join("missing.txt").to_str().unwrap()).unwrap_err().starts_with("ENOENT"));
+  }
+
+  #[test]
+  fn reads_the_gzipped_dictionary_packaged_builds_ship() {
+    use std::io::Write;
+    let d = crate::sys::fs::tests::tmp("jieba-gz");
+    // Only zh.jieba.txt.gz exists, as in an installed app; the page asks for zh.jieba.txt.
+    let gz = std::fs::File::create(d.join("zh.jieba.txt.gz")).unwrap();
+    let mut encoder = flate2::write::GzEncoder::new(gz, flate2::Compression::fast());
+    encoder.write_all("北京 1000 ns\n天安门 1000 ns\n".as_bytes()).unwrap();
+    encoder.finish().unwrap();
+    let store = JiebaStore::default();
+    store.load("zh", d.join("zh.jieba.txt").to_str().unwrap()).unwrap();
+    assert_eq!(store.cut("zh", "北京天安门", false).unwrap(), ["北京", "天安门"]);
   }
 }
