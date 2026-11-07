@@ -1,4 +1,4 @@
-const mediaMimeTypes: Record<string, string> = {
+const mediaMimeTypes = {
   mp4: "video/mp4",
   m4v: "video/mp4",
   webm: "video/webm",
@@ -12,12 +12,12 @@ const mediaMimeTypes: Record<string, string> = {
   wav: "audio/wav",
 };
 
-export const mediaMimeForPath = (filePath: string): string => (
+export const mediaMimeForPath = (filePath) => (
   mediaMimeTypes[filePath.split(".").pop()?.toLowerCase() ?? ""] ?? "application/octet-stream"
 );
 
 /** Video.js rejects QuickTime's MIME type before Chromium can inspect its MP4-compatible data. */
-export const playbackMimeForPath = (filePath: string): string => {
+export const playbackMimeForPath = (filePath) => {
   const mime = mediaMimeForPath(filePath);
   if (mime === "video/quicktime") return "video/mp4";
   // Keep trying Chromium's container detection for formats without a supported source MIME.
