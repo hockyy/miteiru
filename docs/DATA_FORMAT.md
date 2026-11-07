@@ -12,6 +12,8 @@ The code:
 | Stroke tables build | `scripts/data/buildStrokePacks.ts`, run by `scripts/compressLanguageAssets.js` while staging |
 | Dictionary tables build | `scripts/data/buildDictionaryTables.ts`, run by the same script |
 | Native reader (dictionaries) | `src-tauri/src/sys/table.rs` (commands `table_open`, `table_close`, `table_get_many`, `table_values`), `openReadOnlyTable` in `renderer/platform/backend/shims/level.ts` |
+| Language packs build | `scripts/data/buildLanguagePacks.ts` (`npm run build:language-packs`) |
+| Language packs in the app | `src-tauri/src/sys/langpack.rs` (commands `langpack_status`, `langpack_install`, `langpack_install_file`, `langpack_cancel`, `langpack_remove`), `main/handler/languages/registry.ts` |
 | Inspect a table | `scripts/data/inspectTable.ts` |
 | zstd in the app | `src-tauri/src/sys/zstd.rs` (command `zstd_decompress`), `renderer/platform/backend/shims/zlib.ts` |
 
@@ -168,6 +170,64 @@ How they are read, always from the plain path, taking the first that exists of t
 - **JS**: `readAsset`, `readTextAsset` and `assetExists` in `main/helpers/assetFiles.ts`, decompressing with `zlib.zstdDecompress` (in the app, the shim's call to Rust). `readJsonFile` and the Vietnamese loader go through `readTextAsset`.
 
 To add one: read it through one of those readers (never `fs.readFile` of the plain path), add its directory and name to `TARGETS` in `scripts/compressLanguageAssets.js`, and make sure `assetExists` is what finds it (a file that is only `.zst` has no plain path to `access`). `renderer/platform/smokeTest.ts` loads every language, so a packaged build fails its smoke test if a `.zst` path breaks.
+
+## Language packs
+
+The installer does not carry the language data (it was 66 MB of a 129 MB download). A release carries `language-packs.json`, and each language's data is a **pack**, an MTRPACK2 file attached to the same GitHub release that the app downloads the first time the language is used. `npm run tauri:build:full` builds an installer that carries the data itself, for an offline machine.
+
+### The packs
+
+A pack is a table with codec `file`: the key is a file's path under `language-assets/` with `/` separators (`japanese/dict/jmdict.pack`), the value is the file's bytes. The files are already compressed, so a pack uses zstd level 3 and blocks of about 1 MB, and a file larger than a block sits alone in its own. The header's `dataset` is `language-pack/<id>`, its `source` names the pack and says each table inside carries its own licence, and its `version` is the first 12 hex digits of a sha256 over the sorted list of (key, sha256 of value). It is not the app version, so data that did not change gives a byte-identical pack in the next release, and a build run twice gives the same bytes.
+
+| Pack (file `Miteiru-language-<id>.mtrpack`) | Holds | Serves | Size |
+| --- | --- | --- | --- |
+| `japanese` | `japanese/**` except `pitch/` and `grammar/`, `han-character-core/kanji.pack`, `wanikani/**`, its `asset-manifest.json` | `japanese-kuromoji` | 30.2 MiB |
+| `hanzi` | `han-character-core/hanzi.pack`, its `asset-manifest.json` | `mandarin-jieba`, `cantonese-jieba` | 10.9 MiB |
+| `mandarin` | `mandarin/**` | `mandarin-jieba` | 12.7 MiB |
+| `cantonese` | `cantonese/**` | `cantonese-jieba` | 8.1 MiB |
+| `vietnamese` | `vietnamese/**` | `vietnamese` | 0.6 MiB |
+
+Japanese pitch accents and the grammar catalogue stay in the app: the page fetches them from its own export and nothing in `main/` reads them. A language needs every pack that serves it: Mandarin needs `mandarin` and `hanzi`.
+
+`PACKS` and `EXCLUDED` in `scripts/data/buildLanguagePacks.ts` list what each pack takes. The build fails when a staged file is in no pack and not excluded, so new data cannot be left out without anyone noticing (`.DS_Store` is skipped). `npm run build:language-packs` stages and compresses `renderer/public/language-assets` in a temporary folder the way `stageTauriResources.mjs` does, and writes the packs and the manifest to `dist/language-packs/`. The release workflow does this in its own `language-packs` job, uploads the `.mtrpack` files to the release and hands the folder to the build jobs.
+
+### The manifest
+
+`language-packs.json` is bundled into each installer (`MITEIRU_LANGUAGE_PACKS_DIR=<folder>` makes `stageTauriResources.mjs` copy it from the build's output; without it the script builds the packs itself):
+
+```json
+{
+  "format": 1,
+  "appVersion": "8.0.0",
+  "baseUrl": "https://github.com/hockyy/miteiru/releases/download/v8.0.0/",
+  "packs": [{"id": "vietnamese", "title": "Vietnamese", "file": "Miteiru-language-vietnamese.mtrpack",
+             "bytes": 618226, "sha256": "…", "plugins": ["vietnamese"], "languages": ["vietnamese"]}]
+}
+```
+
+`plugins` are the `language-assets/` folders the pack fills, `languages` the language plugin ids it serves, `bytes` and `sha256` the file's. `baseUrl` comes from `package.json`'s version (and its repository field, when it has one). A build without the file has no packs to offer: `langpack_status` says `manifestFound: false`, and every language counts as available. A pack is `bundled` when every folder in `plugins` has an `asset-manifest.json` in the resources, as in a full build.
+
+### Install, verify, remove
+
+Packs install under the app's local data folder (`$MITEIRU_USER_DATA_DIR/language-packs` when that is set), never the roaming one and never the install folder:
+
+```
+<root>/<id>-<sha12>-<unix seconds>/language-assets/...    one pack's files
+<root>/<id>-<sha12>-<unix seconds>/pack.json              {id, sha256, bytes, version, installedAt}, written last
+<root>/.downloads/<file>.part                             a download in progress
+<root>/.partial-<id>-<nanos>/                             an unpacking in progress
+```
+
+A download follows redirects (GitHub serves assets from another host), fails with `ENETWORK` if the connection cannot be made in 20 s or no data arrives for 60 s, and is hashed as it is written: more bytes than the manifest lists is `ESIZE` at once, and a different total or sha256 at the end is `ESIZE` or `ECHECKSUM`. Unpacking checks the header (format 2, codec `file`, dataset `language-pack/<id>`, as many entries as it says) and every key: non-empty, at most 512 bytes, relative, `/` separators, no backslash, no `:`, no empty, `.` or `..` segment. It writes into `.partial-…` and renames that into place, so a folder with a `pack.json` is a whole install. `langpack_install_file` does the same from a `.mtrpack` the user already has: it is hashed and matched to the manifest's pack, and a Miteiru pack of another version is `EVERSION` (the message names it), anything else `EBADPACK`.
+
+The newest valid install of an id is the one used: `installed` when its sha256 is the manifest's, else `outdated` (still read, so a language keeps working until the new pack is downloaded). The backend worker reads language data from the bundled `language-assets` folder first, then from each installed or outdated pack's, asking again at every language load (`setLanguageAssetRoots` in `registry.ts`). A candidate counts when its plain, `.zst` or `.gz` form exists, or the table that replaces it (`x.json` or a folder `x` becomes `x.pack`).
+
+`langpack_remove` deletes `pack.json` first, so the pack stops counting at once, then tries to delete the folder; a table still open on Windows can block that. At every start a background thread deletes `.downloads`, `.partial-*`, folders without a valid `pack.json` and every install but the newest of each id. It logs and never fails.
+
+### Environment
+
+- `MITEIRU_LANGUAGE_PACK_URL`: download packs from here instead of the manifest's `baseUrl` (a trailing `/` is added).
+- `MITEIRU_SMOKE_LANGUAGE_PACKS`: a folder of packs for the smoke test. It installs Vietnamese by download when `MITEIRU_LANGUAGE_PACK_URL` points at a local server, installs the others from these files, checks every pack is `installed`, then loads every language. Without it a build that ships packs skips the language check. The release workflow serves `dist/language-packs` on `127.0.0.1:8765` for this.
 
 ## Inspecting a table
 

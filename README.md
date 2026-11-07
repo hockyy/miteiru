@@ -22,7 +22,7 @@ with the reading on top, the meaning underneath and a full dictionary entry one 
 
 - **Every word is clickable.** Subtitles are split into words (Kuromoji for Japanese, Jieba for Chinese) with furigana, pinyin or jyutping on top and short meanings underneath. Click a word for its full dictionary entry, pitch accent, conjugations and kanji breakdown.
 - **Your videos, your subtitles.** Drop in local files (MKV, MP4, HEVC, AV1, multiple audio tracks: anything [mpv](https://mpv.io) plays, with no converting) with `.srt`, `.ass`, `.vtt` or `.lrc` subtitles, or paste a YouTube link and pick one of its caption tracks.
-- **Dictionaries ship with the app.** JMdict, KANJIDIC, CC-CEDICT, CantoDict and VNEDict work offline. No account, no subscription, no server.
+- **Dictionaries stay on your computer.** JMdict, KANJIDIC, CC-CEDICT, CantoDict and VNEDict work offline once a language is downloaded. No account, no subscription, no server.
 - **Made for immersion.** Your target language on top and English underneath, a key to repeat the current line, karaoke lyrics, colours for the words you know, flashcards and one-click Anki cards.
 
 ## Features
@@ -73,7 +73,7 @@ From 8.0 on, Miteiru updates itself on Windows, macOS and the Linux AppImage. It
 
 ## Quick start
 
-1. Open Miteiru and pick your language. Its dictionaries are already included.
+1. Open Miteiru and pick your language. Its dictionaries download the first time you use it (sizes [below](#languages)).
 2. Drag a video into the window (with its subtitle files, if you have them), or paste a YouTube link with **Ctrl+V**.
 3. In the subtitle picker, your language goes on top and English underneath. Change either if you like.
 4. Click any word. **R** repeats the line, **X** opens the settings, **Z** shows the controls and **Ctrl+H** goes home. Every shortcut is listed on the home screen.
@@ -90,6 +90,17 @@ From 8.0 on, Miteiru updates itself on Windows, macOS and the Linux AppImage. It
 | Readings | Furigana, romaji | Pinyin | Jyutping | |
 | Dictionary | JMdict, KANJIDIC | CC-CEDICT | CantoDict | VNEDict |
 | Extras | Pitch accent, conjugations, kanji strokes | Simplified and traditional, hanzi strokes | Tone marks | A meaning under every word |
+
+**Language data downloads on first use**, from the same release as the app, and stays on your computer. The installer is small because it leaves the data out:
+
+| Language | Download |
+| --- | --- |
+| Japanese (dictionaries, kanji, WaniKani levels, tokenizer) | 30 MB |
+| Chinese (Mandarin) | 12.7 MB, plus the 10.9 MB hanzi stroke data it shares with Cantonese |
+| Cantonese | 8.1 MB, plus the same hanzi stroke data |
+| Vietnamese | 0.6 MB |
+
+**Offline install:** download the `Miteiru-language-<name>.mtrpack` files from the [release](https://github.com/hockyy/miteiru/releases) that matches your Miteiru version (a pack from another version is refused, and says which one it is), then choose them in Miteiru's language downloads, or build with `npm run tauri:build:full` to get an installer that carries every language.
 
 More detail in [README_LANGUAGES.md](README_LANGUAGES.md).
 
@@ -148,7 +159,7 @@ npm run script:unpack-language-assets
 npm run script:download-language-assets -- mandarin han-character-core
 ```
 
-`MITEIRU_FORCE_ASSET_DOWNLOAD=1` redownloads existing zips. Releases and in-app updates: [docs/RELEASING.md](docs/RELEASING.md). How the language data ships, and how to add a dataset: [docs/DATA_FORMAT.md](docs/DATA_FORMAT.md), [docs/ADDING_DATA.md](docs/ADDING_DATA.md). More notes are in [`docs/`](docs), and contributions are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md).
+`npm run tauri:build` leaves the language data out of the installer and bundles a manifest of language packs instead (built by `npm run build:language-packs`, into `dist/language-packs/`); `npm run tauri:build:full` bundles the data too, for an offline build. `MITEIRU_FORCE_ASSET_DOWNLOAD=1` redownloads existing zips. Releases and in-app updates: [docs/RELEASING.md](docs/RELEASING.md). How the language data ships, and how to add a dataset: [docs/DATA_FORMAT.md](docs/DATA_FORMAT.md), [docs/ADDING_DATA.md](docs/ADDING_DATA.md). More notes are in [`docs/`](docs), and contributions are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Credits and license
 
