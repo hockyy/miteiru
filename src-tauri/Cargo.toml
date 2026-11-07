@@ -36,6 +36,9 @@ miteiru-mpv = { path = "../native/rust/crates/miteiru-mpv" }
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.60", features = ["Win32_Foundation", "Win32_UI_WindowsAndMessaging"] }
+# The same versions wry uses (file_drop_windows.rs talks to its WebView2).
+webview2-com = "0.39"
+windows-core = "0.62"
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"

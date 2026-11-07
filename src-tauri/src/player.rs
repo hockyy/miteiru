@@ -143,7 +143,12 @@ pub fn player_open(
         }
         let _ = target.emit_to(target.label(), "player://event", out);
     });
-    let mpv_options: Vec<(String, String)> = options.unwrap_or_default().into_iter().collect();
+    let mut mpv_options: Vec<(String, String)> = options.unwrap_or_default().into_iter().collect();
+    // Test and debugging runs (MITEIRU_MUTED=1) play without sound.
+    if crate::sys::info::start_muted() {
+        mpv_options.retain(|(name, _)| name != "mute");
+        mpv_options.push(("mute".into(), "yes".into()));
+    }
     let mut last_error = String::from("libmpv was not found");
     let mut client = None;
     for dll_path in libmpv_candidates(&app) {

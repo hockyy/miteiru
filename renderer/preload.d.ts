@@ -20,6 +20,8 @@ interface ElectronApi {
   };
   /** Subscribes to files dropped on the window (native paths) and to the drag hovering over it. */
   onFileDrop?: (onDrop: (paths: string[]) => void, onHover?: (hovering: boolean) => void) => () => void;
+  /** Windows only: the paths of files dropped on the page, which arrive there as plain `File`s. */
+  pathsForDroppedFiles?: (files: FileList) => Promise<string[]>;
   getUserDataPath: () => Promise<string>;
   joinPath: (...pathSegments: string[]) => Promise<string>;
   checkFile: (filePath: string) => Promise<boolean>;

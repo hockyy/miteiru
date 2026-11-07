@@ -45,3 +45,6 @@ export const LIVE_CAPTIONS_EVENT_CHANNELS = {
 } as const;
 
 export const STORE_CHANNELS = {get: 'electron-store-get', set: 'electron-store-set'} as const;
+
+/** The calls that load a language (main/handler/languages/registry.ts, startupChannelPluginIds). */
+export const LANGUAGE_LOAD_CHANNELS = ['loadKuromoji', 'loadCantonese', 'loadChinese', 'loadVietnamese'] as const;

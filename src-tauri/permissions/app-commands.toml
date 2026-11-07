@@ -27,6 +27,7 @@ permissions = [
   "allow-kv-put",
   "allow-kv-del",
   "allow-kv-batch",
+  "allow-kv-bulk",
   "allow-kv-range",
   "allow-kv-clear",
   "allow-kv-close",

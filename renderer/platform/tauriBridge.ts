@@ -12,6 +12,7 @@ import type {AnalyzerRequestEvent, WorkerInbound, WorkerOutbound} from './backen
 import {SYS_WRITE_BYTES} from './backend/protocol';
 import {
   ELECTRON_API_INVOKE_CHANNELS,
+  LANGUAGE_LOAD_CHANNELS,
   LIVE_CAPTIONS_EVENT_CHANNELS,
   LIVE_CAPTIONS_INVOKE_CHANNELS,
   STORE_CHANNELS
@@ -161,6 +162,72 @@ const onFileDrop = (onDrop: (paths: string[]) => void, onHover?: (hovering: bool
   };
 };
 
+type WebView2 = { postMessageWithAdditionalObjects: (message: string, objects: FileList) => void };
+
+/** WebView2's page-side API, only there on Windows. */
+const webView2 = () => (window as unknown as { chrome?: { webview?: WebView2 } }).chrome?.webview;
+
+const pendingDropPaths = new Map<number, (paths: string[]) => void>();
+let nextDropId = 1;
+
+/**
+ * Windows hands drops to the page (src-tauri/src/webview2.rs), so dropped files come as
+ * `File`s without paths. WebView2 passes them to the host, which answers with their paths.
+ */
+const listenForDropPaths = () => listen<{ id: number; paths: string[] }>('miteiru://file-drop', ({payload}) => {
+  pendingDropPaths.get(payload.id)?.(payload.paths);
+  pendingDropPaths.delete(payload.id);
+}).catch((error) => console.error('[file-drop] could not listen for dropped file paths:', error));
+
+const pathsForDroppedFiles = (files: FileList) => new Promise<string[]>((resolve) => {
+  const id = nextDropId++;
+  pendingDropPaths.set(id, resolve);
+  // A string: see src-tauri/src/webview2.rs for why.
+  webView2()?.postMessageWithAdditionalObjects(JSON.stringify({miteiru: 'file-drop', id}), files);
+  setTimeout(() => {
+    if (pendingDropPaths.delete(id)) resolve([]);
+  }, 10000);
+});
+
+// ---- the loaded language across page reloads ------------------------------------------------
+
+const LANGUAGE_KEY = 'miteiru.loadedLanguage';
+
+const readSession = (key: string) => {
+  try {
+    return sessionStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+
+const writeSession = (key: string, value: string) => {
+  try {
+    sessionStorage.setItem(key, value);
+  } catch {
+    // Without storage a reload starts with no language loaded, as a fresh start does.
+  }
+};
+
+/**
+ * A page reload (F5, Ctrl+R) starts a new backend worker, which forgets the language the user
+ * loaded; Electron's main process used to keep it. The language call is remembered for this
+ * session and made again after a reload, and the tokenizer mode waits for it.
+ */
+const keepLanguageAcrossReloads = (invoke: (channel: string, args: unknown[]) => Promise<unknown>) => {
+  const languageChannels: readonly string[] = LANGUAGE_LOAD_CHANNELS;
+  const remembered = readSession(LANGUAGE_KEY);
+  const restored = remembered && languageChannels.includes(remembered)
+    ? invoke(remembered, []).catch((error) => console.error('[backend] could not load the language again:', error))
+    : Promise.resolve();
+  return async (channel: string, args: unknown[]) => {
+    if (channel === 'getTokenizerMode') await restored;
+    const result = await invoke(channel, args);
+    if (languageChannels.includes(channel)) writeSession(LANGUAGE_KEY, channel);
+    return result;
+  };
+};
+
 // ---- window.* installation ------------------------------------------------------------------
 
 const detectPlatform = (): NodeJS.Platform => {
@@ -175,6 +242,10 @@ const buildElectronApi = (host: BackendHost) => {
     platform: detectPlatform(),
     onFileDrop
   };
+  if (webView2()) {
+    listenForDropPaths();
+    api.pathsForDroppedFiles = pathsForDroppedFiles;
+  }
   for (const [method, channel] of Object.entries(ELECTRON_API_INVOKE_CHANNELS)) {
     api[method] = (...args: unknown[]) => host.invoke(channel, args);
   }
@@ -198,8 +269,9 @@ export const installTauriBridge = () => {
 
   const host = new BackendHost();
   const target = window as unknown as Record<string, unknown>;
+  const invokeBackend = keepLanguageAcrossReloads((channel, args) => host.invoke(channel, args));
   target.backend = {
-    invoke: (channel: string, ...args: unknown[]) => host.invoke(channel, args),
+    invoke: (channel: string, ...args: unknown[]) => invokeBackend(channel, args),
     send: (channel: string, value: unknown) => host.send(channel, [value]),
     on: (channel: string, callback: Listener) => host.on(channel, callback)
   };
