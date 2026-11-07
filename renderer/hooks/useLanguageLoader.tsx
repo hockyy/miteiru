@@ -4,6 +4,7 @@ import useLanguageManager from './useLanguageManager';
 import { languageModes as manifestLanguageModes } from '../languages/manifest';
 import { setLearningLanguage } from '../utils/fonts';
 import { languageSetupFailure } from '../utils/languageErrors';
+import { isLanguageAvailable, type LanguagePackStatus } from '../utils/languagePacks';
 
 interface LanguageCheckResult {
   ok: number;
@@ -22,7 +23,8 @@ const checkingMessage: LanguageCheckResult = {
   message: "checking..."
 };
 
-export const useLanguageLoader = () => {
+/** `packStatus` is the language packs on this computer; null (or no manifest) means every language is available. */
+export const useLanguageLoader = (packStatus: LanguagePackStatus | null = null) => {
   const router = useRouter();
   const [check, setCheck] = useState<LanguageCheckResult>(initialCheck);
   const [tokenizerMode, setTokenizerMode] = useState(0);
@@ -73,6 +75,12 @@ export const useLanguageLoader = () => {
     const mode = languageModes.find(m => m.id === modeId);
     if (!mode) return;
 
+    // A shortcut or Continue can fire before the download; the data is not there to load yet.
+    if (!isLanguageAvailable(packStatus, mode.pluginId)) {
+      setCheck({ok: 0, message: `Download ${mode.englishName} first.`});
+      return;
+    }
+
     setIsLoadingLanguage(true);
     setCheck(checkingMessage);
     
@@ -91,7 +99,7 @@ export const useLanguageLoader = () => {
     } finally {
       setIsLoadingLanguage(false);
     }
-  }, [languageModes, setLanguage, router, isLoadingLanguage]);
+  }, [languageModes, setLanguage, router, isLoadingLanguage, packStatus]);
 
   const handleLanguageButtonClick = useCallback(async () => {
     await loadLanguage(tokenizerMode, '/video');

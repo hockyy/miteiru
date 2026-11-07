@@ -5,6 +5,7 @@ import useLastVideo from "../hooks/useLastVideo";
 import useMiteiruVersion from "../hooks/useMiteiruVersion";
 import { useToolsCheck } from "../hooks/useToolsCheck";
 import { useLanguageLoader } from "../hooks/useLanguageLoader";
+import { useLanguagePacks } from "../hooks/useLanguagePacks";
 import { useCacheManager } from "../hooks/useCacheManager";
 import { MainMenu } from "../components/Home/MainMenu";
 import { HomeSystemPanel } from "../components/Home/HomeSystemPanel";
@@ -19,6 +20,7 @@ const confirmOldDictionaryClear = () => (
 function Home() {
   const { miteiruVersion } = useMiteiruVersion();
   const { toolsCheck, isChecking: toolsCheckInProgress, isDownloading, checkMediaTools, downloadTool } = useToolsCheck();
+  const packs = useLanguagePacks();
   const {
     notice,
     noticeDetails,
@@ -31,7 +33,7 @@ function Home() {
     handleContinueVideo,
     handleOpenLearn,
     handleOpenFlash,
-  } = useLanguageLoader();
+  } = useLanguageLoader(packs.packsEnabled ? packs.status : null);
   const { isRemovingCache, handleRemoveCache } = useCacheManager();
   const { last: lastVideo } = useLastVideo();
 
@@ -102,6 +104,7 @@ function Home() {
             onOpenFlash={handleOpenFlash}
             lastVideo={lastVideo}
             onContinue={handleContinueVideo}
+            packs={packs}
           />
 
           <HomeSystemPanel
@@ -119,6 +122,7 @@ function Home() {
             cacheCheckMessage={cacheCheck.message}
             showCacheStatus={showCacheStatus}
             onRemoveDictCaches={handleRemoveCacheWithState}
+            packs={packs}
           />
         </div>
         <KeyboardHelp languageName={languageModes.find((mode) => mode.id === tokenizerMode)?.englishName} />
