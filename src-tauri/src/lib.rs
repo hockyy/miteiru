@@ -14,7 +14,6 @@ pub fn run() {
   tauri::Builder::default()
     .plugin(tauri_plugin_dialog::init())
     .plugin(tauri_plugin_opener::init())
-    .plugin(tauri_plugin_http::init())
     // Size and position come back as they were (what Electron's window-state store did).
     .plugin(
       tauri_plugin_window_state::Builder::default()

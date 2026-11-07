@@ -210,8 +210,10 @@ export const installTauriBridge = () => {
   };
   document.addEventListener('keydown', toggleFullscreenOnShortcut);
   // CI's per-OS self-check (renderer/platform/smokeTest.ts), only when MITEIRU_SMOKE_TEST is set.
-  invoke<{ smokeTest?: string | null; userData: string }>('sys_info').then((info) => {
-    if (info.smokeTest) return import('./smokeTest').then(({runSmokeTest}) => runSmokeTest(info.smokeTest!, info.userData));
+  invoke<{ smokeTest?: string | null; userData: string; platform: string }>('sys_info').then((info) => {
+    if (info.smokeTest) {
+      return import('./smokeTest').then(({runSmokeTest}) => runSmokeTest(info.smokeTest!, info.userData, info.platform));
+    }
   }).catch((error) => console.error('[smoke] failed:', error));
 };
 

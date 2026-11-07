@@ -49,7 +49,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev librsvg2-dev libayatana-appindicator3-dev \
-            patchelf libmpv-dev xvfb imagemagick
+            patchelf libmpv-dev xvfb imagemagick gdb
       - run: npm ci
       - name: Fetch libmpv
         if: matrix.key != 'linux'
@@ -67,7 +67,7 @@ jobs:
           export MITEIRU_USER_DATA_DIR="$RUNNER_TEMP/miteiru-profile"
           run=(bash scripts/runSmokeTest.sh src-tauri/target/debug/miteiru "$PWD/smoke.json" "$PWD/smoke.png")
           if [ "$RUNNER_OS" = "Linux" ]; then
-            xvfb-run -a -s "-screen 0 1280x800x24" "${run[@]}"
+            MITEIRU_SMOKE_GDB=1 xvfb-run -a -s "-screen 0 1280x800x24" "${run[@]}"
           else
             "${run[@]}"
           fi
