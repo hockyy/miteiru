@@ -43,10 +43,28 @@ describe("buildVideoSource", () => {
 
   it("builds a miteiru:// source for local files", () => {
     assert.deepEqual(buildVideoSource("/home/user/movie.mp4", "/home/user/movie.mp4"), {
-      type: "video/webm",
-      src: "miteiru:///home/user/movie.mp4",
+      type: "video/mp4",
+      src: "miteiru://localhost/home/user/movie.mp4",
       path: "/home/user/movie.mp4"
     });
+  });
+
+  it("escapes local filenames without changing the filesystem path", () => {
+    const filePath = "/Users/me/Movies/日本語 #1 100%.mp4";
+    const source = buildVideoSource(filePath, filePath);
+    const url = new URL(source.src);
+    assert.equal(url.hash, "");
+    assert.equal(url.hostname, "localhost");
+    assert.equal(url.search, "");
+    assert.equal(decodeURIComponent(url.pathname), filePath);
+    assert.equal(source.path, filePath);
+  });
+
+  it("uses the container's MIME type", () => {
+    for (const [extension, type] of [["MP4", "video/mp4"], ["webm", "video/webm"], ["mkv", "video/x-matroska"], ["mov", "video/mp4"]]) {
+      const filePath = `/Users/me/movie.${extension}`;
+      assert.equal(buildVideoSource(filePath, filePath).type, type);
+    }
   });
 });
 

@@ -3,6 +3,7 @@ import os from "node:os";
 import path from "path";
 import * as fsPromises from "node:fs/promises";
 import {app} from "electron";
+import {systemMediaToolPaths} from "../../helpers/mediaToolPaths";
 
 export type ToolName = "yt-dlp" | "ffmpeg" | "ffprobe";
 
@@ -69,11 +70,14 @@ export async function resolveToolCommand(name: ToolName): Promise<string> {
       // Not placed here; try the next location.
     }
   }
+  for (const candidate of systemMediaToolPaths(tool.name)) {
+    if (await runsSuccessfully(candidate, [tool.check_command])) return candidate;
+  }
   return tool.name;
 }
 
 const runsSuccessfully = (command: string, args: string[]) => new Promise<boolean>((resolve) => {
-  const child = spawn(command, args);
+  const child = spawn(command, args, {stdio: "ignore", timeout: 10000});
   child.on("close", (code) => resolve(code === 0));
   child.on("error", () => resolve(false));
 });
@@ -90,8 +94,10 @@ export async function checkToolPath(tool: ToolConfig): Promise<{ available: bool
     }
   }
 
-  if (await runsSuccessfully(tool.name, [tool.check_command])) {
-    return {available: true, path: tool.name, isInternal: false};
+  for (const candidate of systemMediaToolPaths(tool.name)) {
+    if (await runsSuccessfully(candidate, [tool.check_command])) {
+      return {available: true, path: candidate, isInternal: false};
+    }
   }
 
   return {available: false, path: null, isInternal: false};

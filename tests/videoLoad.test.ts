@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import {buildVideoSource} from '../renderer/utils/mediaUtils';
 import {
   createMiteiruFileResponse,
   parseRangeHeader,
@@ -46,6 +47,26 @@ test('resolveMiteiruFilePath recovers drive letters mangled into the host', () =
     resolveMiteiruFilePath('miteiru://C/Users/me/video.mp4'),
     path.normalize('C:/Users/me/video.mp4'),
   );
+});
+
+test('local source URLs round-trip reserved characters and serve MP4 byte ranges', async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'miteiru-macos-video-'));
+  const filePath = path.join(directory, '日本語 #1 ? 100%.mp4');
+  fs.writeFileSync(filePath, '0123456789');
+  try {
+    const source = buildVideoSource(filePath, filePath);
+    const resolved = resolveMiteiruFilePath(source.src);
+    assert.equal(resolved, filePath);
+    const response = createMiteiruFileResponse(resolved, new Request(source.src, {
+      headers: {range: 'bytes=2-5'},
+    }));
+    assert.equal(source.type, 'video/mp4');
+    assert.equal(response.headers.get('content-type'), source.type);
+    assert.equal(response.status, 206);
+    assert.equal(await response.text(), '2345');
+  } finally {
+    fs.rmSync(directory, {recursive: true, force: true});
+  }
 });
 
 const withTempVideo = async (fn: (filePath: string, bytes: Buffer) => Promise<void>) => {

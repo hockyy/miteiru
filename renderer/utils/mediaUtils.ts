@@ -2,6 +2,7 @@ import type {MediaTrack} from "../types/media";
 import {getLanguageDisplayName as getManifestLanguageDisplayName} from "../languages/manifest";
 import {isLocalPath, isVideo, isYoutube} from "./utils";
 import {NORMALIZED_SUBTITLE_PREFIX} from "./constants";
+import {playbackMimeForPath} from "./mediaMime";
 
 export type SubtitleTarget = "primary" | "secondary";
 
@@ -25,8 +26,8 @@ export const buildVideoSource = (currentPath: string, pathUri: string) => isYout
   src: currentPath,
   path: currentPath
 } : {
-  type: "video/webm",
-  src: `miteiru://${pathUri}`,
+  type: playbackMimeForPath(pathUri),
+  src: `miteiru://localhost/${pathUri.replace(/^\//, "").split("/").map(encodeURIComponent).join("/")}`,
   path: pathUri
 };
 

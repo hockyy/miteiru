@@ -4,23 +4,9 @@ import {Readable} from "node:stream";
 import {protocol} from "electron";
 import {isAppUrl} from "./helpers/navigationGuard";
 import {APP_SCHEME_PRIVILEGES} from "./appProtocol";
+import {mediaMimeForPath} from "../renderer/utils/mediaMime";
 
-const mimeTypes: Record<string, string> = {
-  ".mp4": "video/mp4",
-  ".webm": "video/webm",
-  ".mkv": "video/x-matroska",
-  ".ogg": "video/ogg",
-  ".mov": "video/quicktime",
-  ".avi": "video/x-msvideo",
-  ".ts": "video/mp2t",
-  ".mp3": "audio/mpeg",
-  ".wav": "audio/wav",
-};
-
-const mimeForPath = (filePath: string) => {
-  const ext = path.extname(filePath).toLowerCase();
-  return mimeTypes[ext] ?? "application/octet-stream";
-};
+const mimeForPath = mediaMimeForPath;
 
 export const parseRangeHeader = (rangeHeader: string, fileSize: number) => {
   const trimmed = rangeHeader.trim();
