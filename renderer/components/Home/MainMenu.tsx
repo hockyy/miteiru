@@ -36,6 +36,8 @@ const LanguageCard = ({mode, selected, onSelect}: { mode: LanguageMode; selected
     type="button"
     role="radio"
     aria-checked={selected}
+    // One tab stop for the group, as for radio buttons; the arrow keys move between cards.
+    tabIndex={selected ? 0 : -1}
     onClick={onSelect}
     className={[
       'flex min-w-0 cursor-pointer flex-col items-center gap-1 rounded-2xl border-2 px-2 py-3 text-center transition-colors',
@@ -73,6 +75,17 @@ export const MainMenu: React.FC<MainMenuProps> = ({
   const blocked = !ableToProceedToVideo || isLoadingLanguage;
   const languageName = selected?.englishName ?? 'the language';
 
+  // Arrow keys pick the next or previous language and move the focus with it, wrapping around.
+  const onLanguageKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    const step = {ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1}[event.key];
+    if (!step || languageModes.length === 0) return;
+    event.preventDefault();
+    const current = Math.max(0, languageModes.findIndex((mode) => mode.id === tokenizerMode));
+    const next = (current + step + languageModes.length) % languageModes.length;
+    onLanguageChange(languageModes[next].id);
+    (event.currentTarget.querySelectorAll<HTMLElement>('[role="radio"]')[next])?.focus();
+  };
+
   return (
     <div className={HOME_SHELL}>
       <header className={HOME_HEADER}>
@@ -98,7 +111,12 @@ export const MainMenu: React.FC<MainMenuProps> = ({
         <section className={HOME_SECTION}>
           <div className={HOME_SECTION_LABEL}>What are you learning?</div>
           <div className="space-y-4 bg-white px-4 py-4">
-            <div role="radiogroup" aria-label="The language you are learning" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div
+              role="radiogroup"
+              aria-label="The language you are learning"
+              className="grid grid-cols-2 gap-2 sm:grid-cols-4"
+              onKeyDown={onLanguageKeyDown}
+            >
               {languageModes.map((mode) => (
                 <LanguageCard
                   key={mode.id}

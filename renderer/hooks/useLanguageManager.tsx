@@ -15,27 +15,8 @@ export interface LanguageMode {
   languageCode: string;
 }
 
-export const LANGUAGE_MODES: LanguageMode[] = languageModes.map(({
-  id,
-  name,
-  channel,
-  emoji,
-  description,
-  flag,
-  nativeName,
-  englishName,
-  languageCode
-}) => ({
-  id,
-  name,
-  channel,
-  emoji,
-  description,
-  flag,
-  nativeName,
-  englishName,
-  languageCode
-}));
+// The manifest's entries as they are, so a field added there reaches the pages without a copy here.
+export const LANGUAGE_MODES: LanguageMode[] = languageModes;
 
 // MeCab (mode 1) was removed: Kuromoji uses the same IPADIC dictionary without an external install.
 const REMOVED_MODE_REPLACEMENTS: Record<number, number> = {1: 0};

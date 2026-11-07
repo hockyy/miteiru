@@ -110,11 +110,9 @@ export const useLanguageLoader = () => {
 
   return {
     // State
-    check,
     notice,
     tokenizerMode,
     setTokenizerMode: selectTokenizerMode,
-    lastLanguageMode,
     isLoadingLanguage,
     languageModes,
     ableToProceedToVideo,
