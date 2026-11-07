@@ -54,6 +54,9 @@ const ID_ATTACHMENTS: u32 = 0x1941_A469;
 
 /// The largest subtitle block (also after decompression) and header payload read into memory.
 const MAX_BLOCK: u64 = 16 * 1024 * 1024;
+/// All of one track's subtitle blocks together. A real track is a few MB at most; this only stops a
+/// damaged or hostile file from filling memory one small block at a time.
+const MAX_TRACK_BYTES: u64 = 256 * 1024 * 1024;
 const MAX_CODEC_PRIVATE: usize = 1024 * 1024;
 const MAX_TRACKS: u64 = 32 * 1024 * 1024;
 const MAX_SMALL: u64 = 1024 * 1024;
@@ -375,6 +378,8 @@ struct Rd<F: Read + Seek> {
   r: BufReader<F>,
   pos: u64,
   len: u64,
+  /// Bytes of the wanted track's blocks read so far (MAX_TRACK_BYTES).
+  kept: u64,
 }
 
 fn truncated() -> String {
@@ -386,7 +391,7 @@ impl<F: Read + Seek> Rd<F> {
     let len = f.seek(SeekFrom::End(0))?;
     f.seek(SeekFrom::Start(0))?;
     // A big buffer: the many small headers between payloads stay in it, and only a long skip leaves it.
-    Ok(Rd { r: BufReader::with_capacity(1 << 20, f), pos: 0, len })
+    Ok(Rd { r: BufReader::with_capacity(1 << 20, f), pos: 0, len, kept: 0 })
   }
 
   fn fill(&mut self, buf: &mut [u8]) -> Result<(), String> {
@@ -481,6 +486,10 @@ impl<F: Read + Seek> Rd<F> {
     }
     if size > MAX_BLOCK + 11 {
       return Err(format!("corrupt file: a subtitle block of {size} bytes is larger than the {MAX_BLOCK} byte limit"));
+    }
+    self.kept = self.kept.saturating_add(size);
+    if self.kept > MAX_TRACK_BYTES {
+      return Err(format!("corrupt file: this subtitle track holds more than {MAX_TRACK_BYTES} bytes"));
     }
     if size < track_len as u64 + 3 {
       return Err("corrupt file: a block is too short".into());
