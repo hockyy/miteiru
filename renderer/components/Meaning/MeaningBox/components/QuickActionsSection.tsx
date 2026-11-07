@@ -37,6 +37,7 @@ export const QuickActionsSection = ({
       <CopyButton
         text={rubyHtmlContent}
         label="Copy with reading"
+        ruby
         shortcut="Shift+W"
         className={COPY_BUTTON_CLASS}
       />

@@ -98,8 +98,8 @@ export const AnkiExportConfirmModal: React.FC<AnkiExportConfirmModalProps> = ({
         <div className="border-t border-white/10 bg-white/[0.03] px-5 py-4">
           <p className="mb-3 text-xs text-white/50">
             {preview.mode === 'open'
-              ? 'Saves a TSV import file, reveals it in your file manager, and opens Anki if installed. In Anki use File → Import.'
-              : 'Choose where to save the TSV import file for Anki.'}
+              ? 'Saves an Anki import file, reveals it in your file manager, and opens Anki if installed. In Anki use File → Import.'
+              : 'Choose where to save the Anki import file.'}
           </p>
           <div className="flex justify-end gap-2">
             <button

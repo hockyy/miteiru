@@ -1,4 +1,5 @@
 import { useCallback, useEffect } from 'react';
+import { writeRubyToClipboard } from '../../../../utils/rubyText';
 import { isTextEntryTarget } from '../../../../utils/keyboardTargets';
 
 /**
@@ -26,7 +27,7 @@ export const useMeaningCopyShortcuts = (
       return;
     }
     try {
-      await navigator.clipboard.writeText(rubyHtmlContent);
+      await writeRubyToClipboard(rubyHtmlContent);
     } catch (error) {
       console.error('Failed to copy ruby content:', error);
     }

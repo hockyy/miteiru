@@ -47,6 +47,12 @@ const useLearningState = (lang: string) => {
     saveLearningEntry(content, {level: nextLevel, updTime: Date.now()});
   }, [getLearningState, saveLearningEntry]);
 
+  /** Saves the word at a chosen level (0 New, 1 Learning, 2 Known), as the three-part control in the popup does. */
+  const setLearningLevel = useCallback((content: string, level: number) => {
+    if (!content) return;
+    saveLearningEntry(content, {level, updTime: Date.now()});
+  }, [saveLearningEntry]);
+
   const updateTimeWithSameLevel = useCallback((content: string, updTime: number) => {
     if (!content) return;
     saveLearningEntry(content, {level: savedEntries.current[content]?.level ?? getLearningState(content), updTime});
@@ -66,6 +72,7 @@ const useLearningState = (lang: string) => {
     getLearningStateClass,
     getLearningState,
     changeLearningState,
+    setLearningLevel,
     frequencyPrimary,
     setFrequencyPrimary,
     learningPercentage,

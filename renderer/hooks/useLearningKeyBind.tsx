@@ -2,6 +2,7 @@ import {useEffect} from 'react';
 import {useRouter} from "next/router";
 import {isTextEntryTarget} from "../utils/keyboardTargets";
 import {hasCtrlModifier} from "../utils/platform";
+import {writeRubyToClipboard} from "../utils/rubyText";
 
 export default function useLearningKeyBind(
     setMeaning,
@@ -36,7 +37,7 @@ export default function useLearningKeyBind(
         setShowSidebar((old) => !old);
       } else if (event.code === "KeyG" && ctrl) {
         if (rubyContent) {
-          await navigator.clipboard.writeText(rubyContent);
+          await writeRubyToClipboard(rubyContent).catch((err) => console.error("Failed to copy text: ", err));
         }
       }
     };

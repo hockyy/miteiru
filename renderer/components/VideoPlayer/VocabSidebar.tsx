@@ -12,6 +12,7 @@ import {
 } from '../../hooks/useUserNotes';
 import { useStoreData } from '../../hooks/useStoreData';
 import { generateUserNoteWithAI } from '../../utils/generateUserNoteWithAI';
+import { ColorKey } from './ColorKey';
 
 type VocabEntry = [string, LearningStateType];
 
@@ -166,6 +167,8 @@ const VocabSidebar = ({
       title="Vocabulary"
       subtitle={subtitleParts.join(' · ')}
     >
+      <ColorKey className="mb-3" />
+
       {sortedVocab.length > 0 && (
         <div className="mb-4 flex flex-wrap gap-1.5">
           {['New', 'Learning', 'Known', 'Mastered'].map((label, level) => {
@@ -192,9 +195,10 @@ const VocabSidebar = ({
 
       {sortedVocab.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.04] px-6 py-10 text-center">
-          <p className="text-sm font-semibold text-white/70">No saved words yet</p>
+          <p className="text-sm font-semibold text-white/70">No saved words yet.</p>
           <p className="mt-2 text-xs leading-relaxed text-white/45">
-            Turn on learning mode and click subtitle words to build your vocabulary list.
+            Right-click a word in the subtitles, or choose Learning or Known in its popup. Saved words
+            show up here and in Flashcards.
           </p>
         </div>
       ) : (

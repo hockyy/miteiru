@@ -2,9 +2,9 @@ import React from 'react';
 import { Button } from '../../../Utils/Button';
 import { FaChevronLeft, FaChevronRight, FaStop, FaVolumeUp } from 'react-icons/fa';
 import { MEANING_HEADER } from '../../meaningBoxTheme';
-import { OutlinedStar } from './shared/OutlinedStar';
 import { RomajiedContent } from './RomajiedContent';
-import { getStarColor } from '../constants';
+import { getLearningLevelColor } from '../../../VideoPlayer/vocabLevels';
+import { SAVE_LEVELS, isAutoKnown, savedLevelOf } from '../../../../utils/vocabSaveLevels';
 import type { defaultMeaningBoxStyling } from '../../../../utils/CJKStyling';
 import { DEFAULT_SUBTITLE_FONT } from '../../../../utils/fonts';
 import type { RomajiedGroup } from '../types';
@@ -23,7 +23,7 @@ type MeaningBoxHeaderProps = {
   onPrevious: () => void;
   onNext: () => void;
   getLearningState?: ((term: string) => number) | null;
-  changeLearningState?: ((term: string) => void) | null;
+  setLearningLevel?: ((term: string, level: number) => void) | null;
   /** Back to the previous word; the button shows only when there is one. */
   onBack?: (() => void) | null;
   /** Closes the popup; the button shows only when given. */
@@ -45,7 +45,7 @@ export const MeaningBoxHeader = ({
   onPrevious,
   onNext,
   getLearningState,
-  changeLearningState,
+  setLearningLevel,
   onBack = null,
   onClose = null,
 }: MeaningBoxHeaderProps) => (
@@ -119,23 +119,37 @@ export const MeaningBoxHeader = ({
           />
         ))}
       </div>
-
-      {getLearningState && changeLearningState && (
-        <button
-          type="button"
-          onClick={() => changeLearningState(meaning)}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-blue-300 bg-white shadow-[0_2px_0_0_#bfdbfe] transition-all hover:-translate-y-0.5 hover:bg-yellow-50"
-          aria-label="Change learning status"
-          title="Change learning status"
-        >
-          <OutlinedStar
-            color={getStarColor(getLearningState(meaning))}
-            size={24}
-            outlineColor="black"
-            outlineWidth={1}
-          />
-        </button>
-      )}
     </div>
+
+    {getLearningState && setLearningLevel && (() => {
+      const level = getLearningState(meaning);
+      const current = savedLevelOf(level);
+      return (
+        <div className="flex w-full flex-col items-center gap-1">
+          <div role="group" aria-label="How well do you know this word?" className="inline-flex overflow-hidden rounded-full border border-blue-300 bg-white shadow-[0_2px_0_0_#bfdbfe]">
+            {SAVE_LEVELS.map(({ level: option, label }) => {
+              const pressed = current === option;
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  aria-pressed={pressed}
+                  onClick={() => setLearningLevel(meaning, option)}
+                  title={`Save as ${label}`}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-bold text-blue-900 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 ${pressed ? 'ring-1 ring-inset ring-blue-400' : 'hover:bg-yellow-50'}`}
+                  style={pressed ? { backgroundColor: getLearningLevelColor(option) } : undefined}
+                >
+                  <span aria-hidden="true" className="h-2.5 w-2.5 rounded-full border border-blue-900/40" style={{ backgroundColor: getLearningLevelColor(option) }} />
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+          {isAutoKnown(level) && (
+            <span className="text-[11px] font-medium text-blue-700">common in this video</span>
+          )}
+        </div>
+      );
+    })()}
   </div>
 );

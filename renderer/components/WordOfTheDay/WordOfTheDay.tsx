@@ -1,5 +1,6 @@
 import React, {useCallback} from 'react';
 import {getColorGradient, getRelativeTime} from '../../utils/utils';
+import {reviewWording} from '../../utils/flashcards';
 import {Key} from '../VideoPlayer/KeyboardHelp';
 import {Button} from '../Utils/Button';
 import {ContinueWatchingButton} from '../VideoPlayer/ContinueWatchingButton';
@@ -88,7 +89,7 @@ const WordOfTheDay: React.FC<WordOfTheDayProps> = ({
                 onClick={() => handleWordClick(item.word)}
               >
                 <div className="mb-1 break-words text-2xl font-bold text-blue-950">{item.word}</div>
-                <div className="text-xs text-blue-700">Learned {getRelativeTime(item.updTime)}</div>
+                <div className="text-xs text-blue-700">{reviewWording(item.updTime, Date.now(), getRelativeTime(item.updTime))}</div>
               </button>
             ))}
           </div>

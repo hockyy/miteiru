@@ -4,6 +4,7 @@ import {useRouter} from "next/router";
 import {isTextEntryTarget} from "../utils/keyboardTargets";
 import {hasCtrlModifier} from "../utils/platform";
 import {keyCommandDefinitions, type KeyCommandId} from "../utils/keyCommands";
+import {writeRubyToClipboard} from "../utils/rubyText";
 
 /** The `event.code` a command's key is pressed as: `Key` + letter for letters, the name itself otherwise. */
 const codeOf = (key: string) => (key.length === 1 ? `Key${key}` : key);
@@ -80,7 +81,8 @@ export default function useKeyBind(
       },
       'open-google-translate': () => openGoogleTranslate(),
       'open-deepl': () => openDeepL(),
-      'copy-ruby': () => copy(rubyContent),
+      // Ruby for rich editors, "食(た)べる" for plain ones (utils/rubyText.ts).
+      'copy-ruby': () => rubyContent ? writeRubyToClipboard(rubyContent).catch((err) => console.error("Failed to copy text: ", err)) : undefined,
       'copy-content': () => copy(contentString),
     };
     return keyCommandDefinitions(languageName).map(definition => ({...definition, handler: actions[definition.id]}));
