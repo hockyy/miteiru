@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useMemo} from "react";
 import {useRouter} from "next/router";
-import VideoJS from "../components/VideoPlayer/VideoJS";
 import {NativeVideo} from "../components/VideoPlayer/NativeVideo";
+import {YouTubeVideo} from "../components/VideoPlayer/YouTubeVideo";
 import MiteiruDropzone from "../components/VideoPlayer/MiteiruDropzone";
 import MeaningBox from "../components/Meaning/MeaningBox";
 import {VideoController} from "../components/VideoPlayer/VideoController";
@@ -15,7 +15,8 @@ import useReadyPlayerCallback from "../hooks/useReadyPlayerCallback";
 import useMiteiruToast from "../hooks/useMiteiruToast";
 import useMeaning from "../hooks/useMeaning";
 import Head from "next/head";
-import {getMiteiruAppName, getMiteiruVideoTitle} from "../utils/utils";
+import {getMiteiruAppName, getMiteiruVideoTitle, isYoutube} from "../utils/utils";
+import {useYoutubeTitle} from "../hooks/useYoutubeTitle";
 import {
   useVideoKeyboardControls,
   useVideoPlayingToggle,
@@ -232,9 +233,11 @@ function Video() {
       () => getFileNameFromPath(pendingSubtitlePath),
       [pendingSubtitlePath]
   );
+  // A YouTube video goes by its title, not the end of its link (watch?v=…).
+  const youtubeTitle = useYoutubeTitle(videoSrc.path);
   const mediaFileName = useMemo(
-      () => getFileNameFromPath(videoSrc.path),
-      [videoSrc.path]
+      () => youtubeTitle ?? (isYoutube(videoSrc.path) ? 'YouTube video' : getFileNameFromPath(videoSrc.path)),
+      [videoSrc.path, youtubeTitle]
   );
   const mediaVideoUrl = useMemo(
       () => videoSrc.path.startsWith('http') ? videoSrc.path : undefined,
@@ -293,7 +296,7 @@ function Video() {
       <React.Fragment>
         <Head>
           <title>{hasVideo
-              ? getMiteiruVideoTitle(videoSrc.path, primarySub.path, secondarySub.path, showPrimarySub, showSecondarySub)
+              ? getMiteiruVideoTitle(videoSrc.path, primarySub.path, secondarySub.path, showPrimarySub, showSecondarySub, youtubeTitle ?? undefined)
               : `${getMiteiruAppName()} - Word of the Day`}</title>
         </Head>
         <div>
@@ -330,9 +333,10 @@ function Video() {
           )}
 
           {hasVideo && (
-            // Local files play in libmpv; YouTube stays in the page.
+            // Local files play in libmpv. YouTube does too when yt-dlp finds its streams, and in the
+            // YouTube embed otherwise.
             videoSrc.type === 'video/youtube'
-                ? <VideoJS options={videoOptions} onReady={readyCallback} clock={clock}/>
+                ? <YouTubeVideo options={videoOptions} onReady={readyCallback} clock={clock}/>
                 : <NativeVideo options={videoOptions} onReady={readyCallback} clock={clock}/>
           )}
 

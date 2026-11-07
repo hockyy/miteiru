@@ -63,8 +63,10 @@ const getFormattedNameFromPath = (path) => path ? ` - ${path.split(/[\\/]/).pop(
 export const getMiteiruAppName = () =>
   process.env.NODE_ENV === 'development' ? 'Miteiru (dev)' : 'Miteiru';
 
-export const getMiteiruVideoTitle = (videoPath = '', primarySub = '', secondarySub = '', showPrimarySub: boolean, showSecondarySub: boolean) => {
-  let tmpTitle = `${getMiteiruAppName()}${getFormattedNameFromPath(videoPath)}${getFormattedNameFromPath(primarySub)}${getFormattedNameFromPath(secondarySub)}`
+/** `videoName`, when given, names the video instead of its path (a YouTube video's title). */
+export const getMiteiruVideoTitle = (videoPath = '', primarySub = '', secondarySub = '', showPrimarySub: boolean, showSecondarySub: boolean, videoName?: string) => {
+  const videoPart = videoName ? ` - ${videoName}` : getFormattedNameFromPath(videoPath);
+  let tmpTitle = `${getMiteiruAppName()}${videoPart}${getFormattedNameFromPath(primarySub)}${getFormattedNameFromPath(secondarySub)}`
   tmpTitle += `-CJK${showPrimarySub ? '✅' : '❌'}-Other${showSecondarySub ? '✅' : '❌'}`
   return tmpTitle
 }

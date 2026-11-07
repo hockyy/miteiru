@@ -3,9 +3,10 @@ import {spawn} from "child_process";
 import os from "os";
 import path from "path";
 import fs from "fs/promises";
-import {getSubtitles, getYoutubeVideoTitle} from "../../helpers/getSubtitles";
+import {getSubtitles} from "../../helpers/getSubtitles";
 import {listYoutubeCaptionTracks} from "../../helpers/youtubeCaptions";
 import {requireMediaTool} from "./mediaTools";
+import {YOUTUBE_STREAM_FORMAT_ARGS, youtubeStreamSource} from "../../helpers/youtubeStream";
 
 // YouTube video ids and subtitle language codes (en, en-US, zh-Hant, ja-orig, ...).
 const YOUTUBE_VIDEO_ID = /^[A-Za-z0-9_-]{6,20}$/;
@@ -48,26 +49,58 @@ const runYtDlp =(ytDlpPath: string, args: string[]) => new Promise<string>((reso
   });
 });
 
+/**
+ * yt-dlp's `-J` description of a video: its streams (for mpv) and its caption tracks. Opening a
+ * video asks for both, so one run serves them, kept for 20 minutes; the stream URLs it holds stay
+ * valid for hours.
+ */
+const INFO_LIFETIME_MS = 20 * 60_000;
+const youtubeInfoCache = new Map<string, { at: number; info: Promise<any> }>();
+
+const youtubeInfo = (videoID: string): Promise<any> => {
+  const cached = youtubeInfoCache.get(videoID);
+  if (cached && Date.now() - cached.at < INFO_LIFETIME_MS) return cached.info;
+  const info = (async () => {
+    const ytDlpPath = await requireMediaTool("yt-dlp");
+    const output = await runYtDlp(ytDlpPath, [
+      "-J",
+      "--no-playlist",
+      "--no-warnings",
+      ...YOUTUBE_STREAM_FORMAT_ARGS,
+      `https://www.youtube.com/watch?v=${videoID}`
+    ]);
+    try {
+      return JSON.parse(output);
+    } catch {
+      throw new Error("yt-dlp returned video data that could not be read.");
+    }
+  })();
+  youtubeInfoCache.set(videoID, {at: Date.now(), info});
+  // A failed run is not kept, so the next try runs yt-dlp again.
+  info.catch(() => {
+    if (youtubeInfoCache.get(videoID)?.info === info) youtubeInfoCache.delete(videoID);
+  });
+  return info;
+};
+
 export function registerYoutubeHandlers() {
+  // Where mpv plays a YouTube video from (main/helpers/youtubeStream.ts); {ok: false} sends the page
+  // to the YouTube embed instead.
+  ipcMain.handle("resolveYoutubeStream", async (_event, videoID) => {
+    try {
+      if (!YOUTUBE_VIDEO_ID.test(String(videoID))) throw new Error(`Invalid YouTube video id: ${videoID}`);
+      return {ok: true, ...youtubeStreamSource(await youtubeInfo(String(videoID)))};
+    } catch (error) {
+      console.warn(`[IPC] resolveYoutubeStream: ${videoID} plays in the YouTube embed:`, error.message);
+      return {ok: false, error: error.message};
+    }
+  });
+
   ipcMain.handle("getYoutubeSubtitleLanguages", async (event, videoID) => {
     console.log(`[IPC] getYoutubeSubtitleLanguages called for ${videoID}`);
     try {
       if (!YOUTUBE_VIDEO_ID.test(String(videoID))) throw new Error(`Invalid YouTube video id: ${videoID}`);
-      const ytDlpPath = await requireMediaTool("yt-dlp");
-
-      const output = await runYtDlp(ytDlpPath, [
-        "-J",
-        "--skip-download",
-        "--no-playlist",
-        "--no-warnings",
-        `https://youtube.com/watch?v=${videoID}`
-      ]);
-      let info;
-      try {
-        info = JSON.parse(output);
-      } catch {
-        throw new Error("yt-dlp returned caption data that could not be read.");
-      }
+      const info = await youtubeInfo(String(videoID));
       const languages = listYoutubeCaptionTracks(info);
 
       console.log(`[IPC] Found ${languages.length} available subtitle languages for ${videoID}`);
@@ -142,9 +175,12 @@ export function registerYoutubeHandlers() {
     }
   });
 
+  // From the yt-dlp run the player and the subtitle list share, so naming the video costs no extra run.
   ipcMain.handle("getYoutubeVideoTitle", async (_event, videoID: string) => {
     try {
-      return await getYoutubeVideoTitle(videoID);
+      if (!YOUTUBE_VIDEO_ID.test(String(videoID))) return null;
+      const {title} = await youtubeInfo(String(videoID));
+      return typeof title === "string" && title ? title : null;
     } catch (error) {
       console.error(`[IPC] Error getting YouTube title for ${videoID}:`, error);
       return null;
