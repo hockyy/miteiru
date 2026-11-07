@@ -7,7 +7,6 @@
 //! JSON, one record per line, so it is what `JSON.stringify` of the parsed record gives.
 
 use std::borrow::Cow;
-use std::io::Read;
 
 use rusqlite::Connection;
 use serde::Deserialize;
@@ -133,21 +132,9 @@ pub fn import(conn: &mut Connection, text: &str, layout: Layout) -> Result<Metad
   written.and(ended).map(|_| metadata)
 }
 
-/// A bundled asset's text: packaged builds keep the big ones gzipped beside the plain path
-/// (main/helpers/assetFiles.ts readAsset).
+/// A bundled dictionary file's text, plain or gzipped (sys::fs::read_asset).
 pub fn read_asset_text(path: &str) -> Result<String, String> {
-  let bytes = match std::fs::read(path) {
-    Ok(bytes) => bytes,
-    Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-      let gz = format!("{path}.gz");
-      let file = std::fs::File::open(&gz).map_err(|e| super::fs_err(&e, "open", path))?;
-      let mut out = Vec::new();
-      flate2::read::GzDecoder::new(file).read_to_end(&mut out).map_err(|e| super::fs_err(&e, "read", &gz))?;
-      out
-    }
-    Err(e) => return Err(super::fs_err(&e, "open", path)),
-  };
-  String::from_utf8(bytes).map_err(|e| bad_file(path, e))
+  String::from_utf8(super::fs::read_asset(path)?).map_err(|e| bad_file(path, e))
 }
 
 /// Imports the dictionary file at `path` into the open store `handle` (an empty one: the page
