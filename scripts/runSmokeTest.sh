@@ -7,7 +7,12 @@ app_binary=$1
 export MITEIRU_SMOKE_TEST=$2
 screenshot=$3
 
-"$app_binary" &
+# MITEIRU_SMOKE_GDB=1 runs the app under gdb, which prints every thread's stack if it crashes.
+if [ "${MITEIRU_SMOKE_GDB:-}" = "1" ] && command -v gdb >/dev/null; then
+  gdb -q -batch -ex "handle SIGPIPE nostop noprint" -ex run -ex "thread apply all bt 25" --args "$app_binary" &
+else
+  "$app_binary" &
+fi
 app=$!
 sleep 30
 if [ "$(uname)" = "Darwin" ]; then

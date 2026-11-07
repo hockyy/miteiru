@@ -28,14 +28,30 @@ const playerProperty = async (name: string) => {
   return invoke<string | null>('player_get', {name});
 };
 
-const checkPlayer = async () => {
+/**
+ * mpv's test pattern (lavfi) needs libavdevice, which media-kit's macOS libmpv lacks; elsewhere the
+ * player reads raw RGB noise from /dev/urandom instead.
+ */
+const checkPlayer = async (platform: string) => {
   await invoke('player_open', {options: {'sub-visibility': 'no', mute: 'yes'}});
   // A see-through page, so a screenshot shows mpv's picture under the webview.
   document.documentElement.classList.add('miteiru-native-video');
   document.getElementById('__next')?.style.setProperty('visibility', 'hidden');
   const viewport = {x: 0, y: 0, width: innerWidth, height: innerHeight};
   await invoke('player_set_rect', {rect: viewport, viewport});
-  await invoke('player_command', {args: ['loadfile', 'av://lavfi:testsrc2=size=1280x720:rate=30']});
+  if (platform === 'win32') {
+    await invoke('player_command', {args: ['loadfile', 'av://lavfi:testsrc2=size=1280x720:rate=30']});
+  } else {
+    const raw = {
+      'demuxer': 'rawvideo',
+      'demuxer-rawvideo-w': '640',
+      'demuxer-rawvideo-h': '360',
+      'demuxer-rawvideo-mp-format': 'rgb24',
+      'demuxer-rawvideo-fps': '30'
+    };
+    for (const [name, value] of Object.entries(raw)) await invoke('player_set', {name, value});
+    await invoke('player_command', {args: ['loadfile', '/dev/urandom']});
+  }
   await sleep(5000);
   const timePos = Number(await playerProperty('time-pos'));
   const result = {
@@ -87,10 +103,20 @@ const checkYouTube = (videoId: string) => new Promise<string>((resolve, reject) 
   document.head.appendChild(script);
 });
 
-export const runSmokeTest = async (outPath: string, userData: string) => {
+/** YouTube refusing the video itself, not the embedder, as it does for CI's datacenter addresses. */
+const YOUTUBE_REFUSALS = new Set([100, 101, 150]);
+
+export const runSmokeTest = async (outPath: string, userData: string, platform: string) => {
   const started = Date.now();
   const results: Record<string, StepResult> = {};
+  // Written before and after every step, so a crash still shows how far the test got.
+  const save = (running?: string) => invoke('fs_write_text', {
+    path: outPath,
+    text: `${JSON.stringify(running ? {...results, running} : results, null, 2)}\n`,
+    append: false
+  }).catch(() => undefined);
   const step = async (name: string, run: () => Promise<unknown>, timeoutMs: number) => {
+    await save(name);
     const t0 = Date.now();
     try {
       results[name] = {ok: true, ms: Date.now() - t0, value: await withTimeout(run(), timeoutMs)};
@@ -99,6 +125,7 @@ export const runSmokeTest = async (outPath: string, userData: string) => {
       results[name] = {ok: false, ms: Date.now() - t0, error: error instanceof Error ? error.message : String(error)};
     }
     console.log(`[smoke] ${name}`, JSON.stringify(results[name]));
+    await save();
   };
 
   await step('page', async () => ({url: location.href, userAgent: navigator.userAgent}), 1000);
@@ -124,12 +151,16 @@ export const runSmokeTest = async (outPath: string, userData: string) => {
     if (response.status !== 200 || !body.ok) throw new Error(`health answered ${response.status}`);
     return {port: registration.port, plugins: body.supportedPlugins?.length};
   }, 20000);
-  await step('player', checkPlayer, 30000);
-  await step('youtube', () => checkYouTube('-yslFBRBM2c'), 45000);
+  await step('player', () => checkPlayer(platform), 30000);
+  await step('youtube', () => checkYouTube('-yslFBRBM2c').catch((error: Error) => {
+    const code = Number(/error (\d+)/.exec(error.message)?.[1]);
+    if (YOUTUBE_REFUSALS.has(code)) return `embed accepted; YouTube refused the video here (error ${code})`;
+    throw error;
+  }), 45000);
 
   // Leave the picture up long enough for the workflow's screenshot.
   await sleep(Math.max(0, 40000 - (Date.now() - started)));
   const failed = Object.values(results).some((result) => !result.ok);
-  await invoke('fs_write_text', {path: outPath, text: `${JSON.stringify(results, null, 2)}\n`, append: false});
+  await save();
   await invoke('smoke_test_exit', {code: failed ? 1 : 0});
 };
