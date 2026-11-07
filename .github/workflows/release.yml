@@ -119,8 +119,12 @@ jobs:
         run: |
           export MITEIRU_USER_DATA_DIR="$RUNNER_TEMP/miteiru-profile"
           if [ "$RUNNER_OS" = "macOS" ]; then
-            app=$(ls -d src-tauri/target/release/bundle/macos/*.app/Contents/MacOS/* | head -1)
+            # The app inside the DMG, as users get it (Tauri removes the loose .app after bundling).
+            dmg=$(ls src-tauri/target/release/bundle/dmg/*.dmg | head -1)
+            volume=$(hdiutil attach -nobrowse -readonly "$dmg" | tail -1 | sed 's/.*\t//; s/[[:space:]]*$//')
+            app=$(ls -d "$volume"/*.app/Contents/MacOS/* | head -1)
             bash scripts/runSmokeTest.sh "$app" "$PWD/smoke.json" "$PWD/smoke.png"
+            hdiutil detach "$volume" || true
           else
             sudo apt-get install -y xvfb imagemagick libmpv1
             app=$(ls src-tauri/target/release/bundle/appimage/*.AppImage | head -1)
