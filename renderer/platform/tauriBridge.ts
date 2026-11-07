@@ -179,6 +179,18 @@ const listenForDropPaths = () => listen<{ id: number; paths: string[] }>('miteir
   pendingDropPaths.delete(payload.id);
 }).catch((error) => console.error('[file-drop] could not listen for dropped file paths:', error));
 
+/**
+ * With drops going to the page, a file dropped where nothing takes it (the home page) would make
+ * the webview open the file in place of the app. Pages that do take drops handle them first.
+ */
+const ignoreUnhandledFileDrops = () => {
+  for (const type of ['dragover', 'drop'] as const) {
+    window.addEventListener(type, (event) => {
+      if (event.dataTransfer?.types.includes('Files')) event.preventDefault();
+    });
+  }
+};
+
 const pathsForDroppedFiles = (files: FileList) => new Promise<string[]>((resolve) => {
   const id = nextDropId++;
   pendingDropPaths.set(id, resolve);
@@ -244,6 +256,7 @@ const buildElectronApi = (host: BackendHost) => {
   };
   if (webView2()) {
     listenForDropPaths();
+    ignoreUnhandledFileDrops();
     api.pathsForDroppedFiles = pathsForDroppedFiles;
   }
   for (const [method, channel] of Object.entries(ELECTRON_API_INVOKE_CHANNELS)) {
