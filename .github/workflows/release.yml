@@ -19,6 +19,11 @@ on:
           - windows
           - macos
           - linux
+      publish:
+        description: 'Upload to the GitHub release (off: keep the installers as workflow artifacts only)'
+        type: boolean
+        required: false
+        default: true
 
 permissions:
   contents: write
@@ -105,12 +110,27 @@ jobs:
       - name: Build installers
         run: npx tauri build --config src-tauri/tauri.release.conf.json --bundles ${{ matrix.bundles }}
 
+      - name: Keep installers as artifacts
+        if: ${{ !inputs.publish }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: installers-${{ matrix.os }}
+          path: |
+            src-tauri/target/release/bundle/nsis/*.exe
+            src-tauri/target/release/bundle/dmg/*.dmg
+            src-tauri/target/release/bundle/deb/*.deb
+            src-tauri/target/release/bundle/appimage/*.AppImage
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Resolve tag
+        if: ${{ inputs.publish }}
         id: meta
         shell: bash
         run: echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
 
       - name: Create release if missing
+        if: ${{ inputs.publish }}
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -129,6 +149,7 @@ jobs:
           fi
 
       - name: Upload artifacts to release
+        if: ${{ inputs.publish }}
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
