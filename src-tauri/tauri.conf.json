@@ -46,7 +46,8 @@
     "shortDescription": "Watch videos with interactive subtitles to learn Japanese, Chinese, Cantonese and Vietnamese.",
     "macOS": {
       "signingIdentity": "-",
-      "minimumSystemVersion": "11.0"
+      "minimumSystemVersion": "11.0",
+      "hardenedRuntime": false
     },
     "linux": {
       "deb": {

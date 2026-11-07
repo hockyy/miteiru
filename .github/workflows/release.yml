@@ -111,6 +111,37 @@ jobs:
       - name: Build installers
         run: npx tauri build --config src-tauri/tauri.release.conf.json --bundles ${{ matrix.bundles }}
 
+      # The packaged app runs its smoke test (renderer/platform/smokeTest.ts) before anything is
+      # uploaded: the signed .app on macOS, the AppImage on Linux (Windows is checked locally).
+      - name: Smoke test the packaged app
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          export MITEIRU_USER_DATA_DIR="$RUNNER_TEMP/miteiru-profile"
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            app=$(ls -d src-tauri/target/release/bundle/macos/*.app/Contents/MacOS/* | head -1)
+            bash scripts/runSmokeTest.sh "$app" "$PWD/smoke.json" "$PWD/smoke.png"
+          else
+            sudo apt-get install -y xvfb imagemagick libmpv1
+            app=$(ls src-tauri/target/release/bundle/appimage/*.AppImage | head -1)
+            chmod +x "$app"
+            APPIMAGE_EXTRACT_AND_RUN=1 xvfb-run -a -s "-screen 0 1280x800x24" \
+              bash scripts/runSmokeTest.sh "$app" "$PWD/smoke.json" "$PWD/smoke.png"
+          fi
+          cat smoke.json || echo "no smoke.json"
+          node -e 'const r = require("./smoke.json"); const bad = Object.entries(r).filter(([, v]) => !v.ok); if (bad.length) { console.error("failed:", bad.map(([k]) => k).join(", ")); process.exit(1); }'
+
+      - name: Upload smoke test results
+        if: always() && runner.os != 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-smoke-${{ matrix.os }}
+          path: |
+            smoke.json
+            smoke*.png
+          if-no-files-found: warn
+          retention-days: 7
+
       - name: Keep installers as artifacts
         if: ${{ !inputs.publish }}
         uses: actions/upload-artifact@v4
