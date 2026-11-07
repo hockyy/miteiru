@@ -65,8 +65,79 @@ jobs:
               fh.write("include<<EOF\n" + json.dumps(rows) + "\nEOF\n")
           PY
 
+  # The language data, cut into one download per language (scripts/data/buildLanguagePacks.ts). Built
+  # once here: the installers carry only the manifest (language-packs.json), and the apps fetch the
+  # packs from this release the first time a language is used. The build jobs also install them from
+  # these files in their smoke test.
+  language-packs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The manifest's download address names the release after package.json's version.
+      - name: Check the tag matches the version
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if [ "v$version" != "${{ inputs.tag }}" ]; then
+            echo "::error::Tag ${{ inputs.tag }} is not v$version (package.json); the packs would be built to download from the wrong release."
+            exit 1
+          fi
+
+      # Language asset payloads (dictionaries, tokenizers, SVGs) are gitignored; fetch them from the
+      # `assets` release. GITHUB_TOKEN authenticates the release-list API call (unauthenticated
+      # calls share a 60 req/hr pool per runner IP and often 403).
+      - name: Download language assets
+        run: npm run script:download-language-assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build the language packs
+        run: npm run build:language-packs
+
+      - name: Keep the packs for the build jobs
+        uses: actions/upload-artifact@v4
+        with:
+          name: language-packs
+          path: dist/language-packs/
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Create release if missing
+        if: ${{ inputs.publish }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${{ inputs.tag }}"
+          if gh release view "$tag" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            exit 0
+          fi
+          notes="docs/whats-new/${tag#v}.md"
+          if [ -f "$notes" ]; then
+            gh release create "$tag" --repo "${{ github.repository }}" \
+              --title "$tag" --notes-file "$notes"
+          else
+            gh release create "$tag" --repo "${{ github.repository }}" \
+              --title "$tag" --generate-notes
+          fi
+
+      - name: Upload the packs to the release
+        if: ${{ inputs.publish }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{ inputs.tag }}" dist/language-packs/*.mtrpack \
+            --repo "${{ github.repository }}" --clobber
+
   build:
-    needs: select
+    needs: [select, language-packs]
     strategy:
       fail-fast: false
       matrix:
@@ -98,21 +169,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Language asset payloads (dictionaries, tokenizers, SVGs) are gitignored;
-      # fetch them from the `assets` release so installers bundle them.
-      # GITHUB_TOKEN authenticates the release-list API call (unauthenticated
-      # calls share a 60 req/hr pool per runner IP and often 403).
-      - name: Download language assets
-        run: npm run script:download-language-assets
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # The installers carry only the packs' manifest; the packs themselves were built by the
+      # language-packs job, and the smoke test below installs them.
+      - name: Download the language packs
+        uses: actions/download-artifact@v4
+        with:
+          name: language-packs
+          path: dist/language-packs
 
       - name: Build the live captions helper
         if: runner.os != 'Linux'
         run: npm run build:live-captions
 
-      # Stages language assets, libmpv and the live captions helper (scripts/stageTauriResources.mjs)
-      # and builds the installers. With the updater key (secrets TAURI_SIGNING_PRIVATE_KEY and
+      # Stages the language packs' manifest, libmpv and the live captions helper
+      # (scripts/stageTauriResources.mjs) and builds the installers. With the updater key (secrets
+      # TAURI_SIGNING_PRIVATE_KEY and
       # TAURI_SIGNING_PRIVATE_KEY_PASSWORD, from `npx tauri signer generate`) it also signs the
       # update artifacts the app installs from latest.json.
       - name: Build installers
@@ -120,6 +191,7 @@ jobs:
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          MITEIRU_LANGUAGE_PACKS_DIR: ${{ github.workspace }}/dist/language-packs
         run: |
           updater=()
           if [ -n "$TAURI_SIGNING_PRIVATE_KEY" ]; then
@@ -146,12 +218,18 @@ jobs:
           ls
 
       # The packaged app runs its smoke test (renderer/platform/smokeTest.ts) before anything is
-      # uploaded: the signed .app on macOS, the AppImage on Linux (Windows is checked locally).
+      # uploaded: the signed .app on macOS, the AppImage on Linux (Windows is checked locally). It
+      # installs the language packs from the files in dist/language-packs, and Vietnamese through a
+      # real download from a local server standing in for the release.
       - name: Smoke test the packaged app
         if: runner.os != 'Windows'
         shell: bash
         run: |
           export MITEIRU_USER_DATA_DIR="$RUNNER_TEMP/miteiru-profile"
+          export MITEIRU_SMOKE_LANGUAGE_PACKS="$PWD/dist/language-packs"
+          export MITEIRU_LANGUAGE_PACK_URL="http://127.0.0.1:8765/"
+          python3 -m http.server --bind 127.0.0.1 8765 --directory dist/language-packs &
+          pack_server=$!
           if [ "$RUNNER_OS" = "macOS" ]; then
             # The app inside the DMG, as users get it (Tauri removes the loose .app after bundling).
             dmg=$(ls src-tauri/target/release/bundle/dmg/*.dmg | head -1)
@@ -166,6 +244,7 @@ jobs:
             APPIMAGE_EXTRACT_AND_RUN=1 xvfb-run -a -s "-screen 0 1280x800x24" \
               bash scripts/runSmokeTest.sh "$app" "$PWD/smoke.json" "$PWD/smoke.png"
           fi
+          kill "$pack_server" || true
           cat smoke.json || echo "no smoke.json"
           node -e 'const r = require("./smoke.json"); const bad = Object.entries(r).filter(([, v]) => !v.ok); if (bad.length) { console.error("failed:", bad.map(([k]) => k).join(", ")); process.exit(1); }'
 

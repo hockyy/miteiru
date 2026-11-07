@@ -5,7 +5,7 @@
   },
   "bundle": {
     "resources": {
-      "resources/language-assets/": "language-assets/",
+      "resources/language-packs.json": "language-packs.json",
       "resources/libmpv/": "libmpv/",
       "resources/live-captions/": "live-captions/"
     }
