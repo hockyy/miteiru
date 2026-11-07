@@ -177,6 +177,11 @@ export const runSmokeTest = async (outPath: string, userData: string, platform: 
   };
 
   await step('page', async () => ({url: location.href, userAgent: navigator.userAgent}), 1000);
+  // Tauri's zoom hotkeys invoke this command; core:default does not grant it.
+  await step('zoom', async () => {
+    await invoke('plugin:webview|set_webview_zoom', {value: 1});
+    return 'allowed';
+  }, 1000);
   await step('backend', () => window.backend.invoke('getAppVersion'), 60000);
   await step('store', async () => {
     await window.electronStore.set('smokeTest.value', 42);
