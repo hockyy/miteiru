@@ -25,6 +25,7 @@ const COMMANDS: &[&str] = &[
     "kv_del",
     "kv_batch",
     "kv_bulk",
+    "kv_import_dictionary",
     "kv_range",
     "kv_clear",
     "kv_close",
