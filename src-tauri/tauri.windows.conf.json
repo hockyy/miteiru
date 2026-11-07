@@ -1,13 +1,6 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "build": {
-    "beforeDevCommand": "node scripts/fetchLibmpv.mjs --if-needed && npm run dev:renderer",
-    "beforeBuildCommand": "node scripts/fetchLibmpv.mjs --if-needed && npm run build:renderer"
-  },
-  "bundle": {
-    "resources": {
-      "../resources/libmpv/libmpv-2.dll": "libmpv/libmpv-2.dll",
-      "../resources/libmpv/LICENSE.LGPL": "libmpv/LICENSE.LGPL"
-    }
+    "beforeDevCommand": "node scripts/fetchLibmpv.mjs --if-needed && npm run dev:renderer"
   }
 }

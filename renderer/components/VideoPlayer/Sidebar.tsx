@@ -77,14 +77,14 @@ const ColorRow = ({label, color, onChange}: { label: string; color: string; onCh
 
 const LearningFileButtons = ({lang}: { lang: string }) => {
   const saveLearning = useCallback(() => {
-    window.ipc.invoke('loadLearningState', lang).then((val) => {
-      window.ipc.invoke("saveFile", ["json"], JSON.stringify(val))
+    window.backend.invoke('loadLearningState', lang).then((val) => {
+      window.backend.invoke("saveFile", ["json"], JSON.stringify(val))
     })
   }, [lang]);
   const loadLearning = useCallback(() => {
-    window.ipc.invoke("readFile", ["json"]).then((val) => {
+    window.backend.invoke("readFile", ["json"]).then((val) => {
       try {
-        window.ipc.invoke("updateContentBatch", JSON.parse(val), lang)
+        window.backend.invoke("updateContentBatch", JSON.parse(val), lang)
       } catch (e) {
         console.error(e)
       }
@@ -148,10 +148,10 @@ export const SubtitleLookSettings = ({subtitleStyling, setSubtitleStyling, defau
 }) => {
   const update = useStylingUpdate(subtitleStyling, setSubtitleStyling);
   const exportStyle = useCallback(() => {
-    window.ipc.invoke("saveFile", ["json"], JSON.stringify(subtitleStyling))
+    window.backend.invoke("saveFile", ["json"], JSON.stringify(subtitleStyling))
   }, [subtitleStyling]);
   const importStyle = useCallback(() => {
-    window.ipc.invoke("readFile", ["json"]).then((val) => {
+    window.backend.invoke("readFile", ["json"]).then((val) => {
       try {
         setSubtitleStyling(JSON.parse(val) as CJKStyling)
       } catch (e) {
@@ -307,7 +307,7 @@ export const Sidebar = ({
 
     try {
       const hufContent = primarySub.toHufString();
-      window.ipc.invoke("saveFile", ["huf", "json"], hufContent);
+      window.backend.invoke("saveFile", ["huf", "json"], hufContent);
     } catch (error) {
       console.error('Failed to export HUF:', error);
       alert(`Failed to export HUF: ${error.message || 'Unknown error'}`);

@@ -30,7 +30,7 @@ export const useExportAllAnkiCards = ({ lang, tokenizeMiteiru }: UseExportAllAnk
         return;
       }
 
-      const learningState = await window.ipc.invoke('loadLearningState', lang);
+      const learningState = await window.backend.invoke('loadLearningState', lang);
       const terms = Object.keys(learningState || {}).filter(Boolean);
 
       const cards = [];

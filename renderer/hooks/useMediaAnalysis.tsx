@@ -213,7 +213,7 @@ const useMediaAnalysis = (videoPath: string) => {
       console.log(`[DEBUG Frontend] Progress update:`, progress);
       setReencodeProgress(progress);
     };
-    const removeProgressListener = window.ipc.on('reencode-progress', progressHandler);
+    const removeProgressListener = window.backend.on('reencode-progress', progressHandler);
 
     try {
       

@@ -40,3 +40,13 @@ export const runtime: SysInfo = {
 export const initRuntime = (info: SysInfo) => {
   Object.assign(runtime, info);
 };
+
+/**
+ * Where the app's own files are, as Electron's app.getAppPath() reported: the repo root in a dev run
+ * (the binary is <repo>/src-tauri/target/<profile>/miteiru), the resource directory when packaged.
+ */
+export const appRoot = () => {
+  if (runtime.isPackaged || !runtime.exePath) return runtime.resources;
+  const parts = runtime.exePath.split(/[\/]+/);
+  return parts.length > 4 ? parts.slice(0, -4).join('/') : runtime.resources;
+};

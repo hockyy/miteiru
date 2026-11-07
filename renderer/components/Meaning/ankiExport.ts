@@ -321,7 +321,7 @@ export const saveAnkiCards = async (cards, defaultPath, confirmExport?) => {
   }
 
   const ankiTsv = buildAnkiImportFile(cards);
-  return await window.ipc.invoke("saveFile", ["tsv", "txt"], ankiTsv, defaultPath);
+  return await window.backend.invoke("saveFile", ["tsv", "txt"], ankiTsv, defaultPath);
 };
 
 /** Writes TSV to user-data/anki, reveals it in the file manager, and launches Anki when found. */

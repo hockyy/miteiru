@@ -9,7 +9,7 @@ const KanjiVGDisplay = ({filename}) => {
 
   useEffect(() => {
     if (filename) {
-      window.ipc.invoke("readKanjiSVG", filename).then(val => {
+      window.backend.invoke("readKanjiSVG", filename).then(val => {
         setSvgData(val);
       });
     }

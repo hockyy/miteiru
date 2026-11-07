@@ -1,5 +1,5 @@
 /**
- * Under Tauri there is no preload script: this installs window.ipc, window.electronAPI and
+ * Under Tauri there is no preload script: this installs window.backend, window.electronAPI and
  * window.electronStore with the same shapes, routed to the backend worker (main/'s handlers, see
  * backend/worker.ts). Tauri's IPC only works on the main thread, so the worker's Rust calls come
  * here as `sys` messages and are invoked on its behalf.
@@ -189,13 +189,13 @@ const buildElectronApi = (host: BackendHost) => {
 
 export const isTauri = () => typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 
-/** Installs the bridge; does nothing outside Tauri or when a preload already provided window.ipc. */
+/** Installs the bridge; does nothing outside Tauri or when a preload already provided window.backend. */
 export const installTauriBridge = () => {
-  if (!isTauri() || 'ipc' in window) return;
+  if (!isTauri() || 'backend' in window) return;
 
   const host = new BackendHost();
   const target = window as unknown as Record<string, unknown>;
-  target.ipc = {
+  target.backend = {
     invoke: (channel: string, ...args: unknown[]) => host.invoke(channel, args),
     send: (channel: string, value: unknown) => host.send(channel, [value]),
     on: (channel: string, callback: Listener) => host.on(channel, callback)

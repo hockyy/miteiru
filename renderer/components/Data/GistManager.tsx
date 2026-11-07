@@ -23,12 +23,12 @@ export const GistManager: React.FC<GistManagerProps> = ({lang}) => {
     setIsLoading(true);
     try {
       console.log('Saving learning state to Gist...');
-      const val = await window.ipc.invoke('loadLearningState', lang);
+      const val = await window.backend.invoke('loadLearningState', lang);
       const filename = `learning_state_${lang}.json`;
       const description = `Learning state for ${lang}`;
       // Secret gist: unlisted, though anyone with the URL can still open it.
       const isPublic = false;
-      const result = await window.ipc.invoke('createGitHubGist', filename, JSON.stringify(val), description, isPublic, githubToken);
+      const result = await window.backend.invoke('createGitHubGist', filename, JSON.stringify(val), description, isPublic, githubToken);
 
       if (result.success) {
         console.log('Gist created successfully!');
@@ -59,7 +59,7 @@ export const GistManager: React.FC<GistManagerProps> = ({lang}) => {
     setIsLoading(true);
     try {
       console.log('Loading learning state from Gist...');
-      const result = await window.ipc.invoke('loadGitHubGists', githubUsername, githubToken);
+      const result = await window.backend.invoke('loadGitHubGists', githubUsername, githubToken);
 
       if (!result.success) {
         throw new Error(result.error);
@@ -74,7 +74,7 @@ export const GistManager: React.FC<GistManagerProps> = ({lang}) => {
       }
       await window.electronAPI.openExternal(learningStateGist.html_url);
 
-      const gistContent = await window.ipc.invoke('getGitHubGistContent', learningStateGist.id, githubToken);
+      const gistContent = await window.backend.invoke('getGitHubGistContent', learningStateGist.id, githubToken);
       console.log(gistContent)
       if (!gistContent.success) {
         throw new Error(gistContent.error);
@@ -82,7 +82,7 @@ export const GistManager: React.FC<GistManagerProps> = ({lang}) => {
 
       const content = gistContent.gist.files[0].content;
       const parsed = JSON.parse(content);
-      await window.ipc.invoke("updateContentBatch", parsed, lang);
+      await window.backend.invoke("updateContentBatch", parsed, lang);
 
       console.log('Learning state loaded successfully!');
       alert('Learning state loaded successfully!');
@@ -95,7 +95,7 @@ export const GistManager: React.FC<GistManagerProps> = ({lang}) => {
   }, [githubUsername, githubToken, lang]);
 
   const openTokenCreationPage = () => {
-    window.ipc.invoke('open-external', 'https://github.com/settings/tokens/new');
+    window.backend.invoke('open-external', 'https://github.com/settings/tokens/new');
   };
 
   return (

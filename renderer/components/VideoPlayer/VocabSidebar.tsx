@@ -61,7 +61,7 @@ const VocabSidebar = ({
       if (!lang) {
         return;
       }
-      const loadedState = await window.ipc.invoke('loadLearningState', lang);
+      const loadedState = await window.backend.invoke('loadLearningState', lang);
       const sorted = Object.entries(loadedState).sort(
         (a: VocabEntry, b: VocabEntry) => a[1].updTime - b[1].updTime,
       ) as VocabEntry[];

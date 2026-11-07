@@ -66,11 +66,11 @@
     "build:linux26": "npm run script:clean-next && nextron build --config=buildConfig/linux26.config.json",
     "postinstall": "electron-builder install-app-deps",
     "dev:renderer": "node scripts/devRenderer.mjs",
-    "build:renderer": "node scripts/buildBackendWorker.mjs && next build renderer",
+    "build:renderer": "node scripts/buildBackendWorker.mjs && next build renderer && node scripts/pruneRendererExport.mjs",
     "build:backend-worker": "node scripts/buildBackendWorker.mjs",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build"
+    "tauri:build": "tauri build --config src-tauri/tauri.release.conf.json"
   },
   "dependencies": {
     "@node-rs/jieba": "^2.0.1",

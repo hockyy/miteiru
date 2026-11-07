@@ -12,7 +12,7 @@ export const useCacheManager = () => {
     setIsRemovingCache(true);
     
     try {
-      const result = await window.ipc.invoke('removeDictCache');
+      const result = await window.backend.invoke('removeDictCache');
       return {
         ok: 1,
         message: result

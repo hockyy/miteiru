@@ -1,10 +1,9 @@
 // Bundles the Tauri backend worker (renderer/platform/backend/worker.ts, which runs main/'s Electron
-// handlers) into renderer/public/backend-worker.js, and copies kuromoji's dictionary beside it.
+// handlers) into renderer/public/backend-worker.js.
 //
 //   node scripts/buildBackendWorker.mjs            one build
 //   node scripts/buildBackendWorker.mjs --watch    rebuild on change
 import {build, context} from 'esbuild';
-import {cpSync, existsSync, mkdirSync, readdirSync} from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
@@ -62,17 +61,6 @@ const options = {
   legalComments: 'none',
   logLevel: 'info'
 };
-
-const copyKuromojiDictionary = () => {
-  const source = path.join(root, 'node_modules/kuromoji/dict');
-  const target = path.join(root, 'renderer/public/kuromoji-dict');
-  if (existsSync(target) && readdirSync(target).length === readdirSync(source).length) return;
-  mkdirSync(target, {recursive: true});
-  cpSync(source, target, {recursive: true});
-  console.log(`Copied kuromoji dictionary to ${path.relative(root, target)}`);
-};
-
-copyKuromojiDictionary();
 
 const failOnWarnings = (result) => {
   if (result.warnings.length > 0) {

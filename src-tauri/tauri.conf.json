@@ -35,9 +35,6 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "resources": {
-      "../renderer/public/language-assets/": "language-assets/"
-    },
     "icon": [
       "../resources/icon.png",
       "../resources/icon.icns",

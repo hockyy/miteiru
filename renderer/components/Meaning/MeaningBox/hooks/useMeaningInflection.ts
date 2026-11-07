@@ -47,7 +47,7 @@ export const useMeaningInflection = (
     let cancelled = false;
     setLoading(true);
 
-    window.ipc
+    window.backend
       .invoke("getInflectionTable", {
         term,
         dictionaryForm,

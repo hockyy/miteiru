@@ -52,7 +52,7 @@ export const useMediaTrackSubtitleSelection = ({
     showToast(`Downloading ${target} YouTube subtitle (${language})...`);
 
     try {
-      const result = await window.ipc.invoke("downloadYoutubeSubtitle", videoId, language);
+      const result = await window.backend.invoke("downloadYoutubeSubtitle", videoId, language);
       if (!result.success || !result.filePath) {
         throw new Error(result.error || 'Download failed');
       }
