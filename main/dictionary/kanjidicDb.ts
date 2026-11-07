@@ -20,6 +20,7 @@ export interface KanjidicFile {
 export const setupKanjidic = async (dbPath: string, importPath = "") => {
   const {db, metadata} = await openDictionary<KanjidicFile>(dbPath, importPath, {
     metadataKeys: ["raw/dictDate", "raw/version"],
+    // The desktop app writes these keys in Rust (src-tauri/src/sys/dict_import.rs): change both.
     nativeLayout: "kanjidic",
     writeEntries: async (raw, writer) => {
       for (const character of raw.characters) {

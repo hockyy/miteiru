@@ -62,6 +62,7 @@ export interface JmdictFile {
  *   raw/dictDate, raw/version        written last
  * jmdict-wrapper also wrote indexes/partial-kana|kanji/<substring>-<id>. Nothing reads them,
  * so imports skip them (about 7.6M keys: half the size and a fraction of the import time).
+ * The desktop app writes these keys in Rust (src-tauri/src/sys/dict_import.rs): change both.
  */
 export const setupJmdict = async (dbPath: string, importPath = "") => {
   const {db, metadata} = await openDictionary<JmdictFile>(dbPath, importPath, {
