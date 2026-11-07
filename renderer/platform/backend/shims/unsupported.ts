@@ -1,7 +1,7 @@
 /**
- * node:http, node:stream and node:url are only imported by Electron-only code (the analyzer HTTP
- * server, the miteiru:// and app:// protocols), which the worker does not load. These stand-ins
- * keep an accidental import from breaking the bundle and fail loudly if actually used.
+ * node:http, node:stream and node:url for the worker bundle: no backend code uses them, but bundled
+ * packages may import them (iconv-lite probes for streams). These stand-ins keep such imports from
+ * breaking the bundle and fail loudly if actually used.
  */
 const fail = (name: string) => (): never => {
   throw new Error(`${name} is not available in the Tauri backend worker`);

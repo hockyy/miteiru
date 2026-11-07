@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-kv-get-many"
+description = "Enables the kv_get_many command without any pre-configured scope."
+commands.allow = ["kv_get_many"]
+
+[[permission]]
+identifier = "deny-kv-get-many"
+description = "Denies the kv_get_many command without any pre-configured scope."
+commands.deny = ["kv_get_many"]

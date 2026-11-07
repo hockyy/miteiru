@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-analyzer-respond"
+description = "Enables the analyzer_respond command without any pre-configured scope."
+commands.allow = ["analyzer_respond"]
+
+[[permission]]
+identifier = "deny-analyzer-respond"
+description = "Denies the analyzer_respond command without any pre-configured scope."
+commands.deny = ["analyzer_respond"]

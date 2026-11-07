@@ -64,21 +64,12 @@ jobs:
         if: matrix.key != 'windows'
         shell: bash
         run: |
-          export MITEIRU_SMOKE_TEST="$PWD/smoke.json" MITEIRU_USER_DATA_DIR="$RUNNER_TEMP/miteiru-profile"
-          run_app() {
-            ./src-tauri/target/debug/miteiru & app=$!
-            sleep 30
-            if [ "$RUNNER_OS" = "macOS" ]; then screencapture -x smoke.png || true; else import -window root smoke.png || true; fi
-            for _ in $(seq 1 90); do kill -0 "$app" 2>/dev/null || break; sleep 1; done
-            kill "$app" 2>/dev/null || true
-            code=0; wait "$app" || code=$?
-            echo "app exit code: $code"
-          }
-          export -f run_app
+          export MITEIRU_USER_DATA_DIR="$RUNNER_TEMP/miteiru-profile"
+          run=(bash scripts/runSmokeTest.sh src-tauri/target/debug/miteiru "$PWD/smoke.json" "$PWD/smoke.png")
           if [ "$RUNNER_OS" = "Linux" ]; then
-            xvfb-run -a -s "-screen 0 1280x800x24" bash -c run_app
+            xvfb-run -a -s "-screen 0 1280x800x24" "${run[@]}"
           else
-            run_app
+            "${run[@]}"
           fi
           cat smoke.json || echo "no smoke.json"
           node -e 'const r = require("./smoke.json"); const bad = Object.entries(r).filter(([, v]) => !v.ok); if (bad.length) { console.error("failed:", bad.map(([k]) => k).join(", ")); process.exit(1); }'

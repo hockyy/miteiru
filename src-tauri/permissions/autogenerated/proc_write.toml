@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-proc-write"
+description = "Enables the proc_write command without any pre-configured scope."
+commands.allow = ["proc_write"]
+
+[[permission]]
+identifier = "deny-proc-write"
+description = "Denies the proc_write command without any pre-configured scope."
+commands.deny = ["proc_write"]

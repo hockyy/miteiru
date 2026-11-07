@@ -1,4 +1,5 @@
 mod analyzer;
+mod frontend_server;
 mod player;
 mod sys;
 #[cfg(not(windows))]

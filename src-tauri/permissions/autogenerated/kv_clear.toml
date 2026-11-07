@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-kv-clear"
+description = "Enables the kv_clear command without any pre-configured scope."
+commands.allow = ["kv_clear"]
+
+[[permission]]
+identifier = "deny-kv-clear"
+description = "Denies the kv_clear command without any pre-configured scope."
+commands.deny = ["kv_clear"]

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-player-open"
+description = "Enables the player_open command without any pre-configured scope."
+commands.allow = ["player_open"]
+
+[[permission]]
+identifier = "deny-player-open"
+description = "Denies the player_open command without any pre-configured scope."
+commands.deny = ["player_open"]
