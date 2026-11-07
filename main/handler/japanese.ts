@@ -153,12 +153,18 @@ class Japanese {
 
   static processKuromojinToSeparations = processKuromojinToSeparations;
 
-  /** Starts loading the Kuromoji dictionary at launch so the first analysis is fast. */
-  static async preloadKuromoji() {
-    // A build without bundled languages has nothing to preload until the user installs the Japanese pack.
-    const bundled = [path.join(__dirname, 'language-assets/japanese/dict'), path.join(__dirname, 'dict')];
-    const present = await Promise.all(bundled.map((folder) => fsPromises.access(folder).then(() => true, () => false)));
-    if (!present.some(Boolean)) return;
+  /**
+   * Starts loading the Kuromoji dictionary at launch so the first analysis is fast: from
+   * `dictionaryFolder` (an installed Japanese pack's, found by the registry), else the bundled one.
+   * Without Japanese data there is nothing to preload until the user installs the Japanese pack.
+   */
+  static async preloadKuromoji(dictionaryFolder?: string | null) {
+    const candidates = [dictionaryFolder, path.join(__dirname, 'language-assets/japanese/dict'), path.join(__dirname, 'dict')]
+      .filter((folder): folder is string => Boolean(folder));
+    const present = await Promise.all(candidates.map((folder) => fsPromises.access(folder).then(() => true, () => false)));
+    const found = candidates[present.indexOf(true)];
+    if (!found) return;
+    this.kuromojiDictPath ??= found;
     await this.loadKuromojiTokenizer().catch(e => {
       console.error(e)
     })

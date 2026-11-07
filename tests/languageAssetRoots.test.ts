@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import {after, before, test} from "node:test";
-import {loadLanguagePlugin, resolveAsset, setLanguageAssetRoots} from "../main/handler/languages/registry";
+import {japaneseDictionaryFolder, loadLanguagePlugin, resolveAsset, setLanguageAssetRoots} from "../main/handler/languages/registry";
 
 let directory: string;
 let bundled: string;
@@ -77,6 +77,15 @@ test("a pack's root is only asked for the plugin folders it carries", async () =
 test("with no root that may hold the plugin, the bundled location is named", async () => {
   const named = await resolveAsset([{dir: hanzi, plugins: ["han-character-core"]}], "mandarin", "chinese/chinese.json", "");
   assert.ok(named.endsWith(path.join("language-assets", "mandarin", "chinese", "chinese.json")), named);
+});
+
+test("the preload finds the Kuromoji dictionary in an installed Japanese pack", async () => {
+  setLanguageAssetRoots(async () => [{dir: hanzi, plugins: ["han-character-core"]}, {dir: japanese, plugins: ["japanese", "han-character-core"]}]);
+  try {
+    assert.equal(await japaneseDictionaryFolder(), path.join(japanese, "japanese/dict"));
+  } finally {
+    setLanguageAssetRoots(async () => [bundled]);
+  }
 });
 
 test("data nowhere falls back to the first root, so the error names the bundled location", async () => {
