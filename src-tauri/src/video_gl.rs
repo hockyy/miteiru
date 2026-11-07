@@ -149,11 +149,12 @@ mod imp {
     const GL_DRAW_FRAMEBUFFER_BINDING: u32 = 0x8CA6;
 
     type ProcLookup = unsafe extern "C" fn(*const c_char) -> *mut c_void;
+    type CurrentContext = unsafe extern "C" fn() -> *mut c_void;
 
-    /// GTK 3 uses EGL on Wayland and GLX on X11; mpv needs the matching function lookup.
+    /// GTK's GL context is EGL or GLX depending on the system; mpv needs the matching lookup.
     struct GlLoader {
-        egl: Option<ProcLookup>,
-        glx: Option<ProcLookup>,
+        egl: Option<(ProcLookup, CurrentContext)>,
+        glx: Option<(ProcLookup, CurrentContext)>,
         _libs: Vec<libloading::Library>,
     }
 
@@ -161,14 +162,14 @@ mod imp {
         static LOADER: OnceLock<GlLoader> = OnceLock::new();
         LOADER.get_or_init(|| unsafe {
             let mut libs = Vec::new();
-            let mut find = |lib: &str, sym: &[u8]| -> Option<ProcLookup> {
+            let mut find = |lib: &str, lookup: &[u8], current: &[u8]| -> Option<(ProcLookup, CurrentContext)> {
                 let l = libloading::Library::new(lib).ok()?;
-                let f = *l.get::<ProcLookup>(sym).ok()?;
+                let pair = (*l.get::<ProcLookup>(lookup).ok()?, *l.get::<CurrentContext>(current).ok()?);
                 libs.push(l);
-                Some(f)
+                Some(pair)
             };
-            let egl = find("libEGL.so.1", b"eglGetProcAddress\0");
-            let glx = find("libGL.so.1", b"glXGetProcAddressARB\0");
+            let egl = find("libEGL.so.1", b"eglGetProcAddress\0", b"eglGetCurrentContext\0");
+            let glx = find("libGL.so.1", b"glXGetProcAddressARB\0", b"glXGetCurrentContext\0");
             GlLoader { egl, glx, _libs: libs }
         })
     }
@@ -176,23 +177,40 @@ mod imp {
     const BACKEND_GLX: usize = 1;
     const BACKEND_EGL: usize = 2;
 
-    /// `ctx` carries the backend, chosen from the display GTK runs on.
+    /// `ctx` carries the backend whose context GTK made current.
     unsafe extern "C" fn gl_proc(ctx: *mut c_void, name: *const c_char) -> *mut c_void {
         let l = loader();
-        let lookup = if ctx as usize == BACKEND_EGL { l.egl } else { l.glx };
-        match lookup {
-            Some(f) => f(name),
+        let api = if ctx as usize == BACKEND_EGL { l.egl } else { l.glx };
+        match api {
+            Some((lookup, _)) => lookup(name),
             None => std::ptr::null_mut(),
         }
     }
 
-    fn backend() -> usize {
-        let wayland = gtk::gdk::Display::default().is_some_and(|d| d.type_().name() == "GdkWaylandDisplay");
-        if wayland {
-            BACKEND_EGL
+    /// Which API holds the current context, asked after GtkGLArea made its context current.
+    fn current_backend() -> Option<usize> {
+        let l = loader();
+        let has_current = |api: Option<(ProcLookup, CurrentContext)>| api.is_some_and(|(_, current)| unsafe { !current().is_null() });
+        if has_current(l.glx) {
+            Some(BACKEND_GLX)
+        } else if has_current(l.egl) {
+            Some(BACKEND_EGL)
         } else {
-            BACKEND_GLX
+            None
         }
+    }
+
+    /// GL_VERSION through `backend`'s lookup: proof the context answers before mpv uses it.
+    fn gl_version(backend: usize) -> Option<String> {
+        const GL_VERSION: u32 = 0x1F02;
+        type GetString = unsafe extern "C" fn(u32) -> *const c_char;
+        let f = unsafe { gl_proc(backend as *mut c_void, b"glGetString\0".as_ptr() as *const c_char) };
+        if f.is_null() {
+            return None;
+        }
+        let get: GetString = unsafe { std::mem::transmute(f) };
+        let version = unsafe { get(GL_VERSION) };
+        (!version.is_null()).then(|| unsafe { std::ffi::CStr::from_ptr(version) }.to_string_lossy().into_owned())
     }
 
     /// The framebuffer GtkGLArea bound for this frame.
@@ -261,17 +279,29 @@ mod imp {
             vbox.reorder_child(&overlay, pos);
         }
 
-        let backend = backend();
+        let backend = Rc::new(std::cell::Cell::new(BACKEND_GLX));
         let renderer: Renderer = Rc::new(RefCell::new(None));
         let weak = glib::SendWeakRef::from(area.downgrade());
         {
             let renderer = renderer.clone();
+            let backend = backend.clone();
             area.connect_realize(move |area| {
                 area.make_current();
                 if let Some(err) = area.error() {
                     log::error!("GLArea: {err}");
                     return;
                 }
+                let Some(api) = current_backend() else {
+                    log::error!("GLArea: no current EGL or GLX context");
+                    return;
+                };
+                let Some(version) = gl_version(api) else {
+                    // mpv would read the NULL version string and crash.
+                    log::error!("GLArea: the {} context does not answer glGetString", if api == BACKEND_EGL { "EGL" } else { "GLX" });
+                    return;
+                };
+                log::info!("GLArea: {} context, OpenGL {version}", if api == BACKEND_EGL { "EGL" } else { "GLX" });
+                backend.set(api);
                 let weak = weak.clone();
                 // Runs on mpv's threads: only schedule a frame on the main loop.
                 let redraw = move || {
@@ -282,7 +312,7 @@ mod imp {
                         }
                     });
                 };
-                match unsafe { GlRenderer::new(client.clone(), gl_proc, backend as *mut c_void, redraw) } {
+                match unsafe { GlRenderer::new(client.clone(), gl_proc, api as *mut c_void, redraw) } {
                     Ok(r) => *renderer.borrow_mut() = Some(r),
                     Err(e) => log::error!("mpv render context: {e}"),
                 }
@@ -290,12 +320,13 @@ mod imp {
         }
         {
             let renderer = renderer.clone();
+            let backend = backend.clone();
             area.connect_render(move |area, _| {
                 if let Some(r) = renderer.borrow().as_ref() {
                     let scale = area.scale_factor();
                     r.update();
                     // GtkGLArea's framebuffer has its origin at the bottom-left.
-                    r.render(current_framebuffer(backend), area.allocated_width() * scale, area.allocated_height() * scale, true);
+                    r.render(current_framebuffer(backend.get()), area.allocated_width() * scale, area.allocated_height() * scale, true);
                     r.report_swap();
                 }
                 glib::Propagation::Stop

@@ -132,7 +132,8 @@ pub fn player_open(
                 out.reason = Some(reason);
                 out.error = error;
             }
-            Event::Log { level, text, .. } => {
+            Event::Log { prefix, level, text } => {
+                log::warn!("mpv [{prefix}] {level}: {}", text.trim_end());
                 out.r#type = "log";
                 out.level = Some(level);
                 out.text = Some(text);
