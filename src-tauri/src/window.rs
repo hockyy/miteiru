@@ -18,8 +18,12 @@ pub fn create_main(app: &App) -> Result<(), Box<dyn std::error::Error>> {
     if !tauri::is_dev() {
         config.url = WebviewUrl::External(crate::frontend_server::start(app)?);
     }
+    // Windows: drops go to the page, which gets file paths from webview2.rs.
+    if cfg!(windows) {
+        config.drag_drop_enabled = false;
+    }
     let handle = app.handle().clone();
-    WebviewWindowBuilder::from_config(app.handle(), &config)?
+    let window = WebviewWindowBuilder::from_config(app.handle(), &config)?
         .on_new_window(move |url, _features| {
             if matches!(url.scheme(), "http" | "https" | "mailto") {
                 if let Err(e) = handle.opener().open_url(url.as_str(), None::<&str>) {
@@ -29,5 +33,13 @@ pub fn create_main(app: &App) -> Result<(), Box<dyn std::error::Error>> {
             NewWindowResponse::Deny
         })
         .build()?;
+    #[cfg(windows)]
+    crate::webview2::forward_dropped_files(&window)?;
+    #[cfg(windows)]
+    if crate::sys::info::start_muted() {
+        crate::webview2::mute_page(&window)?;
+    }
+    #[cfg(not(windows))]
+    let _ = window;
     Ok(())
 }

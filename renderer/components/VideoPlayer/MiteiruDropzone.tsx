@@ -37,12 +37,20 @@ export const MiteiruDropzone = ({
     const dt = e.dataTransfer;
     if (!dt) return;
 
-    // Dropped files arrive as paths through onFileDrop; only a dragged YouTube link comes through here.
     const url = dt.getData('text/plain');
-    if (isYoutube(url)) onDrop([{path: url}]);
+    if (isYoutube(url)) {
+      onDrop([{path: url}]);
+      return;
+    }
+    // Windows delivers dropped files here and looks up their paths; macOS and Linux send the
+    // paths through onFileDrop instead (the page never sees those drops).
+    const pathsForDroppedFiles = window.electronAPI?.pathsForDroppedFiles;
+    if (pathsForDroppedFiles && dt.files.length > 0) {
+      pathsForDroppedFiles(dt.files).then((paths) => loadMediaPaths(paths, onDrop));
+    }
   }, [onDrop]);
 
-  // Files dropped on the window arrive as paths from the native drag-drop event.
+  // macOS and Linux: files dropped on the window arrive as paths from the native drag-drop event.
   useEffect(() => {
     const onFileDrop = window.electronAPI?.onFileDrop;
     if (!onFileDrop) return;

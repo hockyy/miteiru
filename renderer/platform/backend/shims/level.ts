@@ -200,6 +200,11 @@ export class Level<K = string, V = string> {
     await sys('kv_batch', {handle: await this.handle(), ops: operations});
   }
 
+  /** Not in `level`: bulk mode for building a database from scratch (src-tauri/src/sys/kv.rs set_bulk). */
+  async bulkLoad(on: boolean): Promise<void> {
+    await sys('kv_bulk', {handle: await this.handle(), on});
+  }
+
   iterator(options: RangeOptions = {}) {
     return new RangeIterator<[K, V]>(this.handle, options, 'entries');
   }

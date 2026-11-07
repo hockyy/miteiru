@@ -39,6 +39,11 @@ pub fn arch() -> String {
 }
 
 /// `MITEIRU_USER_DATA_DIR`, else `<config_dir>/miteiru` (+ " (development)" in debug builds).
+/// MITEIRU_MUTED=1: tests and debugging runs start with mpv and the webview muted.
+pub fn start_muted() -> bool {
+  std::env::var_os("MITEIRU_MUTED").is_some_and(|v| !v.is_empty() && v != "0")
+}
+
 pub fn user_data_dir() -> PathBuf {
   if let Some(dir) = std::env::var_os("MITEIRU_USER_DATA_DIR").filter(|v| !v.is_empty()) {
     return PathBuf::from(dir);

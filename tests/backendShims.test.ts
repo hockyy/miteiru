@@ -4,6 +4,7 @@ import fs from "node:fs";
 import {test} from "node:test";
 import {
   ELECTRON_API_INVOKE_CHANNELS,
+  LANGUAGE_LOAD_CHANNELS,
   LIVE_CAPTIONS_EVENT_CHANNELS,
   LIVE_CAPTIONS_INVOKE_CHANNELS,
   STORE_CHANNELS
@@ -33,6 +34,11 @@ test("every channel in the bridge's table has a handler or event in main/", () =
     ...Object.values(STORE_CHANNELS)
   ];
   assert.deepEqual(channels.filter((channel) => !text.includes(`"${channel}"`) && !text.includes(`'${channel}'`)), []);
+});
+
+test("the bridge's language channels are the registry's", async () => {
+  const {startupChannelPluginIds} = await import("../main/handler/languages/registry");
+  assert.deepEqual([...LANGUAGE_LOAD_CHANNELS].sort(), Object.keys(startupChannelPluginIds).sort());
 });
 
 test("sync sha1 and sha256 digests match node:crypto", () => {

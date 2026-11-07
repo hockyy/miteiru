@@ -1,4 +1,6 @@
 mod analyzer;
+#[cfg(windows)]
+mod webview2;
 mod frontend_server;
 mod player;
 mod sys;
@@ -59,6 +61,7 @@ pub fn run() {
       kv::kv_put,
       kv::kv_del,
       kv::kv_batch,
+      kv::kv_bulk,
       kv::kv_range,
       kv::kv_clear,
       kv::kv_close,
@@ -81,7 +84,7 @@ pub fn run() {
       analyzer::analyzer_respond,
     ])
     .setup(|app| {
-      window::create_main(app)?;
+      // First, so what happens while the window is made (frontend_server.rs, window.rs) is logged.
       if cfg!(debug_assertions) {
         app.handle().plugin(
           tauri_plugin_log::Builder::default()
@@ -89,6 +92,7 @@ pub fn run() {
             .build(),
         )?;
       }
+      window::create_main(app)?;
       Ok(())
     })
     .run(tauri::generate_context!())

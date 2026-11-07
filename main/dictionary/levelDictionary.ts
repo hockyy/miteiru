@@ -84,10 +84,20 @@ export const openDictionary = async <T>(
     await fs.rm(dbPath, {recursive: true, force: true});
     db = new Level<string, string>(dbPath);
 
-    const writer = new BatchWriter(db);
-    await dictionaryImport.writeEntries(raw, writer);
-    await writer.flush();
-    const metadata = dictionaryImport.metadata(raw);
+    // The desktop app's store (renderer/platform/backend/shims/level.ts) has a bulk mode for
+    // exactly this; plain `level` (tests) does not.
+    const bulk = db as DictionaryDb & { bulkLoad?: (on: boolean) => Promise<void> };
+    await bulk.bulkLoad?.(true);
+    let metadata: Record<string, string>;
+    try {
+      const writer = new BatchWriter(db);
+      await dictionaryImport.writeEntries(raw, writer);
+      await writer.flush();
+      metadata = dictionaryImport.metadata(raw);
+    } finally {
+      await bulk.bulkLoad?.(false);
+    }
+    // Written last, after bulk mode has checkpointed everything, so it marks a complete import.
     await db.batch([...Object.entries(metadata), [FORMAT_KEY, FORMAT_VERSION]]
       .map(([key, value]) => ({type: "put" as const, key, value})));
     return {db, metadata};
