@@ -182,6 +182,11 @@ const useMediaAnalysis = (videoPath: string) => {
     setShowTrackSelectionModal(false);
   }, []);
 
+  // Opens the track picker again, e.g. from the video page's Subtitles… menu.
+  const openTrackSelectionModal = useCallback(() => {
+    setShowTrackSelectionModal(true);
+  }, []);
+
   // libmpv switches audio tracks itself (aid counts audio tracks from 1).
   const handleAudioTrackSelect = useCallback((audioTrackIndex: number) => {
     setShowAudioTrackModal(false);
@@ -222,6 +227,7 @@ const useMediaAnalysis = (videoPath: string) => {
     showAudioTrackModal,
     handleTrackSelection,
     handleCloseTrackSelectionModal,
+    openTrackSelectionModal,
     handleAudioTrackSkip,
     handleAudioTrackSelect,
     selectedTracks

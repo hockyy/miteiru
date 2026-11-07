@@ -22,6 +22,7 @@ import {
 } from "../utils/mediaUtils";
 import {videoConstants} from "../utils/constants";
 import {findCachedYoutubeLyricsPath} from "../utils/lyricsUtils";
+import {filePathOf, type LastVideo} from "../utils/continueWatching";
 
 const DEFAULT_SUBTITLE_PREPROCESS_OPTIONS: SubtitlePreprocessOptions = {
   titleCaseAllCaps: true
@@ -38,6 +39,8 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     path: ''
   });
   const runSerially = useSerialRunner();
+  // Where a video opened by "Continue watching" starts; used once, when that video's metadata loads.
+  const pendingStart = useRef<{ path: string; seconds: number } | null>(null);
 
   const [lastPrimarySubPath, setLastPrimarySubPath] = useState([{path: ''}]);
   const [lastSecondarySubPath, setLastSecondarySubPath] = useState([{path: ''}]);
@@ -302,7 +305,12 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
    * number of files along in its own folder; true if there was such a video. With none, nothing moves.
    */
   const onVideoChangeHandler = useCallback(async (delta: number = 1) => {
-    if (!videoSrc.path || !isLocalPath(videoSrc.path)) return false;
+    // The seek bar was switched off for the step; it is back whether or not there is a video to step to
+    // (a YouTube video has no neighbours, and ending it must not leave the bar dead).
+    if (!videoSrc.path || !isLocalPath(videoSrc.path)) {
+      setEnableSeeker(true);
+      return false;
+    }
     const nextVideo = await findPositionDeltaInFolder(videoSrc.path, delta);
     if (nextVideo === '') {
       setEnableSeeker(true);
@@ -334,7 +342,9 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
           duration: player.duration()
         });
         setEnableSeeker(true);
-        changeTimeTo(0);
+        const start = pendingStart.current;
+        pendingStart.current = null;
+        changeTimeTo(start && filePathOf(start.path) === filePathOf(videoSrc.path) ? start.seconds : 0);
       }
       player.on('loadedmetadata', enableSeeker)
       return () => {
@@ -343,6 +353,14 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       }
     }
   }, [changeTimeTo, player, setEnableSeeker, videoSrc.path])
+
+  /** Opens the last video with its subtitles in their slots, at the position it was left. */
+  const continueVideo = useCallback(async (last: LastVideo) => {
+    pendingStart.current = {path: last.path, seconds: last.position};
+    await onLoadFiles([{path: last.path}]);
+    if (last.subtitles.primary) await onLoadFiles([{path: last.subtitles.primary, target: 'primary'}]);
+    if (last.subtitles.secondary) await onLoadFiles([{path: last.subtitles.secondary, target: 'secondary'}]);
+  }, [onLoadFiles]);
 
   // Reloading puts the subtitle back in its slot without asking.
   const reloadLastPrimarySubtitle = useCallback(() => {
@@ -411,6 +429,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
 
   return {
     onLoadFiles,
+    continueVideo,
     videoSrc,
     onVideoChangeHandler,
     reloadLastPrimarySubtitle,

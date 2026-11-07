@@ -7,9 +7,16 @@ export const usePlayNextAfterEnd = (player,
   useEffect(() => {
     if (player) {
       // The end of a video pauses it; when the folder has a next video, that one plays.
+      // The seek bar is off while the next video loads; onVideoChangeHandler turns it back on when there
+      // is no next one (a YouTube video, the last file), and so does a failure here.
       const ender = async () => {
         setEnableSeeker(false);
-        if (await onVideoChangeHandler()) setIsPlaying(1);
+        try {
+          if (await onVideoChangeHandler()) setIsPlaying(1);
+        } catch (error) {
+          console.error('[video] could not open the next video', error);
+          setEnableSeeker(true);
+        }
       }
       player.on('ended', ender);
       return () => {

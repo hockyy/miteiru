@@ -3,6 +3,8 @@ import { Button } from '../Utils/Button';
 import { UI_LINK_PILL } from '../UI/miteiruUiTheme';
 import { MITEIRU_REPO_URL } from '../../utils/constants';
 import type { LanguageMode } from '../../hooks/useLanguageManager';
+import { ContinueWatchingButton } from '../VideoPlayer/ContinueWatchingButton';
+import type { LastVideo } from '../../utils/continueWatching';
 import {
   HOME_BODY,
   HOME_HEADER,
@@ -29,6 +31,9 @@ interface MainMenuProps {
   onOpenVideo: () => void;
   onOpenLearn: () => void;
   onOpenFlash: () => void;
+  /** The video watched last, if it can still be opened, and the action that opens it. */
+  lastVideo?: LastVideo | null;
+  onContinue?: () => void;
 }
 
 const LanguageCard = ({mode, selected, onSelect}: { mode: LanguageMode; selected: boolean; onSelect: () => void }) => (
@@ -70,6 +75,8 @@ export const MainMenu: React.FC<MainMenuProps> = ({
   onOpenVideo,
   onOpenLearn,
   onOpenFlash,
+  lastVideo = null,
+  onContinue,
 }) => {
   const selected = languageModes.find((mode) => mode.id === tokenizerMode);
   const blocked = !ableToProceedToVideo || isLoadingLanguage;
@@ -146,6 +153,9 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                   ? 'The first time takes a few seconds while the dictionary is set up.'
                   : 'Next, open a video file, drop one on the window, or paste a YouTube link.'}
               </p>
+              {onContinue && <div className="flex justify-center">
+                <ContinueWatchingButton video={lastVideo} onContinue={onContinue} disabled={blocked}/>
+              </div>}
             </div>
 
             <div className="grid grid-cols-2 gap-2">

@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useRouter} from "next/router";
 import {NativeVideo} from "../components/VideoPlayer/NativeVideo";
 import {YouTubeVideo} from "../components/VideoPlayer/YouTubeVideo";
@@ -15,7 +15,14 @@ import useReadyPlayerCallback from "../hooks/useReadyPlayerCallback";
 import useMiteiruToast from "../hooks/useMiteiruToast";
 import useMeaning from "../hooks/useMeaning";
 import Head from "next/head";
-import {getMiteiruAppName, getMiteiruVideoTitle, isYoutube} from "../utils/utils";
+import {getMiteiruAppName, getMiteiruVideoTitle, isLocalPath, isYoutube} from "../utils/utils";
+import {setGlobalSubtitleId, SubtitleContainer} from "../components/Subtitle/DataStructures";
+import {useStoreData} from "../hooks/useStoreData";
+import {lookupPauseStep} from "../utils/lookupPause";
+import VideoTopBar from "../components/VideoPlayer/VideoTopBar";
+import ShortcutSheet, {useShortcutSheetKey} from "../components/VideoPlayer/ShortcutSheet";
+import useLastVideo from "../hooks/useLastVideo";
+import useSaveLastVideo from "../hooks/useSaveLastVideo";
 import {useYoutubeTitle} from "../hooks/useYoutubeTitle";
 import {
   useVideoKeyboardControls,
@@ -123,7 +130,7 @@ function Video() {
     getLearningState,
     refreshTrigger,
   } = useLearningState(lang);
-  // Clearing the primary subtitle (Ctrl+O) also clears its word frequencies.
+  // Removing the primary subtitle (Subtitles… menu) also clears its word frequencies.
   const primaryCleared = primarySub.lines.length === 0;
   useEffect(() => {
     if (primaryCleared) setFrequencyPrimary(new Map());
@@ -131,8 +138,10 @@ function Video() {
   const {
     meaning,
     setMeaning,
-    undo
+    undo,
+    canGoBack
   } = useMeaning();
+  const [pauseOnLookup, setPauseOnLookup] = useStoreData('video.pauseOnLookup', true);
   const {
     duration,
     deltaTime,
@@ -143,6 +152,7 @@ function Video() {
   const {
     videoSrc,
     onLoadFiles,
+    continueVideo,
     onVideoChangeHandler,
     reloadLastPrimarySubtitle,
     reloadLastSecondarySubtitle,
@@ -186,6 +196,7 @@ function Video() {
     showAudioTrackModal,
     handleTrackSelection,
     handleCloseTrackSelectionModal,
+    openTrackSelectionModal,
     handleAudioTrackSkip,
     handleAudioTrackSelect
   } = useMediaAnalysis(videoSrc.path);
@@ -249,15 +260,6 @@ function Video() {
     backToHead
   } = usePauseAndRepeat(primaryTimeCache, clock, primaryShift, setIsPlaying, changeTimeTo);
 
-  const commands = useKeyBind(setMeaning, setShowController, setShowSidebar,
-      setPrimarySub, setSecondarySub, undo,
-      setShowPrimarySub, setShowSecondarySub, primaryStyling, setPrimaryStyling,
-      openDeepL, openGoogleTranslate, reloadLastPrimarySubtitle, reloadLastSecondarySubtitle,
-      setShowVocabSidebar, rubyContent, contentString, setShowLyricsSearch);
-  useVideoKeyboardControls(togglePlay, deltaTime, setPrimaryShift, setSecondaryShift,
-      setToastInfo, backToHead, setIsPlaying);
-  usePlayNextAfterEnd(player, onVideoChangeHandler, setEnableSeeker, setIsPlaying);
-
   const router = useRouter();
   const goHome = useCallback(() => router.push('/home'), [router]);
   const openFiles = useCallback(async () => {
@@ -268,6 +270,15 @@ function Video() {
       setToastInfo({message: `Could not open the files: ${error.message}`, update: String(Date.now())});
     }
   }, [onLoadFiles, setToastInfo]);
+
+  const commands = useKeyBind(setMeaning, setShowController, setShowSidebar, undo,
+      setShowPrimarySub, setShowSecondarySub, primaryStyling, setPrimaryStyling,
+      openDeepL, openGoogleTranslate, reloadLastPrimarySubtitle, reloadLastSecondarySubtitle,
+      setShowVocabSidebar, rubyContent, contentString, setShowLyricsSearch, openFiles, currentAppLanguage);
+  useVideoKeyboardControls(togglePlay, deltaTime, setPrimaryShift, setSecondaryShift,
+      setToastInfo, backToHead, setIsPlaying);
+  usePlayNextAfterEnd(player, onVideoChangeHandler, setEnableSeeker, setIsPlaying);
+
 
   // Subtitles sit between the open side panels rather than under them (Subtitle reads these).
   useEffect(() => {
@@ -280,10 +291,33 @@ function Video() {
     document.documentElement.style.removeProperty('--subtitle-inset-right');
   }, []);
 
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const toggleShortcuts = useCallback(() => setShowShortcuts(old => !old), []);
+  const closeShortcuts = useCallback(() => setShowShortcuts(false), []);
+  useShortcutSheetKey(toggleShortcuts);
+  const [showSubtitleMenu, setShowSubtitleMenu] = useState(false);
+
   // While a video plays, the controls fade out when the mouse rests; not while a panel or dialog is open.
   const panelOpen = showSidebar || showVocabSidebar || showCommandPalette || meaning !== '' ||
-      showSubtitleModal || showLyricsSearch || showTrackSelectionModal || showAudioTrackModal;
+      showSubtitleModal || showLyricsSearch || showTrackSelectionModal || showAudioTrackModal ||
+      showShortcuts || showSubtitleMenu;
   const {controlsRef} = useIdleControls<HTMLDivElement>(hasVideo && Boolean(isPlaying), !panelOpen);
+
+  // Looking up a word pauses the video, and closing the popup resumes it, but only if Miteiru paused it.
+  const lookupState = useRef({wasOpen: false, pausedByUs: false});
+  const lookupOpen = meaning !== '';
+  useEffect(() => {
+    const step = lookupPauseStep({
+      open: lookupOpen,
+      wasOpen: lookupState.current.wasOpen,
+      playing: hasVideo && Boolean(isPlaying),
+      enabled: pauseOnLookup,
+      pausedByUs: lookupState.current.pausedByUs
+    });
+    lookupState.current = {wasOpen: lookupOpen, pausedByUs: step.pausedByUs};
+    if (step.pause) setIsPlaying(0);
+    if (step.resume) setIsPlaying(1);
+  }, [lookupOpen, hasVideo, isPlaying, pauseOnLookup, setIsPlaying]);
 
   // Pause player when media selection modals open
   useEffect(() => {
@@ -291,6 +325,62 @@ function Video() {
       setIsPlaying(0);
     }
   }, [showTrackSelectionModal, showAudioTrackModal, setIsPlaying]);
+
+  // Removing a subtitle can be undone from the toast that says it happened.
+  const removeSubtitle = useCallback((slot: 'primary' | 'secondary') => {
+    const toast = (message: string, restore: () => void) => setToastInfo({
+      message,
+      update: String(Date.now()),
+      action: {label: 'Undo', onPress: restore}
+    });
+    if (slot === 'primary') {
+      const removed = primarySub;
+      const empty = new SubtitleContainer('');
+      setPrimarySub(empty);
+      setGlobalSubtitleId(empty.id);
+      toast(`Removed the ${currentAppLanguage} subtitle`, () => {
+        setPrimarySub(removed);
+        setGlobalSubtitleId(removed.id);
+        setFrequencyPrimary(removed.frequency);
+      });
+    } else {
+      const removed = secondarySub;
+      setSecondarySub(new SubtitleContainer(''));
+      toast('Removed the translation', () => setSecondarySub(removed));
+    }
+  }, [primarySub, secondarySub, setPrimarySub, setSecondarySub, setFrequencyPrimary, setToastInfo, currentAppLanguage]);
+  const removePrimarySubtitle = useCallback(() => removeSubtitle('primary'), [removeSubtitle]);
+  const removeSecondarySubtitle = useCallback(() => removeSubtitle('secondary'), [removeSubtitle]);
+
+  // Continue watching: the last video is saved while this page is open, and offered on the Watch page.
+  const {last: lastVideo, loaded: lastVideoLoaded} = useLastVideo();
+  const [videoStarted, setVideoStarted] = useState(false);
+  useEffect(() => setVideoStarted(false), [videoSrc.path]);
+  useEffect(() => {
+    if (metadata > 0) setVideoStarted(true);
+  }, [metadata]);
+  useSaveLastVideo({
+    path: videoSrc.path,
+    title: mediaFileName,
+    primarySubtitle: primarySub.path,
+    secondarySubtitle: secondarySub.path,
+    clock,
+    durationMs: duration,
+    playing: hasVideo && Boolean(isPlaying),
+    started: videoStarted
+  });
+  const continueLastVideo = useCallback(() => {
+    if (lastVideo) continueVideo(lastVideo);
+  }, [lastVideo, continueVideo]);
+  // "Continue" on Home, and "Back to Video" on Study a text, arrive here as /video?continue=1.
+  const continueHandled = useRef(false);
+  const continueRequested = router.isReady && router.query.continue === '1';
+  useEffect(() => {
+    if (!continueRequested || !lastVideoLoaded || tokenizerMode === '' || lang === '' || continueHandled.current) return;
+    continueHandled.current = true;
+    router.replace('/video', undefined, {shallow: true});
+    if (lastVideo && !hasVideo) continueVideo(lastVideo);
+  }, [continueRequested, lastVideoLoaded, lastVideo, tokenizerMode, lang, hasVideo, continueVideo, router]);
 
   return (
       <React.Fragment>
@@ -301,9 +391,27 @@ function Video() {
         </Head>
         <div>
           <Toast info={toastInfo}/>
+          {hasVideo && <VideoTopBar
+              onHome={goHome}
+              onOpenFiles={openFiles}
+              onShowMyWords={() => setShowVocabSidebar(old => !old)}
+              onShowShortcuts={toggleShortcuts}
+              subtitleMenuOpen={showSubtitleMenu}
+              setSubtitleMenuOpen={setShowSubtitleMenu}
+              canChooseTracks={mediaInfo.subtitleTracks.length > 0 || isYoutube(videoSrc.path)}
+              isYoutube={isYoutube(videoSrc.path)}
+              onChooseTracks={openTrackSelectionModal}
+              languageName={currentAppLanguage}
+              hasPrimarySubtitle={primarySub.lines.length > 0}
+              hasSecondarySubtitle={secondarySub.lines.length > 0}
+              onRemovePrimary={removePrimarySubtitle}
+              onRemoveSecondary={removeSecondarySubtitle}/>}
           <MeaningBox meaning={meaning} setMeaning={setMeaning} tokenizeMiteiru={tokenizeMiteiru}
                       lang={lang} changeLearningState={changeLearningState}
                       getLearningState={getLearningState}
+                      onBack={canGoBack ? undo : null}
+                      showCloseButton
+                      sentenceCopyKey="C"
                       sidebarInsets={{
                         left: showVocabSidebar ? VOCAB_SIDEBAR_WIDTH : "0",
                         right: showSidebar ? RIGHT_SIDEBAR_WIDTH : "0",
@@ -319,6 +427,8 @@ function Video() {
                 onRefresh={generateDailyWords}
                 onOpenFiles={openFiles}
                 onHome={goHome}
+                lastVideo={lastVideo}
+                onContinue={continueLastVideo}
             />
           )}
 
@@ -405,6 +515,7 @@ function Video() {
                 enableSeeker={enableSeeker}
                 setEnableSeeker={setEnableSeeker}
                 onVideoChangeHandler={onVideoChangeHandler}
+                canStepVideos={isLocalPath(videoSrc.path)}
                 backToHead={backToHead}
                 primaryLines={primarySub.lines}
                 primaryShift={primaryShift}/>}
@@ -463,7 +574,10 @@ function Video() {
                  tokenizeMiteiru={tokenizeMiteiru}
                  setToneType={setToneType} subtitleMode={subtitleMode}
                  setSubtitleMode={setSubtitleMode}
-                 setShowLyricsSearch={setShowLyricsSearch}/>
+                 setShowLyricsSearch={setShowLyricsSearch}
+                 pauseOnLookup={pauseOnLookup}
+                 setPauseOnLookup={setPauseOnLookup}/>
+        <ShortcutSheet isOpen={showShortcuts} onClose={closeShortcuts} languageName={currentAppLanguage}/>
         <VocabSidebar
             showVocabSidebar={showVocabSidebar}
             setShowVocabSidebar={setShowVocabSidebar}

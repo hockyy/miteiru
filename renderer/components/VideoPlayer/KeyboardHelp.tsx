@@ -1,53 +1,6 @@
-const shortcutGroups = [
-  {
-    title: "Playback",
-    items: [
-      {key: "Space / E", description: "Play / pause"},
-      {key: "R", description: "Repeat current line"},
-      {key: "Z", description: "Toggle video controls"},
-      {key: "Ctrl + H", description: "Back to home"}
-    ]
-  },
-  {
-    title: "Panels",
-    items: [
-      {key: "X", description: "Toggle sidebar"},
-      {key: "Ctrl + X", description: "Toggle vocab sidebar"},
-      {key: "Esc", description: "Close info box / undo"},
-      {key: "D", description: "Previous meaning box"}
-    ]
-  },
-  {
-    title: "Subtitles",
-    items: [
-      {key: "A", description: "Reload subtitle"},
-      {key: "O", description: "Toggle CJK subtitle"},
-      {key: "P", description: "Toggle secondary subtitle"},
-      {key: "Y", description: "Toggle transliterations"},
-      {key: "Ctrl + O", description: "Remove CJK subtitle"},
-      {key: "Ctrl + P", description: "Remove secondary subtitle"}
-    ]
-  },
-  {
-    title: "Learning",
-    items: [
-      {key: "C", description: "Copy ruby content"},
-      {key: "G", description: "Open Google Translate"},
-      {key: "T", description: "Open DeepL"},
-      {key: "Ctrl + Shift + L", description: "Toggle learning mode"},
-      {key: "Ctrl + Shift + K", description: "Open flash cards"}
-    ]
-  },
-  {
-    title: "Timing",
-    items: [
-      {key: "[", description: "Shift CJK subtitle slower"},
-      {key: "]", description: "Shift CJK subtitle faster"},
-      {key: "Ctrl + [", description: "Shift secondary subtitle slower"},
-      {key: "Ctrl + ]", description: "Shift secondary subtitle faster"}
-    ]
-  }
-];
+import {useMemo} from "react";
+import {buildShortcutGroups} from "../../utils/shortcuts";
+import {keyCommandDefinitions} from "../../utils/keyCommands";
 
 export const Key = ({
                       value,
@@ -62,7 +15,12 @@ export const Key = ({
   </div>
 }
 
-export const KeyboardHelp = () => {
+/** Home's shortcut sheet: the same generated list as the video page's, for reading before you start. */
+export const KeyboardHelp = ({languageName}: { languageName?: string }) => {
+  const shortcutGroups = useMemo(
+    () => buildShortcutGroups(keyCommandDefinitions(languageName || 'main'), {languageName}),
+    [languageName]
+  );
   return (
     <div className="group fixed bottom-4 right-4 z-50">
       <button
@@ -75,7 +33,7 @@ export const KeyboardHelp = () => {
         <div className="mb-3 flex flex-col gap-1 md:flex-row md:items-end md:justify-between">
           <div>
             <h2 className="text-lg font-bold text-blue-950">Keyboard Shortcuts</h2>
-            <p className="text-xs text-slate-600">Tiny cheat sheet for when your mouse hand is busy with snacks.</p>
+            <p className="text-xs text-slate-600">These work while a video is open. Press ? there to see them again.</p>
           </div>
           <div className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800">
             {shortcutGroups.reduce((total, group) => total + group.items.length, 0)} shortcuts
@@ -88,8 +46,8 @@ export const KeyboardHelp = () => {
                 <h3 className="mb-2 text-sm font-black text-blue-800">{group.title}</h3>
                 <div className="space-y-2">
                   {group.items.map((item) => (
-                    <div key={`${group.title}-${item.key}`} className="flex items-center gap-3 rounded-xl bg-white/70 px-3 py-2">
-                      <Key value={item.key}/>
+                    <div key={`${group.title}-${item.description}`} className="flex items-center gap-3 rounded-xl bg-white/70 px-3 py-2">
+                      <Key value={item.keys}/>
                       <span className="min-w-0 text-xs font-semibold text-slate-700">{item.description}</span>
                     </div>
                   ))}

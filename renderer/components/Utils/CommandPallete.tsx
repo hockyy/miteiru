@@ -1,6 +1,8 @@
 // components/CommandPalette/CommandPalette.jsx
 import React, {useState, useMemo, useEffect, useRef, useCallback} from 'react';
 import {Command, X, Search} from 'lucide-react';
+import {commandKeys} from '../../utils/shortcuts';
+import {hasCtrlModifier} from '../../utils/platform';
 
 const CommandPalette = ({showCommandPalette, setShowCommandPalette, commands}) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -9,7 +11,7 @@ const CommandPalette = ({showCommandPalette, setShowCommandPalette, commands}) =
   // Add a keyboard shortcut to open the command palette (e.g., Ctrl+Shift+P)
   useEffect(() => {
     const handleCommandPalette = (e) => {
-      if (e.ctrlKey && e.shiftKey && e.code === 'KeyP') {
+      if (hasCtrlModifier(e) && e.shiftKey && e.code === 'KeyP') {
         e.preventDefault();
         setShowCommandPalette(old => !old);
       }
@@ -68,14 +70,7 @@ const CommandPalette = ({showCommandPalette, setShowCommandPalette, commands}) =
     }, {});
   }, [commands, fuzzyMatch, searchQuery]);
 
-  const formatKeybinding = (cmd) => {
-    const parts = [];
-    if (cmd.modifiers.includes('Ctrl')) parts.push('Ctrl');
-    if (cmd.modifiers.includes('Shift')) parts.push('Shift');
-    if (cmd.modifiers.includes('Alt')) parts.push('Alt');
-    parts.push(cmd.currentKey);
-    return parts.join(' + ');
-  };
+  const formatKeybinding = (cmd) => commandKeys(cmd);
 
   const handleCommandClick = async (cmd) => {
     await cmd.handler();
@@ -96,7 +91,7 @@ const CommandPalette = ({showCommandPalette, setShowCommandPalette, commands}) =
       }
 
       // Allow Ctrl+Shift+P to toggle
-      if (e.ctrlKey && e.shiftKey && e.code === 'KeyP') {
+      if (hasCtrlModifier(e) && e.shiftKey && e.code === 'KeyP') {
         return;
       }
 

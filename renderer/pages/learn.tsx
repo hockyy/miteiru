@@ -8,6 +8,7 @@ import useMeaning from "../hooks/useMeaning";
 import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
 import {Button} from "../components/Utils/Button";
 import {useRouter} from "next/router";
+import {formatKeys} from "../utils/platform";
 import {LearningSidebar} from "../components/VideoPlayer/LearningSidebar";
 import VocabSidebar from "../components/VideoPlayer/VocabSidebar";
 import {RIGHT_SIDEBAR_WIDTH, VOCAB_SIDEBAR_WIDTH} from "../components/VideoPlayer/SidebarShell";
@@ -328,6 +329,8 @@ function Learn() {
                       tokenizeMiteiru={tokenizeMiteiru}
                       changeLearningState={changeLearningState}
                       getLearningState={getLearningState}
+                      showCloseButton
+                      sentenceCopyKey={formatKeys(['Ctrl', 'G'])}
                       sidebarInsets={{
                         left: showVocabSidebar ? VOCAB_SIDEBAR_WIDTH : "0",
                         right: showSidebar ? RIGHT_SIDEBAR_WIDTH : "0",
@@ -507,7 +510,8 @@ function Learn() {
                   <Button
                       type={'secondary'}
                       onPress={async () => {
-                        await router.push('/video')
+                        // The last video carries on where it stopped (the Watch page opens it).
+                        await router.push('/video?continue=1')
                       }}
                   >
                     Back to Video

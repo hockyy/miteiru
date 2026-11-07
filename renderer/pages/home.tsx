@@ -1,6 +1,7 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import Head from 'next/head';
 import { KeyboardHelp } from "../components/VideoPlayer/KeyboardHelp";
+import useLastVideo from "../hooks/useLastVideo";
 import useMiteiruVersion from "../hooks/useMiteiruVersion";
 import { useToolsCheck } from "../hooks/useToolsCheck";
 import { useLanguageLoader } from "../hooks/useLanguageLoader";
@@ -31,10 +32,12 @@ function Home() {
     languageModes,
     ableToProceedToVideo,
     handleLanguageButtonClick,
+    handleContinueVideo,
     handleOpenLearn,
     handleOpenFlash,
   } = useLanguageLoader();
   const { isRemovingCache, handleRemoveCache } = useCacheManager();
+  const { last: lastVideo } = useLastVideo();
 
   const [cacheCheck, setCacheCheck] = useState({ ok: 0, message: '🐸 ゲロゲロ' });
   const [liveCaptionsSupported, setLiveCaptionsSupported] = useState(false);
@@ -122,6 +125,8 @@ function Home() {
             onOpenVideo={handleLanguageButtonClick}
             onOpenLearn={handleOpenLearn}
             onOpenFlash={handleOpenFlash}
+            lastVideo={lastVideo}
+            onContinue={handleContinueVideo}
           />
 
           <HomeSystemPanel
@@ -144,7 +149,7 @@ function Home() {
             onRemoveDictCaches={handleRemoveCacheWithState}
           />
         </div>
-        <KeyboardHelp />
+        <KeyboardHelp languageName={languageModes.find((mode) => mode.id === tokenizerMode)?.englishName} />
       </div>
     </React.Fragment>
   );

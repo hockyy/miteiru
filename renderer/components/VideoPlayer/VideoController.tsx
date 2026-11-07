@@ -22,6 +22,7 @@ export const VideoController = ({
                                   enableSeeker,
                                   setEnableSeeker,
                                   onVideoChangeHandler,
+                                  canStepVideos = true,
                                   backToHead,
                                   primaryLines,
                                   primaryShift
@@ -53,7 +54,8 @@ export const VideoController = ({
                     eagerRender={true}
                     expanded={showController}>
       <div className={"flex flex-row items-center justify-between pb-1"}>
-        <div className={"flex w-1/3 hidden md:flex"}>
+        {/* Volume and time go first when the window is narrow; the settings gear never does. */}
+        <div className={"hidden w-1/3 md:flex"}>
           <Volume player={player}/>
           <div className={"flex flex-row px-2 lg:px-4 justify-end content-end lg:w-32 whitespace-nowrap animation"}>
             <div><PlaybackTime clock={clock}/></div>
@@ -64,11 +66,12 @@ export const VideoController = ({
           </div>
 
         </div>
-        <div className={"flex w-full justify-center items-center gap-4 md:w-1/3"}>
-          <button onClick={() => step(-1)} aria-label="Previous video" title="Previous video in the folder"
+        <div className={"flex flex-1 justify-center items-center gap-4 md:w-1/3 md:flex-none"}>
+          {/* Only files in a folder have a previous and next video; a YouTube link has none. */}
+          {canStepVideos && <button onClick={() => step(-1)} aria-label="Previous video" title="Previous video in the folder"
                   className={"flex flex-row items-center gap-1 animation h-5"}>
             {StepLeft}
-          </button>
+          </button>}
           <button onClick={() => {
             deltaTime(-10)
           }} aria-label="Back 10 seconds" title="Back 10 seconds"
@@ -87,12 +90,12 @@ export const VideoController = ({
                   className={"flex flex-row items-center gap-1 animation h-5"}>
             10 {ArrowRight}
           </button>
-          <button onClick={() => step(1)} aria-label="Next video" title="Next video in the folder"
+          {canStepVideos && <button onClick={() => step(1)} aria-label="Next video" title="Next video in the folder"
                   className={"flex flex-row items-center gap-1 animation h-5"}>
             {StepRight}
-          </button>
+          </button>}
         </div>
-        <div className={"flex w-1/3 justify-end hidden md:flex gap-2"}>
+        <div className={"flex shrink-0 justify-end gap-2 md:w-1/3"}>
           <button onClick={backToHead} aria-label="Repeat line" title="Repeat the current line (R)"
                   className={"flex flex-row items-center gap-1 animation h-5"}>
             {RepeatSubtitle}
