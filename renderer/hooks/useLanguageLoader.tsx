@@ -105,10 +105,13 @@ export const useLanguageLoader = () => {
 
   // Until the remembered language is read, the selection still shows the first mode (Kuromoji).
   const ableToProceedToVideo = check.ok !== 2 && !isLoadingLanguage && languageLoaded;
+  // What the user should read: a failed load or a notice, not the idle placeholder or "checking...".
+  const notice = check.ok === 0 && check !== initialCheck ? check.message : null;
 
   return {
     // State
     check,
+    notice,
     tokenizerMode,
     setTokenizerMode: selectTokenizerMode,
     lastLanguageMode,

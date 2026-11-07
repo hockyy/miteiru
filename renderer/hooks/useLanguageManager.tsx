@@ -8,6 +8,11 @@ export interface LanguageMode {
   channel: string;
   emoji: string;
   description: string;
+  /** What the home page shows: the flag, the language's own name and its English name. */
+  flag: string;
+  nativeName: string;
+  englishName: string;
+  languageCode: string;
 }
 
 export const LANGUAGE_MODES: LanguageMode[] = languageModes.map(({
@@ -15,13 +20,21 @@ export const LANGUAGE_MODES: LanguageMode[] = languageModes.map(({
   name,
   channel,
   emoji,
-  description
+  description,
+  flag,
+  nativeName,
+  englishName,
+  languageCode
 }) => ({
   id,
   name,
   channel,
   emoji,
-  description
+  description,
+  flag,
+  nativeName,
+  englishName,
+  languageCode
 }));
 
 // MeCab (mode 1) was removed: Kuromoji uses the same IPADIC dictionary without an external install.

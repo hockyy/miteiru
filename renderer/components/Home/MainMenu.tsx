@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '../Utils/Button';
 import { UI_LINK_PILL } from '../UI/miteiruUiTheme';
 import { MITEIRU_REPO_URL } from '../../utils/constants';
+import type { LanguageMode } from '../../hooks/useLanguageManager';
 import {
   HOME_BODY,
   HOME_HEADER,
@@ -9,92 +10,78 @@ import {
   HOME_SECTION,
   HOME_SECTION_LABEL,
   HOME_SHELL,
-  HOME_STATUS_PILL,
-  MEANING_FIELD_INPUT,
 } from './homeMenuTheme';
-
-const checkSymbol = ['❓', '✅', '🙃'] as const;
 
 // Opens the system browser (the main process only allows http/https), never the app window.
 const openRepository = () => {
   window.electronAPI.openExternal(MITEIRU_REPO_URL);
 };
 
-interface LanguageMode {
-  id: number;
-  name: string;
-  emoji: string;
-  description: string;
-}
-
 interface MainMenuProps {
   miteiruVersion: string;
-  checkOk: number;
-  checkMessage: string;
+  /** Something to tell the user about loading a language (an error, a notice), or null. */
+  languageNotice: string | null;
   languageModes: LanguageMode[];
   tokenizerMode: number;
-  lastLanguageMode: number | null;
-  selectedLanguageMode?: LanguageMode;
   isLoadingLanguage: boolean;
   ableToProceedToVideo: boolean;
   onLanguageChange: (modeId: number) => void;
   onOpenVideo: () => void;
   onOpenLearn: () => void;
   onOpenFlash: () => void;
-  formatLanguageOption: (mode: LanguageMode, isLastUsed: boolean) => string;
 }
 
-const ModeCard = ({
-  title,
-  description,
-  icon,
-  children,
-}: {
-  title: string;
-  description: string;
-  icon: string;
-  children: React.ReactNode;
-}) => (
-  <article className={HOME_SECTION}>
-    <div className={HOME_SECTION_LABEL}>
-      <span className="mr-2">{icon}</span>
-      {title}
-    </div>
-    <div className="space-y-2 bg-white px-4 py-3">
-      <p className="text-xs font-medium text-blue-800">{description}</p>
-      {children}
-    </div>
-  </article>
+const LanguageCard = ({mode, selected, onSelect}: { mode: LanguageMode; selected: boolean; onSelect: () => void }) => (
+  <button
+    type="button"
+    role="radio"
+    aria-checked={selected}
+    onClick={onSelect}
+    className={[
+      'flex min-w-0 cursor-pointer flex-col items-center gap-1 rounded-2xl border-2 px-2 py-3 text-center transition-colors',
+      'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500',
+      selected
+        ? 'border-blue-500 bg-blue-50 shadow-[0_3px_0_0_#93c5fd]'
+        : 'border-blue-100 bg-white hover:border-blue-300 hover:bg-yellow-50',
+    ].join(' ')}
+  >
+    <span className="text-3xl leading-none" aria-hidden="true">{mode.flag}</span>
+    <span lang={mode.languageCode} className="max-w-full truncate text-base font-black text-blue-950">
+      {mode.nativeName}
+    </span>
+    <span className="text-[11px] font-bold text-blue-800">{mode.englishName}</span>
+  </button>
 );
 
+/**
+ * Home: pick the language you are learning, then watch. Studying text and flashcards are the
+ * smaller ways in; settings and tools sit in their own panel below.
+ */
 export const MainMenu: React.FC<MainMenuProps> = ({
   miteiruVersion,
-  checkOk,
-  checkMessage,
+  languageNotice,
   languageModes,
   tokenizerMode,
-  lastLanguageMode,
-  selectedLanguageMode,
   isLoadingLanguage,
   ableToProceedToVideo,
   onLanguageChange,
   onOpenVideo,
   onOpenLearn,
   onOpenFlash,
-  formatLanguageOption,
-}) => (
-  <div className={HOME_SHELL}>
-    <header className={HOME_HEADER}>
-      <div className="flex items-center gap-3">
-        <div className={HOME_ICON_BADGE}>🐸</div>
-        <div>
-          <div className="text-sm font-black tracking-tight text-blue-950">Miteiru</div>
-          <div className="text-[11px] font-bold text-blue-800">v{miteiruVersion}</div>
-        </div>
-      </div>
-      <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
-        <div className={HOME_STATUS_PILL}>
-          {checkSymbol[checkOk]} {checkMessage}
+}) => {
+  const selected = languageModes.find((mode) => mode.id === tokenizerMode);
+  const blocked = !ableToProceedToVideo || isLoadingLanguage;
+  const languageName = selected?.englishName ?? 'the language';
+
+  return (
+    <div className={HOME_SHELL}>
+      <header className={HOME_HEADER}>
+        <div className="flex items-center gap-3">
+          <div className={HOME_ICON_BADGE}>🐸</div>
+          <div>
+            <div className="text-sm font-black tracking-tight text-blue-950">Miteiru</div>
+            <div className="text-[11px] font-bold text-blue-800">v{miteiruVersion}</div>
+          </div>
         </div>
         <button
           type="button"
@@ -105,71 +92,61 @@ export const MainMenu: React.FC<MainMenuProps> = ({
           <span aria-hidden="true">⭐</span>
           Star on GitHub
         </button>
-      </div>
-    </header>
+      </header>
 
-    <div className={HOME_BODY}>
-      <section className={HOME_SECTION}>
-        <div className={HOME_SECTION_LABEL}>What are we doing today?</div>
-        <div className="space-y-3 bg-white px-4 py-3">
-          <p className="text-xs font-medium text-blue-800">Pick a language once, then jump into any mode.</p>
+      <div className={HOME_BODY}>
+        <section className={HOME_SECTION}>
+          <div className={HOME_SECTION_LABEL}>What are you learning?</div>
+          <div className="space-y-4 bg-white px-4 py-4">
+            <div role="radiogroup" aria-label="The language you are learning" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {languageModes.map((mode) => (
+                <LanguageCard
+                  key={mode.id}
+                  mode={mode}
+                  selected={mode.id === tokenizerMode}
+                  onSelect={() => onLanguageChange(mode.id)}
+                />
+              ))}
+            </div>
+            {selected?.description && (
+              <p lang={selected.languageCode} className="text-center text-xs font-semibold text-blue-900">
+                {selected.description}
+              </p>
+            )}
 
-          <label htmlFor="language-select" className="block text-sm font-bold text-blue-900">
-            Language stack
-          </label>
-          <select
-            id="language-select"
-            value={tokenizerMode}
-            onChange={(e) => onLanguageChange(Number(e.target.value))}
-            className={`${MEANING_FIELD_INPUT} cursor-pointer rounded-xl`}
-          >
-            {languageModes.map((mode) => (
-              <option key={mode.id} value={mode.id}>
-                {formatLanguageOption(mode, lastLanguageMode === mode.id)}
-              </option>
-            ))}
-          </select>
-          {selectedLanguageMode?.description && (
-            <p className="text-xs font-semibold text-blue-900">{selectedLanguageMode.description}</p>
-          )}
+            <div className="space-y-2">
+              <Button
+                type="primary"
+                className={`w-full !py-3 !text-base ${blocked ? 'buttonDisabled' : ''}`}
+                disabled={blocked}
+                onPress={onOpenVideo}
+              >
+                {isLoadingLanguage ? `Getting ${languageName} ready…` : '▶  Watch a video'}
+              </Button>
+              <p className="text-center text-[11px] font-medium text-blue-800">
+                {isLoadingLanguage
+                  ? 'The first time takes a few seconds while the dictionary is set up.'
+                  : 'Next, open a video file, drop one on the window, or paste a YouTube link.'}
+              </p>
+            </div>
 
-        </div>
-      </section>
+            <div className="grid grid-cols-2 gap-2">
+              <Button type="secondary" className={blocked ? 'buttonDisabled' : ''} disabled={blocked} onPress={onOpenLearn}>
+                <span aria-hidden="true">📖</span> Study a text
+              </Button>
+              <Button type="secondary" className={blocked ? 'buttonDisabled' : ''} disabled={blocked} onPress={onOpenFlash}>
+                <span aria-hidden="true">🃏</span> Flashcards
+              </Button>
+            </div>
 
-      <div className="grid gap-3 sm:grid-cols-3">
-        <ModeCard title="Watch" description="Load subtitles and play video" icon="▶️">
-          <Button
-            type="primary"
-            className={`w-full ${ableToProceedToVideo ? '' : 'buttonDisabled'}`}
-            disabled={!ableToProceedToVideo || isLoadingLanguage}
-            onPress={onOpenVideo}
-          >
-            {isLoadingLanguage ? 'Loading…' : 'Open video'}
-          </Button>
-        </ModeCard>
-
-        <ModeCard title="Learn" description="Analyze text with AI tools" icon="📖">
-          <Button
-            type="secondary"
-            className={`w-full ${ableToProceedToVideo ? '' : 'buttonDisabled'}`}
-            disabled={!ableToProceedToVideo || isLoadingLanguage}
-            onPress={onOpenLearn}
-          >
-            {isLoadingLanguage ? 'Loading…' : 'Open learn'}
-          </Button>
-        </ModeCard>
-
-        <ModeCard title="Flashcards" description="Review saved vocabulary" icon="🃏">
-          <Button
-            type="secondary"
-            className={`w-full ${ableToProceedToVideo ? '' : 'buttonDisabled'}`}
-            disabled={!ableToProceedToVideo || isLoadingLanguage}
-            onPress={onOpenFlash}
-          >
-            {isLoadingLanguage ? 'Loading…' : 'Open flashcards'}
-          </Button>
-        </ModeCard>
+            {languageNotice && (
+              <p role="status" className="rounded-xl border border-yellow-300 bg-yellow-50 px-3 py-2 text-xs font-semibold text-blue-900">
+                {languageNotice}
+              </p>
+            )}
+          </div>
+        </section>
       </div>
     </div>
-  </div>
-);
+  );
+};

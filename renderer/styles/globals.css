@@ -16,23 +16,37 @@ html {
 }
 
 /*
+ * Country flags (🇯🇵 🇭🇰 🇻🇳): Windows' emoji font has none and shows the letters (JP, HK, VN).
+ * Twemoji's flags, from country-flag-emoji-polyfill (MIT; the Twemoji artwork is CC BY 4.0), draw
+ * them on every platform. unicode-range keeps the font to flag characters: the regional indicator
+ * letters, and the black flag with the tag letters that spell England, Scotland and Wales.
+ */
+@font-face {
+  font-family: "Twemoji Country Flags";
+  src: url("../../node_modules/country-flag-emoji-polyfill/dist/TwemojiCountryFlags.woff2") format("woff2");
+  unicode-range: U+1F1E6-1F1FF, U+1F3F4, U+E0062-E0063, U+E0065, U+E0067, U+E006C, U+E006E, U+E0073-E0074, U+E0077, U+E007F;
+  font-display: swap;
+}
+
+/*
  * Fonts (renderer/utils/fonts.ts). Noto Sans JP, SC and TC and Nunito are bundled (pages/_app.tsx).
  * The same character is drawn differently in Japanese and in simplified or traditional Chinese, so
  * the learning language's Noto comes first; useMiteiruTokenizer sets data-learning-lang.
  * --miteiru-app-font is the user's interface font (useAppFont), if they picked one.
+ * Every stack goes through --miteiru-cjk-font, so the flag font at its head reaches them all.
  */
 :root {
-  --miteiru-cjk-font: "Noto Sans JP Variable", "Noto Sans SC Variable", "Noto Sans TC Variable";
+  --miteiru-cjk-font: "Twemoji Country Flags", "Noto Sans JP Variable", "Noto Sans SC Variable", "Noto Sans TC Variable";
   --miteiru-subtitle-font: var(--miteiru-cjk-font), "Nunito Variable", sans-serif;
   --miteiru-ui-font: "Nunito Variable", var(--miteiru-cjk-font), system-ui, sans-serif;
 }
 
 :root[data-learning-lang="zh-CN"] {
-  --miteiru-cjk-font: "Noto Sans SC Variable", "Noto Sans TC Variable", "Noto Sans JP Variable";
+  --miteiru-cjk-font: "Twemoji Country Flags", "Noto Sans SC Variable", "Noto Sans TC Variable", "Noto Sans JP Variable";
 }
 
 :root[data-learning-lang="yue"] {
-  --miteiru-cjk-font: "Noto Sans TC Variable", "Noto Sans SC Variable", "Noto Sans JP Variable";
+  --miteiru-cjk-font: "Twemoji Country Flags", "Noto Sans TC Variable", "Noto Sans SC Variable", "Noto Sans JP Variable";
 }
 
 @layer base {

@@ -63,6 +63,7 @@
     "ass-compiler": "^0.1.15",
     "axios": "^1.20.0",
     "buffer": "^6.0.3",
+    "country-flag-emoji-polyfill": "^0.1.10",
     "esbuild": "^0.28.2",
     "eslint": "^9.36.0",
     "eslint-plugin-react": "^7.37.5",
