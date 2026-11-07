@@ -66,9 +66,17 @@ const buildWindowsHelper = () => {
     process.exit(1);
   }
 
-  spawnSync('taskkill', ['/IM', 'MiteiruLiveCaptionsBridge.exe', '/F'], {
+  // A dev run's helper keeps its files locked. Stop only helpers started from this checkout, never
+  // the one an installed Miteiru is running.
+  spawnSync('powershell', [
+    '-NoProfile',
+    '-Command',
+    "Get-Process MiteiruLiveCaptionsBridge -ErrorAction SilentlyContinue"
+      + " | Where-Object { $_.Path -and $_.Path.StartsWith($env:MITEIRU_REPO, 'OrdinalIgnoreCase') }"
+      + ' | Stop-Process -Force'
+  ], {
     stdio: 'ignore',
-    shell: true
+    env: {...process.env, MITEIRU_REPO: rootDir + path.sep}
   });
 
   const publish = spawnSync('dotnet', [

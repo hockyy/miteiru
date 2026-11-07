@@ -101,3 +101,10 @@ Response:
   ]
 }
 ```
+
+## Errors from the server itself
+
+Besides the endpoint errors above:
+
+- `503`: Miteiru's window was not ready, or the page reloaded before it answered. Retry.
+- `504`: no answer within 120 seconds.

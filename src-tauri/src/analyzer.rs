@@ -11,8 +11,8 @@ use std::time::{Duration, Instant};
 use serde::Serialize;
 use tauri::{AppHandle, Emitter, State};
 
-/// A request the webview did not answer in time (a page reload drops in-flight requests).
-const ANSWER_TIMEOUT: Duration = Duration::from_secs(30);
+/// How long a request may wait for the worker. Generous: a large batch on a cold dictionary is slow.
+const ANSWER_TIMEOUT: Duration = Duration::from_secs(120);
 const MAX_BODY: u64 = 16 * 1024 * 1024;
 
 type Pending = Arc<Mutex<HashMap<u64, (Instant, tiny_http::Request)>>>;
@@ -47,6 +47,12 @@ fn fail(request: tiny_http::Request, status: u16, message: &str) {
 pub async fn analyzer_start(app: AppHandle, state: State<'_, Analyzer>) -> Result<u16, String> {
     let mut port_slot = state.port.lock().unwrap();
     if let Some(port) = *port_slot {
+        // A new backend worker (the page reloaded): the old one will not answer what it was sent.
+        let stale: Vec<tiny_http::Request> =
+            state.pending.lock().unwrap().drain().map(|(_, (_, request))| request).collect();
+        for request in stale {
+            fail(request, 503, "Miteiru restarted before answering; try again.");
+        }
         return Ok(port);
     }
     let server = tiny_http::Server::http("127.0.0.1:0").map_err(|e| format!("analyzer server: {e}"))?;
