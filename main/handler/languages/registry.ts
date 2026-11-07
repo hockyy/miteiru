@@ -7,22 +7,57 @@ import {LanguagePlugin, LanguagePluginContext, LanguagePluginLoadResult} from ".
 
 const languageAssetsRoot = path.join(__dirname, "language-assets");
 
-// Packaged builds keep large files gzipped (see helpers/assetFiles.ts), so a `.gz` copy counts.
-const firstExistingPath = async (...candidates: string[]) => {
+/**
+ * Where language data can be: the bundled language-assets folder first, then the `language-assets`
+ * folder of each language pack the user installed (src-tauri/src/sys/langpack.rs). The app supplies
+ * the provider; it is asked again each time a language loads, so a pack installed a moment ago counts.
+ */
+let assetRoots: string[] = [languageAssetsRoot];
+let assetRootsProvider: () => Promise<string[]> = async () => [languageAssetsRoot];
+
+export const setLanguageAssetRoots = (provider: () => Promise<string[]>) => {
+  assetRootsProvider = provider;
+};
+
+const refreshAssetRoots = async () => {
+  try {
+    assetRoots = [...new Set(await assetRootsProvider())];
+  } catch (error) {
+    console.error("[languages] could not list the installed language packs; using the bundled data only:", error);
+    assetRoots = [languageAssetsRoot];
+  }
+  if (assetRoots.length === 0) assetRoots = [languageAssetsRoot];
+};
+
+/**
+ * Whether the asset is there in any form: the plain file, or its `.zst` or `.gz` copy (large files
+ * packaged by scripts/compressLanguageAssets.js), or the data table that replaces it (`x.json` and a
+ * folder `x` both become `x.pack`; docs/DATA_FORMAT.md).
+ */
+export const assetCandidateExists = async (candidate: string) => (
+  await assetExists(candidate) || await assetExists(`${candidate.replace(/\.json$/i, "")}.pack`)
+);
+
+/** The first candidate that exists; when none does, the first one, so the error names the bundled location. */
+export const firstExistingPath = async (...candidates: string[]) => {
   for (const candidate of candidates) {
-    if (candidate && await assetExists(candidate)) return candidate;
+    if (candidate && await assetCandidateExists(candidate)) return candidate;
   }
   return candidates[0];
 };
 
-const assetDirectory = (pluginId: string, relativePath: string, legacyDirectory: string) => firstExistingPath(
-  path.join(languageAssetsRoot, pluginId, relativePath),
-  legacyDirectory ? path.join(__dirname, legacyDirectory) : ""
+/** `relativePath` of a plugin in the first root that has it, else under `__dirname` as 7.x kept it. */
+export const resolveAsset = (roots: string[], pluginId: string, relativePath: string, legacyPath: string) => firstExistingPath(
+  ...roots.map((root) => path.join(root, pluginId, relativePath)),
+  ...(legacyPath ? [path.join(__dirname, legacyPath)] : [])
 );
 
-const assetPath = (pluginId: string, relativePath: string, legacyPath: string) => firstExistingPath(
-  path.join(languageAssetsRoot, pluginId, relativePath),
-  path.join(__dirname, legacyPath)
+const assetDirectory = (pluginId: string, relativePath: string, legacyDirectory: string) => resolveAsset(
+  assetRoots, pluginId, relativePath, legacyDirectory
+);
+
+const assetPath = (pluginId: string, relativePath: string, legacyPath: string) => resolveAsset(
+  assetRoots, pluginId, relativePath, legacyPath
 );
 
 const getHanCharacterCoreSettings = async () => ({
@@ -130,6 +165,15 @@ export const loadLanguagePlugin = async (
   context: LanguagePluginContext,
   loadedPluginIds: Set<string> = new Set()
 ): Promise<LanguagePluginLoadResult> => {
+  await refreshAssetRoots();
+  return loadPlugin(pluginId, context, loadedPluginIds);
+};
+
+const loadPlugin = async (
+  pluginId: string,
+  context: LanguagePluginContext,
+  loadedPluginIds: Set<string>
+): Promise<LanguagePluginLoadResult> => {
   if (loadedPluginIds.has(pluginId)) {
     return {ok: 1, message: "Setup is ready"};
   }
@@ -140,7 +184,7 @@ export const loadLanguagePlugin = async (
   }
 
   for (const dependencyId of plugin.dependencies ?? []) {
-    const dependencyResult = await loadLanguagePlugin(dependencyId, context, loadedPluginIds);
+    const dependencyResult = await loadPlugin(dependencyId, context, loadedPluginIds);
     if (!dependencyResult.ok) return dependencyResult;
   }
 
