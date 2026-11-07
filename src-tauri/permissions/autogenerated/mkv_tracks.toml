@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-mkv-tracks"
+description = "Enables the mkv_tracks command without any pre-configured scope."
+commands.allow = ["mkv_tracks"]
+
+[[permission]]
+identifier = "deny-mkv-tracks"
+description = "Denies the mkv_tracks command without any pre-configured scope."
+commands.deny = ["mkv_tracks"]

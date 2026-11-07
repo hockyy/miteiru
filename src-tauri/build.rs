@@ -54,6 +54,8 @@ const COMMANDS: &[&str] = &[
     "player_close",
     "analyzer_start",
     "analyzer_respond",
+    "mkv_tracks",
+    "mkv_extract_subtitle",
 ];
 
 fn main() {

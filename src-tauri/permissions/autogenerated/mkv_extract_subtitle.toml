@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-mkv-extract-subtitle"
+description = "Enables the mkv_extract_subtitle command without any pre-configured scope."
+commands.allow = ["mkv_extract_subtitle"]
+
+[[permission]]
+identifier = "deny-mkv-extract-subtitle"
+description = "Denies the mkv_extract_subtitle command without any pre-configured scope."
+commands.deny = ["mkv_extract_subtitle"]

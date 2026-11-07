@@ -345,8 +345,23 @@ export function registerMediaHandlers() {
   ipcMain.handle("extract-embedded-subtitle", async (event, inputPath, streamIndex, outputFormat = "srt") => {
     console.log(`[IPC] extract-embedded-subtitle called: ${inputPath}, stream ${streamIndex}, format ${outputFormat}`);
     try {
+      // MKV and WebM text tracks are read natively; FFmpeg is for other containers.
+      let nativeError: unknown = null;
+      try {
+        const nativePath = await MediaAnalyzer.extractSubtitleNatively(inputPath, streamIndex);
+        if (nativePath) {
+          console.log("[IPC] Subtitle extracted natively:", nativePath);
+          return nativePath;
+        }
+      } catch (error) {
+        nativeError = error;
+        console.warn("[IPC] Native subtitle extraction failed, trying FFmpeg:", error);
+      }
+
       const toolsStatus = await MediaAnalyzer.checkToolsAvailable();
       if (!toolsStatus.ffmpeg) {
+        // The file was ours to read and that failed: that is the news, not the missing FFmpeg.
+        if (nativeError) throw nativeError;
         throw new Error("FFmpeg not found. Please install FFmpeg and make sure it's in your PATH.");
       }
 
