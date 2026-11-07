@@ -4,6 +4,7 @@ identifier = "app-commands"
 description = "The commands Miteiru's frontend and backend worker call."
 permissions = [
   "allow-sys-info",
+  "allow-drop-paths-take",
   "allow-smoke-test-exit",
   "allow-fs-read-text",
   "allow-fs-read-bytes",
