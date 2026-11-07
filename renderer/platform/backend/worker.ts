@@ -51,7 +51,9 @@ setEventSink((channel, args) => {
 /**
  * The folder holding `language-assets/` (what Electron's `__dirname` was): the repo's renderer/public
  * in a dev run, so `tauri dev` needs no bundling, and the resource directory when packaged
- * (scripts/stageTauriResources.mjs).
+ * (scripts/stageTauriResources.mjs). A build that ships language packs instead of the data has no
+ * language-assets folder at all, which is not worth a warning; its data is read from the installed
+ * packs (setLanguageAssetRoots below).
  */
 const resolveAssetRoot = async (info: SysInfo) => {
   const candidates = info.isPackaged ? [info.resources] : [pathe.join(appRoot(), 'renderer/public'), info.resources];
@@ -62,7 +64,10 @@ const resolveAssetRoot = async (info: SysInfo) => {
       // Not here; try the next place.
     }
   }
-  console.warn('[backend] language-assets was not found; looked in', candidates);
+  // Only a build that should have carried the data says so: one with no language-packs.json (a build
+  // that bundles no languages and installs none) is a development run without downloaded assets.
+  const hasPacks = await fsImpl.stat(pathe.join(info.resources, 'language-packs.json')).then(() => true, () => false);
+  if (!hasPacks) console.warn('[backend] language-assets was not found; looked in', candidates);
   return info.resources;
 };
 
@@ -88,7 +93,8 @@ const boot = async () => {
     {default: Vietnamese},
     {default: Learning},
     {registerAnalyzerHandlers},
-    {getStore, setStoreFactory}
+    {getStore, setStoreFactory},
+    {setLanguageAssetRoots}
   ] = await Promise.all([
     import('../../../main/handler/common'),
     import('../../../main/handler/common/liveCaptionsHandlers'),
@@ -98,8 +104,25 @@ const boot = async () => {
     import('../../../main/handler/vietnamese'),
     import('../../../main/handler/learning'),
     import('../../../main/handler/languages/analyzerHandlers'),
-    import('../../../main/handler/common/storeHandlers')
+    import('../../../main/handler/common/storeHandlers'),
+    import('../../../main/handler/languages/registry')
   ]);
+
+  // Language data is read from the bundled folder and from each installed language pack
+  // (src-tauri/src/sys/langpack.rs), looked up at each language load so a fresh install is seen.
+  const bundledAssets = pathe.join((globalThis as { __dirname?: string }).__dirname ?? info.resources, 'language-assets');
+  setLanguageAssetRoots(async () => {
+    try {
+      const status = await sys('langpack_status') as { packs: Array<{ dir: string | null; state: string }> };
+      const installed = status.packs
+        .filter((pack) => pack.dir && (pack.state === 'installed' || pack.state === 'outdated'))
+        .map((pack) => pathe.join(pack.dir as string, 'language-assets'));
+      return [bundledAssets, ...installed];
+    } catch (error) {
+      console.error('[backend] langpack_status failed; reading the bundled language data only:', error);
+      return [bundledAssets];
+    }
+  });
 
   setStoreFactory(() => openStore());
 

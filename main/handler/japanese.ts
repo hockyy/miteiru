@@ -14,6 +14,25 @@ const buildKuromojiTokenizer = (dicPath: string) => new Promise<Tokenizer>((reso
   kuromoji.builder({dicPath}).build((error, tokenizer) => (error ? reject(error) : resolve(tokenizer)));
 });
 
+let warnedAboutWanikani = false;
+
+/**
+ * The WaniKani data (kanji and radical levels) is a Japanese-learning extra. A Mandarin or Cantonese
+ * learner has only the hanzi pack, so a missing file means no data, said once, and not a failed load.
+ */
+const readWanikani = async (file: string) => {
+  try {
+    return await readJsonFile(file);
+  } catch (error) {
+    if (!/ENOENT/.test(`${(error as NodeJS.ErrnoException)?.code ?? ""} ${(error as Error)?.message ?? ""}`)) throw error;
+    if (!warnedAboutWanikani) {
+      warnedAboutWanikani = true;
+      console.warn(`[japanese] no WaniKani data at ${file}; kanji and radical levels will be empty`);
+    }
+    return {};
+  }
+};
+
 class Japanese {
 
   static Dict = {
@@ -97,8 +116,8 @@ class Japanese {
     this.importBaseSVG = settings.importBaseSVG;
 
     try {
-      this.wanikanji = await readJsonFile(this.importWanikaniKanji);
-      this.waniradical = await readJsonFile(this.importWanikaniRadical);
+      this.wanikanji = await readWanikani(this.importWanikaniKanji);
+      this.waniradical = await readWanikani(this.importWanikaniRadical);
       return;
     } catch (e) {
       console.error(e);
@@ -135,8 +154,12 @@ class Japanese {
   static processKuromojinToSeparations = processKuromojinToSeparations;
 
   /** Starts loading the Kuromoji dictionary at launch so the first analysis is fast. */
-  static preloadKuromoji() {
-    this.loadKuromojiTokenizer().catch(e => {
+  static async preloadKuromoji() {
+    // A build without bundled languages has nothing to preload until the user installs the Japanese pack.
+    const bundled = [path.join(__dirname, 'language-assets/japanese/dict'), path.join(__dirname, 'dict')];
+    const present = await Promise.all(bundled.map((folder) => fsPromises.access(folder).then(() => true, () => false)));
+    if (!present.some(Boolean)) return;
+    await this.loadKuromojiTokenizer().catch(e => {
       console.error(e)
     })
   }
