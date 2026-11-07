@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-kv-del"
+description = "Enables the kv_del command without any pre-configured scope."
+commands.allow = ["kv_del"]
+
+[[permission]]
+identifier = "deny-kv-del"
+description = "Denies the kv_del command without any pre-configured scope."
+commands.deny = ["kv_del"]

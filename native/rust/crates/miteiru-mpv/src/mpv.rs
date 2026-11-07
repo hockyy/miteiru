@@ -7,6 +7,7 @@ use std::path::Path;
 
 use libloading::Library;
 
+const MPV_ERROR_OPTION_NOT_FOUND: c_int = -5;
 pub const MPV_FORMAT_STRING: c_int = 1;
 
 pub const MPV_EVENT_NONE: c_int = 0;
@@ -146,6 +147,16 @@ impl Mpv {
     pub fn set_option(&self, h: Handle, name: &str, value: &str) -> Result<(), String> {
         let (n, v) = (cstr(name)?, cstr(value)?);
         self.check(unsafe { (self.set_option_string)(h, n.as_ptr(), v.as_ptr()) }, &format!("option {name}={value}"))
+    }
+
+    /// Like `set_option`, but an option this build of mpv lacks (e.g. `osc` without Lua) is skipped.
+    /// Returns whether it was set.
+    pub fn set_option_if_known(&self, h: Handle, name: &str, value: &str) -> Result<bool, String> {
+        let (n, v) = (cstr(name)?, cstr(value)?);
+        match unsafe { (self.set_option_string)(h, n.as_ptr(), v.as_ptr()) } {
+            MPV_ERROR_OPTION_NOT_FOUND => Ok(false),
+            code => self.check(code, &format!("option {name}={value}")).map(|_| true),
+        }
     }
 
     /// Queue a property write; mpv copies the value. Errors come back as SET_PROPERTY_REPLY.

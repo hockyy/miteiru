@@ -1,0 +1,18 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "localhost",
+  "description": "The frontend as release builds serve it on 127.0.0.1 (src/frontend_server.rs).",
+  "windows": [
+    "main"
+  ],
+  "remote": {
+    "urls": [
+      "http://127.0.0.1:*"
+    ]
+  },
+  "permissions": [
+    "core:default",
+    "core:window:allow-set-fullscreen",
+    "app-commands"
+  ]
+}

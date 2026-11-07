@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-kv-put"
+description = "Enables the kv_put command without any pre-configured scope."
+commands.allow = ["kv_put"]
+
+[[permission]]
+identifier = "deny-kv-put"
+description = "Denies the kv_put command without any pre-configured scope."
+commands.deny = ["kv_put"]

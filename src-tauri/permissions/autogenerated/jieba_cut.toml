@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-jieba-cut"
+description = "Enables the jieba_cut command without any pre-configured scope."
+commands.allow = ["jieba_cut"]
+
+[[permission]]
+identifier = "deny-jieba-cut"
+description = "Denies the jieba_cut command without any pre-configured scope."
+commands.deny = ["jieba_cut"]

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-proc-which"
+description = "Enables the proc_which command without any pre-configured scope."
+commands.allow = ["proc_which"]
+
+[[permission]]
+identifier = "deny-proc-which"
+description = "Denies the proc_which command without any pre-configured scope."
+commands.deny = ["proc_which"]

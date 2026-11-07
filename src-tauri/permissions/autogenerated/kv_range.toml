@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-kv-range"
+description = "Enables the kv_range command without any pre-configured scope."
+commands.allow = ["kv_range"]
+
+[[permission]]
+identifier = "deny-kv-range"
+description = "Denies the kv_range command without any pre-configured scope."
+commands.deny = ["kv_range"]

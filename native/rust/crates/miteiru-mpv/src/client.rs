@@ -58,7 +58,8 @@ impl MpvClient {
         if handle.is_null() {
             return Err("mpv_create failed".into());
         }
-        let mut all: Vec<(String, String)> = [
+        // Built-in defaults; a build without some of these features (no Lua, so no `osc`) still starts.
+        let mut defaults: Vec<(String, String)> = [
             // Miteiru's UI handles every input and draws its own subtitles and controls.
             ("vo", "gpu-next"),
             ("hwdec", "auto-safe"),
@@ -77,14 +78,18 @@ impl MpvClient {
         .iter()
         .map(|(k, v)| (k.to_string(), v.to_string()))
         .collect();
+        let mut required: Vec<(String, String)> = Vec::new();
         match opts.video {
-            VideoOutput::Window(wid) => all.push(("wid".into(), wid.to_string())),
-            VideoOutput::RenderApi => all[0] = ("vo".into(), "libmpv".into()),
-            VideoOutput::None => all.push(("vid".into(), "no".into())),
+            VideoOutput::Window(wid) => required.push(("wid".into(), wid.to_string())),
+            VideoOutput::RenderApi => defaults[0] = ("vo".into(), "libmpv".into()),
+            VideoOutput::None => required.push(("vid".into(), "no".into())),
         }
-        all.extend(opts.mpv_options);
+        required.extend(opts.mpv_options);
         let init = (|| {
-            for (k, v) in &all {
+            for (k, v) in &defaults {
+                mpv.set_option_if_known(handle, k, v)?;
+            }
+            for (k, v) in &required {
                 mpv.set_option(handle, k, v)?;
             }
             mpv.check(unsafe { (mpv.initialize)(handle) }, "mpv_initialize")?;

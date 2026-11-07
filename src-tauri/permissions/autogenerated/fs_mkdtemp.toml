@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-fs-mkdtemp"
+description = "Enables the fs_mkdtemp command without any pre-configured scope."
+commands.allow = ["fs_mkdtemp"]
+
+[[permission]]
+identifier = "deny-fs-mkdtemp"
+description = "Denies the fs_mkdtemp command without any pre-configured scope."
+commands.deny = ["fs_mkdtemp"]

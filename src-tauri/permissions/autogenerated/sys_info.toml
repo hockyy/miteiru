@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-sys-info"
+description = "Enables the sys_info command without any pre-configured scope."
+commands.allow = ["sys_info"]
+
+[[permission]]
+identifier = "deny-sys-info"
+description = "Denies the sys_info command without any pre-configured scope."
+commands.deny = ["sys_info"]

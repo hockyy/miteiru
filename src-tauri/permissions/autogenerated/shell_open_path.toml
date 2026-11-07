@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-shell-open-path"
+description = "Enables the shell_open_path command without any pre-configured scope."
+commands.allow = ["shell_open_path"]
+
+[[permission]]
+identifier = "deny-shell-open-path"
+description = "Denies the shell_open_path command without any pre-configured scope."
+commands.deny = ["shell_open_path"]

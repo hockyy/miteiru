@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-proc-spawn"
+description = "Enables the proc_spawn command without any pre-configured scope."
+commands.allow = ["proc_spawn"]
+
+[[permission]]
+identifier = "deny-proc-spawn"
+description = "Denies the proc_spawn command without any pre-configured scope."
+commands.deny = ["proc_spawn"]

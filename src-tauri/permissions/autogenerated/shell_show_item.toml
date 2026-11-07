@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-shell-show-item"
+description = "Enables the shell_show_item command without any pre-configured scope."
+commands.allow = ["shell_show_item"]
+
+[[permission]]
+identifier = "deny-shell-show-item"
+description = "Denies the shell_show_item command without any pre-configured scope."
+commands.deny = ["shell_show_item"]

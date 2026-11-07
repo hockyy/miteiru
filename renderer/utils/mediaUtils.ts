@@ -21,13 +21,14 @@ export const normalizeDroppedPath = (rawPath: string) => {
   return {currentPath, pathUri};
 };
 
+/** A YouTube URL plays in the embedded YouTube player; anything else is a file mpv opens by path. */
 export const buildVideoSource = (currentPath: string, pathUri: string) => isYoutube(currentPath) ? {
   type: "video/youtube",
   src: currentPath,
   path: currentPath
 } : {
   type: playbackMimeForPath(pathUri),
-  src: `miteiru://localhost/${pathUri.replace(/^\//, "").split("/").map(encodeURIComponent).join("/")}`,
+  src: pathUri,
   path: pathUri
 };
 

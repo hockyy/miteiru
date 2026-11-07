@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-fs-copy"
+description = "Enables the fs_copy command without any pre-configured scope."
+commands.allow = ["fs_copy"]
+
+[[permission]]
+identifier = "deny-fs-copy"
+description = "Denies the fs_copy command without any pre-configured scope."
+commands.deny = ["fs_copy"]

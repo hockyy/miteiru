@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-shell-open-external"
+description = "Enables the shell_open_external command without any pre-configured scope."
+commands.allow = ["shell_open_external"]
+
+[[permission]]
+identifier = "deny-shell-open-external"
+description = "Denies the shell_open_external command without any pre-configured scope."
+commands.deny = ["shell_open_external"]
