@@ -35,33 +35,13 @@ pub struct SpawnSpec {
   pub args: Vec<String>,
   pub cwd: Option<String>,
   pub env: Option<HashMap<String, String>>,
-  pub shell: bool,
 }
 
+/// Runs `program` itself, never through a shell: a string from the page is never parsed as a
+/// command line (Miteiru's backend only ever spawns programs with argument lists).
 fn build_command(spec: &SpawnSpec) -> Command {
-  let mut cmd;
-  if spec.shell {
-    let mut line = spec.program.clone();
-    for a in &spec.args {
-      line.push(' ');
-      line.push_str(a);
-    }
-    #[cfg(windows)]
-    {
-      use std::os::windows::process::CommandExt;
-      cmd = Command::new("cmd");
-      cmd.args(["/d", "/s", "/c"]);
-      cmd.raw_arg(format!("\"{line}\""));
-    }
-    #[cfg(not(windows))]
-    {
-      cmd = Command::new("/bin/sh");
-      cmd.arg("-c").arg(line);
-    }
-  } else {
-    cmd = Command::new(&spec.program);
-    cmd.args(&spec.args);
-  }
+  let mut cmd = Command::new(&spec.program);
+  cmd.args(&spec.args);
   if let Some(cwd) = &spec.cwd {
     cmd.current_dir(cwd);
   }
@@ -283,7 +263,6 @@ pub async fn proc_spawn(
   args: Option<Vec<String>>,
   cwd: Option<String>,
   env: Option<HashMap<String, String>>,
-  shell: Option<bool>,
 ) -> Result<u32, String> {
   let emit: Emit = Arc::new(move |ev| match ev {
     ProcEvent::Data { id, stream, data } => {
@@ -298,7 +277,6 @@ pub async fn proc_spawn(
     args: args.unwrap_or_default(),
     cwd,
     env,
-    shell: shell.unwrap_or(false),
   };
   spawn(&procs, &spec, emit)
 }
@@ -356,11 +334,12 @@ mod tests {
   }
 
   #[test]
-  fn shell_echo_and_exit_code() {
+  fn echo_and_exit_code() {
     let procs = Procs::default();
+    let (program, args) = if cfg!(windows) { ("cmd", vec!["/c", "echo hello"]) } else { ("echo", vec!["hello"]) };
     let (out, exit) = collect(
       &procs,
-      SpawnSpec { program: "echo hello".into(), args: vec![], cwd: None, env: None, shell: true },
+      SpawnSpec { program: program.into(), args: args.into_iter().map(String::from).collect(), cwd: None, env: None },
     );
     assert_eq!(String::from_utf8_lossy(&out).trim(), "hello");
     assert_eq!(exit, ProcEvent::Exit { id: 1, code: Some(0), signal: None });
@@ -376,7 +355,6 @@ mod tests {
       args: vec![],
       cwd: None,
       env: None,
-      shell: false,
     };
     assert_eq!(spawn(&procs, &spec, emit).unwrap_err(), "ENOENT: spawn definitely-not-a-real-binary-xyz");
   }
@@ -389,10 +367,10 @@ mod tests {
     let emit: Emit = Arc::new(move |ev| {
       let _ = tx.lock().unwrap().send(ev);
     });
-    let line = if cfg!(windows) { "ping -n 30 127.0.0.1" } else { "sleep 30" };
+    let (program, args) = if cfg!(windows) { ("ping", vec!["-n", "30", "127.0.0.1"]) } else { ("sleep", vec!["30"]) };
     let id = spawn(
       &procs,
-      &SpawnSpec { program: line.into(), args: vec![], cwd: None, env: None, shell: true },
+      &SpawnSpec { program: program.into(), args: args.into_iter().map(String::from).collect(), cwd: None, env: None },
       emit,
     )
     .unwrap();

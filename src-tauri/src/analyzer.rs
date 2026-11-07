@@ -64,6 +64,10 @@ pub async fn analyzer_start(app: AppHandle, state: State<'_, Analyzer>) -> Resul
         .name("miteiru-analyzer".into())
         .spawn(move || {
             for mut request in server.incoming_requests() {
+                if !crate::frontend_server::is_local_request(&request, port) {
+                    fail(request, 421, "Requests must be addressed to 127.0.0.1 or localhost.");
+                    continue;
+                }
                 let mut body = String::new();
                 if request.as_reader().take(MAX_BODY).read_to_string(&mut body).is_err() {
                     fail(request, 400, "Expected a UTF-8 body.");
