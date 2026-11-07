@@ -56,6 +56,11 @@ const COMMANDS: &[&str] = &[
     "analyzer_respond",
     "mkv_tracks",
     "mkv_extract_subtitle",
+    "langpack_status",
+    "langpack_install",
+    "langpack_install_file",
+    "langpack_cancel",
+    "langpack_remove",
 ];
 
 fn main() {
