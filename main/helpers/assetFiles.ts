@@ -8,7 +8,7 @@ const gunzip = promisify(zlib.gunzip);
  * Packaged builds store the large language assets gzipped next to where the plain file would be
  * (`jmdict.json.gz`; see scripts/compressLanguageAssets.js). Development keeps them plain. These
  * readers take the plain path and use whichever exists. The stroke-order SVGs are packed instead
- * (main/helpers/assetPack.ts).
+ * (docs/DATA_FORMAT.md).
  */
 export const GZIP_SUFFIX = ".gz";
 

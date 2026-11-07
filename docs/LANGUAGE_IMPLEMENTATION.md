@@ -68,7 +68,7 @@ Current asset ownership:
 - `main/handler/japanese.ts` - Main handler
 - `app/dict/jmdict.json` - Japanese-English dictionary
 - `app/dict/kanjidic.json` - Kanji character dictionary
-- `app/kanji/` - Kanji stroke order SVGs
+- `han-character-core/kanji.pack` - Kanji stroke order SVGs (loose files in `renderer/public/language-assets/han-character-core/kanji/` in development; see [DATA_FORMAT.md](DATA_FORMAT.md))
 
 ### Chinese (Mandarin & Cantonese)
 

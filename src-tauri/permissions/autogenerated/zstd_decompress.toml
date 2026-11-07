@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-zstd-decompress"
+description = "Enables the zstd_decompress command without any pre-configured scope."
+commands.allow = ["zstd_decompress"]
+
+[[permission]]
+identifier = "deny-zstd-decompress"
+description = "Denies the zstd_decompress command without any pre-configured scope."
+commands.deny = ["zstd_decompress"]

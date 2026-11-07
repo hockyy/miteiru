@@ -141,7 +141,7 @@ const checkLanguages = async () => {
     if (result?.ok !== 1) throw new Error(`${channel}: ${result?.message ?? 'no answer'}`);
     loaded[plugin] = Date.now() - t0;
   }
-  // Stroke data lives in packs when packaged (main/helpers/assetPack.ts): read 日 from both sets.
+  // Stroke data lives in data tables when packaged (docs/DATA_FORMAT.md): read 日 from both sets.
   const strokes: Record<string, number> = {};
   for (const [set, channel, file] of [['kanji', 'readKanjiSVG', '065e5.svg'], ['hanzi', 'readHanziSVG', '26085.svg']]) {
     const svg = await window.backend.invoke(channel, file);
