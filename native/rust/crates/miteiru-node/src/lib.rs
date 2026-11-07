@@ -201,6 +201,8 @@ impl Player {
         self.inner.set_property(&name, &value).map_err(err)
     }
 
+    /// Last observed value (never blocks on mpv). Observe a property before relying on it:
+    /// the first read of an unobserved one starts observing it and returns null.
     #[napi]
     pub fn get_property(&self, name: String) -> Option<String> {
         self.inner.get_property(&name)
