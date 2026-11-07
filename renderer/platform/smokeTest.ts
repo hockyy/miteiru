@@ -3,7 +3,7 @@
  * worker, the store, the analyzer API, libmpv drawing under the page and a YouTube embed, writes the
  * results there and exits (code 1 if a step failed). .github/workflows/desktop-check.yml runs it.
  */
-import {invoke} from '@tauri-apps/api/core';
+import {Channel, invoke} from '@tauri-apps/api/core';
 
 interface StepResult {
   ok: boolean;
@@ -123,7 +123,10 @@ const checkYouTube = (videoId: string) => new Promise<string>((resolveCheck, rej
  * Loads every language from the assets as this build ships them (zstd-compressed or in tables
  * when packaged): their tokenizers (kuromoji, jieba) and dictionaries (src-tauri/src/sys/table.rs,
  * vnedict.txt.zst), a real lookup in each, then one stroke-order SVG from each stroke pack. A build
- * without language assets (the desktop check's) skips it; a build with them must load all four.
+ * that bundles the language assets must load all four. A build that ships language packs instead
+ * (src-tauri/src/sys/langpack.rs) installs them first, from MITEIRU_SMOKE_LANGUAGE_PACKS (Vietnamese
+ * through a real download when MITEIRU_LANGUAGE_PACK_URL points at a local server), then loads all
+ * four. A build with neither (the desktop check's) skips it.
  * Packaged 8.0 builds once failed Chinese this way, unseen, because nothing here loaded a language.
  */
 const SMOKE_LANGUAGES = [
@@ -133,15 +136,55 @@ const SMOKE_LANGUAGES = [
   {plugin: 'vietnamese', channel: 'loadVietnamese', query: 'queryVietnamese', word: 'nước'}
 ];
 
+interface PackStatus {
+  manifestFound: boolean;
+  baseUrl: string;
+  packs: Array<{ id: string; file: string; state: string }>;
+}
+
+/** Installs every missing pack and returns the ms each took; null when there is nothing to install from. */
+const installLanguagePacks = async (dir: string | null | undefined) => {
+  const before = await invoke<PackStatus>('langpack_status');
+  if (!dir || !before.manifestFound || before.packs.length === 0) return null;
+  const separator = dir.includes('\\') ? '\\' : '/';
+  // The page cannot read the environment: CI's local server shows as the base URL (a release's is on github.com).
+  const localServer = /^http:\/\/(127\.0\.0\.1|localhost)[:/]/.test(before.baseUrl);
+  const installMs: Record<string, number> = {};
+  const via: Record<string, string> = {};
+  for (const pack of before.packs) {
+    if (pack.state !== 'missing') continue;
+    const onProgress = new Channel<unknown>();
+    const t0 = Date.now();
+    if (pack.id === 'vietnamese' && localServer) {
+      await invoke('langpack_install', {id: pack.id, onProgress});
+      via[pack.id] = 'download';
+    } else {
+      await invoke('langpack_install_file', {path: [dir, pack.file].join(separator), onProgress});
+      via[pack.id] = 'file';
+    }
+    installMs[pack.id] = Date.now() - t0;
+  }
+  const after = await invoke<PackStatus>('langpack_status');
+  const notInstalled = after.packs.filter((pack) => pack.state !== 'installed' && pack.state !== 'bundled');
+  if (notInstalled.length > 0) throw new Error(`not installed: ${notInstalled.map((pack) => `${pack.id} (${pack.state})`).join(', ')}`);
+  return {installMs, via};
+};
+
 const checkLanguages = async () => {
-  const {resources} = await invoke<{ resources: string }>('sys_info');
+  const {resources, smokeLanguagePacks} = await invoke<{ resources: string; smokeLanguagePacks?: string | null }>('sys_info');
   // Windows reports a verbatim path (\\?\C:\...), where "/" is not a separator.
   const separator = resources.includes('\\') ? '\\' : '/';
+  let installed: Awaited<ReturnType<typeof installLanguagePacks>> = null;
+  const bundled = await Promise.all(SMOKE_LANGUAGES.map(({plugin}) => invoke('fs_stat', {
+    path: [resources, 'language-assets', plugin, 'asset-manifest.json'].join(separator)
+  }).then(() => true, () => false)));
+  if (!bundled.every(Boolean)) {
+    installed = await installLanguagePacks(smokeLanguagePacks);
+    if (!installed) return 'skipped: no language packs to install';
+  }
   const loaded: Record<string, number> = {};
   const lookups: Record<string, number> = {};
   for (const {plugin, channel, query, word} of SMOKE_LANGUAGES) {
-    const manifest = [resources, 'language-assets', plugin, 'asset-manifest.json'].join(separator);
-    if (!await invoke('fs_stat', {path: manifest}).catch(() => null)) return 'skipped: this build has no language assets';
     const t0 = Date.now();
     const result = await window.backend.invoke(channel) as { ok?: number; message?: string } | undefined;
     if (result?.ok !== 1) throw new Error(`${channel}: ${result?.message ?? 'no answer'}`);
@@ -159,7 +202,7 @@ const checkLanguages = async () => {
     if (typeof svg !== 'string' || !svg.includes('<svg')) throw new Error(`stroke data: ${channel}(${file}) returned no SVG`);
     strokes[set] = svg.length;
   }
-  return {msPerLanguage: loaded, lookups, strokes};
+  return {...(installed ? {packs: installed} : {}), msPerLanguage: loaded, lookups, strokes};
 };
 
 /** YouTube refusing the video itself, not the embedder, as it does for CI's datacenter addresses. */
