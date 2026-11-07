@@ -1,0 +1,12 @@
+[workspace]
+resolver = "2"
+members = ["crates/miteiru-player", "crates/miteiru-node"]
+
+[workspace.package]
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[profile.release]
+opt-level = 3
+lto = "thin"

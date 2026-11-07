@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>miteiru libmpv spike</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; font-family: 'Noto Sans JP', 'Yu Gothic', sans-serif; }
+  #c, #v { position: absolute; inset: 0; width: 100%; height: 100%; }
+  #v { object-fit: contain; display: none; background: #000; }
+  /* Positioned over the letterboxed video rectangle by renderer.js. */
+  #ov { position: absolute; pointer-events: none; z-index: 10; }
+  #line { position: absolute; left: 0; right: 0; text-align: center; color: #fff; line-height: 1.25; }
+  .w { pointer-events: auto; cursor: pointer; border-radius: 4px; paint-order: stroke fill; -webkit-text-stroke-color: #000; }
+  .w:hover { background: rgba(255, 214, 64, 0.38); }
+  #popup { position: absolute; z-index: 20; display: none; background: #1d1d22; color: #fff; border: 1px solid #888;
+           border-radius: 8px; padding: 8px 12px; font-size: 18px; box-shadow: 0 4px 16px rgba(0,0,0,.6); pointer-events: auto; }
+  #hud { position: absolute; z-index: 30; left: 8px; top: 8px; font: 12px/1.4 Consolas, monospace; color: #9f9;
+         background: rgba(0,0,0,.55); padding: 4px 8px; border-radius: 4px; pointer-events: none; white-space: pre; }
+</style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <video id="v" muted playsinline></video>
+  <div id="ov"><div id="line"></div></div>
+  <div id="popup"></div>
+  <div id="hud"></div>
+  <script src="renderer.js"></script>
+</body>
+</html>
