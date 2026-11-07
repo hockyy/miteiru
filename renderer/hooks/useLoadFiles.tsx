@@ -200,6 +200,11 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     setVideoSrc(source);
     resetSub(setPrimarySub);
     resetSub(setSecondarySub);
+    // A "Load subtitle as…" question still open belongs to the previous video; a subtitle that
+    // comes with this one (loaded after it) asks again.
+    setShowSubtitleModal(false);
+    setPendingSubtitle(null);
+    setPendingSubtitlePath('');
   }, [resetSub, setPrimarySub, setSecondarySub]);
 
   const routeLoadedSubtitle = useCallback((tmpSub, loadedPath: string, currentPath: string, target?: SubtitleTarget) => {
