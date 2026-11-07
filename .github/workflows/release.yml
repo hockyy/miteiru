@@ -2,7 +2,8 @@ name: Release
 
 # Manual-only: run via `gh workflow run release.yml -f tag=vX.Y.Z` or the
 # Actions tab. Intentionally not triggered by tag pushes to avoid CI spam.
-# Optional: `-f platform=windows` (or macos / linux) to rebuild one OS.
+# Optional: `-f platform=windows` (or macos / linux) to rebuild one OS, and `-f draft=true` to
+# upload everything to a new release but leave it a draft, to publish by hand after a look.
 on:
   workflow_dispatch:
     inputs:
@@ -24,6 +25,11 @@ on:
         type: boolean
         required: false
         default: true
+      draft:
+        description: 'With publish on: leave a new release as a draft, to publish by hand (gh release edit <tag> --draft=false --latest)'
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write
@@ -354,7 +360,9 @@ jobs:
           # A new release stays a draft until every platform's installer is on it, so nobody finds it
           # without theirs. The build job that uploads last publishes it and marks it latest.
           names=$(gh release view "${{ steps.meta.outputs.tag }}" --repo "${{ github.repository }}" --json assets -q '.assets[].name')
-          if grep -q -- '-setup\.exe$' <<<"$names" && grep -q '\.dmg$' <<<"$names" && grep -q '\.AppImage$' <<<"$names"; then
+          if [ "${{ inputs.draft }}" = "true" ]; then
+            echo "Draft run: ${{ steps.meta.outputs.tag }} is left as it is. To publish it: gh release edit ${{ steps.meta.outputs.tag }} --draft=false --latest"
+          elif grep -q -- '-setup\.exe$' <<<"$names" && grep -q '\.dmg$' <<<"$names" && grep -q '\.AppImage$' <<<"$names"; then
             gh release edit "${{ steps.meta.outputs.tag }}" \
               --repo "${{ github.repository }}" --draft=false --latest
           else
