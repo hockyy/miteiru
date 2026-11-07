@@ -52,7 +52,15 @@
       "deb": {
         "depends": [
           "libmpv2 | libmpv1"
+        ],
+        "recommends": [
+          "gstreamer1.0-plugins-good",
+          "gstreamer1.0-plugins-bad",
+          "gstreamer1.0-libav"
         ]
+      },
+      "appimage": {
+        "bundleMediaFramework": true
       }
     }
   }
