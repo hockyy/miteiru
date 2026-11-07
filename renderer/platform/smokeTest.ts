@@ -119,6 +119,30 @@ const checkYouTube = (videoId: string) => new Promise<string>((resolveCheck, rej
   document.head.appendChild(script);
 });
 
+/**
+ * Loads Japanese and Cantonese from the assets as this build ships them (gzipped when packaged):
+ * their tokenizers and a first dictionary import (src-tauri/src/sys/dict_import.rs). A build
+ * without language assets (the desktop check's) skips it; a build with them must load both.
+ * Packaged 8.0 builds once failed Chinese this way, unseen, because nothing here loaded a language.
+ */
+const SMOKE_LANGUAGES = [{plugin: 'japanese', channel: 'loadKuromoji'}, {plugin: 'cantonese', channel: 'loadCantonese'}];
+
+const checkLanguages = async () => {
+  const {resources} = await invoke<{ resources: string }>('sys_info');
+  // Windows reports a verbatim path (\\?\C:\...), where "/" is not a separator.
+  const separator = resources.includes('\\') ? '\\' : '/';
+  const loaded: Record<string, number> = {};
+  for (const {plugin, channel} of SMOKE_LANGUAGES) {
+    const manifest = [resources, 'language-assets', plugin, 'asset-manifest.json'].join(separator);
+    if (!await invoke('fs_stat', {path: manifest}).catch(() => null)) return 'skipped: this build has no language assets';
+    const t0 = Date.now();
+    const result = await window.backend.invoke(channel) as { ok?: number; message?: string } | undefined;
+    if (result?.ok !== 1) throw new Error(`${channel}: ${result?.message ?? 'no answer'}`);
+    loaded[plugin] = Date.now() - t0;
+  }
+  return {msPerLanguage: loaded};
+};
+
 /** YouTube refusing the video itself, not the embedder, as it does for CI's datacenter addresses. */
 const YOUTUBE_REFUSALS = new Set([100, 101, 150]);
 
@@ -174,6 +198,7 @@ export const runSmokeTest = async (outPath: string, userData: string, platform: 
     throw error;
   }), 45000);
 
+  await step('languages', () => checkLanguages(), 180000);
   // Leave the picture up long enough for the workflow's screenshot.
   await sleep(Math.max(0, 40000 - (Date.now() - started)));
   const failed = Object.values(results).some((result) => !result.ok);
