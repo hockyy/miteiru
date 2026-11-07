@@ -161,20 +161,32 @@ pub fn del(conn: &Connection, key: &str) -> Result<(), String> {
   conn.execute("DELETE FROM kv WHERE key = ?1", [key]).map(|_| ()).map_err(db_err)
 }
 
-/// Applies `ops` in one transaction: all of them, or none if one fails.
-pub fn batch(conn: &mut Connection, ops: &[Op]) -> Result<(), String> {
-  let tx = conn.transaction().map_err(db_err)?;
-  {
-    // Prepared once per batch: a dictionary import sends hundreds of thousands of puts.
-    let mut put = tx.prepare("INSERT OR REPLACE INTO kv (key, value) VALUES (?1, ?2)").map_err(db_err)?;
-    let mut del = tx.prepare("DELETE FROM kv WHERE key = ?1").map_err(db_err)?;
-    for op in ops {
-      match op {
-        Op::Put(key, value) => put.execute([key, value]).map(|_| ()).map_err(db_err)?,
-        Op::Del(key) => del.execute([key]).map(|_| ()).map_err(db_err)?,
-      }
+fn apply(conn: &Connection, ops: &[Op]) -> Result<(), String> {
+  // Prepared once per batch: a dictionary import sends hundreds of thousands of puts.
+  let mut put = conn.prepare("INSERT OR REPLACE INTO kv (key, value) VALUES (?1, ?2)").map_err(db_err)?;
+  let mut del = conn.prepare("DELETE FROM kv WHERE key = ?1").map_err(db_err)?;
+  for op in ops {
+    match op {
+      Op::Put(key, value) => put.execute([key, value]).map(|_| ()).map_err(db_err)?,
+      Op::Del(key) => del.execute([key]).map(|_| ()).map_err(db_err)?,
     }
   }
+  Ok(())
+}
+
+/// Applies `ops` in one transaction: all of them, or none if one fails. In bulk mode (set_bulk)
+/// the load's transaction is already open, so the batch joins it, and a failed batch rolls back
+/// the whole load: an import that fails is redone from scratch anyway.
+pub fn batch(conn: &mut Connection, ops: &[Op]) -> Result<(), String> {
+  if !conn.is_autocommit() {
+    let applied = apply(conn, ops);
+    if applied.is_err() {
+      let _ = conn.execute_batch("ROLLBACK");
+    }
+    return applied;
+  }
+  let tx = conn.transaction().map_err(db_err)?;
+  apply(&tx, ops)?;
   tx.commit().map_err(db_err)
 }
 
@@ -215,16 +227,29 @@ pub fn decode_batch(body: &[u8]) -> Result<Vec<Op<'_>>, String> {
   Ok(ops)
 }
 
-/// Bulk mode, for building a dictionary database from scratch: a 64 MB page cache, and no WAL
-/// checkpoint after every batch (a JMdict import goes from about 19 s to under 5 s). Turning it
-/// off checkpoints once and restores the defaults that every other write uses.
+/// Bulk mode, for building a dictionary database from scratch: the whole load is one transaction,
+/// with a 64 MB page cache and no WAL checkpoint until the end. Committing every batch instead
+/// rewrote the pages that random-order keys touch at each commit: a 155 MB JMdict wrote 1.3 GB of
+/// WAL and took about twice as long. Turning it off commits, checkpoints once and restores the
+/// defaults that every other write uses. A crash mid-load leaves nothing of it behind.
 pub fn set_bulk(conn: &Connection, on: bool) -> Result<(), String> {
-  let sql = if on {
-    "PRAGMA cache_size = -65536; PRAGMA wal_autocheckpoint = 0;"
-  } else {
-    "PRAGMA wal_checkpoint(TRUNCATE); PRAGMA wal_autocheckpoint = 1000; PRAGMA cache_size = -2000;"
-  };
-  conn.execute_batch(sql).map_err(db_err)
+  if on {
+    conn.execute_batch("PRAGMA cache_size = -65536; PRAGMA wal_autocheckpoint = 0;").map_err(db_err)?;
+    if conn.is_autocommit() {
+      conn.execute_batch("BEGIN").map_err(db_err)?;
+    }
+    return Ok(());
+  }
+  // Nothing to commit if a failed batch has already rolled the load back.
+  let committed = if conn.is_autocommit() { Ok(()) } else { conn.execute_batch("COMMIT").map_err(db_err) };
+  if !conn.is_autocommit() {
+    // A failed COMMIT can leave the transaction open, and every later write would join it.
+    let _ = conn.execute_batch("ROLLBACK");
+  }
+  let restored = conn
+    .execute_batch("PRAGMA wal_checkpoint(TRUNCATE); PRAGMA wal_autocheckpoint = 1000; PRAGMA cache_size = -2000;")
+    .map_err(db_err);
+  committed.and(restored)
 }
 
 fn where_clause(o: &RangeOpts) -> (String, Vec<Value>) {
@@ -638,17 +663,48 @@ mod tests {
     let mut conn = open_db(&loc).unwrap();
     set_bulk(&conn, true).unwrap();
     import_shaped(&mut conn, 5_000);
+    // One transaction for the whole load: another connection sees none of it until bulk mode ends.
+    let other = Connection::open(sqlite_path(&loc)).unwrap();
+    let count = |c: &Connection| c.query_row("SELECT COUNT(*) FROM kv", [], |r| r.get::<_, i64>(0)).unwrap();
+    assert_eq!(count(&other), 0);
     set_bulk(&conn, false).unwrap();
-    let count: i64 = conn.query_row("SELECT COUNT(*) FROM kv", [], |r| r.get(0)).unwrap();
-    assert_eq!(count, 20_000);
+    assert!(conn.is_autocommit());
+    assert_eq!(count(&conn), 20_000);
+    assert_eq!(count(&other), 20_000);
+    drop(other);
     let checkpoint: i64 = conn.query_row("PRAGMA wal_autocheckpoint", [], |r| r.get(0)).unwrap();
     assert_eq!(checkpoint, 1000);
+    let cache: i64 = conn.query_row("PRAGMA cache_size", [], |r| r.get(0)).unwrap();
+    assert_eq!(cache, -2000);
     // Everything was checkpointed into the database file, and survives a reopen.
     let wal = std::fs::metadata(format!("{}-wal", sqlite_path(&loc).display())).map(|m| m.len()).unwrap_or(0);
     assert_eq!(wal, 0);
     drop(conn);
     let conn = open_db(&loc).unwrap();
     assert!(get(&conn, "raw/words/1004999").unwrap().is_some());
+  }
+
+  #[test]
+  fn a_failed_batch_in_bulk_mode_drops_the_whole_load() {
+    let dir = tmp("kv-bulk-fail");
+    let loc = dir.join("db").to_string_lossy().to_string();
+    let mut conn = open_db(&loc).unwrap();
+    put(&conn, "before", "kept").unwrap();
+    conn
+      .execute_batch("CREATE TRIGGER boom BEFORE INSERT ON kv WHEN NEW.key = 'bad' BEGIN SELECT RAISE(ABORT, 'no'); END")
+      .unwrap();
+    set_bulk(&conn, true).unwrap();
+    batch(&mut conn, &[Op::Put("a", "1")]).unwrap();
+    assert!(batch(&mut conn, &[Op::Put("b", "2"), Op::Put("bad", "3")]).is_err());
+    // The load's transaction is gone, so later writes are not swallowed by it.
+    assert!(conn.is_autocommit());
+    set_bulk(&conn, false).unwrap();
+    assert_eq!(get(&conn, "a").unwrap(), None);
+    assert_eq!(get(&conn, "b").unwrap(), None);
+    assert_eq!(get(&conn, "before").unwrap().as_deref(), Some("kept"));
+    batch(&mut conn, &[Op::Put("after", "1")]).unwrap();
+    drop(conn);
+    assert_eq!(get(&open_db(&loc).unwrap(), "after").unwrap().as_deref(), Some("1"));
   }
 
   /// A JMdict-sized import, timed with and without bulk mode:
