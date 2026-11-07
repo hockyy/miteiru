@@ -89,7 +89,8 @@ function Home() {
         <title>{getMiteiruAppName()} v{miteiruVersion}</title>
       </Head>
       <div className={HOME_PAGE_BG}>
-        <div className="mx-auto flex min-h-full w-full max-w-4xl flex-col gap-4">
+        {/* pb-16: the page scrolls far enough for the settings to clear the floating Shortcuts button. */}
+        <div className="mx-auto flex min-h-full w-full max-w-4xl flex-col gap-4 pb-16">
           <MainMenu
             miteiruVersion={miteiruVersion}
             languageNotice={notice}
