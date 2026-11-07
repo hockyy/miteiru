@@ -12,6 +12,8 @@ pub const MPV_FORMAT_STRING: c_int = 1;
 pub const MPV_EVENT_NONE: c_int = 0;
 pub const MPV_EVENT_SHUTDOWN: c_int = 1;
 pub const MPV_EVENT_LOG_MESSAGE: c_int = 2;
+pub const MPV_EVENT_SET_PROPERTY_REPLY: c_int = 4;
+pub const MPV_EVENT_COMMAND_REPLY: c_int = 5;
 pub const MPV_EVENT_START_FILE: c_int = 6;
 pub const MPV_EVENT_END_FILE: c_int = 7;
 pub const MPV_EVENT_FILE_LOADED: c_int = 8;
@@ -83,10 +85,9 @@ pub struct Mpv {
     pub create: unsafe extern "C" fn() -> Handle,
     pub set_option_string: unsafe extern "C" fn(Handle, *const c_char, *const c_char) -> c_int,
     pub initialize: unsafe extern "C" fn(Handle) -> c_int,
-    pub command: unsafe extern "C" fn(Handle, *mut *const c_char) -> c_int,
-    pub set_property_string: unsafe extern "C" fn(Handle, *const c_char, *const c_char) -> c_int,
-    pub get_property_string: unsafe extern "C" fn(Handle, *const c_char) -> *mut c_char,
-    pub free: unsafe extern "C" fn(*mut c_void),
+    // Only the async request functions: callers never wait for the mpv core (see lib.rs).
+    pub command_async: unsafe extern "C" fn(Handle, u64, *mut *const c_char) -> c_int,
+    pub set_property_async: unsafe extern "C" fn(Handle, u64, *const c_char, c_int, *mut c_void) -> c_int,
     pub observe_property: unsafe extern "C" fn(Handle, u64, *const c_char, c_int) -> c_int,
     pub request_log_messages: unsafe extern "C" fn(Handle, *const c_char) -> c_int,
     pub wait_event: unsafe extern "C" fn(Handle, c_double) -> *mut MpvEvent,
@@ -126,10 +127,8 @@ impl Mpv {
                 create: sym!(lib, "mpv_create"),
                 set_option_string: sym!(lib, "mpv_set_option_string"),
                 initialize: sym!(lib, "mpv_initialize"),
-                command: sym!(lib, "mpv_command"),
-                set_property_string: sym!(lib, "mpv_set_property_string"),
-                get_property_string: sym!(lib, "mpv_get_property_string"),
-                free: sym!(lib, "mpv_free"),
+                command_async: sym!(lib, "mpv_command_async"),
+                set_property_async: sym!(lib, "mpv_set_property_async"),
                 observe_property: sym!(lib, "mpv_observe_property"),
                 request_log_messages: sym!(lib, "mpv_request_log_messages"),
                 wait_event: sym!(lib, "mpv_wait_event"),
@@ -172,31 +171,24 @@ impl Mpv {
         self.check(unsafe { (self.set_option_string)(h, n.as_ptr(), v.as_ptr()) }, &format!("option {name}={value}"))
     }
 
-    pub fn set_property(&self, h: Handle, name: &str, value: &str) -> Result<(), String> {
+    /// Queue a property write; mpv copies the value. Errors come back as SET_PROPERTY_REPLY.
+    pub fn set_property_async(&self, h: Handle, name: &str, value: &str) -> Result<(), String> {
         let (n, v) = (cstr(name)?, cstr(value)?);
-        self.check(unsafe { (self.set_property_string)(h, n.as_ptr(), v.as_ptr()) }, &format!("property {name}={value}"))
+        let mut p = v.as_ptr();
+        let data = &mut p as *mut *const c_char as *mut c_void;
+        self.check(
+            unsafe { (self.set_property_async)(h, 0, n.as_ptr(), MPV_FORMAT_STRING, data) },
+            &format!("property {name}={value}"),
+        )
     }
 
-    pub fn get_property(&self, h: Handle, name: &str) -> Option<String> {
-        let n = cstr(name).ok()?;
-        // SAFETY: the returned string is owned by mpv until mpv_free.
-        unsafe {
-            let p = (self.get_property_string)(h, n.as_ptr());
-            if p.is_null() {
-                return None;
-            }
-            let s = CStr::from_ptr(p).to_string_lossy().into_owned();
-            (self.free)(p as *mut c_void);
-            Some(s)
-        }
-    }
-
-    pub fn command(&self, h: Handle, args: &[String]) -> Result<(), String> {
+    /// Queue a command; mpv copies the arguments. Errors come back as COMMAND_REPLY.
+    pub fn command_async(&self, h: Handle, args: &[String]) -> Result<(), String> {
         let owned: Vec<CString> = args.iter().map(|a| cstr(a)).collect::<Result<_, _>>()?;
         let mut ptrs: Vec<*const c_char> = owned.iter().map(|c| c.as_ptr()).collect();
         ptrs.push(std::ptr::null());
         self.check(
-            unsafe { (self.command)(h, ptrs.as_mut_ptr()) },
+            unsafe { (self.command_async)(h, 0, ptrs.as_mut_ptr()) },
             &format!("command {}", args.first().map(String::as_str).unwrap_or("")),
         )
     }

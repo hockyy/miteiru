@@ -257,7 +257,8 @@ function startPlayer(adapter) {
     }
   })
   player.onFrame(async (f) => {
-    if (!win || win.isDestroyed() || pipeline.inflight >= cfg.ring - 1) {
+    // Backpressure lives in the Rust ring: a slot is handed out only after Chromium released it.
+    if (!win || win.isDestroyed()) {
       pipeline.droppedNoCapacity++
       try { pl.releaseSlot(f.slot) } catch {}
       return
@@ -297,7 +298,8 @@ function startPlayer(adapter) {
       try { imported.release() } catch {}
     }
   })
-  player.observe(['time-pos', 'sub-text', 'hwdec-current', 'eof-reached', 'aid', 'pause'])
+  // getProperty reads the observed-property cache, so observe everything the scenarios read.
+  player.observe([...new Set(['time-pos', 'sub-text', 'eof-reached', 'aid', 'sid', 'pause', 'current-tracks/audio/codec', ...MPV_PROPS])])
 }
 
 async function applySubmode() {

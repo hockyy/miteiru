@@ -10,6 +10,7 @@ mod mpv;
 
 pub use d3d::SyncMode;
 
+use std::collections::HashMap;
 use std::ffi::c_void;
 use std::fs::OpenOptions;
 use std::io::Write;
@@ -133,14 +134,30 @@ struct Counters {
     height: AtomicU32,
 }
 
+/// The current ring plus older rings whose textures Chromium still holds: Electron requires a
+/// texture to stay valid until its allReferencesReleased callback fires.
+#[derive(Default)]
+struct Rings {
+    current: Option<Ring>,
+    retired: Vec<Ring>,
+}
+
+impl Rings {
+    fn all_idle(&self) -> bool {
+        self.current.as_ref().map_or(true, Ring::all_idle) && self.retired.iter().all(Ring::all_idle)
+    }
+}
+
 struct Shared {
     mpv: Mpv,
     handle: MpvHandle,
     log: Logger,
     stop: AtomicBool,
     wake: Arc<Wake>,
-    ring: Mutex<Option<Ring>>,
+    ring: Mutex<Rings>,
     ring_cv: Condvar,
+    /// Last value of every observed property, filled by the event thread. Reads never call mpv.
+    props: Mutex<HashMap<String, Option<String>>>,
     /// Display size reported by mpv; 0 until known.
     want_w: AtomicU32,
     want_h: AtomicU32,
@@ -183,7 +200,8 @@ impl Player {
         }
         let defaults = [
             ("vo", "libmpv"),
-            ("hwdec", "auto-safe"),
+            // d3d11va decodes on our D3D11 device (zero-copy); auto-safe would probe CUDA first.
+            ("hwdec", "d3d11va,d3d11va-copy"),
             ("keep-open", "yes"),
             ("terminal", "no"),
             ("input-default-bindings", "no"),
@@ -217,8 +235,9 @@ impl Player {
             log,
             stop: AtomicBool::new(false),
             wake: Arc::new(Wake { flag: Mutex::new(false), cv: Condvar::new() }),
-            ring: Mutex::new(None),
+            ring: Mutex::new(Rings::default()),
             ring_cv: Condvar::new(),
+            props: Mutex::new(HashMap::new()),
             want_w: AtomicU32::new(0),
             want_h: AtomicU32::new(0),
             redraw: AtomicBool::new(false),
@@ -231,12 +250,16 @@ impl Player {
         });
 
         let (tx, rx) = mpsc::channel::<Result<(), String>>();
-        let render_thread = {
-            let sh = shared.clone();
-            std::thread::Builder::new()
-                .name("miteiru-render".into())
-                .spawn(move || render_thread(sh, gpu, on_frame, tx))
-                .map_err(|e| e.to_string())?
+        let sh = shared.clone();
+        let render_thread = match std::thread::Builder::new()
+            .name("miteiru-render".into())
+            .spawn(move || render_thread(sh, gpu, on_frame, tx))
+        {
+            Ok(t) => t,
+            Err(e) => {
+                unsafe { (shared.mpv.terminate_destroy)(handle) };
+                return Err(e.to_string());
+            }
         };
         match rx.recv_timeout(Duration::from_secs(10)) {
             Ok(Ok(())) => {}
@@ -245,14 +268,22 @@ impl Player {
                 unsafe { (shared.mpv.terminate_destroy)(handle) };
                 return Err(e);
             }
-            Err(_) => return Err("render thread did not start".into()),
+            Err(_) => {
+                // It may still be stuck in a driver call: stop it and clean up once it returns.
+                abandon(shared, render_thread);
+                return Err("render thread did not start within 10 s".into());
+            }
         }
-        let event_thread = {
-            let sh = shared.clone();
-            std::thread::Builder::new()
-                .name("miteiru-events".into())
-                .spawn(move || event_thread(sh, on_event))
-                .map_err(|e| e.to_string())?
+        let sh = shared.clone();
+        let event_thread = match std::thread::Builder::new()
+            .name("miteiru-events".into())
+            .spawn(move || event_thread(sh, on_event))
+        {
+            Ok(t) => t,
+            Err(e) => {
+                abandon(shared, render_thread);
+                return Err(e.to_string());
+            }
         };
         Ok(Player {
             shared,
@@ -278,21 +309,36 @@ impl Player {
         self.command(&["loadfile".to_string(), path.to_string(), "replace".to_string()])
     }
 
+    // Nothing callers reach waits for the mpv core. Slot releases arrive on the caller's (JS)
+    // thread, and the render thread waits for them, so a blocking call here could deadlock
+    // with a core that is waiting on the render thread (render.h, "Threading").
+
+    /// Queue a command. Failures surface as `Event::Log` from the event thread.
     pub fn command(&self, args: &[String]) -> Result<(), String> {
         self.alive()?;
-        self.shared.mpv.command(self.h(), args)
+        self.shared.mpv.command_async(self.h(), args)
     }
 
+    /// Queue a property write. Failures surface as `Event::Log` from the event thread.
     pub fn set_property(&self, name: &str, value: &str) -> Result<(), String> {
         self.alive()?;
-        self.shared.mpv.set_property(self.h(), name, value)
+        self.shared.mpv.set_property_async(self.h(), name, value)
     }
 
+    /// The last value mpv reported for `name`. The first read of a property nobody observes yet
+    /// starts observing it and returns None.
     pub fn get_property(&self, name: &str) -> Option<String> {
         if self.alive().is_err() {
             return None;
         }
-        self.shared.mpv.get_property(self.h(), name)
+        let mut props = self.shared.props.lock().unwrap();
+        if let Some(v) = props.get(name) {
+            return v.clone();
+        }
+        props.insert(name.to_string(), None);
+        drop(props);
+        let _ = self.observe(&[name.to_string()]);
+        None
     }
 
     pub fn observe(&self, names: &[String]) -> Result<(), String> {
@@ -312,16 +358,20 @@ impl Player {
         }
     }
 
-    /// Return a slot to the ring. Tokens from an older ring generation are ignored.
+    /// Return a slot to its ring (the current one or a retired one). A retired ring whose
+    /// slots are all back is dropped, which closes its handles.
     pub fn release_slot(&self, token: u32) {
         let mut guard = self.shared.ring.lock().unwrap();
-        if let Some(ring) = guard.as_mut() {
-            if token >> 8 == ring.generation {
-                if let Some(s) = ring.slots.get_mut((token & 0xff) as usize) {
+        let rings = &mut *guard;
+        let (generation, index) = (token >> 8, (token & 0xff) as usize);
+        for ring in rings.current.iter_mut().chain(rings.retired.iter_mut()) {
+            if ring.generation == generation {
+                if let Some(s) = ring.slots.get_mut(index) {
                     s.busy = false;
                 }
             }
         }
+        rings.retired.retain(|r| !r.all_idle());
         drop(guard);
         self.shared.ring_cv.notify_all();
     }
@@ -352,57 +402,88 @@ impl Player {
         if self.destroyed.swap(true, Ordering::AcqRel) {
             return;
         }
-        let sh = &self.shared;
-        sh.log.line("destroy: begin");
-        sh.stop.store(true, Ordering::Release);
-        sh.wake.notify();
-        sh.ring_cv.notify_all();
-        unsafe { (sh.mpv.wakeup)(self.h()) };
-        // The render thread frees the render context on its way out (before mpv is destroyed).
-        if let Some(t) = self.render_thread.lock().unwrap().take() {
-            let _ = t.join();
-        }
-        if let Some(t) = self.event_thread.lock().unwrap().take() {
-            let _ = t.join();
-        }
-        // Textures are freed only after JS released its slots, or after 1 s.
-        {
-            let deadline = Instant::now() + DRAIN_WAIT;
-            let mut guard = sh.ring.lock().unwrap();
-            while guard.as_ref().is_some_and(|r| !r.all_idle()) {
-                let now = Instant::now();
-                if now >= deadline {
-                    sh.log.line("destroy: slots still busy after 1 s, freeing anyway");
-                    break;
-                }
-                guard = sh.ring_cv.wait_timeout(guard, deadline - now).unwrap().0;
-            }
-            *guard = None;
-        }
-        unsafe { (sh.mpv.terminate_destroy)(self.h()) };
-        sh.log.line("destroy: done");
+        let (render, event) = self.take_threads();
+        teardown(&self.shared, render, event);
+    }
+
+    fn take_threads(&self) -> (Option<JoinHandle<()>>, Option<JoinHandle<()>>) {
+        (self.render_thread.lock().unwrap().take(), self.event_thread.lock().unwrap().take())
     }
 }
 
 impl Drop for Player {
     fn drop(&mut self) {
-        self.destroy();
+        // In the node addon this runs in a GC finalizer on the JS thread, which is the thread that
+        // delivers slot releases, so a missed destroy() finishes on a helper thread instead.
+        if self.destroyed.swap(true, Ordering::AcqRel) {
+            return;
+        }
+        let (render, event) = self.take_threads();
+        let shared = self.shared.clone();
+        std::thread::spawn(move || teardown(&shared, render, event));
     }
+}
+
+/// Stop a half-built player whose render thread is running, without blocking the caller.
+fn abandon(sh: Arc<Shared>, render: JoinHandle<()>) {
+    std::thread::spawn(move || teardown(&sh, Some(render), None));
+}
+
+fn teardown(sh: &Shared, render: Option<JoinHandle<()>>, event: Option<JoinHandle<()>>) {
+    sh.log.line("destroy: begin");
+    sh.stop.store(true, Ordering::Release);
+    sh.wake.notify();
+    sh.ring_cv.notify_all();
+    unsafe { (sh.mpv.wakeup)(sh.handle.0) };
+    // The render thread frees the render context on its way out (before mpv is destroyed).
+    if let Some(t) = render {
+        let _ = t.join();
+    }
+    if let Some(t) = event {
+        let _ = t.join();
+    }
+    // Textures are freed only after JS released its slots, or after 1 s.
+    {
+        let deadline = Instant::now() + DRAIN_WAIT;
+        let mut guard = sh.ring.lock().unwrap();
+        while !guard.all_idle() {
+            let now = Instant::now();
+            if now >= deadline {
+                sh.log.line("destroy: slots still busy after 1 s, freeing anyway");
+                break;
+            }
+            guard = sh.ring_cv.wait_timeout(guard, deadline - now).unwrap().0;
+        }
+        *guard = Rings::default();
+    }
+    unsafe { (sh.mpv.terminate_destroy)(sh.handle.0) };
+    sh.log.line("destroy: done");
 }
 
 /// Ring size for the current video. Uses only the observed dwidth/dheight: render.h forbids
 /// calling non-render libmpv functions (like mpv_get_property) on the render thread.
-fn target_size(sh: &Shared) -> (u32, u32) {
+/// None until mpv reports a size; the size change then triggers a redraw.
+fn target_size(sh: &Shared) -> Option<(u32, u32)> {
     let (mut w, mut h) = (sh.want_w.load(Ordering::Relaxed), sh.want_h.load(Ordering::Relaxed));
     if w == 0 || h == 0 {
-        return (1280, 720);
+        return None;
     }
     if w > MAX_W || h > MAX_H {
         let scale = (MAX_W as f64 / w as f64).min(MAX_H as f64 / h as f64);
         w = (w as f64 * scale) as u32;
         h = (h as f64 * scale) as u32;
     }
-    (w.max(2) & !1, h.max(2) & !1)
+    Some((w.max(2) & !1, h.max(2) & !1))
+}
+
+/// Let mpv consume the pending frame without drawing it.
+fn skip_frame(mpv: &Mpv, ctx: RenderContext) {
+    let mut skip: i32 = 1;
+    let mut p = [
+        MpvRenderParam { type_: MPV_RENDER_PARAM_SKIP_RENDERING, data: &mut skip as *mut _ as *mut c_void },
+        MpvRenderParam { type_: 0, data: std::ptr::null_mut() },
+    ];
+    unsafe { (mpv.render_context_render)(ctx, p.as_mut_ptr()) };
 }
 
 fn render_thread(sh: Arc<Shared>, gpu: d3d::Gpu, on_frame: FrameFn, ready: mpsc::Sender<Result<(), String>>) {
@@ -452,28 +533,28 @@ fn render_thread(sh: Arc<Shared>, gpu: d3d::Gpu, on_frame: FrameFn, ready: mpsc:
         }
 
         // Make sure the ring matches the current display size.
-        let (w, h) = target_size(&sh);
-        let needs_ring = sh.ring.lock().unwrap().as_ref().map_or(true, |r| (r.width, r.height) != (w, h));
+        let Some((w, h)) = target_size(&sh) else {
+            skip_frame(mpv, ctx);
+            continue;
+        };
+        let needs_ring = sh.ring.lock().unwrap().current.as_ref().map_or(true, |r| (r.width, r.height) != (w, h));
         if needs_ring {
-            let deadline = Instant::now() + DRAIN_WAIT;
             let mut guard = sh.ring.lock().unwrap();
-            while guard.as_ref().is_some_and(|r| !r.all_idle()) {
-                let now = Instant::now();
-                if now >= deadline {
-                    sh.log.line("ring resize: old slots still busy after 1 s");
-                    break;
+            // Never wait for JS here (render.h forbids wait dependencies from the render thread):
+            // an old ring Chromium still holds is retired until release_slot drains it.
+            if let Some(old) = guard.current.take() {
+                if !old.all_idle() {
+                    guard.retired.push(old);
                 }
-                guard = sh.ring_cv.wait_timeout(guard, deadline - now).unwrap().0;
             }
             generation = generation.wrapping_add(1) & 0xff_ffff;
-            *guard = None; // closes the old handles
             match Ring::new(&gpu.device, w, h, sh.ring_size, sh.sync, generation) {
                 Ok(r) => {
                     sh.log.line(&format!("ring created: {w}x{h} x{} gen {generation} sync={:?}", sh.ring_size, sh.sync));
                     sh.counters.ring_recreations.fetch_add(1, Ordering::Relaxed);
                     sh.counters.width.store(w, Ordering::Relaxed);
                     sh.counters.height.store(h, Ordering::Relaxed);
-                    *guard = Some(r);
+                    guard.current = Some(r);
                 }
                 Err(e) => {
                     sh.log.line(&format!("ring creation failed: {e}"));
@@ -483,15 +564,15 @@ fn render_thread(sh: Arc<Shared>, gpu: d3d::Gpu, on_frame: FrameFn, ready: mpsc:
             }
         }
 
-        // Take a free slot (wait up to 100 ms).
+        // Take a free slot, waiting up to SLOT_WAIT for Chromium to return one. Safe because the
+        // releases come from the JS thread, and nothing it calls on Player waits for mpv.
         let picked = {
             let deadline = Instant::now() + SLOT_WAIT;
             let mut guard = sh.ring.lock().unwrap();
             loop {
-                let ring = guard.as_mut().unwrap();
+                let ring = guard.current.as_mut().unwrap();
                 let n = ring.slots.len();
-                let found = (0..n).map(|k| (ring.next + k) % n).find(|&i| !ring.slots[i].busy);
-                if let Some(i) = found {
+                if let Some(i) = (0..n).map(|k| (ring.next + k) % n).find(|&i| !ring.slots[i].busy) {
                     ring.slots[i].busy = true;
                     ring.next = (i + 1) % n;
                     let s = &ring.slots[i];
@@ -506,13 +587,7 @@ fn render_thread(sh: Arc<Shared>, gpu: d3d::Gpu, on_frame: FrameFn, ready: mpsc:
         };
         let Some((index, token, texture, keyed, nt_handle, fw, fh)) = picked else {
             sh.counters.stalls.fetch_add(1, Ordering::Relaxed);
-            // Let mpv drop the frame without drawing it.
-            let mut skip: i32 = 1;
-            let mut p = [
-                MpvRenderParam { type_: MPV_RENDER_PARAM_SKIP_RENDERING, data: &mut skip as *mut _ as *mut c_void },
-                MpvRenderParam { type_: 0, data: std::ptr::null_mut() },
-            ];
-            unsafe { (mpv.render_context_render)(ctx, p.as_mut_ptr()) };
+            skip_frame(mpv, ctx);
             continue;
         };
 
@@ -538,8 +613,10 @@ fn render_thread(sh: Arc<Shared>, gpu: d3d::Gpu, on_frame: FrameFn, ready: mpsc:
                 ok = false;
             }
             if !fence.flush_and_wait(&gpu.context, Duration::from_secs(1)) {
+                // Never hand Chromium a texture the GPU may still be writing.
                 sh.counters.fence_timeouts.fetch_add(1, Ordering::Relaxed);
-                sh.log.line("GPU fence timed out");
+                sh.log.line("GPU fence timed out; dropping the frame");
+                ok = false;
             }
             if let Some(km) = &keyed {
                 let _ = unsafe { km.ReleaseSync(0) };
@@ -549,7 +626,7 @@ fn render_thread(sh: Arc<Shared>, gpu: d3d::Gpu, on_frame: FrameFn, ready: mpsc:
         let render_us = t0.elapsed().as_micros() as u64;
         if !ok {
             sh.counters.render_errors.fetch_add(1, Ordering::Relaxed);
-            if let Some(r) = sh.ring.lock().unwrap().as_mut() {
+            if let Some(r) = sh.ring.lock().unwrap().current.as_mut() {
                 if r.generation == token >> 8 {
                     r.slots[index].busy = false;
                 }
@@ -606,8 +683,14 @@ fn event_thread(sh: Arc<Shared>, on_event: EventFn) {
                         sh.wake.notify();
                     }
                 }
+                sh.props.lock().unwrap().insert(name.clone(), value.clone());
                 on_event(Event::Property { name, value });
             },
+            MPV_EVENT_SET_PROPERTY_REPLY | MPV_EVENT_COMMAND_REPLY if ev.error < 0 => {
+                let text = format!("async request failed: {}", mpv.err(ev.error));
+                sh.log.line(&text);
+                on_event(Event::Log { prefix: "client".into(), level: "error".into(), text });
+            }
             MPV_EVENT_END_FILE => unsafe {
                 let e = &*(ev.data as *const MpvEventEndFile);
                 let reason = match e.reason {
