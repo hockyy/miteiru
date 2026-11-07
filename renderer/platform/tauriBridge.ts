@@ -209,12 +209,30 @@ export const installTauriBridge = () => {
     set: (key: string, value: unknown) => host.invoke(STORE_CHANNELS.set, [key, value])
   };
   document.addEventListener('keydown', toggleFullscreenOnShortcut);
+  document.addEventListener('click', (event) => openLinkExternally(event, host));
   // CI's per-OS self-check (renderer/platform/smokeTest.ts), only when MITEIRU_SMOKE_TEST is set.
   invoke<{ smokeTest?: string | null; userData: string; platform: string }>('sys_info').then((info) => {
     if (info.smokeTest) {
       return import('./smokeTest').then(({runSmokeTest}) => runSmokeTest(info.smokeTest!, info.userData, info.platform));
     }
   }).catch((error) => console.error('[smoke] failed:', error));
+};
+
+/**
+ * A plain link to another site would replace the app's page (Electron's will-navigate guard used
+ * to stop that), so it opens in the system browser instead. Links that ask for a new window
+ * (target=_blank, middle click) reach on_new_window in src-tauri/src/window.rs.
+ */
+const openLinkExternally = (event: MouseEvent, host: BackendHost) => {
+  if (event.defaultPrevented || event.button !== 0 || !(event.target instanceof Element)) return;
+  const link = event.target.closest('a[href]');
+  const href = link?.getAttribute('href');
+  if (!href || link?.hasAttribute('download')) return;
+  const url = new URL(href, document.baseURI);
+  if (url.origin === location.origin || !['http:', 'https:'].includes(url.protocol)) return;
+  event.preventDefault();
+  host.invoke(ELECTRON_API_INVOKE_CHANNELS.openExternal, [url.href])
+    .catch((error) => console.error('[links] could not open', url.href, error));
 };
 
 /** F11, or Ctrl+Cmd+F on macOS: the full-screen toggle Electron's default menu used to provide. */

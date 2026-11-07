@@ -1,14 +1,62 @@
 //! Release builds serve the bundled frontend on http://127.0.0.1:<port> instead of the `tauri://`
 //! scheme. Pages on a custom scheme send YouTube no usable Referer on macOS and Linux, and its
 //! player refuses such embeds (error 153). The files are the same embedded `frontendDist` the
-//! custom protocol would serve; capabilities/localhost.json grants this origin the app's commands.
+//! custom protocol would serve, and only this exact origin is granted the app's commands.
+//!
+//! The port is saved in the data folder and reused on the next launch: the webview keeps
+//! localStorage, IndexedDB and cookies (YouTube's too) per origin, and the origin includes the port.
 
-use tauri::{App, Url};
+use std::path::PathBuf;
 
-/// Starts serving on a free port and returns the URL of the home page.
+use tauri::ipc::CapabilityBuilder;
+use tauri::{App, Manager, Url};
+
+fn port_file() -> PathBuf {
+    crate::sys::info::user_data_dir().join("frontend-port")
+}
+
+/// The saved port if it is still free, otherwise any free one.
+fn bind() -> Result<tiny_http::Server, String> {
+    let saved = std::fs::read_to_string(port_file()).ok().and_then(|text| text.trim().parse::<u16>().ok());
+    if let Some(port) = saved.filter(|port| *port != 0) {
+        match tiny_http::Server::http(("127.0.0.1", port)) {
+            Ok(server) => return Ok(server),
+            Err(e) => log::warn!("port {port} is unavailable ({e}); the page's web storage starts empty"),
+        }
+    }
+    tiny_http::Server::http("127.0.0.1:0").map_err(|e| format!("frontend server: {e}"))
+}
+
+fn save_port(port: u16) {
+    let path = port_file();
+    let written = path
+        .parent()
+        .map_or(Ok(()), std::fs::create_dir_all)
+        .and_then(|_| std::fs::write(&path, port.to_string()));
+    if let Err(e) = written {
+        log::warn!("could not save the frontend port to {}: {e}", path.display());
+    }
+}
+
+/// Starts serving and returns the URL of the home page.
 pub fn start(app: &App) -> Result<Url, String> {
-    let server = tiny_http::Server::http("127.0.0.1:0").map_err(|e| format!("frontend server: {e}"))?;
+    let server = bind()?;
     let port = server.server_addr().to_ip().map(|a| a.port()).ok_or("frontend server has no TCP address")?;
+    save_port(port);
+    let origin = format!("http://127.0.0.1:{port}");
+
+    // The page is a "remote" origin to Tauri, so it gets the same permissions as the bundled
+    // frontend (capabilities/default.json), for this port only.
+    app.add_capability(
+        CapabilityBuilder::new("frontend-server")
+            .remote(origin.clone())
+            .window("main")
+            .permission("core:default")
+            .permission("core:window:allow-set-fullscreen")
+            .permission("app-commands"),
+    )
+    .map_err(|e| format!("frontend capability: {e}"))?;
+
     let assets = app.asset_resolver();
     std::thread::Builder::new()
         .name("miteiru-frontend".into())
@@ -35,5 +83,5 @@ pub fn start(app: &App) -> Result<Url, String> {
             }
         })
         .map_err(|e| e.to_string())?;
-    format!("http://127.0.0.1:{port}/home/").parse().map_err(|e| format!("frontend URL: {e}"))
+    format!("{origin}/home/").parse().map_err(|e| format!("frontend URL: {e}"))
 }

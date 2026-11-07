@@ -25,7 +25,7 @@
     "lint:eslint": "eslint .",
     "build:live-captions": "node scripts/buildLiveCaptionsBridge.js",
     "dev": "tauri dev",
-    "build": "npm run tauri:build",
+    "build": "npm run build:live-captions && npm run tauri:build",
     "dev:renderer": "node scripts/devRenderer.mjs",
     "build:renderer": "node scripts/buildBackendWorker.mjs && next build renderer && node scripts/pruneRendererExport.mjs",
     "build:backend-worker": "node scripts/buildBackendWorker.mjs",

@@ -29,7 +29,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: release-${{ github.ref_name }}
+  # Per tag and platform, so rebuilding one OS doesn't cancel a run building the others.
+  group: release-${{ inputs.tag }}-${{ inputs.platform }}
   cancel-in-progress: true
 
 jobs:

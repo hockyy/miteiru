@@ -56,7 +56,6 @@ const useMediaAnalysis = (videoPath: string) => {
           setTimeout(() => setShowAudioTrackModal(true), 100);
         } else if (hasSingleAudio && hasSubtitles) {
           setTimeout(() => setShowTrackSelectionModal(true), 100);
-        } else {
         }
       }
     } catch (error) {
