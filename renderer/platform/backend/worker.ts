@@ -94,7 +94,7 @@ const boot = async () => {
     {default: Learning},
     {registerAnalyzerHandlers},
     {getStore, setStoreFactory},
-    {setLanguageAssetRoots}
+    {setLanguageAssetRoots, japaneseDictionaryFolder}
   ] = await Promise.all([
     import('../../../main/handler/common'),
     import('../../../main/handler/common/liveCaptionsHandlers'),
@@ -156,7 +156,8 @@ const boot = async () => {
   Japanese.registerHandlers();
   Chinese.registerHandlers();
   Vietnamese.registerHandlers();
-  Japanese.preloadKuromoji();
+  // Japanese starts loading early when its data is here, bundled or an installed pack.
+  japaneseDictionaryFolder().then((folder) => Japanese.preloadKuromoji(folder), () => Japanese.preloadKuromoji());
 
   Learning.setup();
   Learning.registerHandler();

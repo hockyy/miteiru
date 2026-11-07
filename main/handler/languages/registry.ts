@@ -197,6 +197,12 @@ export const startupChannelPluginIds: Record<string, string> = {
   loadVietnamese: "vietnamese"
 };
 
+/** The Kuromoji dictionary folder of the Japanese data on this computer (bundled or a pack), for the preload. */
+export const japaneseDictionaryFolder = async (): Promise<string> => {
+  await refreshAssetRoots();
+  return assetDirectory("japanese", "dict", "dict");
+};
+
 export const getLanguagePlugin = (pluginId: string) => languagePlugins.find(({id}) => id === pluginId);
 
 export const getLanguagePluginByTokenizerMode = (tokenizerMode: string) => (
