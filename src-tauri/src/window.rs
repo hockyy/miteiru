@@ -32,6 +32,12 @@ pub fn create_main(app: &App) -> Result<(), Box<dyn std::error::Error>> {
         }
         NewWindowResponse::Deny
     });
+    // A profile from MITEIRU_USER_DATA_DIR (tests, debugging runs) keeps its webview data inside it
+    // too. Otherwise WebView2 uses one folder per app identifier, so such a run would share storage
+    // with an installed Miteiru and join its browser process (ignoring its own browser arguments).
+    if std::env::var_os("MITEIRU_USER_DATA_DIR").is_some_and(|v| !v.is_empty()) {
+        builder = builder.data_directory(crate::sys::info::user_data_dir().join("webview"));
+    }
     // Windows: the page never leaves the app's origin (links are sent to the browser by the page,
     // renderer/platform/tauriBridge.ts). Only Windows reports main-frame navigations alone; on
     // macOS and Linux the handler also sees the YouTube player's frames, so it is not set there.
