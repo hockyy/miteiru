@@ -9,6 +9,7 @@ permissions = [
   "allow-fs-read-text",
   "allow-fs-read-bytes",
   "allow-fs-read-range",
+  "allow-fs-read-asset",
   "allow-zstd-decompress",
   "allow-table-open",
   "allow-table-close",

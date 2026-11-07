@@ -53,21 +53,31 @@ pub fn read_range(path: &str, offset: u64, length: usize) -> Result<Vec<u8>, Str
   Ok(out)
 }
 
-/// A bundled language asset's bytes. Packaged builds keep the big ones gzipped beside the plain
-/// path (`zh.jieba.txt.gz`, `jmdict.json.gz`; scripts/compressLanguageAssets.js), development keeps
-/// them plain, so this reads whichever exists, as main/helpers/assetFiles.ts readAsset does.
+/// The most a compressed asset may decompress to. The biggest kuromoji file (`tid_pos.dat`) is 40 MB;
+/// the cap only stops a corrupt file from filling memory.
+const MAX_ASSET: u64 = 128 * 1024 * 1024;
+
+/// A bundled language asset's bytes. Packaged builds keep the big ones compressed beside the plain
+/// path (`zh.jieba.txt.zst`; scripts/compressLanguageAssets.js), development keeps them plain, so
+/// this reads the plain file, else `<path>.zst`, else `<path>.gz`, as main/helpers/assetFiles.ts
+/// readAsset does.
 pub fn read_asset(path: &str) -> Result<Vec<u8>, String> {
   match fs::read(path) {
-    Ok(bytes) => Ok(bytes),
-    Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-      let gz = format!("{path}.gz");
-      let file = fs::File::open(&gz).map_err(|e| fs_err(&e, "open", path))?;
-      let mut out = Vec::new();
-      flate2::read::GzDecoder::new(file).read_to_end(&mut out).map_err(|e| fs_err(&e, "read", &gz))?;
-      Ok(out)
-    }
-    Err(e) => Err(fs_err(&e, "open", path)),
+    Ok(bytes) => return Ok(bytes),
+    Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+    Err(e) => return Err(fs_err(&e, "open", path)),
   }
+  let zst = format!("{path}.zst");
+  match fs::read(&zst) {
+    Ok(bytes) => return super::zstd::decompress(&bytes, MAX_ASSET),
+    Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+    Err(e) => return Err(fs_err(&e, "open", &zst)),
+  }
+  let gz = format!("{path}.gz");
+  let file = fs::File::open(&gz).map_err(|e| fs_err(&e, "open", path))?;
+  let mut out = Vec::new();
+  flate2::read::GzDecoder::new(file).read_to_end(&mut out).map_err(|e| fs_err(&e, "read", &gz))?;
+  Ok(out)
 }
 
 pub fn write_bytes(path: &str, data: &[u8], append: bool) -> Result<(), String> {
@@ -226,6 +236,12 @@ pub async fn fs_read_range(path: String, offset: u64, length: usize) -> Result<t
   read_range(&path, offset, length).map(tauri::ipc::Response::new)
 }
 
+/// A language asset's decompressed bytes (see read_asset), for the kuromoji loader.
+#[tauri::command]
+pub async fn fs_read_asset(path: String) -> Result<tauri::ipc::Response, String> {
+  read_asset(&path).map(tauri::ipc::Response::new)
+}
+
 #[tauri::command]
 pub async fn fs_write_text(path: String, text: String, append: bool) -> Result<(), String> {
   write_bytes(&path, text.as_bytes(), append)
@@ -321,6 +337,29 @@ pub mod tests {
     let e = read_range(&f, 0, MAX_RANGE + 1).unwrap_err();
     assert!(e.starts_with("EINVAL: invalid argument, read: "), "{e}");
     assert_eq!(read_range(&f, 0, MAX_RANGE).unwrap().len(), 10);
+  }
+
+  #[test]
+  fn read_asset_prefers_plain_then_zst_then_gz() {
+    let d = tmp("fs-asset");
+    let base = d.join("a.txt").to_string_lossy().into_owned();
+    let gz = {
+      let mut e = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::default());
+      e.write_all(b"from gz").unwrap();
+      e.finish().unwrap()
+    };
+    let e = read_asset(&base).unwrap_err();
+    assert!(e.starts_with("ENOENT: no such file or directory, open '"), "{e}");
+    write_bytes(&format!("{base}.gz"), &gz, false).unwrap();
+    assert_eq!(read_asset(&base).unwrap(), b"from gz");
+    write_bytes(&format!("{base}.zst"), &zstd::encode_all(&b"from zst"[..], 3).unwrap(), false).unwrap();
+    assert_eq!(read_asset(&base).unwrap(), b"from zst");
+    write_bytes(&base, b"plain", false).unwrap();
+    assert_eq!(read_asset(&base).unwrap(), b"plain");
+    // A corrupt .zst is an error, not a silent fall back to the .gz.
+    fs::remove_file(&base).unwrap();
+    write_bytes(&format!("{base}.zst"), b"not zstd", false).unwrap();
+    assert!(read_asset(&base).unwrap_err().starts_with("EINVAL"));
   }
 
   #[test]

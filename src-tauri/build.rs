@@ -6,6 +6,7 @@ const COMMANDS: &[&str] = &[
     "fs_read_text",
     "fs_read_bytes",
     "fs_read_range",
+    "fs_read_asset",
     "zstd_decompress",
     "table_open",
     "table_close",

@@ -52,6 +52,7 @@ pub fn run() {
       fs::fs_read_text,
       fs::fs_read_bytes,
       fs::fs_read_range,
+      fs::fs_read_asset,
       sys::zstd::zstd_decompress,
       sys::table::table_open,
       sys::table::table_close,
