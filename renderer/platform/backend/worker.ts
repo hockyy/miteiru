@@ -5,6 +5,7 @@
 import {setSys, sys} from './sys';
 import type {AnalyzerRequestEvent, WorkerInbound, WorkerOutbound} from './protocol';
 import type {AnalyzerRequest, AnalyzerResponse} from '../../../main/handler/languages/analyzerServer';
+import {SYS_KV_BATCH, SYS_WRITE_BYTES} from './protocol';
 import {appRoot, initRuntime, type SysInfo} from './shims/runtime';
 import {dispatchInvoke, dispatchSend, setEventSink} from './shims/electron';
 import {dispatchProcEvent} from './shims/childProcess';
@@ -29,8 +30,8 @@ setSys((cmd, args) => new Promise((resolve, reject) => {
   const id = nextSysId++;
   pendingSys.set(id, {resolve, reject});
   const transfer: Transferable[] = [];
-  // Raw-bytes commands (fs_write_bytes, kv_batch) hand their buffer over instead of copying it.
-  if (args?.data instanceof ArrayBuffer) transfer.push(args.data);
+  // The raw-bytes commands hand their buffer over instead of copying it (their callers made it for the call).
+  if ((cmd === SYS_WRITE_BYTES || cmd === SYS_KV_BATCH) && args?.data instanceof ArrayBuffer) transfer.push(args.data);
   post({kind: 'sys', id, cmd, args}, transfer);
 }));
 

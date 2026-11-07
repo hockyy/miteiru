@@ -233,12 +233,16 @@ pub fn decode_batch(body: &[u8]) -> Result<Vec<Op<'_>>, String> {
 /// WAL and took about twice as long. Turning it off commits, checkpoints once and restores the
 /// defaults that every other write uses. A crash mid-load leaves nothing of it behind.
 pub fn set_bulk(conn: &Connection, on: bool) -> Result<(), String> {
+  const DEFAULTS: &str = "PRAGMA wal_autocheckpoint = 1000; PRAGMA cache_size = -2000;";
   if on {
-    conn.execute_batch("PRAGMA cache_size = -65536; PRAGMA wal_autocheckpoint = 0;").map_err(db_err)?;
-    if conn.is_autocommit() {
-      conn.execute_batch("BEGIN").map_err(db_err)?;
+    let begun = conn
+      .execute_batch("PRAGMA cache_size = -65536; PRAGMA wal_autocheckpoint = 0;")
+      .and_then(|_| if conn.is_autocommit() { conn.execute_batch("BEGIN") } else { Ok(()) });
+    if begun.is_err() {
+      // Not in bulk mode after all, so the defaults stay: without them the WAL is never checkpointed.
+      let _ = conn.execute_batch(DEFAULTS);
     }
-    return Ok(());
+    return begun.map_err(db_err);
   }
   // Nothing to commit if a failed batch has already rolled the load back.
   let committed = if conn.is_autocommit() { Ok(()) } else { conn.execute_batch("COMMIT").map_err(db_err) };
@@ -246,10 +250,9 @@ pub fn set_bulk(conn: &Connection, on: bool) -> Result<(), String> {
     // A failed COMMIT can leave the transaction open, and every later write would join it.
     let _ = conn.execute_batch("ROLLBACK");
   }
-  let restored = conn
-    .execute_batch("PRAGMA wal_checkpoint(TRUNCATE); PRAGMA wal_autocheckpoint = 1000; PRAGMA cache_size = -2000;")
-    .map_err(db_err);
-  committed.and(restored)
+  let checkpointed = conn.execute_batch("PRAGMA wal_checkpoint(TRUNCATE);").map_err(db_err);
+  let restored = conn.execute_batch(DEFAULTS).map_err(db_err);
+  committed.and(checkpointed).and(restored)
 }
 
 fn where_clause(o: &RangeOpts) -> (String, Vec<Value>) {
@@ -394,16 +397,14 @@ pub async fn kv_del(kv: tauri::State<'_, Kv>, handle: u32, key: String) -> Resul
 /// import sends a few hundred megabytes, and as JSON it takes about twice as long to get here.
 #[tauri::command]
 pub async fn kv_batch(kv: tauri::State<'_, Kv>, request: tauri::ipc::Request<'_>) -> Result<(), String> {
-  let tauri::ipc::InvokeBody::Raw(body) = request.body() else {
-    return Err("EINVAL: invalid argument, kv batch: expected a raw body".into());
-  };
+  let body = super::raw_body(request.body(), "kv batch")?;
   let handle = request
     .headers()
     .get("x-handle")
     .and_then(|v| v.to_str().ok())
     .and_then(|v| v.parse::<u32>().ok())
     .ok_or_else(|| "EINVAL: invalid argument, kv batch: missing x-handle header".to_string())?;
-  let ops = decode_batch(body)?;
+  let ops = decode_batch(&body)?;
   kv.with(handle, |c| batch(c, &ops))
 }
 

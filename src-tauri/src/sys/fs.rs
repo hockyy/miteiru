@@ -195,9 +195,7 @@ pub async fn fs_write_text(path: String, text: String, append: bool) -> Result<(
 
 #[tauri::command]
 pub async fn fs_write_bytes(request: tauri::ipc::Request<'_>) -> Result<(), String> {
-  let tauri::ipc::InvokeBody::Raw(data) = request.body() else {
-    return Err("EINVAL: invalid argument, write: expected a raw body".into());
-  };
+  let data = super::raw_body(request.body(), "write")?;
   let path = request
     .headers()
     .get("x-path")
@@ -209,7 +207,7 @@ pub async fn fs_write_bytes(request: tauri::ipc::Request<'_>) -> Result<(), Stri
     .get("x-append")
     .and_then(|v| v.to_str().ok())
     .is_some_and(|v| v == "1");
-  write_bytes(&path, data, append)
+  write_bytes(&path, &data, append)
 }
 
 #[tauri::command]
