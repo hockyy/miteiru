@@ -62,7 +62,7 @@ Get the newest version from **[Releases](https://github.com/hockyy/miteiru/relea
 
 Upgrading from 7.x keeps your words, notes and settings: Miteiru 8 reads the same data folder.
 
-From 8.0 on, Miteiru updates itself on Windows, macOS and the Linux AppImage. It offers a new version a few seconds after it starts, and you choose when to restart. The `.deb` is updated by downloading the new one. Turn the check off under **Settings & tools → Updates**.
+Miteiru 8.0 doesn't update itself yet: new versions appear on the [releases page](https://github.com/hockyy/miteiru/releases), and you install them the same way.
 
 <details>
 <summary>macOS: what the warning looks like</summary>
@@ -100,7 +100,7 @@ From 8.0 on, Miteiru updates itself on Windows, macOS and the Linux AppImage. It
 | Cantonese | 8.1 MB, plus the same hanzi stroke data |
 | Vietnamese | 0.6 MB |
 
-**Offline install:** download the `Miteiru-language-<name>.mtrpack` files from the [release](https://github.com/hockyy/miteiru/releases) that matches your Miteiru version (a pack from another version is refused, and says which one it is), then choose them in Miteiru's language downloads, or build with `npm run tauri:build:full` to get an installer that carries every language.
+**Offline install:** download the `Miteiru-language-<name>.mtrpack` files from the [release](https://github.com/hockyy/miteiru/releases) that matches your Miteiru version (a pack from another version is refused, and says which one it is), then pick each one with **Install it from a file…** on the home page (or **Settings & tools → Languages → Install from a file…**). Or build with `npm run tauri:build:full` to get an installer that carries every language.
 
 More detail in [README_LANGUAGES.md](README_LANGUAGES.md).
 
