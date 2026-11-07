@@ -110,3 +110,12 @@ test("batches travel as raw bytes that decode to the same writes", async () => {
   assert.throws(() => encodeBatch([{type: "put", key: "k"}]), (error: Error & { code?: string }) => error.code === "EINVAL");
   assert.throws(() => encodeBatch([{type: "get" as "put", key: "k"}]), (error: Error & { code?: string }) => error.code === "EINVAL");
 });
+
+test("importDictionary asks Rust to import the file into this store's handle", async () => {
+  const {db, kv} = await open();
+  await assert.rejects(db.importDictionary("/assets/jmdict.json", "jmdict"), /fake sys does not implement kv_import_dictionary/);
+  const call = kv.calls.at(-1);
+  assert.equal(call.cmd, "kv_import_dictionary");
+  assert.deepEqual({path: call.args.path, layout: call.args.layout}, {path: "/assets/jmdict.json", layout: "jmdict"});
+  assert.equal(typeof call.args.handle, "number");
+});

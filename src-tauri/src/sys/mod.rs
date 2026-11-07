@@ -1,6 +1,7 @@
 //! Rust half of the desktop contract: every `#[tauri::command]` the JS shims call.
 
 pub mod dialog;
+pub mod dict_import;
 pub mod fs;
 pub mod http;
 pub mod info;

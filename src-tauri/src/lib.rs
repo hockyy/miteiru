@@ -8,7 +8,7 @@ mod sys;
 mod video_gl;
 mod window;
 
-use sys::{dialog, fs, http, info, jieba, kv, proc, shell};
+use sys::{dialog, dict_import, fs, http, info, jieba, kv, proc, shell};
 use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -65,6 +65,7 @@ pub fn run() {
       kv::kv_del,
       kv::kv_batch,
       kv::kv_bulk,
+      dict_import::kv_import_dictionary,
       kv::kv_range,
       kv::kv_clear,
       kv::kv_close,

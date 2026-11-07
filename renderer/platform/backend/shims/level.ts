@@ -249,6 +249,14 @@ export class Level<K = string, V = string> {
     await sys(SYS_KV_BATCH, {handle: await this.handle(), data});
   }
 
+  /**
+   * Not in `level`: imports a bundled dictionary file into this (empty) store in Rust
+   * (src-tauri/src/sys/dict_import.rs) and returns its dictDate and version.
+   */
+  async importDictionary(path: string, layout: string): Promise<Record<string, string>> {
+    return await sys('kv_import_dictionary', {handle: await this.handle(), path, layout}) as Record<string, string>;
+  }
+
   /** Not in `level`: bulk mode for building a database from scratch (src-tauri/src/sys/kv.rs set_bulk). */
   async bulkLoad(on: boolean): Promise<void> {
     await sys('kv_bulk', {handle: await this.handle(), on});

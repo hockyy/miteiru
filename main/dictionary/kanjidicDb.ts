@@ -20,6 +20,7 @@ export interface KanjidicFile {
 export const setupKanjidic = async (dbPath: string, importPath = "") => {
   const {db, metadata} = await openDictionary<KanjidicFile>(dbPath, importPath, {
     metadataKeys: ["raw/dictDate", "raw/version"],
+    nativeLayout: "kanjidic",
     writeEntries: async (raw, writer) => {
       for (const character of raw.characters) {
         await writer.put(`raw/characters/${character.literal}`, JSON.stringify(character));

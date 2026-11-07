@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-kv-import-dictionary"
+description = "Enables the kv_import_dictionary command without any pre-configured scope."
+commands.allow = ["kv_import_dictionary"]
+
+[[permission]]
+identifier = "deny-kv-import-dictionary"
+description = "Denies the kv_import_dictionary command without any pre-configured scope."
+commands.deny = ["kv_import_dictionary"]

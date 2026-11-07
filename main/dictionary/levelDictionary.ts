@@ -1,4 +1,4 @@
-import {readTextAsset} from "../helpers/assetFiles";
+import {assetExists, readTextAsset} from "../helpers/assetFiles";
 import {promises as fs} from "node:fs";
 import {Level} from "level";
 
@@ -15,6 +15,18 @@ type DictionaryImport<T> = {
   metadataKeys: string[];
   writeEntries: (raw: T, writer: BatchWriter) => Promise<void>;
   metadata: (raw: T) => Record<string, string>;
+  /**
+   * The desktop app's store imports this file itself (src-tauri/src/sys/dict_import.rs): the same
+   * keys, without parsing and sending 100 MB through the page. writeEntries stays for plain
+   * `level` (the tests). `metadata` then gets the file's dictDate and version only.
+   */
+  nativeLayout?: "jmdict" | "kanjidic";
+};
+
+/** The desktop store (renderer/platform/backend/shims/level.ts); plain `level` has neither. */
+type DesktopStore = DictionaryDb & {
+  bulkLoad?: (on: boolean) => Promise<void>;
+  importDictionary?: (path: string, layout: string) => Promise<Record<string, string>>;
 };
 
 const MAX_BATCH_SIZE = 10000;
@@ -69,10 +81,12 @@ export const openDictionary = async <T>(
       return {db, metadata: storedMetadata};
     }
 
-    let raw: T;
+    const native = dictionaryImport.nativeLayout && (db as DesktopStore).importDictionary ? dictionaryImport.nativeLayout : null;
+    let raw: T | null = null;
     try {
       if (!importPath) throw new Error(`Dictionary database ${dbPath} is not imported and no import file was given`);
-      raw = await readImportFile<T>(importPath);
+      if (!native) raw = await readImportFile<T>(importPath);
+      else if (!await assetExists(importPath)) throw new Error(`Dictionary file not found: ${importPath}`);
     } catch (error) {
       // An older but complete database still works when there is nothing to rebuild it from.
       if (hasMetadata) return {db, metadata: storedMetadata};
@@ -84,18 +98,21 @@ export const openDictionary = async <T>(
     await fs.rm(dbPath, {recursive: true, force: true});
     db = new Level<string, string>(dbPath);
 
-    // The desktop app's store (renderer/platform/backend/shims/level.ts) has a bulk mode for
-    // exactly this; plain `level` (tests) does not.
-    const bulk = db as DictionaryDb & { bulkLoad?: (on: boolean) => Promise<void> };
-    await bulk.bulkLoad?.(true);
+    const store = db as DesktopStore;
     let metadata: Record<string, string>;
-    try {
-      const writer = new BatchWriter(db);
-      await dictionaryImport.writeEntries(raw, writer);
-      await writer.flush();
-      metadata = dictionaryImport.metadata(raw);
-    } finally {
-      await bulk.bulkLoad?.(false);
+    if (native) {
+      metadata = dictionaryImport.metadata(await store.importDictionary(importPath, native) as T);
+    } else {
+      // The desktop store has a bulk mode for exactly this; plain `level` (tests) does not.
+      await store.bulkLoad?.(true);
+      try {
+        const writer = new BatchWriter(db);
+        await dictionaryImport.writeEntries(raw, writer);
+        await writer.flush();
+        metadata = dictionaryImport.metadata(raw);
+      } finally {
+        await store.bulkLoad?.(false);
+      }
     }
     // Written last, after bulk mode has checkpointed everything, so it marks a complete import.
     await db.batch([...Object.entries(metadata), [FORMAT_KEY, FORMAT_VERSION]]

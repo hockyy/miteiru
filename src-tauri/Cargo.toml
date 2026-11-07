@@ -23,6 +23,8 @@ tauri-plugin-window-state = "2"
 tauri-plugin-http = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+# Gzipped language assets, read by the dictionary import (sys/dict_import.rs).
+flate2 = "1"
 log = "0.4"
 tauri-plugin-log = "2"
 base64 = "0.22"

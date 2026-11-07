@@ -66,6 +66,7 @@ export interface JmdictFile {
 export const setupJmdict = async (dbPath: string, importPath = "") => {
   const {db, metadata} = await openDictionary<JmdictFile>(dbPath, importPath, {
     metadataKeys: ["raw/dictDate", "raw/version"],
+    nativeLayout: "jmdict",
     writeEntries: async (raw, writer) => {
       await writer.put("raw/tags", JSON.stringify(raw.tags));
       await writer.put("raw/dictRevisions", JSON.stringify(raw.dictRevisions));
