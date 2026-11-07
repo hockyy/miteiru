@@ -10,6 +10,8 @@ export interface WriteOptions {
   blockBytes?: number;
   /** zstd level (default 19). */
   level?: number;
+  /** An entry at least this large gets a block to itself (default: none). */
+  soloBytes?: number;
 }
 
 export const DEFAULT_BLOCK_BYTES = 128 * 1024;
@@ -67,9 +69,11 @@ export const writeTable = (
     pendingBytes = 0;
   };
   for (const entry of sorted) {
+    const size = 8 + entry[0].length + entry[1].length;
+    if (options.soloBytes !== undefined && size >= options.soloBytes) flush();
     pending.push(entry);
-    pendingBytes += 8 + entry[0].length + entry[1].length;
-    if (pendingBytes >= blockBytes) flush();
+    pendingBytes += size;
+    if (pendingBytes >= blockBytes || (options.soloBytes !== undefined && size >= options.soloBytes)) flush();
   }
   flush();
 
