@@ -6,6 +6,10 @@ How to ship a new read-only dataset (stroke data, a word list, example sentences
 
 Sources live in `renderer/public/language-assets/<plugin>/…`, next to the plugin's `asset-manifest.json`. They are not committed: `npm run script:download-language-assets` fetches them from the assets release into that folder, so a new dataset means uploading its files to that release (and listing them in the plugin's `asset-manifest.json`). In development the app can read the loose files; packaged builds read a table built from them.
 
+### New files must go into a pack
+
+Language data reaches users as language packs ([DATA_FORMAT.md](DATA_FORMAT.md), "Language packs"), built from the staged assets by `scripts/data/buildLanguagePacks.ts`. A new file under `language-assets/` that no pack lists fails `npm run build:language-packs` (and so a release), and the error names the file. Add its path, or its folder with a trailing `/`, to the `include` list of the pack whose language needs it, or to `EXCLUDED` if the page fetches it from its own export. A new plugin folder needs a pack too, or an addition to an existing pack's `plugins`. Read the file through `resolveAsset` in `main/handler/languages/registry.ts`, which looks in every installed pack, and not through `__dirname`.
+
 ## 2. Add a build entry
 
 Staging (`node scripts/stageTauriResources.mjs`, part of `npm run tauri:build`) copies the language assets and calls `compressLanguageAssets` (`scripts/compressLanguageAssets.js`), which runs `scripts/data/buildStrokePacks.ts` through `tsx`. A dataset needs an entry like the ones in `STROKE_SETS` in that file:
