@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect} from "react";
+import React, {useCallback, useEffect, useRef} from "react";
 import {formatKeys} from "../../utils/platform";
 
 type VideoTopBarProps = {
@@ -48,6 +48,26 @@ export const VideoTopBar = ({
   onRemovePrimary,
   onRemoveSecondary
 }: VideoTopBarProps) => {
+  // A subtitle shown at the top moves below the bar while the bar shows (globals.css): publish the
+  // height of the buttons' row, without the fade under it. The row wraps in a narrow window.
+  const barRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const bar = barRef.current;
+    if (!bar) return;
+    const root = document.documentElement.style;
+    const publish = () => {
+      const fade = parseFloat(getComputedStyle(bar).paddingBottom) || 0;
+      root.setProperty("--player-topbar-height", `${Math.max(0, Math.round(bar.getBoundingClientRect().height - fade))}px`);
+    };
+    publish();
+    const observer = new ResizeObserver(publish);
+    observer.observe(bar);
+    return () => {
+      observer.disconnect();
+      root.removeProperty("--player-topbar-height");
+    };
+  }, []);
+
   // A button clicked with the mouse takes no focus, so Space keeps playing and pausing.
   const keepFocusOff = useCallback((event: React.MouseEvent) => {
     if (event.target instanceof Element && event.target.closest("button")) event.preventDefault();
@@ -72,6 +92,7 @@ export const VideoTopBar = ({
   };
 
   return <nav
+      ref={barRef}
       aria-label="Video"
       onMouseDown={keepFocusOff}
       className="autohide player-topbar fixed top-0 z-[16] flex flex-wrap items-center gap-1 px-3 pb-6 pt-2 unselectable"

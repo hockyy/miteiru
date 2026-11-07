@@ -254,7 +254,7 @@ export const Subtitle = (
   const currentContainerStyle = useSubtitleContainerStyle(subtitleStyling, extraContainerStyle);
 
   return <div
-      className={"unselectable fixed z-10 text-center transition-[left,right] duration-300 ease-out " + extraClass}
+      className={"unselectable fixed z-10 text-center transition-[left,right,top] duration-300 ease-out " + extraClass}
       style={currentContainerStyle}>
     {caption.length > 0 &&
         <div className={"subtitle-stroke-shadow w-fit z-10 mx-auto rounded-lg px-3 pt-2 pb-1"} style={{

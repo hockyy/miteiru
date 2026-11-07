@@ -12,6 +12,16 @@ export const isAutoKnown = (level: number): boolean => level === AUTO_KNOWN_LEVE
 /** The saved level a word counts as: an automatically known word reads as Known. */
 export const savedLevelOf = (level: number): number => (isAutoKnown(level) ? 2 : level);
 
+/**
+ * What a right-click on a subtitle word did, and what the next one does: right-click moves a word
+ * from New to Learning to Known and back to New.
+ */
+export const rightClickSaveMessage = (word: string, level: number): string => {
+  if (level === 1) return `Saved ${word} as Learning. Right-click again: Known.`;
+  if (level === 2) return `${word} is Known now. Right-click again: back to New.`;
+  return `${word} is New again. Right-click again: Learning.`;
+};
+
 /** The colour key: every level's dot and name, with the automatic one explained. */
 export const COLOR_KEY = [
   { level: 0, label: 'New' },

@@ -40,11 +40,13 @@ const useLearningState = (lang: string) => {
     setRefreshTrigger((prev) => prev + 1);
   }, [lang]);
 
-  const changeLearningState = useCallback((content: string) => {
-    if (!content) return;
+  /** Moves the word to the next level (New, Learning, Known, then New again) and returns that level. */
+  const changeLearningState = useCallback((content: string): number | undefined => {
+    if (!content) return undefined;
     const currentLevel = savedEntries.current[content]?.level ?? getLearningState(content);
     const nextLevel = (currentLevel + 1) % videoConstants.learningStateLength;
     saveLearningEntry(content, {level: nextLevel, updTime: Date.now()});
+    return nextLevel;
   }, [getLearningState, saveLearningEntry]);
 
   /** Saves the word at a chosen level (0 New, 1 Learning, 2 Known), as the three-part control in the popup does. */
