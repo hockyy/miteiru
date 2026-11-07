@@ -1,6 +1,7 @@
 import {useCallback} from "react";
 import {SubtitlePreprocessOptions} from "../types/subtitlePreprocess";
 import {getYoutubeVideoId, SubtitleTarget} from "../utils/mediaUtils";
+import {mainSubtitleName, TRANSLATION_NAME} from "../utils/subtitleLabels";
 
 interface UseMediaTrackSubtitleSelectionParams {
   videoPath: string;
@@ -8,6 +9,8 @@ interface UseMediaTrackSubtitleSelectionParams {
   handleCloseTrackSelectionModal: () => void;
   loadEmbeddedSubtitle: LoadEmbeddedSubtitle;
   setToastInfo: (info: { message: string; update: string }) => void;
+  /** The language being learned by name ("Japanese"): the main subtitle is called after it. */
+  languageName?: string;
 }
 
 type LoadEmbeddedSubtitle = (
@@ -33,7 +36,8 @@ export const useMediaTrackSubtitleSelection = ({
   handleTrackSelection,
   handleCloseTrackSelectionModal,
   loadEmbeddedSubtitle,
-  setToastInfo
+  setToastInfo,
+  languageName
 }: UseMediaTrackSubtitleSelectionParams) => {
   const showToast = useCallback((message: string) => {
     setToastInfo({
@@ -49,7 +53,9 @@ export const useMediaTrackSubtitleSelection = ({
     preprocessOptions?: SubtitlePreprocessOptions
   ) => {
     console.log(`[Video] Downloading YouTube ${target} subtitle: ${language}`);
-    showToast(`Downloading ${target} YouTube subtitle (${language})...`);
+    // "the Japanese subtitles" or "the translation": the loader's own toast says it is loaded.
+    const name = target === 'primary' ? `the ${mainSubtitleName(languageName)}` : `the ${TRANSLATION_NAME.toLowerCase()}`;
+    showToast(`Getting ${name} from YouTube…`);
 
     try {
       const result = await window.backend.invoke("downloadYoutubeSubtitle", videoId, language);
@@ -59,12 +65,11 @@ export const useMediaTrackSubtitleSelection = ({
 
       console.log(`[Video] ${target} subtitle downloaded to: ${result.filePath}`);
       await loadEmbeddedSubtitle(result.filePath, target, preprocessOptions);
-      showToast(`${target === 'primary' ? 'Primary' : 'Secondary'} YouTube subtitle loaded (${language})`);
     } catch (error) {
       console.error(`Failed to download YouTube ${target} subtitle:`, error);
-      showToast(`Failed to load ${target} YouTube subtitle: ${error.message}`);
+      showToast(`Couldn't get ${name} from YouTube: ${error.message}`);
     }
-  }, [loadEmbeddedSubtitle, showToast]);
+  }, [loadEmbeddedSubtitle, showToast, languageName]);
 
   return useCallback(async (selection) => {
     console.log('[Video] Handling media track selection:', selection);
@@ -106,7 +111,7 @@ export const useMediaTrackSubtitleSelection = ({
       }
     } catch (error) {
       console.error('Error handling media track selection:', error);
-      showToast(`Failed to load selected tracks: ${error.message}`);
+      showToast(`Couldn't load the subtitles you chose: ${error.message}`);
     }
   }, [
     downloadYoutubeSubtitle,

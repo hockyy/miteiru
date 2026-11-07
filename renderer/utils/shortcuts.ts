@@ -1,5 +1,6 @@
 import {formatKeys, isMacPlatform} from "./platform";
 import type {KeyCommand} from "./keyCommands";
+import {mainSubtitleNameInSentence} from "./subtitleLabels";
 
 export type ShortcutItem = { keys: string; description: string };
 export type ShortcutGroup = { title: string; items: ShortcutItem[] };
@@ -49,8 +50,11 @@ const extraShortcuts = (language: string, mac: boolean): ShortcutGroup[] => [
   {
     title: 'Subtitles',
     items: [
-      {keys: '[ / ]', description: `Show the ${language} subtitle earlier or later`},
-      {keys: formatKeys(['Ctrl', '[ / ]'], mac), description: 'Show the translation earlier or later'}
+      // `]` adds to the shift and every line then shows later; `[` the opposite (utils/subtitleTiming.ts).
+      {keys: '[', description: `Show the ${mainSubtitleNameInSentence(language)} 0.1 s earlier`},
+      {keys: ']', description: `Show the ${mainSubtitleNameInSentence(language)} 0.1 s later`},
+      {keys: formatKeys(['Ctrl', '['], mac), description: 'Show the translation 0.1 s earlier'},
+      {keys: formatKeys(['Ctrl', ']'], mac), description: 'Show the translation 0.1 s later'}
     ]
   }
 ];

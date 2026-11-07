@@ -64,11 +64,9 @@ export const getMiteiruAppName = () =>
   process.env.NODE_ENV === 'development' ? 'Miteiru (dev)' : 'Miteiru';
 
 /** `videoName`, when given, names the video instead of its path (a YouTube video's title). */
-export const getMiteiruVideoTitle = (videoPath = '', primarySub = '', secondarySub = '', showPrimarySub: boolean, showSecondarySub: boolean, videoName?: string) => {
+export const getMiteiruVideoTitle = (videoPath = '', primarySub = '', secondarySub = '', videoName?: string) => {
   const videoPart = videoName ? ` - ${videoName}` : getFormattedNameFromPath(videoPath);
-  let tmpTitle = `${getMiteiruAppName()}${videoPart}${getFormattedNameFromPath(primarySub)}${getFormattedNameFromPath(secondarySub)}`
-  tmpTitle += `-CJK${showPrimarySub ? '✅' : '❌'}-Other${showSecondarySub ? '✅' : '❌'}`
-  return tmpTitle
+  return `${getMiteiruAppName()}${videoPart}${getFormattedNameFromPath(primarySub)}${getFormattedNameFromPath(secondarySub)}`;
 }
 
 export const toTime = (time: number) => {

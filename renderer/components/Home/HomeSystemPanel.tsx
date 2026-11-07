@@ -6,6 +6,7 @@ import { useStoreData } from '../../hooks/useStoreData';
 import { useUpdateState } from '../../hooks/useUpdateState';
 import { checkForUpdate, installUpdate, UPDATE_SETTING_KEY, updatesSupported, type UpdateState } from '../../platform/updates';
 import { APP_FONT_OPTIONS } from '../../utils/fonts';
+import {capabilityRows, ffmpegSetupHint, TOOLS_WITHOUT_NOTE, ytDlpSetupSteps} from '../../utils/toolSetup';
 import {
   HOME_BODY,
   HOME_INNER_LABEL,
@@ -49,10 +50,9 @@ interface HomeSystemPanelProps {
   toolsCheckMessage: string;
   toolsCheckInProgress: boolean;
   toolsCheckDetails?: Record<string, { available: boolean; isInternal?: boolean }>;
-  toolsCheckMissingTools?: string[];
-  toolsCheckCached?: boolean;
   isDownloading: string | false;
   onRefreshTools: () => void;
+  onOpenToolsFolder: () => void;
   onDownloadTool: (toolName: string) => void;
   isRemovingCache: boolean;
   cacheCheckOk: number;
@@ -135,22 +135,35 @@ export const HomeSystemPanel: React.FC<HomeSystemPanelProps> = ({
   toolsCheckMessage,
   toolsCheckInProgress,
   toolsCheckDetails,
-  toolsCheckMissingTools,
-  toolsCheckCached,
   isDownloading,
   onRefreshTools,
+  onOpenToolsFolder,
   onDownloadTool,
   isRemovingCache,
   cacheCheckOk,
   cacheCheckMessage,
   showCacheStatus,
   onRemoveDictCaches,
-}) => (
+}) => {
+  const platform = typeof window === 'undefined' ? '' : window.electronAPI?.platform ?? '';
+  const rows = capabilityRows(toolsCheckDetails);
+  const checked = Boolean(toolsCheckDetails);
+  const allFound = checked && rows.every((row) => row.found);
+  const ytDlpMissing = checked && !rows[0].found;
+  const ffmpegMissing = checked && !rows[1].found;
+  const toolsPillMessage = toolsCheckInProgress
+    ? 'Checking tools…'
+    : !checked
+      ? toolsCheckMessage
+      : allFound
+        ? 'YouTube and built-in subtitles ready'
+        : 'Some subtitle helpers not found';
+  return (
   <details className={`${HOME_SHELL} group`}>
     <summary className={`${HOME_SECTION_LABEL} flex cursor-pointer list-none items-center justify-between gap-3 rounded-t-3xl [&::-webkit-details-marker]:hidden`}>
       <span>Settings &amp; tools</span>
       <span className="text-[11px] font-semibold normal-case tracking-normal text-blue-800 group-open:hidden">
-        Font · Updates · Live CC · FFmpeg · caches
+        Font · Updates · Live CC · Subtitle helpers · caches
       </span>
       <span className="hidden text-[11px] font-semibold normal-case tracking-normal text-blue-800 group-open:inline">
         Collapse
@@ -160,7 +173,7 @@ export const HomeSystemPanel: React.FC<HomeSystemPanelProps> = ({
     <div className={`${HOME_BODY} bg-blue-100 pt-4`}>
       <div className="flex flex-wrap gap-2">
         <StatusPill symbol={liveCaptionsSymbol} message={liveCaptionsMessage} variant={liveCaptionsTone} />
-        <StatusPill symbol={checkSymbol[toolsCheckOk]} message={toolsCheckInProgress ? 'Checking tools…' : toolsCheckMessage} variant="blue" />
+        <StatusPill symbol={checkSymbol[checked && !toolsCheckInProgress ? (allFound ? 1 : 2) : toolsCheckOk]} message={toolsPillMessage} variant="blue" />
         {showCacheStatus && (
           <StatusPill symbol={checkSymbol[cacheCheckOk]} message={cacheCheckMessage} variant="slate" />
         )}
@@ -171,42 +184,42 @@ export const HomeSystemPanel: React.FC<HomeSystemPanelProps> = ({
       <UpdatesPanel/>
 
       <details className={HOME_INNER_PANEL}>
-        <summary className={`${HOME_INNER_LABEL} cursor-pointer rounded-t-2xl`}>Optional media tools</summary>
-        <div className="space-y-2 bg-blue-50 px-3 py-2.5">
-          <Button type="secondary" size="small" disabled={toolsCheckInProgress} onPress={onRefreshTools}>
-            {toolsCheckInProgress ? 'Checking…' : 'Refresh'}
-          </Button>
+        <summary className={`${HOME_INNER_LABEL} cursor-pointer rounded-t-2xl`}>YouTube and built-in subtitles</summary>
+        <div className="space-y-2 bg-blue-50 px-3 py-2.5 text-sm text-blue-900">
+          <div className="grid gap-1">
+            {rows.map((row) => (
+              <div key={row.id} className="flex items-center justify-between gap-2 rounded-xl border-2 border-blue-300 bg-white px-2 py-1 text-[12px] font-medium text-blue-900">
+                <span>
+                  {checked ? (row.found ? '✅' : '❌') : '⏳'} <b>{row.title}</b> · {row.needs} · {checked ? (row.found ? 'Found' : 'Not found') : 'Checking…'}
+                </span>
+                {checked && !row.found && (
+                  <Button
+                    type="link"
+                    size="small"
+                    disabled={isDownloading === row.getTool}
+                    onPress={() => onDownloadTool(row.getTool)}
+                  >
+                    {isDownloading === row.getTool ? '…' : 'Get it'}
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
 
-          {toolsCheckDetails && (
-            <div className="grid max-h-24 gap-1 overflow-y-auto">
-              {Object.entries(toolsCheckDetails).map(([toolName, status]) => (
-                <div key={toolName} className="flex items-center justify-between gap-2 rounded-xl border-2 border-blue-300 bg-white px-2 py-1 text-[11px] font-medium text-blue-900">
-                  <span className="truncate">
-                    {status.available ? '✅' : '❌'} {toolName}
-                    {status.isInternal ? ' (internal)' : ''}
-                  </span>
-                  {!status.available && (
-                    <Button
-                      type="link"
-                      size="small"
-                      disabled={isDownloading === toolName}
-                      onPress={() => onDownloadTool(toolName)}
-                    >
-                      {isDownloading === toolName ? '…' : 'Link'}
-                    </Button>
-                  )}
-                </div>
-              ))}
-            </div>
+          {ytDlpMissing && (
+            <ul className="list-disc space-y-0.5 pl-5 text-[12px] text-blue-800">
+              {ytDlpSetupSteps(platform).map((step) => <li key={step}>{step}</li>)}
+            </ul>
           )}
+          {ffmpegMissing && <p className="text-[12px] text-blue-800">{ffmpegSetupHint(platform)}</p>}
 
-          {toolsCheckMissingTools && toolsCheckMissingTools.length > 0 && (
-            <p className="text-[11px] font-semibold text-blue-800">Missing: {toolsCheckMissingTools.join(', ')}</p>
-          )}
-
-          {toolsCheckCached && !toolsCheckInProgress && (
-            <p className="text-[11px] text-blue-700">Cached result — refresh to update</p>
-          )}
+          <div className="flex flex-wrap items-center gap-2">
+            <Button type="secondary" size="small" onPress={onOpenToolsFolder}>Open tools folder</Button>
+            <Button type="secondary" size="small" disabled={toolsCheckInProgress} onPress={onRefreshTools}>
+              {toolsCheckInProgress ? 'Checking…' : 'Check again'}
+            </Button>
+          </div>
+          <p className="text-[12px] text-blue-800">{TOOLS_WITHOUT_NOTE}</p>
         </div>
       </details>
 
@@ -218,4 +231,5 @@ export const HomeSystemPanel: React.FC<HomeSystemPanelProps> = ({
       </div>
     </div>
   </details>
-);
+  );
+};

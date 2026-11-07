@@ -1,6 +1,7 @@
 import {useCallback, useEffect, useState} from "react";
-import {videoConstants} from "../utils/constants";
 import {v4 as uuidv4} from 'uuid';
+import {SHIFT_STEP_MS, subtitleShiftToast} from "../utils/subtitleTiming";
+import {mainSubtitleName, TRANSLATION_NAME} from "../utils/subtitleLabels";
 import {isTextEntryTarget} from "../utils/keyboardTargets";
 import type {PlaybackClock} from "../utils/playbackClock";
 
@@ -41,8 +42,9 @@ export const useVideoPlayingToggle = (player, metadata) => {
 // A range slider does nothing on Space, so after setting the volume Space still plays and pauses.
 const SPACE_ACTIVATED = 'button, a[href], summary, select, input:not([type="range"]), [role="button"], [role="checkbox"], [role="switch"]';
 
+/** `languageName` is the language being learned ("Japanese"): the main subtitle is named after it. */
 export const useVideoKeyboardControls = (togglePlay, deltaTime, setPrimaryShift,
-                                         setSecondaryShift, setInfo, backToHead, setIsPlaying) => {
+                                         setSecondaryShift, setInfo, backToHead, setIsPlaying, languageName = '') => {
   useEffect(() => {
     const handleVideoController = (event) => {
       // Typing in a search box or notes must not toggle playback or seek.
@@ -65,13 +67,14 @@ export const useVideoKeyboardControls = (togglePlay, deltaTime, setPrimaryShift,
         backToHead();
         setIsPlaying(1);
       } else if (event.code.startsWith("Bracket")) {
-        const currentShiftAmount = event.code === "BracketLeft" ?
-            -videoConstants.shiftAmount : videoConstants.shiftAmount;
+        // `]` moves the subtitle later and `[` earlier (see utils/subtitleTiming.ts).
+        const currentShiftAmount = event.code === "BracketLeft" ? -SHIFT_STEP_MS : SHIFT_STEP_MS;
+        const name = event.ctrlKey ? TRANSLATION_NAME : mainSubtitleName(languageName);
         (event.ctrlKey ? setSecondaryShift : setPrimaryShift)(old => {
           setInfo(() => {
             return {
-              message: `Shifting ${(event.ctrlKey ? "Secondary" : "Primary")} Sub to ${old + currentShiftAmount}ms`,
-              udpate: uuidv4()
+              message: subtitleShiftToast(name, old + currentShiftAmount),
+              update: uuidv4()
             }
           })
           return old + currentShiftAmount;
@@ -82,7 +85,7 @@ export const useVideoKeyboardControls = (togglePlay, deltaTime, setPrimaryShift,
     return () => {
       window.removeEventListener('keydown', handleVideoController);
     };
-  }, [togglePlay, deltaTime, setPrimaryShift, setSecondaryShift, setInfo, backToHead, setIsPlaying]);
+  }, [togglePlay, deltaTime, setPrimaryShift, setSecondaryShift, setInfo, backToHead, setIsPlaying, languageName]);
 }
 
 

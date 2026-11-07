@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "path";
 import * as fsPromises from "node:fs/promises";
 import {app} from "electron";
-import {systemMediaToolPaths} from "../../helpers/mediaToolPaths";
+import {systemMediaToolPaths, ytDlpDownloadLink} from "../../helpers/mediaToolPaths";
 
 export type ToolName = "yt-dlp" | "ffmpeg" | "ffprobe";
 
@@ -19,7 +19,7 @@ export const MEDIA_TOOLS_CONFIG: ToolConfig[] = [
   {
     name: "yt-dlp",
     check_command: "--version",
-    download_link: "https://github.com/hockyy/miteiru/releases/download/assets/yt-dlp.exe",
+    download_link: ytDlpDownloadLink(process.platform),
     executable_name: process.platform === "win32" ? "yt-dlp.exe" : "yt-dlp"
   },
   {
@@ -164,7 +164,7 @@ export async function checkMediaTools(forceRefresh = false) {
       message: allAvailable
         ? `All optional tools available: ${availableTools.join(", ")}`
         : missingTools.length === MEDIA_TOOLS_CONFIG.length
-          ? "No optional tools found (app will work without them)"
+          ? "YouTube captions and subtitles inside video files need these. Videos with separate subtitle files work without them."
           : `Available: ${availableTools.join(", ")} | Optional: ${missingTools.join(", ")}`,
       details: toolsStatus,
       missingTools,

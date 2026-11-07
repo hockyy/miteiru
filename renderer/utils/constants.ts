@@ -14,8 +14,10 @@ export const NORMALIZED_SUBTITLE_PREFIX = "miteiru_normalized_";
 export const MITEIRU_REPO_URL = "https://github.com/hockyy/miteiru";
 
 export const videoConstants = {
+  // Everything libmpv plays: containers, and audio files (a song plays with its lyrics as a video does).
   supportedVideoFormats: [
-    'mkv', 'mp4', 'webm', 'ogg', 'mov', 'avi', 'flv', '3gp', 'wmv', 'wav', 'hls', 'mp3', 'mp2t', 'ts'
+    'mkv', 'mp4', 'webm', 'ogg', 'mov', 'avi', 'flv', '3gp', 'wmv', 'wav', 'hls', 'mp3', 'mp2t', 'ts',
+    'm4v', 'm2ts', 'mts', 'mpg', 'mpeg', 'ogv', 'm4a', 'flac', 'opus'
   ],
   supportedSubtitleFormats: [
     'ass', 'srt', 'vrt', 'vtt', 'txt', 'lrc', 'huf'

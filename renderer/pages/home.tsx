@@ -26,6 +26,7 @@ function Home() {
   const { toolsCheck, isChecking: toolsCheckInProgress, isDownloading, checkMediaTools, downloadTool } = useToolsCheck();
   const {
     notice,
+    noticeDetails,
     tokenizerMode,
     setTokenizerMode,
     isLoadingLanguage,
@@ -117,6 +118,7 @@ function Home() {
           <MainMenu
             miteiruVersion={miteiruVersion}
             languageNotice={notice}
+            languageNoticeDetails={noticeDetails}
             languageModes={languageModes}
             tokenizerMode={tokenizerMode}
             isLoadingLanguage={isLoadingLanguage}
@@ -137,10 +139,9 @@ function Home() {
             toolsCheckMessage={toolsCheck.message}
             toolsCheckInProgress={toolsCheckInProgress}
             toolsCheckDetails={toolsCheck.details}
-            toolsCheckMissingTools={toolsCheck.missingTools}
-            toolsCheckCached={toolsCheck.cached}
             isDownloading={isDownloading}
             onRefreshTools={() => checkMediaTools(true)}
+            onOpenToolsFolder={() => { window.electronAPI.openToolsFolder?.(); }}
             onDownloadTool={downloadTool}
             isRemovingCache={isRemovingCache}
             cacheCheckOk={cacheCheck.ok}

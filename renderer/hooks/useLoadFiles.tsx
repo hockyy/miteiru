@@ -8,7 +8,7 @@ import {
 import {SubtitlePreprocessOptions} from "../types/subtitlePreprocess";
 import {v4 as uuidv4} from 'uuid';
 import {TOAST_TIMEOUT} from "../components/VideoPlayer/Toast";
-import {isLocalPath, isSubtitle, isVideo, isYoutube} from "../utils/utils";
+import {isDomainUri, isLocalPath, isSubtitle, isVideo, isYoutube} from "../utils/utils";
 import {findPositionDeltaInFolder} from "../utils/folderUtils";
 import {useSerialRunner} from "./useSerialRunner";
 import {isLearningSubtitleLanguage} from "../components/Subtitle/subtitleLanguageSupport";
@@ -18,8 +18,11 @@ import {
   isMiteiruTempSubtitle,
   knownSubtitleTarget,
   normalizeDroppedPath,
-  type SubtitleTarget
+  NOT_YOUTUBE_LINK_MESSAGE,
+  type SubtitleTarget,
+  unsupportedFileMessage
 } from "../utils/mediaUtils";
+import {mainSubtitleName, TRANSLATION_NAME} from "../utils/subtitleLabels";
 import {videoConstants} from "../utils/constants";
 import {findCachedYoutubeLyricsPath} from "../utils/lyricsUtils";
 import {filePathOf, type LastVideo} from "../utils/continueWatching";
@@ -39,6 +42,9 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     path: ''
   });
   const runSerially = useSerialRunner();
+  // The language being learned by name ("Japanese"): the main subtitle is called after it.
+  const currentAppLanguage = useMemo(() => getLanguageDisplayName(lang), [lang]);
+  const mainName = mainSubtitleName(currentAppLanguage);
   // Where a video opened by "Continue watching" starts; used once, when that video's metadata loads.
   const pendingStart = useRef<{ path: string; seconds: number } | null>(null);
 
@@ -84,18 +90,25 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     let toastSetter = null;
     
     try {
+      // Keeps the message on screen for as long as the words are being read.
       toastSetter = setInterval(() => {
-        showToast(`${tmpSub.language}: ${tmpSub.progress}`);
+        showToast(`Getting the ${currentAppLanguage} subtitles ready…`);
       }, TOAST_TIMEOUT / 10);
 
       await tmpSub.adjustForLearning(tokenizeMiteiru);
 
       // A newer subtitle may have replaced this one while it was processing.
-      if (isCurrentSubtitle(tmpSub.id)) setFrequencyPrimary(tmpSub.frequency);
+      const current = isCurrentSubtitle(tmpSub.id);
+      if (current) setFrequencyPrimary(tmpSub.frequency);
       setPrimaryTimeCache?.([]);
+      if (toastSetter) {
+        clearInterval(toastSetter);
+        toastSetter = null;
+      }
+      if (current) showToast('Subtitles ready: click any word');
     } catch (error) {
       console.error('Error processing subtitle:', error);
-      showToast(`Error processing subtitle: ${error.message}`);
+      showToast(`Couldn't get the ${currentAppLanguage} subtitles ready: ${error.message}`);
     } finally {
       // Always clear the interval
       if (toastSetter) {
@@ -103,7 +116,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
         toastSetter = null;
       }
     }
-  }, [tokenizeMiteiru, setFrequencyPrimary, showToast, setPrimaryTimeCache]);
+  }, [tokenizeMiteiru, setFrequencyPrimary, showToast, setPrimaryTimeCache, currentAppLanguage]);
 
   const loadSubtitleAsPrimary = useCallback((tmpSub, sourcePath) => {
     setPrimarySub(tmpSub);
@@ -112,18 +125,18 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     // Until this subtitle is analysed, the previous one's frequent words must not be highlighted.
     setFrequencyPrimary(new Map());
 
-    showToast('Primary subtitle loaded');
+    showToast(`${mainName} loaded`);
 
     if (isLearningLanguage(tmpSub.language)) {
       processSubtitleForLearning(tmpSub);
     }
-  }, [setPrimarySub, showToast, isLearningLanguage, processSubtitleForLearning, setFrequencyPrimary]);
+  }, [setPrimarySub, showToast, isLearningLanguage, processSubtitleForLearning, setFrequencyPrimary, mainName]);
 
   const loadSubtitleAsSecondary = useCallback((tmpSub, sourcePath) => {
     setSecondarySub(tmpSub);
     setLastSecondarySubPath([{path: sourcePath}]);
     
-    showToast('Secondary subtitle loaded');
+    showToast(`${TRANSLATION_NAME} loaded`);
   }, [setSecondarySub, showToast]);
 
   const loadEmbeddedSubtitle = useCallback(async (filePath: string, type: 'primary' | 'secondary', preprocessOptions: SubtitlePreprocessOptions = DEFAULT_SUBTITLE_PREPROCESS_OPTIONS) => {
@@ -139,9 +152,9 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       }
     } catch (error) {
       console.error(`[useLoadFiles] Failed to load ${type} embedded subtitle:`, error);
-      showToast(`Failed to load ${type} subtitle`);
+      showToast(`Couldn't load the ${type === 'primary' ? mainName : TRANSLATION_NAME.toLowerCase()}`);
     }
-  }, [createSubtitleContainer, loadSubtitleAsPrimary, loadSubtitleAsSecondary, showToast]);
+  }, [createSubtitleContainer, loadSubtitleAsPrimary, loadSubtitleAsSecondary, showToast, mainName]);
 
   const tryAutoLoadYoutubeLyrics = useCallback(async (videoPath: string) => {
     try {
@@ -287,6 +300,9 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
         await tryAutoLoadYoutubeLyrics(currentPath);
       } else if (isSubtitle(currentPath)) {
         await loadSubtitleFile(currentPath, acceptedFiles[0]?.target);
+      } else if (!isVideo(currentPath)) {
+        // Neither a video, a subtitle nor a YouTube link: say so rather than do nothing.
+        showToast(isDomainUri(currentPath) ? NOT_YOUTUBE_LINK_MESSAGE : unsupportedFileMessage(currentPath));
       }
     } catch (error) {
       console.error('[useLoadFiles] Error in file loading pipeline:', error);
@@ -424,8 +440,6 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     cleanupModal();
     showToast('Subtitle loading cancelled');
   }, [cleanupModal, showToast]);
-
-  const currentAppLanguage = useMemo(() => getLanguageDisplayName(lang), [lang]);
 
   return {
     onLoadFiles,
