@@ -8,6 +8,7 @@ permissions = [
   "allow-smoke-test-exit",
   "allow-fs-read-text",
   "allow-fs-read-bytes",
+  "allow-fs-read-range",
   "allow-fs-write-text",
   "allow-fs-write-bytes",
   "allow-fs-stat",
