@@ -1,9 +1,9 @@
 name: CI
 
+# Manual only, like Release: start it from the Actions tab or with `gh workflow run CI`.
+# The same checks (npm run lint:smells, npm test) run locally before merging.
 on:
-  push:
-    branches: [main]
-  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
