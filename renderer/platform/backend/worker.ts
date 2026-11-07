@@ -111,16 +111,20 @@ const boot = async () => {
   // Language data is read from the bundled folder and from each installed language pack
   // (src-tauri/src/sys/langpack.rs), looked up at each language load so a fresh install is seen.
   const bundledAssets = pathe.join((globalThis as { __dirname?: string }).__dirname ?? info.resources, 'language-assets');
+  // Each pack's root is only asked for the plugin folders it carries, and a build that bundles no
+  // language data skips its empty folder: every probe costs a round trip to Rust.
+  const bundledPresent = await fsImpl.stat(bundledAssets).then(() => true, () => false);
   setLanguageAssetRoots(async () => {
+    const bundled = bundledPresent ? [{dir: bundledAssets}] : [];
     try {
-      const status = await sys('langpack_status') as { packs: Array<{ dir: string | null; state: string }> };
+      const status = await sys('langpack_status') as { packs: Array<{ dir: string | null; state: string; plugins: string[] }> };
       const installed = status.packs
         .filter((pack) => pack.dir && (pack.state === 'installed' || pack.state === 'outdated'))
-        .map((pack) => pathe.join(pack.dir as string, 'language-assets'));
-      return [bundledAssets, ...installed];
+        .map((pack) => ({dir: pathe.join(pack.dir as string, 'language-assets'), plugins: pack.plugins}));
+      return [...bundled, ...installed];
     } catch (error) {
       console.error('[backend] langpack_status failed; reading the bundled language data only:', error);
-      return [bundledAssets];
+      return [{dir: bundledAssets}];
     }
   });
 

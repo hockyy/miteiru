@@ -1,5 +1,6 @@
 import path from "path";
-import {assetExists} from "../../helpers/assetFiles";
+import fsPromises from "node:fs/promises";
+import {GZIP_SUFFIX, ZSTD_SUFFIX} from "../../helpers/assetFiles";
 import Japanese from "../japanese";
 import Chinese from "../chinese";
 import Vietnamese from "../vietnamese";
@@ -8,49 +9,77 @@ import {LanguagePlugin, LanguagePluginContext, LanguagePluginLoadResult} from ".
 const languageAssetsRoot = path.join(__dirname, "language-assets");
 
 /**
+ * A folder holding `<plugin>/…` language data. `plugins` lists the plugin folders a language pack
+ * carries (its manifest entry); a root without it may hold any plugin, as the bundled folder does.
+ */
+export interface AssetRoot {
+  dir: string;
+  plugins?: string[];
+}
+
+type RootSpec = string | AssetRoot;
+
+const asRoot = (root: RootSpec): AssetRoot => (typeof root === "string" ? {dir: root} : root);
+
+/**
  * Where language data can be: the bundled language-assets folder first, then the `language-assets`
  * folder of each language pack the user installed (src-tauri/src/sys/langpack.rs). The app supplies
  * the provider; it is asked again each time a language loads, so a pack installed a moment ago counts.
  */
-let assetRoots: string[] = [languageAssetsRoot];
-let assetRootsProvider: () => Promise<string[]> = async () => [languageAssetsRoot];
+let assetRoots: AssetRoot[] = [{dir: languageAssetsRoot}];
+let assetRootsProvider: () => Promise<RootSpec[]> = async () => [languageAssetsRoot];
 
-export const setLanguageAssetRoots = (provider: () => Promise<string[]>) => {
+export const setLanguageAssetRoots = (provider: () => Promise<RootSpec[]>) => {
   assetRootsProvider = provider;
 };
 
 const refreshAssetRoots = async () => {
   try {
-    assetRoots = [...new Set(await assetRootsProvider())];
+    const seen = new Set<string>();
+    assetRoots = (await assetRootsProvider()).map(asRoot).filter((root) => !seen.has(root.dir) && Boolean(seen.add(root.dir)));
   } catch (error) {
     console.error("[languages] could not list the installed language packs; using the bundled data only:", error);
-    assetRoots = [languageAssetsRoot];
+    assetRoots = [{dir: languageAssetsRoot}];
   }
-  if (assetRoots.length === 0) assetRoots = [languageAssetsRoot];
+  if (assetRoots.length === 0) assetRoots = [{dir: languageAssetsRoot}];
 };
+
+const pathExists = (filePath: string) => fsPromises.access(filePath).then(() => true, () => false);
 
 /**
  * Whether the asset is there in any form: the plain file, or its `.zst` or `.gz` copy (large files
  * packaged by scripts/compressLanguageAssets.js), or the data table that replaces it (`x.json` and a
- * folder `x` both become `x.pack`; docs/DATA_FORMAT.md).
+ * folder `x` both become `x.pack`; docs/DATA_FORMAT.md). The forms are asked at once: in the app each
+ * check is a round trip to Rust, and on macOS and Linux webviews asking them one after another made a
+ * language take several seconds to load.
  */
-export const assetCandidateExists = async (candidate: string) => (
-  await assetExists(candidate) || await assetExists(`${candidate.replace(/\.json$/i, "")}.pack`)
-);
-
-/** The first candidate that exists; when none does, the first one, so the error names the bundled location. */
-export const firstExistingPath = async (...candidates: string[]) => {
-  for (const candidate of candidates) {
-    if (candidate && await assetCandidateExists(candidate)) return candidate;
-  }
-  return candidates[0];
+export const assetCandidateExists = async (candidate: string) => {
+  const table = `${candidate.replace(/\.json$/i, "")}.pack`;
+  const forms = [candidate, candidate + ZSTD_SUFFIX, candidate + GZIP_SUFFIX, ...(table === candidate ? [] : [table])];
+  return (await Promise.all(forms.map(pathExists))).some(Boolean);
 };
 
-/** `relativePath` of a plugin in the first root that has it, else under `__dirname` as 7.x kept it. */
-export const resolveAsset = (roots: string[], pluginId: string, relativePath: string, legacyPath: string) => firstExistingPath(
-  ...roots.map((root) => path.join(root, pluginId, relativePath)),
-  ...(legacyPath ? [path.join(__dirname, legacyPath)] : [])
-);
+/**
+ * The first candidate that exists (all are asked at once); when none does, the first one, so the
+ * error names the bundled location.
+ */
+export const firstExistingPath = async (...candidates: string[]) => {
+  const found = await Promise.all(candidates.map((candidate) => (candidate ? assetCandidateExists(candidate) : Promise.resolve(false))));
+  const index = found.indexOf(true);
+  return index >= 0 ? candidates[index] : candidates[0];
+};
+
+/**
+ * `relativePath` of a plugin in the first root that may hold it and has it, else under `__dirname` as
+ * 7.x kept it. A pack's root is only asked for the plugins it carries.
+ */
+export const resolveAsset = async (roots: RootSpec[], pluginId: string, relativePath: string, legacyPath: string) => {
+  const candidates = [
+    ...roots.map(asRoot).filter((root) => !root.plugins || root.plugins.includes(pluginId)).map((root) => path.join(root.dir, pluginId, relativePath)),
+    ...(legacyPath ? [path.join(__dirname, legacyPath)] : [])
+  ];
+  return candidates.length > 0 ? firstExistingPath(...candidates) : path.join(languageAssetsRoot, pluginId, relativePath);
+};
 
 const assetDirectory = (pluginId: string, relativePath: string, legacyDirectory: string) => resolveAsset(
   assetRoots, pluginId, relativePath, legacyDirectory
@@ -60,37 +89,51 @@ const assetPath = (pluginId: string, relativePath: string, legacyPath: string) =
   assetRoots, pluginId, relativePath, legacyPath
 );
 
-const getHanCharacterCoreSettings = async () => ({
-  kanjiSvgPath: await assetPath("han-character-core", "kanji", "kanji"),
-  hanziSvgPath: await assetPath("han-character-core", "hanzi", "hanzi"),
-  wanikaniKanji: await assetPath("han-character-core", "wanikani/kanji.json", "wanikani/kanji.json"),
-  wanikaniRadical: await assetPath("han-character-core", "wanikani/radical.json", "wanikani/radical.json")
-});
+// Each language's paths are resolved together: every lookup is a round trip to Rust in the app.
+const getHanCharacterCoreSettings = async () => {
+  const [kanjiSvgPath, hanziSvgPath, wanikaniKanji, wanikaniRadical] = await Promise.all([
+    assetPath("han-character-core", "kanji", "kanji"),
+    assetPath("han-character-core", "hanzi", "hanzi"),
+    assetPath("han-character-core", "wanikani/kanji.json", "wanikani/kanji.json"),
+    assetPath("han-character-core", "wanikani/radical.json", "wanikani/radical.json")
+  ]);
+  return {kanjiSvgPath, hanziSvgPath, wanikaniKanji, wanikaniRadical};
+};
 
 const getJapaneseSettings = async (appDataDirectory: string) => {
-  const hanCharacterCore = await getHanCharacterCoreSettings();
+  const [hanCharacterCore, importKanjiDict, importDict, kuromojiDictPath] = await Promise.all([
+    getHanCharacterCoreSettings(),
+    assetPath("japanese", "dict/kanjidic.json", "dict/kanjidic.json"),
+    assetPath("japanese", "dict/jmdict.json", "dict/jmdict.json"),
+    assetDirectory("japanese", "dict", "dict")
+  ]);
 
   return Japanese.getJapaneseSettings(appDataDirectory, {
     importWanikaniKanji: hanCharacterCore.wanikaniKanji,
     importWanikaniRadical: hanCharacterCore.wanikaniRadical,
-    importKanjiDict: await assetPath("japanese", "dict/kanjidic.json", "dict/kanjidic.json"),
-    importDict: await assetPath("japanese", "dict/jmdict.json", "dict/jmdict.json"),
+    importKanjiDict,
+    importDict,
     importBaseSVG: hanCharacterCore.kanjiSvgPath,
-    kuromojiDictPath: await assetDirectory("japanese", "dict", "dict")
+    kuromojiDictPath
   });
 };
 
-const getMandarinSettings = async (appDataDirectory: string) => Chinese.getMandarinSettings(appDataDirectory, {
-  jiebaDictPath: await assetPath("mandarin", "chinese/zh.jieba.txt", "chinese/zh.jieba.txt"),
-  importDict: await assetPath("mandarin", "chinese/chinese.json", "chinese/chinese.json"),
-  importBaseSVG: (await getHanCharacterCoreSettings()).hanziSvgPath
-});
+const getChineseSettings = async (pluginId: string, folder: string, jiebaFile: string, dictionaryFile: string) => {
+  const [jiebaDictPath, importDict, hanzi] = await Promise.all([
+    assetPath(pluginId, `${folder}/${jiebaFile}`, `${folder}/${jiebaFile}`),
+    assetPath(pluginId, `${folder}/${dictionaryFile}`, `${folder}/${dictionaryFile}`),
+    assetPath("han-character-core", "hanzi", "hanzi")
+  ]);
+  return {jiebaDictPath, importDict, importBaseSVG: hanzi};
+};
 
-const getCantoneseSettings = async (appDataDirectory: string) => Chinese.getCantoneseSettings(appDataDirectory, {
-  jiebaDictPath: await assetPath("cantonese", "cantonese/yue.jieba.txt", "cantonese/yue.jieba.txt"),
-  importDict: await assetPath("cantonese", "cantonese/cantodict.json", "cantonese/cantodict.json"),
-  importBaseSVG: (await getHanCharacterCoreSettings()).hanziSvgPath
-});
+const getMandarinSettings = async (appDataDirectory: string) => Chinese.getMandarinSettings(
+  appDataDirectory, await getChineseSettings("mandarin", "chinese", "zh.jieba.txt", "chinese.json")
+);
+
+const getCantoneseSettings = async (appDataDirectory: string) => Chinese.getCantoneseSettings(
+  appDataDirectory, await getChineseSettings("cantonese", "cantonese", "yue.jieba.txt", "cantodict.json")
+);
 
 const getVietnameseSettings = async (appDataDirectory: string) => Vietnamese.getVietnameseSettings(appDataDirectory, {
   dictPath: await assetPath("vietnamese", "vietnamese/vnedict.txt", "vietnamese/vnedict.txt")
