@@ -65,7 +65,18 @@ const checkPlayer = async (platform: string) => {
 };
 
 /** Loads the trailer through the IFrame API and waits until it plays (muted) or reports an error. */
-const checkYouTube = (videoId: string) => new Promise<string>((resolve, reject) => {
+const checkYouTube = (videoId: string) => new Promise<string>((resolveCheck, rejectCheck) => {
+  // What the player got through, reported if it never plays.
+  const progress: string[] = [];
+  const timer = setTimeout(() => rejectCheck(new Error(`no playback after 40 s; got: ${progress.join(', ') || 'nothing'}`)), 40000);
+  const resolve = (value: string) => {
+    clearTimeout(timer);
+    resolveCheck(value);
+  };
+  const reject = (error: Error) => {
+    clearTimeout(timer);
+    rejectCheck(error);
+  };
   const page = window as unknown as {
     YT?: { Player: new (element: HTMLElement, options: unknown) => { mute: () => void; playVideo: () => void } };
     onYouTubeIframeAPIReady?: () => void;
@@ -82,10 +93,12 @@ const checkYouTube = (videoId: string) => new Promise<string>((resolve, reject) 
       height: 180,
       events: {
         onReady: () => {
+          progress.push('ready');
           player.mute();
           player.playVideo();
         },
         onStateChange: (event: { data: number }) => {
+          progress.push(`state ${event.data}`);
           if (event.data === 1) resolve('playing');
         },
         onError: (event: { data: number }) => reject(new Error(`YouTube player error ${event.data}`))
@@ -96,7 +109,10 @@ const checkYouTube = (videoId: string) => new Promise<string>((resolve, reject) 
     create();
     return;
   }
-  page.onYouTubeIframeAPIReady = create;
+  page.onYouTubeIframeAPIReady = () => {
+    progress.push('api');
+    create();
+  };
   const script = document.createElement('script');
   script.src = 'https://www.youtube.com/iframe_api';
   script.onerror = () => reject(new Error('could not load the YouTube IFrame API'));
