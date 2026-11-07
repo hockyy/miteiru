@@ -24,13 +24,11 @@ pub struct RangeOpts {
   pub values: Option<bool>,
 }
 
-#[derive(Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct BatchOp {
-  #[serde(rename = "type")]
-  pub kind: String,
-  pub key: String,
-  pub value: Option<String>,
+/// One write in a batch.
+#[derive(Debug, PartialEq)]
+pub enum Op<'a> {
+  Put(&'a str, &'a str),
+  Del(&'a str),
 }
 
 pub type Row = (Option<String>, Option<String>);
@@ -163,29 +161,58 @@ pub fn del(conn: &Connection, key: &str) -> Result<(), String> {
   conn.execute("DELETE FROM kv WHERE key = ?1", [key]).map(|_| ()).map_err(db_err)
 }
 
-pub fn batch(conn: &mut Connection, ops: &[BatchOp]) -> Result<(), String> {
-  // Validate first so a bad op never leaves a half-applied batch.
-  for op in ops {
-    match op.kind.as_str() {
-      "put" if op.value.is_some() => {}
-      "del" => {}
-      "put" => return Err(format!("EINVAL: invalid argument, kv batch put without value for '{}'", op.key)),
-      other => return Err(format!("EINVAL: invalid argument, kv batch op '{other}'")),
-    }
-  }
+/// Applies `ops` in one transaction: all of them, or none if one fails.
+pub fn batch(conn: &mut Connection, ops: &[Op]) -> Result<(), String> {
   let tx = conn.transaction().map_err(db_err)?;
   {
     // Prepared once per batch: a dictionary import sends hundreds of thousands of puts.
     let mut put = tx.prepare("INSERT OR REPLACE INTO kv (key, value) VALUES (?1, ?2)").map_err(db_err)?;
     let mut del = tx.prepare("DELETE FROM kv WHERE key = ?1").map_err(db_err)?;
     for op in ops {
-      match (op.kind.as_str(), &op.value) {
-        ("put", Some(v)) => put.execute([&op.key, v]).map(|_| ()).map_err(db_err)?,
-        _ => del.execute([&op.key]).map(|_| ()).map_err(db_err)?,
+      match op {
+        Op::Put(key, value) => put.execute([key, value]).map(|_| ()).map_err(db_err)?,
+        Op::Del(key) => del.execute([key]).map(|_| ()).map_err(db_err)?,
       }
     }
   }
   tx.commit().map_err(db_err)
+}
+
+fn read_u32(body: &[u8], at: &mut usize) -> Option<usize> {
+  let bytes = body.get(*at..at.checked_add(4)?)?;
+  *at += 4;
+  Some(u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]) as usize)
+}
+
+fn read_str<'a>(body: &'a [u8], at: &mut usize) -> Option<&'a str> {
+  let len = read_u32(body, at)?;
+  let bytes = body.get(*at..at.checked_add(len)?)?;
+  *at += len;
+  std::str::from_utf8(bytes).ok()
+}
+
+/// A kv_batch body, as renderer/platform/backend/shims/level.ts encodes it: the number of writes
+/// (u32), then for each a kind byte (0 put, 1 del), the key, and for a put the value. Keys and
+/// values are UTF-8 after their byte length (u32); every u32 is little-endian.
+pub fn decode_batch(body: &[u8]) -> Result<Vec<Op<'_>>, String> {
+  let malformed = || "EINVAL: invalid argument, malformed kv batch".to_string();
+  let mut at = 0;
+  let count = read_u32(body, &mut at).ok_or_else(malformed)?;
+  let mut ops = Vec::with_capacity(count.min(body.len() / 5));
+  for _ in 0..count {
+    let kind = *body.get(at).ok_or_else(malformed)?;
+    at += 1;
+    let key = read_str(body, &mut at).ok_or_else(malformed)?;
+    ops.push(match kind {
+      0 => Op::Put(key, read_str(body, &mut at).ok_or_else(malformed)?),
+      1 => Op::Del(key),
+      _ => return Err(malformed()),
+    });
+  }
+  if at != body.len() {
+    return Err(malformed());
+  }
+  Ok(ops)
 }
 
 /// Bulk mode, for building a dictionary database from scratch: a 64 MB page cache, and no WAL
@@ -338,8 +365,20 @@ pub async fn kv_del(kv: tauri::State<'_, Kv>, handle: u32, key: String) -> Resul
   kv.with(handle, |c| del(c, &key))
 }
 
+/// Writes a batch (decode_batch) in one transaction. The body is raw bytes, not JSON: a dictionary
+/// import sends a few hundred megabytes, and as JSON it takes about twice as long to get here.
 #[tauri::command]
-pub async fn kv_batch(kv: tauri::State<'_, Kv>, handle: u32, ops: Vec<BatchOp>) -> Result<(), String> {
+pub async fn kv_batch(kv: tauri::State<'_, Kv>, request: tauri::ipc::Request<'_>) -> Result<(), String> {
+  let tauri::ipc::InvokeBody::Raw(body) = request.body() else {
+    return Err("EINVAL: invalid argument, kv batch: expected a raw body".into());
+  };
+  let handle = request
+    .headers()
+    .get("x-handle")
+    .and_then(|v| v.to_str().ok())
+    .and_then(|v| v.parse::<u32>().ok())
+    .ok_or_else(|| "EINVAL: invalid argument, kv batch: missing x-handle header".to_string())?;
+  let ops = decode_batch(body)?;
   kv.with(handle, |c| batch(c, &ops))
 }
 
@@ -449,21 +488,13 @@ mod tests {
   #[test]
   fn batch_is_atomic() {
     let mut c = mem();
-    let op = |kind: &str, key: &str, value: Option<&str>| BatchOp {
-      kind: kind.into(),
-      key: key.into(),
-      value: value.map(Into::into),
-    };
-    batch(&mut c, &[op("put", "x", Some("1")), op("del", "a", None)]).unwrap();
+    batch(&mut c, &[Op::Put("x", "1"), Op::Del("a")]).unwrap();
     assert_eq!(get(&c, "x").unwrap().as_deref(), Some("1"));
     assert_eq!(get(&c, "a").unwrap(), None);
-    // A failing op leaves nothing applied.
-    assert!(batch(&mut c, &[op("put", "y", Some("2")), op("nope", "z", None)]).is_err());
-    assert_eq!(get(&c, "y").unwrap(), None);
-    // A mid-transaction SQL failure rolls back too.
+    // A mid-transaction SQL failure leaves nothing applied.
     c.execute_batch("CREATE TRIGGER boom BEFORE INSERT ON kv WHEN NEW.key = 'bad' BEGIN SELECT RAISE(ABORT, 'no'); END")
       .unwrap();
-    assert!(batch(&mut c, &[op("put", "w", Some("3")), op("put", "bad", Some("4"))]).is_err());
+    assert!(batch(&mut c, &[Op::Put("w", "3"), Op::Put("bad", "4")]).is_err());
     assert_eq!(get(&c, "w").unwrap(), None);
     assert_eq!(get_many(&c, &["x".into(), "nope".into()]).unwrap(), vec![Some("1".to_string()), None]);
   }
@@ -533,25 +564,71 @@ mod tests {
     assert_eq!(kv.with(h, |c| get(c, "alpha")).unwrap().as_deref(), Some("changed"));
     kv.close(h);
   }
+
+  /// The bytes level.ts sends for `ops`.
+  fn encode(ops: &[Op]) -> Vec<u8> {
+    fn text(out: &mut Vec<u8>, s: &str) {
+      out.extend((s.len() as u32).to_le_bytes());
+      out.extend(s.as_bytes());
+    }
+    let mut out = (ops.len() as u32).to_le_bytes().to_vec();
+    for op in ops {
+      match op {
+        Op::Put(k, v) => {
+          out.push(0);
+          text(&mut out, k);
+          text(&mut out, v);
+        }
+        Op::Del(k) => {
+          out.push(1);
+          text(&mut out, k);
+        }
+      }
+    }
+    out
+  }
+
+  #[test]
+  fn decodes_batches_and_rejects_malformed_ones() {
+    let ops = [Op::Put("raw/words/1", "{\"id\":\"1\"}"), Op::Del("ひらがな-1"), Op::Put("", "")];
+    let body = encode(&ops);
+    assert_eq!(decode_batch(&body).unwrap(), ops);
+    assert_eq!(decode_batch(&encode(&[])).unwrap(), vec![]);
+    // Truncated, trailing bytes, an unknown kind, a length past the end, invalid UTF-8.
+    assert!(decode_batch(&body[..body.len() - 1]).is_err());
+    assert!(decode_batch(&[body.as_slice(), &[0]].concat()).is_err());
+    let mut unknown = body.clone();
+    unknown[4] = 7;
+    assert!(decode_batch(&unknown).is_err());
+    assert!(decode_batch(&[1, 0, 0, 0, 1, 255, 255, 255, 255]).is_err());
+    assert!(decode_batch(&[1, 0, 0, 0, 1, 1, 0, 0, 0, 0xff]).is_err());
+    // A huge count with no data behind it fails without allocating for it.
+    assert!(decode_batch(&[255, 255, 255, 255]).is_err());
+  }
+
   /// Writes `words` JMdict-shaped records (a ~450-byte value and three index keys each) in
   /// batches of 10k, as the dictionary import does.
   fn import_shaped(conn: &mut Connection, words: u64) {
     let word = format!("{{\"id\":\"1\",\"kanji\":[{{\"text\":\"食べる\"}}],\"gloss\":\"{}\"}}", "x".repeat(420));
-    let mut ops = Vec::new();
+    fn flush(conn: &mut Connection, pending: &mut Vec<(String, String)>) {
+      let ops: Vec<Op> = pending.iter().map(|(k, v)| Op::Put(k, v)).collect();
+      batch(conn, &ops).unwrap();
+      pending.clear();
+    }
+    let mut pending: Vec<(String, String)> = Vec::new();
     let mut seed: u64 = 12345;
     for id in 1_000_000..1_000_000 + words {
-      ops.push(BatchOp { kind: "put".into(), key: format!("raw/words/{id}"), value: Some(word.clone()) });
+      pending.push((format!("raw/words/{id}"), word.clone()));
       for _ in 0..3 {
         seed = seed.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
         let reading: String = (0..4).map(|i| char::from_u32(0x3041 + ((seed >> (i * 8)) % 80) as u32).unwrap()).collect();
-        ops.push(BatchOp { kind: "put".into(), key: format!("indexes/kana/{reading}-{id}"), value: Some(id.to_string()) });
+        pending.push((format!("indexes/kana/{reading}-{id}"), id.to_string()));
       }
-      if ops.len() >= 10_000 {
-        batch(conn, &ops).unwrap();
-        ops.clear();
+      if pending.len() >= 10_000 {
+        flush(conn, &mut pending);
       }
     }
-    batch(conn, &ops).unwrap();
+    flush(conn, &mut pending);
   }
 
   #[test]

@@ -2,6 +2,37 @@ import {setSys, type SysCall} from "../../renderer/platform/backend/sys";
 
 export type Call = { cmd: string; args?: Record<string, unknown> };
 
+/**
+ * Reads a kv_batch body the way src-tauri/src/sys/kv.rs decode_batch does, written separately from
+ * the shim's encoder so the tests check the encoder against the format.
+ */
+export const decodeKvBatch = (data: ArrayBuffer) => {
+  const view = new DataView(data);
+  const decoder = new TextDecoder("utf-8", {fatal: true});
+  let at = 0;
+  const u32 = () => {
+    const value = view.getUint32(at, true);
+    at += 4;
+    return value;
+  };
+  const text = () => {
+    const length = u32();
+    const value = decoder.decode(new Uint8Array(data, at, length));
+    at += length;
+    return value;
+  };
+  const ops: ({ type: "put"; key: string; value: string } | { type: "del"; key: string })[] = [];
+  for (let count = u32(); count > 0; count--) {
+    const kind = view.getUint8(at++);
+    const key = text();
+    if (kind === 0) ops.push({type: "put", key, value: text()});
+    else if (kind === 1) ops.push({type: "del", key});
+    else throw new Error(`unknown kv batch kind ${kind}`);
+  }
+  if (at !== data.byteLength) throw new Error("trailing bytes in kv batch");
+  return ops;
+};
+
 /** An in-memory stand-in for the Rust kv_* commands: keys in bytewise (UTF-8) order, like LevelDB. */
 export const createFakeKv = () => {
   const stores = new Map<string, Map<string, string>>();
@@ -28,7 +59,7 @@ export const createFakeKv = () => {
       case "kv_put": store.set(args.key as string, args.value as string); return null;
       case "kv_del": store.delete(args.key as string); return null;
       case "kv_batch":
-        for (const op of args.ops as { type: string; key: string; value?: string }[]) {
+        for (const op of decodeKvBatch(args.data as ArrayBuffer)) {
           if (op.type === "put") store.set(op.key, op.value);
           else store.delete(op.key);
         }

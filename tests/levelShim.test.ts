@@ -95,3 +95,18 @@ test("clear removes just the range", async () => {
   await db.clear({gte: "b"});
   assert.deepEqual(await db.keys().all(), ["a"]);
 });
+
+test("batches travel as raw bytes that decode to the same writes", async () => {
+  const {encodeBatch} = await import("../renderer/platform/backend/shims/level");
+  const {decodeKvBatch} = await import("./helpers/fakeSys");
+  const ops = [
+    {type: "put" as const, key: "raw/words/1", value: "{\"id\":\"1\",\"text\":\"食べる\"}"},
+    {type: "del" as const, key: "indexes/kana/たべる-1"},
+    {type: "put" as const, key: "", value: ""},
+    // 3 bytes per UTF-16 unit (the most the encoder makes room for), and 4 bytes per surrogate pair.
+    {type: "put" as const, key: "語".repeat(5000), value: "🍣🍣"}
+  ];
+  assert.deepEqual(decodeKvBatch(encodeBatch(ops)), ops);
+  assert.throws(() => encodeBatch([{type: "put", key: "k"}]), (error: Error & { code?: string }) => error.code === "EINVAL");
+  assert.throws(() => encodeBatch([{type: "get" as "put", key: "k"}]), (error: Error & { code?: string }) => error.code === "EINVAL");
+});
