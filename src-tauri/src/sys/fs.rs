@@ -1,7 +1,7 @@
 use super::{code_text, fs_err};
 use serde::Serialize;
 use std::fs;
-use std::io::Write;
+use std::io::{Read, Seek, SeekFrom, Write};
 use std::time::SystemTime;
 
 #[derive(Serialize, Debug, PartialEq)]
@@ -37,11 +37,26 @@ pub fn read_bytes(path: &str) -> Result<Vec<u8>, String> {
   fs::read(path).map_err(|e| fs_err(&e, "open", path))
 }
 
+/// The largest range fs_read_range serves; a request for more is a bug in the caller.
+pub const MAX_RANGE: usize = 64 * 1024 * 1024;
+
+/// Up to `length` bytes starting at `offset` (fewer at the end of the file), for reading one entry
+/// of a pack (main/helpers/assetPack.ts) without loading the rest.
+pub fn read_range(path: &str, offset: u64, length: usize) -> Result<Vec<u8>, String> {
+  if length > MAX_RANGE {
+    return Err(format!("EINVAL: invalid argument, read: length {length} is above the {MAX_RANGE} byte limit '{path}'"));
+  }
+  let mut file = fs::File::open(path).map_err(|e| fs_err(&e, "open", path))?;
+  file.seek(SeekFrom::Start(offset)).map_err(|e| fs_err(&e, "read", path))?;
+  let mut out = Vec::with_capacity(length);
+  file.take(length as u64).read_to_end(&mut out).map_err(|e| fs_err(&e, "read", path))?;
+  Ok(out)
+}
+
 /// A bundled language asset's bytes. Packaged builds keep the big ones gzipped beside the plain
 /// path (`zh.jieba.txt.gz`, `jmdict.json.gz`; scripts/compressLanguageAssets.js), development keeps
 /// them plain, so this reads whichever exists, as main/helpers/assetFiles.ts readAsset does.
 pub fn read_asset(path: &str) -> Result<Vec<u8>, String> {
-  use std::io::Read;
   match fs::read(path) {
     Ok(bytes) => Ok(bytes),
     Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
@@ -207,6 +222,11 @@ pub async fn fs_read_bytes(path: String) -> Result<tauri::ipc::Response, String>
 }
 
 #[tauri::command]
+pub async fn fs_read_range(path: String, offset: u64, length: usize) -> Result<tauri::ipc::Response, String> {
+  read_range(&path, offset, length).map(tauri::ipc::Response::new)
+}
+
+#[tauri::command]
 pub async fn fs_write_text(path: String, text: String, append: bool) -> Result<(), String> {
   write_bytes(&path, text.as_bytes(), append)
 }
@@ -284,6 +304,23 @@ pub mod tests {
     assert_eq!(stat(&p).unwrap(), None);
     assert!(rm(&p, false, true).is_ok());
     assert!(rm(&p, false, false).unwrap_err().starts_with("ENOENT"));
+  }
+
+  #[test]
+  fn read_range_middle_eof_missing_and_cap() {
+    let d = tmp("fs-range");
+    let f = d.join("r.bin").to_string_lossy().into_owned();
+    write_bytes(&f, b"0123456789", false).unwrap();
+    assert_eq!(read_range(&f, 3, 4).unwrap(), b"3456");
+    assert_eq!(read_range(&f, 8, 100).unwrap(), b"89");
+    assert_eq!(read_range(&f, 50, 4).unwrap(), b"");
+    assert_eq!(read_range(&f, 0, 0).unwrap(), b"");
+    let missing = d.join("nope.bin").to_string_lossy().into_owned();
+    let e = read_range(&missing, 0, 1).unwrap_err();
+    assert!(e.starts_with("ENOENT: no such file or directory, open '"), "{e}");
+    let e = read_range(&f, 0, MAX_RANGE + 1).unwrap_err();
+    assert!(e.starts_with("EINVAL: invalid argument, read: "), "{e}");
+    assert_eq!(read_range(&f, 0, MAX_RANGE).unwrap().len(), 10);
   }
 
   #[test]

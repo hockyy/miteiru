@@ -121,8 +121,9 @@ const checkYouTube = (videoId: string) => new Promise<string>((resolveCheck, rej
 
 /**
  * Loads Japanese and Cantonese from the assets as this build ships them (gzipped when packaged):
- * their tokenizers and a first dictionary import (src-tauri/src/sys/dict_import.rs). A build
- * without language assets (the desktop check's) skips it; a build with them must load both.
+ * their tokenizers and a first dictionary import (src-tauri/src/sys/dict_import.rs), then one
+ * stroke-order SVG from each stroke pack. A build without language assets (the desktop check's)
+ * skips it; a build with them must load both.
  * Packaged 8.0 builds once failed Chinese this way, unseen, because nothing here loaded a language.
  */
 const SMOKE_LANGUAGES = [{plugin: 'japanese', channel: 'loadKuromoji'}, {plugin: 'cantonese', channel: 'loadCantonese'}];
@@ -140,7 +141,14 @@ const checkLanguages = async () => {
     if (result?.ok !== 1) throw new Error(`${channel}: ${result?.message ?? 'no answer'}`);
     loaded[plugin] = Date.now() - t0;
   }
-  return {msPerLanguage: loaded};
+  // Stroke data lives in packs when packaged (main/helpers/assetPack.ts): read 日 from both sets.
+  const strokes: Record<string, number> = {};
+  for (const [set, channel, file] of [['kanji', 'readKanjiSVG', '065e5.svg'], ['hanzi', 'readHanziSVG', '26085.svg']]) {
+    const svg = await window.backend.invoke(channel, file);
+    if (typeof svg !== 'string' || !svg.includes('<svg')) throw new Error(`stroke data: ${channel}(${file}) returned no SVG`);
+    strokes[set] = svg.length;
+  }
+  return {msPerLanguage: loaded, strokes};
 };
 
 /** YouTube refusing the video itself, not the embedder, as it does for CI's datacenter addresses. */

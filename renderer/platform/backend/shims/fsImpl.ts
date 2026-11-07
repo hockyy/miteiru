@@ -195,3 +195,44 @@ const unsupported = (name: string) => () => {
 
 export const createReadStream = unsupported('createReadStream');
 export const createWriteStream = unsupported('createWriteStream');
+
+/** The part of Node's FileHandle that reading a pack entry needs: read and close. */
+export class FileHandle {
+  private position = 0;
+  private closed = false;
+
+  constructor(private readonly path: string) {}
+
+  async read<T extends ArrayBufferView>(buffer: T, offset = 0, length?: number, position?: number | null): Promise<{ bytesRead: number; buffer: T }> {
+    if (this.closed) throw Object.assign(new Error('EBADF: bad file descriptor, read'), {code: 'EBADF', syscall: 'read'});
+    const target = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+    const wanted = Math.min(length ?? target.length - offset, target.length - offset);
+    if (wanted <= 0) return {bytesRead: 0, buffer};
+    const at = typeof position === 'number' ? position : this.position;
+    const bytes = new Uint8Array(await call<ArrayBuffer>('fs_read_range', {path: this.path, offset: at, length: wanted}));
+    target.set(bytes.subarray(0, wanted), offset);
+    if (typeof position !== 'number') this.position += bytes.length;
+    return {bytesRead: Math.min(bytes.length, wanted), buffer};
+  }
+
+  async close(): Promise<void> {
+    this.closed = true;
+  }
+}
+
+// Read-only for now: pack entries (main/helpers/assetPack.ts) are the one use.
+export async function open(target: PathLike, flags: string | number = 'r'): Promise<FileHandle> {
+  if (flags !== 'r') unsupported('open with flags other than "r"')();
+  const path = toPath(target);
+  const raw = await call<ConstructorParameters<typeof Stats>[0] | null>('fs_stat', {path});
+  if (!raw) throw missing('open', path);
+  if (raw.isDirectory) {
+    const error: NodeError = new Error(`EISDIR: illegal operation on a directory, read '${path}'`);
+    error.code = 'EISDIR';
+    error.errno = -21;
+    error.syscall = 'read';
+    error.path = path;
+    throw error;
+  }
+  return new FileHandle(path);
+}

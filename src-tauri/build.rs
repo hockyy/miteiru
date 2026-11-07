@@ -5,6 +5,7 @@ const COMMANDS: &[&str] = &[
     "smoke_test_exit",
     "fs_read_text",
     "fs_read_bytes",
+    "fs_read_range",
     "fs_write_text",
     "fs_write_bytes",
     "fs_stat",

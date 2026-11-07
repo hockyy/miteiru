@@ -1,7 +1,8 @@
 // Release builds (`npm run tauri:build`, through src-tauri/tauri.release.conf.json): stages what ships
 // beside the executable in src-tauri/resources/:
-//   language-assets/  the dictionaries and stroke data, large files gzipped (main/helpers/assetFiles.ts
-//                     reads either form)
+//   language-assets/  the dictionaries, large files gzipped (main/helpers/assetFiles.ts reads either
+//                     form), and the stroke data, one pack per set instead of 21,000 files
+//                     (main/helpers/assetPack.ts)
 //   libmpv/           this platform's libmpv and its licence (Linux uses the system libmpv)
 //   live-captions/    the live captions helper, when npm run build:live-captions built one
 import {copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, rmSync, writeFileSync} from 'node:fs';
@@ -22,7 +23,8 @@ mkdirSync(stage, {recursive: true});
 
 // ---- language assets ----
 const assetsSource = path.join(root, 'renderer', 'public', 'language-assets');
-cpSync(assetsSource, path.join(stage, 'language-assets'), {recursive: true});
+// The downloaded asset archives carry macOS Finder files (.DS_Store), which have no place in an installer.
+cpSync(assetsSource, path.join(stage, 'language-assets'), {recursive: true, filter: (source) => path.basename(source) !== '.DS_Store'});
 compressLanguageAssets(stage);
 
 // ---- libmpv ----
