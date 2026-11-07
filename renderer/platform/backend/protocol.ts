@@ -33,3 +33,5 @@ export const SYS_WRITE_BYTES = 'fs_write_bytes';
 /** A batch of store writes, encoded by shims/level.ts encodeBatch (src-tauri/src/sys/kv.rs decode_batch). */
 export const SYS_KV_BATCH = 'kv_batch';
 export const SYS_READ_BYTES = 'fs_read_bytes';
+/** zstd frames in, the decompressed bytes out, both raw (src-tauri/src/sys/zstd.rs; shims/zlib.ts). */
+export const SYS_ZSTD_DECOMPRESS = 'zstd_decompress';

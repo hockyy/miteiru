@@ -2,7 +2,7 @@
 // beside the executable in src-tauri/resources/:
 //   language-assets/  the dictionaries, large files gzipped (main/helpers/assetFiles.ts reads either
 //                     form), and the stroke data, one pack per set instead of 21,000 files
-//                     (main/helpers/assetPack.ts)
+//                     (docs/DATA_FORMAT.md)
 //   libmpv/           this platform's libmpv and its licence (Linux uses the system libmpv)
 //   live-captions/    the live captions helper, when npm run build:live-captions built one
 import {copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, rmSync, writeFileSync} from 'node:fs';

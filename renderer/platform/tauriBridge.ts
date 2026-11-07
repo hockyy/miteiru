@@ -9,7 +9,7 @@ import {listen} from '@tauri-apps/api/event';
 import {getCurrentWebview} from '@tauri-apps/api/webview';
 import {getCurrentWindow} from '@tauri-apps/api/window';
 import type {AnalyzerRequestEvent, WorkerInbound, WorkerOutbound} from './backend/protocol';
-import {SYS_KV_BATCH, SYS_WRITE_BYTES} from './backend/protocol';
+import {SYS_KV_BATCH, SYS_WRITE_BYTES, SYS_ZSTD_DECOMPRESS} from './backend/protocol';
 import {
   ELECTRON_API_INVOKE_CHANNELS,
   LANGUAGE_LOAD_CHANNELS,
@@ -35,6 +35,10 @@ const runSys = async (cmd: string, args: Record<string, unknown> | undefined): P
     const {handle, data} = args as { handle: number; data: ArrayBuffer };
     await invoke(cmd, data, {headers: {'x-handle': String(handle)}});
     return [null, []];
+  }
+  if (cmd === SYS_ZSTD_DECOMPRESS) {
+    const value = await invoke(cmd, (args as { data: ArrayBuffer }).data);
+    return [value, value instanceof ArrayBuffer ? [value] : []];
   }
   const value = await invoke(cmd, args);
   return [value, value instanceof ArrayBuffer ? [value] : []];

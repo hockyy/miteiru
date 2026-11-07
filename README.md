@@ -129,7 +129,7 @@ If Miteiru helps you learn, **[give it a ⭐](https://github.com/hockyy/miteiru/
 
 ## For developers
 
-Miteiru is a [Tauri](https://tauri.app) app: a Next.js interface in the system webview, a Rust shell (`src-tauri/`) and [libmpv](https://mpv.io) for video. It needs **Node.js 22.12+**, a stable **Rust** toolchain and [Tauri's system dependencies](https://tauri.app/start/prerequisites/) (on Linux also `libmpv-dev`). `script:initrepo` downloads language assets from the [assets release](https://github.com/hockyy/miteiru/releases/tag/assets) into `renderer/public/language-assets`; Windows and macOS builds fetch a pinned LGPL libmpv on their own.
+Miteiru is a [Tauri](https://tauri.app) app: a Next.js interface in the system webview, a Rust shell (`src-tauri/`) and [libmpv](https://mpv.io) for video. It needs **Node.js 22.15+**, a stable **Rust** toolchain and [Tauri's system dependencies](https://tauri.app/start/prerequisites/) (on Linux also `libmpv-dev`). `script:initrepo` downloads language assets from the [assets release](https://github.com/hockyy/miteiru/releases/tag/assets) into `renderer/public/language-assets`; Windows and macOS builds fetch a pinned LGPL libmpv on their own.
 
 ```bash
 npm install
@@ -148,10 +148,10 @@ npm run script:unpack-language-assets
 npm run script:download-language-assets -- mandarin han-character-core
 ```
 
-`MITEIRU_FORCE_ASSET_DOWNLOAD=1` redownloads existing zips. Releases and in-app updates: [docs/RELEASING.md](docs/RELEASING.md). More notes are in [`docs/`](docs), and contributions are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md).
+`MITEIRU_FORCE_ASSET_DOWNLOAD=1` redownloads existing zips. Releases and in-app updates: [docs/RELEASING.md](docs/RELEASING.md). How the language data ships, and how to add a dataset: [docs/DATA_FORMAT.md](docs/DATA_FORMAT.md), [docs/ADDING_DATA.md](docs/ADDING_DATA.md). More notes are in [`docs/`](docs), and contributions are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Credits and license
 
-Dictionary data comes from JMdict and KANJIDIC ([EDRDG](https://www.edrdg.org/)), CC-CEDICT, CantoDict, VNEDict and KanjiVG, each under its own license. Video playback uses [libmpv](https://mpv.io) and [FFmpeg](https://ffmpeg.org) in their LGPL 2.1 builds; the licence text ships with the app.
+Dictionary data comes from JMdict and KANJIDIC ([EDRDG](https://www.edrdg.org/)), CC-CEDICT, CantoDict, VNEDict, KanjiVG and Make Me a Hanzi, each under its own license. Video playback uses [libmpv](https://mpv.io) and [FFmpeg](https://ffmpeg.org) in their LGPL 2.1 builds; the licence text ships with the app.
 
 Miteiru is made by [Hocky Yudhiono](https://github.com/hockyy) and licensed under [CC BY-NC-SA 4.0](LICENSE.md). It is provided as is; use it at your own risk. Found a security issue? Email [miteiru@hocky.id](mailto:miteiru@hocky.id) or open an issue.

@@ -9,6 +9,7 @@ pub mod jieba;
 pub mod kv;
 pub mod proc;
 pub mod shell;
+pub mod zstd;
 
 /// Map an I/O error to a Node-style error code.
 pub fn io_code(e: &std::io::Error) -> &'static str {

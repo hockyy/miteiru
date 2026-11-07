@@ -6,7 +6,7 @@
   "author": "Hocky Yudhiono <hocky.yudhiono@gmail.com>",
   "homepage": "https://miteiru.hocky.id",
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=22.15.0"
   },
   "scripts": {
     "update:safe": "node scripts/safeUpdate.js",

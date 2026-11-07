@@ -5,7 +5,7 @@
 import {setSys, sys} from './sys';
 import type {AnalyzerRequestEvent, WorkerInbound, WorkerOutbound} from './protocol';
 import type {AnalyzerRequest, AnalyzerResponse} from '../../../main/handler/languages/analyzerServer';
-import {SYS_KV_BATCH, SYS_WRITE_BYTES} from './protocol';
+import {SYS_KV_BATCH, SYS_WRITE_BYTES, SYS_ZSTD_DECOMPRESS} from './protocol';
 import {appRoot, initRuntime, type SysInfo} from './shims/runtime';
 import {dispatchInvoke, dispatchSend, setEventSink} from './shims/electron';
 import {dispatchProcEvent} from './shims/childProcess';
@@ -31,7 +31,7 @@ setSys((cmd, args) => new Promise((resolve, reject) => {
   pendingSys.set(id, {resolve, reject});
   const transfer: Transferable[] = [];
   // The raw-bytes commands hand their buffer over instead of copying it (their callers made it for the call).
-  if ((cmd === SYS_WRITE_BYTES || cmd === SYS_KV_BATCH) && args?.data instanceof ArrayBuffer) transfer.push(args.data);
+  if ((cmd === SYS_WRITE_BYTES || cmd === SYS_KV_BATCH || cmd === SYS_ZSTD_DECOMPRESS) && args?.data instanceof ArrayBuffer) transfer.push(args.data);
   post({kind: 'sys', id, cmd, args}, transfer);
 }));
 

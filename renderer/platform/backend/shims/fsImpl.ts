@@ -220,7 +220,7 @@ export class FileHandle {
   }
 }
 
-// Read-only for now: pack entries (main/helpers/assetPack.ts) are the one use.
+// Read-only for now: table reads (main/helpers/dataTable.ts) are the one use.
 export async function open(target: PathLike, flags: string | number = 'r'): Promise<FileHandle> {
   if (flags !== 'r') unsupported('open with flags other than "r"')();
   const path = toPath(target);

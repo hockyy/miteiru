@@ -51,6 +51,7 @@ pub fn run() {
       fs::fs_read_text,
       fs::fs_read_bytes,
       fs::fs_read_range,
+      sys::zstd::zstd_decompress,
       fs::fs_write_text,
       fs::fs_write_bytes,
       fs::fs_stat,
