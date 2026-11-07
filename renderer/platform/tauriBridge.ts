@@ -226,9 +226,13 @@ export const installTauriBridge = () => {
 const openLinkExternally = (event: MouseEvent, host: BackendHost) => {
   if (event.defaultPrevented || event.button !== 0 || !(event.target instanceof Element)) return;
   const link = event.target.closest('a[href]');
-  const href = link?.getAttribute('href');
-  if (!href || link?.hasAttribute('download')) return;
-  const url = new URL(href, document.baseURI);
+  if (!link || link.hasAttribute('download')) return;
+  let url: URL;
+  try {
+    url = new URL(link.getAttribute('href') ?? '', document.baseURI);
+  } catch {
+    return; // Not a URL; nothing would load.
+  }
   if (url.origin === location.origin || !['http:', 'https:'].includes(url.protocol)) return;
   event.preventDefault();
   host.invoke(ELECTRON_API_INVOKE_CHANNELS.openExternal, [url.href])
