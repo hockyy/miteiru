@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { MediaInfo, MediaTrack } from '../types/media';
 import { TrackSelection } from '../components/Utils/MediaTrackSelectionModal';
+import { getActiveNativePlayer, isTauri } from '../utils/nativePlayer';
 
 const deleteTempSubtitle = (filePath: string) => {
   window.electronAPI.cleanupTempSubtitle(filePath).catch(err =>
@@ -58,7 +59,8 @@ const useMediaAnalysis = (videoPath: string) => {
           track.codec.toLowerCase().includes('h.265')
         );
         
-        if (hasMultipleAudio || hasHEVC) {
+        // libmpv (desktop shell) plays HEVC as-is; only a choice of audio track is left to ask.
+        if (hasMultipleAudio || (hasHEVC && !isTauri())) {
           setTimeout(() => setShowAudioReencodeModal(true), 100);
         } else if (hasSingleAudio && hasSubtitles) {
           setTimeout(() => setShowTrackSelectionModal(true), 100);
@@ -250,6 +252,15 @@ const useMediaAnalysis = (videoPath: string) => {
     }
   }, [videoPath, mediaInfo.audioTracks, mediaInfo.duration, mediaInfo.subtitleTracks.length]);
 
+  // Desktop shell: libmpv switches audio tracks itself (aid counts audio tracks from 1).
+  const handleAudioTrackSelect = useCallback((audioTrackIndex: number) => {
+    setShowAudioReencodeModal(false);
+    getActiveNativePlayer()?.setAudioTrack(audioTrackIndex + 1);
+    if (mediaInfo.subtitleTracks.length > 0) {
+      setTimeout(() => setShowTrackSelectionModal(true), 100);
+    }
+  }, [mediaInfo.subtitleTracks.length]);
+
   const handleAudioReencodeSkip = useCallback(() => {
     setShowAudioReencodeModal(false);
     
@@ -287,6 +298,7 @@ const useMediaAnalysis = (videoPath: string) => {
     handleCloseAudioReencodeModal,
     handleAudioReencodeConfirm,
     handleAudioReencodeSkip,
+    handleAudioTrackSelect,
     selectedTracks
   };
 };

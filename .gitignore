@@ -28,3 +28,9 @@ scripts/__pycache__/
 # Live captions bridge output (npm run build:live-captions); keep directory via .gitkeep
 resources/live-captions/MiteiruLiveCaptionsBridge*
 *.tsbuildinfo
+# libmpv fetched by scripts/fetchLibmpv.mjs
+/resources/libmpv/
+# Tauri backend worker build output (scripts/buildBackendWorker.mjs)
+renderer/public/backend-worker.js
+renderer/public/backend-worker.js.map
+renderer/public/kuromoji-dict/

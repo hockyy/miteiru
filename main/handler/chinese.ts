@@ -7,7 +7,7 @@ import ToJyutping from "to-jyutping";
 import {Jieba} from '@node-rs/jieba'
 import {formatPinyinReading} from "./pinyinTones";
 import {readStrokeSvg} from "../helpers/strokeSvg";
-import {readAssetSync} from "../helpers/assetFiles";
+import {readAsset} from "../helpers/assetFiles";
 
 
 interface JyutpingResult {
@@ -69,8 +69,11 @@ class Chinese {
     // this.setupPy(settings)
     // Initialize nodejieba
 
-    const dictBuffer = readAssetSync(this.jiebaDictPath)
-    this.jieba = Jieba.withDict(dictBuffer);
+    // The Tauri build's @node-rs/jieba shim loads the dictionary file by path (its Rust side reads it).
+    const loadsByPath = Jieba as unknown as {withDictFile?: (dictPath: string) => Promise<unknown>};
+    this.jieba = loadsByPath.withDictFile
+      ? await loadsByPath.withDictFile(this.jiebaDictPath)
+      : Jieba.withDict(await readAsset(this.jiebaDictPath));
     try {
       await this.Dict.db?.close();
       const dictSetup = await setupChineseDictionary(this.dictPath, this.importDict);
@@ -84,8 +87,8 @@ class Chinese {
     }
   }
 
-  static tokenizeUsingJieba(sentence: string, toneType: string) {
-    const tokens = this.jieba.cut(sentence);
+  static async tokenizeUsingJieba(sentence: string, toneType: string) {
+    const tokens = await this.jieba.cut(sentence);
 
     return tokens.map(word => {
       const pinyinInfo = pinyin(word, {
@@ -106,8 +109,8 @@ class Chinese {
 
 
   static getJyutpingForSentence(sentence: string, toneType: string): Promise<JyutpingResult[]> {
-    return Promise.resolve().then(() => {
-      const segments = this.jieba.cut(sentence);
+    return Promise.resolve().then(async () => {
+      const segments = await this.jieba.cut(sentence);
       const result: JyutpingResult[] = [];
 
       // Use only the Discord tone map as requested

@@ -1,4 +1,3 @@
-import fs from "node:fs";
 import fsPromises from "node:fs/promises";
 import zlib from "node:zlib";
 import {promisify} from "node:util";
@@ -14,7 +13,9 @@ export const GZIP_SUFFIX = ".gz";
 
 const isMissing = (error: unknown) => (error as NodeJS.ErrnoException)?.code === "ENOENT";
 
-export const assetExists = (filePath: string) => fs.existsSync(filePath) || fs.existsSync(filePath + GZIP_SUFFIX);
+const pathExists = (filePath: string) => fsPromises.access(filePath).then(() => true, () => false);
+
+export const assetExists = async (filePath: string) => await pathExists(filePath) || await pathExists(filePath + GZIP_SUFFIX);
 
 /** The asset's bytes, from the plain file or, when only that exists, its gzipped copy. */
 export const readAsset = async (filePath: string): Promise<Buffer> => {
@@ -23,15 +24,6 @@ export const readAsset = async (filePath: string): Promise<Buffer> => {
   } catch (error) {
     if (!isMissing(error)) throw error;
     return gunzip(await fsPromises.readFile(filePath + GZIP_SUFFIX));
-  }
-};
-
-export const readAssetSync = (filePath: string): Buffer => {
-  try {
-    return fs.readFileSync(filePath);
-  } catch (error) {
-    if (!isMissing(error)) throw error;
-    return zlib.gunzipSync(fs.readFileSync(filePath + GZIP_SUFFIX));
   }
 };
 

@@ -3,7 +3,7 @@ import {getJmdictTags, setupJmdict} from "../dictionary/jmdictDb";
 import {searchKanji, setupKanjidic} from "../dictionary/kanjidicDb";
 import path from "path";
 import {readJsonFile} from "../utils";
-import fs from "node:fs";
+import fsPromises from "node:fs/promises";
 import kuromoji, {type Tokenizer} from "kuromoji";
 import {processKuromojinToSeparations, KuromojinWord} from "./languages/japaneseAnalysis";
 import {buildInflectionTable, type InflectionTableRequest} from "./languages/inflectionTable";
@@ -107,11 +107,13 @@ class Japanese {
   }
 
   static async loadKuromojiTokenizer() {
-    const dictionaryPath = [
-      this.kuromojiDictPath,
-      path.join(__dirname, 'language-assets/japanese/dict'),
-      path.join(__dirname, 'dict')
-    ].filter(Boolean).find((candidate) => fs.existsSync(candidate)) ?? path.join(__dirname, 'dict');
+    let dictionaryPath = path.join(__dirname, 'dict');
+    for (const candidate of [this.kuromojiDictPath, path.join(__dirname, 'language-assets/japanese/dict'), dictionaryPath]) {
+      if (candidate && await fsPromises.access(candidate).then(() => true, () => false)) {
+        dictionaryPath = candidate;
+        break;
+      }
+    }
 
     // A failed load is forgotten so the next call retries (kuromojin cached the rejection for good).
     this.kuromojiTokenizerPromise ??= buildKuromojiTokenizer(dictionaryPath).then((loadedTokenizer) => {

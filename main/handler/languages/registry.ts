@@ -8,9 +8,12 @@ import {LanguagePlugin, LanguagePluginContext, LanguagePluginLoadResult} from ".
 const languageAssetsRoot = path.join(__dirname, "language-assets");
 
 // Packaged builds keep large files gzipped (see helpers/assetFiles.ts), so a `.gz` copy counts.
-const firstExistingPath = (...candidates: string[]) => (
-  candidates.find((candidate) => candidate && assetExists(candidate)) ?? candidates[0]
-);
+const firstExistingPath = async (...candidates: string[]) => {
+  for (const candidate of candidates) {
+    if (candidate && await assetExists(candidate)) return candidate;
+  }
+  return candidates[0];
+};
 
 const assetDirectory = (pluginId: string, relativePath: string, legacyDirectory: string) => firstExistingPath(
   path.join(languageAssetsRoot, pluginId, relativePath),
@@ -22,40 +25,40 @@ const assetPath = (pluginId: string, relativePath: string, legacyPath: string) =
   path.join(__dirname, legacyPath)
 );
 
-const getHanCharacterCoreSettings = () => ({
-  kanjiSvgPath: assetPath("han-character-core", "kanji", "kanji"),
-  hanziSvgPath: assetPath("han-character-core", "hanzi", "hanzi"),
-  wanikaniKanji: assetPath("han-character-core", "wanikani/kanji.json", "wanikani/kanji.json"),
-  wanikaniRadical: assetPath("han-character-core", "wanikani/radical.json", "wanikani/radical.json")
+const getHanCharacterCoreSettings = async () => ({
+  kanjiSvgPath: await assetPath("han-character-core", "kanji", "kanji"),
+  hanziSvgPath: await assetPath("han-character-core", "hanzi", "hanzi"),
+  wanikaniKanji: await assetPath("han-character-core", "wanikani/kanji.json", "wanikani/kanji.json"),
+  wanikaniRadical: await assetPath("han-character-core", "wanikani/radical.json", "wanikani/radical.json")
 });
 
-const getJapaneseSettings = (appDataDirectory: string) => {
-  const hanCharacterCore = getHanCharacterCoreSettings();
+const getJapaneseSettings = async (appDataDirectory: string) => {
+  const hanCharacterCore = await getHanCharacterCoreSettings();
 
   return Japanese.getJapaneseSettings(appDataDirectory, {
     importWanikaniKanji: hanCharacterCore.wanikaniKanji,
     importWanikaniRadical: hanCharacterCore.wanikaniRadical,
-    importKanjiDict: assetPath("japanese", "dict/kanjidic.json", "dict/kanjidic.json"),
-    importDict: assetPath("japanese", "dict/jmdict.json", "dict/jmdict.json"),
+    importKanjiDict: await assetPath("japanese", "dict/kanjidic.json", "dict/kanjidic.json"),
+    importDict: await assetPath("japanese", "dict/jmdict.json", "dict/jmdict.json"),
     importBaseSVG: hanCharacterCore.kanjiSvgPath,
-    kuromojiDictPath: assetDirectory("japanese", "dict", "dict")
+    kuromojiDictPath: await assetDirectory("japanese", "dict", "dict")
   });
 };
 
-const getMandarinSettings = (appDataDirectory: string) => Chinese.getMandarinSettings(appDataDirectory, {
-  jiebaDictPath: assetPath("mandarin", "chinese/zh.jieba.txt", "chinese/zh.jieba.txt"),
-  importDict: assetPath("mandarin", "chinese/chinese.json", "chinese/chinese.json"),
-  importBaseSVG: getHanCharacterCoreSettings().hanziSvgPath
+const getMandarinSettings = async (appDataDirectory: string) => Chinese.getMandarinSettings(appDataDirectory, {
+  jiebaDictPath: await assetPath("mandarin", "chinese/zh.jieba.txt", "chinese/zh.jieba.txt"),
+  importDict: await assetPath("mandarin", "chinese/chinese.json", "chinese/chinese.json"),
+  importBaseSVG: (await getHanCharacterCoreSettings()).hanziSvgPath
 });
 
-const getCantoneseSettings = (appDataDirectory: string) => Chinese.getCantoneseSettings(appDataDirectory, {
-  jiebaDictPath: assetPath("cantonese", "cantonese/yue.jieba.txt", "cantonese/yue.jieba.txt"),
-  importDict: assetPath("cantonese", "cantonese/cantodict.json", "cantonese/cantodict.json"),
-  importBaseSVG: getHanCharacterCoreSettings().hanziSvgPath
+const getCantoneseSettings = async (appDataDirectory: string) => Chinese.getCantoneseSettings(appDataDirectory, {
+  jiebaDictPath: await assetPath("cantonese", "cantonese/yue.jieba.txt", "cantonese/yue.jieba.txt"),
+  importDict: await assetPath("cantonese", "cantonese/cantodict.json", "cantonese/cantodict.json"),
+  importBaseSVG: (await getHanCharacterCoreSettings()).hanziSvgPath
 });
 
-const getVietnameseSettings = (appDataDirectory: string) => Vietnamese.getVietnameseSettings(appDataDirectory, {
-  dictPath: assetPath("vietnamese", "vietnamese/vnedict.txt", "vietnamese/vnedict.txt")
+const getVietnameseSettings = async (appDataDirectory: string) => Vietnamese.getVietnameseSettings(appDataDirectory, {
+  dictPath: await assetPath("vietnamese", "vietnamese/vnedict.txt", "vietnamese/vnedict.txt")
 });
 
 export const languagePlugins: LanguagePlugin[] = [
@@ -63,11 +66,14 @@ export const languagePlugins: LanguagePlugin[] = [
     id: "han-character-core",
     kind: "resource",
     name: "Han Character Core",
-    setup: async () => Japanese.setupHanCharacterCore({
-      importWanikaniKanji: getHanCharacterCoreSettings().wanikaniKanji,
-      importWanikaniRadical: getHanCharacterCoreSettings().wanikaniRadical,
-      importBaseSVG: getHanCharacterCoreSettings().kanjiSvgPath
-    })
+    setup: async () => {
+      const settings = await getHanCharacterCoreSettings();
+      return Japanese.setupHanCharacterCore({
+        importWanikaniKanji: settings.wanikaniKanji,
+        importWanikaniRadical: settings.wanikaniRadical,
+        importBaseSVG: settings.kanjiSvgPath
+      });
+    }
   },
   {
     id: "japanese-kuromoji",
@@ -76,7 +82,7 @@ export const languagePlugins: LanguagePlugin[] = [
     tokenizerMode: "kuromoji",
     languageCode: "ja",
     dependencies: ["han-character-core"],
-    setup: async ({appDataDirectory}) => Japanese.setup(getJapaneseSettings(appDataDirectory))
+    setup: async ({appDataDirectory}) => Japanese.setup(await getJapaneseSettings(appDataDirectory))
   },
   {
     id: "cantonese-jieba",
@@ -85,7 +91,7 @@ export const languagePlugins: LanguagePlugin[] = [
     tokenizerMode: "cantonese",
     languageCode: "yue",
     dependencies: ["han-character-core"],
-    setup: async ({appDataDirectory}) => Chinese.setup(getCantoneseSettings(appDataDirectory))
+    setup: async ({appDataDirectory}) => Chinese.setup(await getCantoneseSettings(appDataDirectory))
   },
   {
     id: "mandarin-jieba",
@@ -94,7 +100,7 @@ export const languagePlugins: LanguagePlugin[] = [
     tokenizerMode: "jieba",
     languageCode: "zh-CN",
     dependencies: ["han-character-core"],
-    setup: async ({appDataDirectory}) => Chinese.setup(getMandarinSettings(appDataDirectory))
+    setup: async ({appDataDirectory}) => Chinese.setup(await getMandarinSettings(appDataDirectory))
   },
   {
     id: "vietnamese",
@@ -102,7 +108,7 @@ export const languagePlugins: LanguagePlugin[] = [
     name: "Vietnamese",
     tokenizerMode: "vietnamese",
     languageCode: "vi",
-    setup: async ({appDataDirectory}) => Vietnamese.setup(getVietnameseSettings(appDataDirectory))
+    setup: async ({appDataDirectory}) => Vietnamese.setup(await getVietnameseSettings(appDataDirectory))
   }
 ];
 

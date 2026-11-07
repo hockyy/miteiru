@@ -1,0 +1,8 @@
+[package]
+name = "miteiru-mpv"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+libloading = "0.9"

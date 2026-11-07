@@ -1,7 +1,7 @@
 import {app, BrowserWindow, ipcMain} from "electron";
 import {ChildProcessWithoutNullStreams, spawn} from "child_process";
 import path from "path";
-import fs from "fs";
+import * as fsPromises from "fs/promises";
 import type {LiveCaptionsApiState, LiveCaptionsState} from "../../../renderer/types/liveCaptions";
 import {isLiveCaptionsSupported, getLiveCaptionsBridgeCandidates, getLiveCaptionsAppleLocale} from "../../helpers/liveCaptionsSupport";
 
@@ -73,9 +73,15 @@ const getBridgeCandidates = () => getLiveCaptionsBridgeCandidates({
   appPath: app.getAppPath()
 });
 
-const getBridgePath = () => {
+const getBridgePath = async () => {
   const candidates = getBridgeCandidates();
-  const bridgePath = candidates.find((candidate) => fs.existsSync(candidate));
+  let bridgePath: string | undefined;
+  for (const candidate of candidates) {
+    if (await fsPromises.access(candidate).then(() => true, () => false)) {
+      bridgePath = candidate;
+      break;
+    }
+  }
 
   if (!bridgePath) {
     addDebugMessage(`Helper not found. Checked: ${candidates.join(" | ")}`);
@@ -197,7 +203,7 @@ const wireBridgeStreams = (processToWire: ChildProcessWithoutNullStreams) => {
   });
 };
 
-const startBridge = () => {
+const startBridge = async () => {
   if (!supported) {
     addDebugMessage("Start ignored: Live Captions is not supported on this system.");
     return getState();
@@ -221,7 +227,11 @@ const startBridge = () => {
       addDebugMessage(`Using Live Captions locale ${localeResult.locale} (${localeResult.languageCode}).`);
     }
 
-    const bridgePath = getBridgePath();
+    const bridgePath = await getBridgePath();
+    if (bridgeProcess) {
+      addDebugMessage("Start ignored: helper is already running.");
+      return getState();
+    }
     latestCaption = "";
     latestError = "";
     sendToRenderers("live-captions:caption", latestCaption);
@@ -263,7 +273,7 @@ export const notifyLiveCaptionsLanguageChange = () => {
 
   addDebugMessage("Language changed; restarting Live Captions with the new locale.");
   stopBridge();
-  startBridge();
+  void startBridge();
 };
 
 export function registerLiveCaptionsHandlers(nextGetTokenizer: () => string = () => "") {

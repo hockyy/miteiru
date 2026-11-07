@@ -1,0 +1,47 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "Miteiru",
+  "version": "../package.json",
+  "identifier": "id.hocky.miteiru",
+  "build": {
+    "frontendDist": "../app",
+    "devUrl": "http://localhost:8888",
+    "beforeDevCommand": "npm run dev:renderer",
+    "beforeBuildCommand": "npm run build:renderer"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Miteiru",
+        "url": "home/",
+        "width": 1000,
+        "height": 600,
+        "minWidth": 640,
+        "minHeight": 400,
+        "dragDropEnabled": true
+      }
+    ],
+    "security": {
+      "csp": null,
+      "assetProtocol": {
+        "enable": true,
+        "scope": [
+          "**"
+        ]
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "resources": {
+      "../renderer/public/language-assets/": "language-assets/"
+    },
+    "icon": [
+      "../resources/icon.png",
+      "../resources/icon.icns",
+      "../resources/icon.ico"
+    ]
+  }
+}

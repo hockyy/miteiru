@@ -49,6 +49,14 @@ export const MiteiruDropzone = ({
     }
   }, [onDrop]);
 
+  // Under Tauri, files dropped on the window arrive as paths from the native drag-drop event instead
+  // of DOM drop events (the bridge provides onFileDrop; Electron's preload does not).
+  useEffect(() => {
+    const onFileDrop = window.electronAPI?.onFileDrop;
+    if (!onFileDrop) return;
+    return onFileDrop((paths: string[]) => loadMediaPaths(paths, onDrop), setDraggingFiles);
+  }, [onDrop]);
+
   const pasteEvent = useCallback((event: ClipboardEvent) => {
     const target = event.target as HTMLElement | null;
     if (target?.closest('input, textarea, [contenteditable="true"]')) {

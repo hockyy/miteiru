@@ -6,6 +6,11 @@ type ElectronStore = {
 };
 let storePromise: Promise<ElectronStore> | undefined;
 
+/** Replaces how the store is opened; the Tauri backend worker has its own electron-store. */
+export const setStoreFactory = (factory: () => Promise<ElectronStore>) => {
+  storePromise = factory();
+};
+
 export const getStore = async () => {
   storePromise ??= Function("specifier", "return import(specifier)")("electron-store")
     .then(({default: Store}) => new Store()) as Promise<ElectronStore>;
