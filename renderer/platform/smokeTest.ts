@@ -121,18 +121,22 @@ const checkYouTube = (videoId: string) => new Promise<string>((resolveCheck, rej
 
 /**
  * Loads Japanese and Cantonese from the assets as this build ships them (gzipped when packaged):
- * their tokenizers and a first dictionary import (src-tauri/src/sys/dict_import.rs), then one
- * stroke-order SVG from each stroke pack. A build without language assets (the desktop check's)
+ * their tokenizers and dictionary tables (src-tauri/src/sys/table.rs), a real lookup in each, then
+ * one stroke-order SVG from each stroke pack. A build without language assets (the desktop check's)
  * skips it; a build with them must load both.
  * Packaged 8.0 builds once failed Chinese this way, unseen, because nothing here loaded a language.
  */
-const SMOKE_LANGUAGES = [{plugin: 'japanese', channel: 'loadKuromoji'}, {plugin: 'cantonese', channel: 'loadCantonese'}];
+const SMOKE_LANGUAGES = [
+  {plugin: 'japanese', channel: 'loadKuromoji', query: 'queryJapanese', word: '日本'},
+  {plugin: 'cantonese', channel: 'loadCantonese', query: 'queryChinese', word: '中國'}
+];
 
 const checkLanguages = async () => {
   const {resources} = await invoke<{ resources: string }>('sys_info');
   // Windows reports a verbatim path (\\?\C:\...), where "/" is not a separator.
   const separator = resources.includes('\\') ? '\\' : '/';
   const loaded: Record<string, number> = {};
+  const lookups: Record<string, number> = {};
   for (const {plugin, channel} of SMOKE_LANGUAGES) {
     const manifest = [resources, 'language-assets', plugin, 'asset-manifest.json'].join(separator);
     if (!await invoke('fs_stat', {path: manifest}).catch(() => null)) return 'skipped: this build has no language assets';
@@ -141,6 +145,12 @@ const checkLanguages = async () => {
     if (result?.ok !== 1) throw new Error(`${channel}: ${result?.message ?? 'no answer'}`);
     loaded[plugin] = Date.now() - t0;
   }
+  // A real lookup through the backend: the table must open and answer, not only load.
+  for (const {plugin, query, word} of SMOKE_LANGUAGES) {
+    const entries = await window.backend.invoke(query, word, 5);
+    if (!Array.isArray(entries) || entries.length === 0) throw new Error(`${query}(${word}) returned no entries`);
+    lookups[plugin] = entries.length;
+  }
   // Stroke data lives in data tables when packaged (docs/DATA_FORMAT.md): read 日 from both sets.
   const strokes: Record<string, number> = {};
   for (const [set, channel, file] of [['kanji', 'readKanjiSVG', '065e5.svg'], ['hanzi', 'readHanziSVG', '26085.svg']]) {
@@ -148,7 +158,7 @@ const checkLanguages = async () => {
     if (typeof svg !== 'string' || !svg.includes('<svg')) throw new Error(`stroke data: ${channel}(${file}) returned no SVG`);
     strokes[set] = svg.length;
   }
-  return {msPerLanguage: loaded, strokes};
+  return {msPerLanguage: loaded, lookups, strokes};
 };
 
 /** YouTube refusing the video itself, not the embedder, as it does for CI's datacenter addresses. */

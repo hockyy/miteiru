@@ -1,4 +1,4 @@
-import {DictionaryDb, getJsonRecords, openDictionary, valuesWithPrefix} from "./levelDictionary";
+import {DictionaryDb, DictionaryImport, getJsonRecords, openDictionary, valuesWithPrefix} from "./levelDictionary";
 
 // Types for jmdict-simplified (https://github.com/scriptin/jmdict-simplified), as in jmdict-wrapper 1.1.2.
 export type JmdictTag = string;
@@ -62,23 +62,27 @@ export interface JmdictFile {
  *   raw/dictDate, raw/version        written last
  * jmdict-wrapper also wrote indexes/partial-kana|kanji/<substring>-<id>. Nothing reads them,
  * so imports skip them (about 7.6M keys: half the size and a fraction of the import time).
- * The desktop app writes these keys in Rust (src-tauri/src/sys/dict_import.rs): change both.
+ * Packaged builds read these keys from a table (scripts/data/buildDictionaryTables.ts runs
+ * writeEntries to make it); development builds import them, in Rust for the desktop store
+ * (src-tauri/src/sys/dict_import.rs): change both.
  */
+export const jmdictImport: DictionaryImport<JmdictFile> = {
+  metadataKeys: ["raw/dictDate", "raw/version"],
+  nativeLayout: "jmdict",
+  writeEntries: async (raw, writer) => {
+    await writer.put("raw/tags", JSON.stringify(raw.tags));
+    await writer.put("raw/dictRevisions", JSON.stringify(raw.dictRevisions));
+    for (const word of raw.words) {
+      await writer.put(`raw/words/${word.id}`, JSON.stringify(word));
+      for (const kana of word.kana) await writer.put(`indexes/kana/${kana.text}-${word.id}`, word.id);
+      for (const kanji of word.kanji) await writer.put(`indexes/kanji/${kanji.text}-${word.id}`, word.id);
+    }
+  },
+  metadata: (raw) => ({"raw/dictDate": raw.dictDate, "raw/version": raw.version})
+};
+
 export const setupJmdict = async (dbPath: string, importPath = "") => {
-  const {db, metadata} = await openDictionary<JmdictFile>(dbPath, importPath, {
-    metadataKeys: ["raw/dictDate", "raw/version"],
-    nativeLayout: "jmdict",
-    writeEntries: async (raw, writer) => {
-      await writer.put("raw/tags", JSON.stringify(raw.tags));
-      await writer.put("raw/dictRevisions", JSON.stringify(raw.dictRevisions));
-      for (const word of raw.words) {
-        await writer.put(`raw/words/${word.id}`, JSON.stringify(word));
-        for (const kana of word.kana) await writer.put(`indexes/kana/${kana.text}-${word.id}`, word.id);
-        for (const kanji of word.kanji) await writer.put(`indexes/kanji/${kanji.text}-${word.id}`, word.id);
-      }
-    },
-    metadata: (raw) => ({"raw/dictDate": raw.dictDate, "raw/version": raw.version})
-  });
+  const {db, metadata} = await openDictionary<JmdictFile>(dbPath, importPath, jmdictImport);
   return {db, dictDate: metadata["raw/dictDate"], version: metadata["raw/version"]};
 };
 

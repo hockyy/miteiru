@@ -33,6 +33,7 @@ pub fn run() {
     .plugin(tauri_plugin_process::init())
     .manage(proc::Procs::default())
     .manage(kv::Kv::default())
+    .manage(sys::table::Tables::default())
     .manage(jieba::JiebaStore::default())
     .manage(player::Players::default())
     .manage(analyzer::Analyzer::default())
@@ -52,6 +53,10 @@ pub fn run() {
       fs::fs_read_bytes,
       fs::fs_read_range,
       sys::zstd::zstd_decompress,
+      sys::table::table_open,
+      sys::table::table_close,
+      sys::table::table_get_many,
+      sys::table::table_values,
       fs::fs_write_text,
       fs::fs_write_bytes,
       fs::fs_stat,

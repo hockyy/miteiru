@@ -6,6 +6,7 @@ import Japanese from "../japanese";
 import Chinese from "../chinese";
 import {videoConstants} from "../../../renderer/utils/constants";
 import {RegisterCommonHandlersArgs} from "./types";
+import {removeDictionaryStore} from "../../dictionary/levelDictionary";
 import {revealAnkiImportFile} from "../../helpers/ankiImportReveal";
 import {isInsideDirectory, isLyricsFilePath, isWebUrl} from "../../helpers/navigationGuard";
 
@@ -89,12 +90,14 @@ export function registerBasicHandlers({
     const japSet = Japanese.getJapaneseSettings(appDataDirectory);
     const chinSet = Chinese.getMandarinSettings(appDataDirectory);
     const canSet = Chinese.getCantoneseSettings(appDataDirectory);
-    // The LevelDB folders are caches rebuilt from the bundled JSON on the next language load.
+    // Development builds import the bundled JSON into these stores on the next language load; a
+    // packaged build reads its dictionary tables directly, so there is nothing to rebuild (and the
+    // stores of 7.x and early 8.x are leftovers). Learning data lives elsewhere and stays.
     await Japanese.closeDictionaries();
     await Chinese.closeDictionary();
     const cacheDirs = [japSet.dictPath, japSet.charDictPath, canSet.dictPath, chinSet.dictPath];
-    await Promise.all(cacheDirs.map((dir) => fsPromises.rm(dir, {recursive: true, force: true})));
-    return `Removed ${cacheDirs.length} dictionary caches; they are rebuilt the next time a language loads.`;
+    await Promise.all(cacheDirs.map(removeDictionaryStore));
+    return `Removed ${cacheDirs.length} dictionary caches. Packaged builds read their dictionaries directly, so there is nothing to rebuild; development builds rebuild them the next time a language loads.`;
   });
 
   ipcMain.handle("getTokenizerMode", async () => {

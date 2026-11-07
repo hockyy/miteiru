@@ -1,6 +1,6 @@
 # Data format: MTRPACK2
 
-Miteiru ships big read-only data (stroke-order SVGs today, dictionaries next, see [#139](https://github.com/hockyy/miteiru/issues/139)) in one container format, `MTRPACK2`: a **sorted key-value table** in zstd blocks. A reader asks for one key (or a range of keys) and reads one block of the file, so nothing is unpacked or imported first, and the installer holds a few files instead of thousands. Adding a dataset is described in [ADDING_DATA.md](ADDING_DATA.md).
+Miteiru ships big read-only data (stroke-order SVGs and the four dictionaries, see [#139](https://github.com/hockyy/miteiru/issues/139)) in one container format, `MTRPACK2`: a **sorted key-value table** in zstd blocks. A reader asks for one key (or a range of keys) and reads one block of the file, so nothing is unpacked or imported first, and the installer holds a few files instead of thousands. Adding a dataset is described in [ADDING_DATA.md](ADDING_DATA.md).
 
 The code:
 
@@ -10,6 +10,8 @@ The code:
 | Writer (`writeTable`) | `scripts/data/writeTable.ts` |
 | Codecs (`text`, `mmah-svg-1`) | `main/helpers/dataCodecs.ts` |
 | Stroke tables build | `scripts/data/buildStrokePacks.ts`, run by `scripts/compressLanguageAssets.js` while staging |
+| Dictionary tables build | `scripts/data/buildDictionaryTables.ts`, run by the same script |
+| Native reader (dictionaries) | `src-tauri/src/sys/table.rs` (commands `table_open`, `table_close`, `table_get_many`, `table_values`), `openReadOnlyTable` in `renderer/platform/backend/shims/level.ts` |
 | Inspect a table | `scripts/data/inspectTable.ts` |
 | zstd in the app | `src-tauri/src/sys/zstd.rs` (command `zstd_decompress`), `renderer/platform/backend/shims/zlib.ts` |
 
@@ -97,6 +99,36 @@ writeTable("out/set.pack", {dataset, version, codec: "text", source}, entries /*
 
 `writeTable` sorts by key bytes, rejects duplicate keys and keys that are not valid UTF-8, packs the blocks, compresses each with `zlib.zstdCompressSync` at level 19, and writes the file. It fills in `format`, `compression`, `entries` and `blocks`. Run TypeScript build scripts with `tsx` (a dev dependency): `npx tsx scripts/data/<script>.ts`.
 
+## Dictionary tables
+
+JMdict, KANJIDIC, CC-CEDICT and CantoDict ship as tables with the `text` codec, beside where their JSON would be: `japanese/dict/jmdict.pack`, `japanese/dict/kanjidic.pack`, `mandarin/chinese/chinese.pack`, `cantonese/cantonese/cantodict.pack`. The keys are the ones the dictionaries' import has always written into the store, so every lookup returns what it returned from SQLite:
+
+| Dictionary | Keys |
+| --- | --- |
+| JMdict | `raw/words/<id>` (word JSON), `indexes/kana/<text>-<id>` and `indexes/kanji/<text>-<id>` (value: the id), `raw/tags`, `raw/dictRevisions`, `raw/dictDate`, `raw/version` |
+| KANJIDIC | `raw/characters/<literal>` (character JSON), `raw/dictDate`, `raw/version` |
+| CC-CEDICT, CantoDict | `raw/words/<id>`, `raw/char/<id>` (entry JSON), `indexes/<form>-<id>` and `partial/<substring>-<id>` (value: the word id), `indexchar/<content>-<id>` (value: the character id), `raw/version` |
+| all | `raw/miteiruDictionaryFormat` = `1`: a table without it is broken and refused |
+
+Each dictionary module exports its import definition (`jmdictImport`, `kanjidicImport`, `chineseImport` in `main/dictionary/`), whose `writeEntries(raw, writer)` is the single definition of the keys. Development and the tests run it against a `level` store; the build runs it with a collecting writer, adds the metadata and the format marker, and writes the table with blocks of 256 KB (`blockBytes: 262144`: JMdict is 13.95 MB at 256 KB against 14.45 at 128 KB; a shared zstd dictionary gained only 1 to 4% and is not used). The header's `dataset` is `japanese/jmdict`, `japanese/kanjidic`, `mandarin/cc-cedict` or `cantonese/cantodict`, its `version` the file's version and date, and `source` its credit. The build then reads every entry back through the JS reader and fails on any difference.
+
+`openDictionary` (`main/dictionary/levelDictionary.ts`) looks for the table first (the import path with `.json` replaced by `.pack`). With a table there is no import and no SQLite copy; without one (development, tests) the JSON is imported as before, rebuilding from an empty store. Opening a table also deletes the dictionary's old caches (the 7.x LevelDB folder at its store path, and `<store>.sqlite3` with `-wal` and `-shm`), never any other store.
+
+### The native reader
+
+Glossing a subtitle file asks for every distinct word in it, each needing several prefix scans and record fetches, so a worker-side reader (one IPC call and one decompression per block) would be far too slow. `src-tauri/src/sys/table.rs` serves a query in one call:
+
+| Command | |
+| --- | --- |
+| `table_open(path) -> handle` | parses and validates the header and block index once; refcounted per path |
+| `table_close(handle)` | drops one reference; the last closes the file |
+| `table_get_many(handle, keys) -> (string or null)[]` | values in the order of the keys, null for a missing key |
+| `table_values(handle, gte, lt, limit) -> string[]` | values (no keys) of the keys in `[gte, lt)` in key order; a `limit` below 0 means all, 0 none |
+
+It validates what the JS reader does (magic, header, block bounds and order, entry counts, order inside each block) and reads blocks with positional reads (`seek_read` on Windows, `read_at` elsewhere), so concurrent queries never contend on a file position. Blocks are decompressed with the `zstd` crate into one LRU shared by all tables, with a budget of about 32 MB of decoded data. `table_get_many` groups its keys by block, so each block is read once per call. The worker side is `openReadOnlyTable(path)` in `renderer/platform/backend/shims/level.ts`, whose `get`, `getMany`, `values({gte, lt, limit}).all()` and `close` return what `Level` returns. In Node (tests, build) `levelDictionary.ts` wraps `main/helpers/dataTable.ts` instead.
+
+Both readers are tested against one committed table, `tests/fixtures/dictionary-fixture.pack` (written by `writeTable`; its entries are in `tests/helpers/dictionaryFixture.ts`), so they cannot drift apart.
+
 ## Codecs
 
 A codec has an `id`, `encode(text) -> Buffer` for the build and `decode(Buffer) -> text` for the app. The table header names it; `codecFor(id)` finds it. The build checks `decode(encode(text)) === text` for every file.
@@ -133,5 +165,7 @@ The first form prints the header summary (dataset, version, codec, source, entry
 - Keys are part of a dataset's contract with its reader: renaming a key scheme is a new `dataset` version for that reader.
 
 ## Sizes
+
+Dictionaries are larger than the gzipped JSON they replace by a few MB each (JMdict 9.59 MB gzipped, about 14 MB as a table), in exchange for no import, no 250 to 310 MB SQLite copy in the profile and no first-load wait.
 
 Staged on Windows, from the full language assets: `kanji.pack` 3.59 MiB (was 6.83 as per-file gzip) and `hanzi.pack` 10.93 MiB (was 24.38). The staged resources hold a few dozen files instead of 21,315.

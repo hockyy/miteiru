@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-table-open"
+description = "Enables the table_open command without any pre-configured scope."
+commands.allow = ["table_open"]
+
+[[permission]]
+identifier = "deny-table-open"
+description = "Denies the table_open command without any pre-configured scope."
+commands.deny = ["table_open"]

@@ -9,6 +9,7 @@ pub mod jieba;
 pub mod kv;
 pub mod proc;
 pub mod shell;
+pub mod table;
 pub mod zstd;
 
 /// Map an I/O error to a Node-style error code.

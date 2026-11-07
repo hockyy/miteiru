@@ -73,7 +73,7 @@ test("readStrokeSvg answers '' for names that are not plain code-point file name
   assert.equal(await readStrokeSvg(broken, "065e5.svg"), "");
 });
 
-test("staging packs the stroke folders into tables and keeps gzipping the dictionaries", async () => {
+test("staging packs the stroke folders into tables and leaves the other large files to gzip", async () => {
   const app = path.join(directory, "staged");
   const root = "staged/language-assets";
   const kanjiSvg = "<svg xmlns=http://www.w3.org/2000/svg>日</svg>";
@@ -82,7 +82,7 @@ test("staging packs the stroke folders into tables and keeps gzipping the dictio
   await write(`${root}/han-character-core/hanzi/26085.svg`, await fixture("26085.svg"));
   await write(`${root}/han-character-core/hanzi/odd.svg`, "not readable");
   await write(`${root}/han-character-core/hanzi/00041.svg`, "<svg>not a make me a hanzi file</svg>");
-  await write(`${root}/japanese/dict/jmdict.json`, "{}");
+  await write(`${root}/mandarin/chinese/zh.jieba.txt`, "{}");
   const strokes = path.join(app, "language-assets/han-character-core");
 
   const totals = compressLanguageAssets(app);
@@ -95,8 +95,8 @@ test("staging packs the stroke folders into tables and keeps gzipping the dictio
   assert.equal(await readStrokeSvg(path.join(strokes, "kanji"), "04e14-Kaisho.svg"), "");
   assert.equal(await readStrokeSvg(path.join(strokes, "hanzi"), "26085.svg"), await fixture("26085.svg"));
   assert.equal(await readStrokeSvg(path.join(strokes, "hanzi"), "00041.svg"), "<svg>not a make me a hanzi file</svg>");
-  assert.equal(await readTextAsset(path.join(app, "language-assets/japanese/dict/jmdict.json")), "{}");
-  await fs.access(path.join(app, "language-assets/japanese/dict/jmdict.json.gz"));
+  assert.equal(await readTextAsset(path.join(app, "language-assets/mandarin/chinese/zh.jieba.txt")), "{}");
+  await fs.access(path.join(app, "language-assets/mandarin/chinese/zh.jieba.txt.gz"));
 
   // A second run finds the folders already packed and leaves the tables alone.
   const before = await fs.readFile(path.join(strokes, "kanji.pack"));

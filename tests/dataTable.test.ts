@@ -5,6 +5,7 @@ import path from "node:path";
 import {after, before, beforeEach, mock, test} from "node:test";
 import {clearTableCaches, get, openTable, scan} from "../main/helpers/dataTable";
 import {writeTable} from "../scripts/data/writeTable";
+import {FIXTURE_ENTRIES, FIXTURE_FIELDS} from "./helpers/dictionaryFixture";
 
 const FIELDS = {dataset: "test/table", version: "1", codec: "text", source: {name: "Test", url: "https://example.test/", license: "CC0"}};
 
@@ -193,4 +194,18 @@ test("only the most recently used blocks stay cached", async () => {
   io.opens = 0;
   await get(file, "k0000");
   assert.equal(io.opens, 1, "evicted, read again");
+});
+
+// The Rust reader (src-tauri/src/sys/table.rs) reads this same file in its unit tests.
+const FIXTURE = path.join(__dirname, "fixtures", "dictionary-fixture.pack");
+
+test("the committed fixture table reads back as listed, and the writer still produces it", async () => {
+  const {header} = await openTable(FIXTURE);
+  assert.equal(header.dataset, FIXTURE_FIELDS.dataset);
+  assert.ok(header.blocks.length >= 3);
+  assert.deepEqual((await scan(FIXTURE)).map(([key, value]) => [key, value.toString()]), FIXTURE_ENTRIES);
+  for (const [key, value] of FIXTURE_ENTRIES) assert.equal(text(await get(FIXTURE, key)), value, key);
+  const rewritten = path.join(directory, "fixture-again.pack");
+  writeTable(rewritten, FIXTURE_FIELDS, FIXTURE_ENTRIES.map(([key, value]): [string, Buffer] => [key, Buffer.from(value)]), {blockBytes: 80});
+  assert.deepEqual(await fs.readFile(rewritten), await fs.readFile(FIXTURE));
 });

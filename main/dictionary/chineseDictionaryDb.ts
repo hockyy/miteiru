@@ -1,4 +1,4 @@
-import {allSubstrings, DictionaryDb, getJsonRecords, openDictionary, valuesWithPrefix} from "./levelDictionary";
+import {allSubstrings, DictionaryDb, DictionaryImport, getJsonRecords, openDictionary, valuesWithPrefix} from "./levelDictionary";
 
 /** A CC-CEDICT / CantoDict word or character entry; the renderer reads the remaining fields. */
 export interface ChineseEntry {
@@ -41,33 +41,37 @@ const storageIds = (entries: ChineseEntry[]) => {
  * like "pa" scanned into it, and built it with substring(start, length), which skipped most
  * non-prefix substrings.
  */
+/** CC-CEDICT and CantoDict share one file layout and one import. */
+export const chineseImport: DictionaryImport<ChineseDictionaryFile> = {
+  metadataKeys: ["raw/version"],
+  // Development builds import in Rust (src-tauri/src/sys/dict_import.rs): change both. Packaged
+  // builds read a table that scripts/data/buildDictionaryTables.ts makes with writeEntries.
+  nativeLayout: "chinese",
+  writeEntries: async (raw, writer) => {
+    const wordIds = storageIds(raw.words);
+    for (const [index, word] of raw.words.entries()) {
+      const id = wordIds[index];
+      await writer.put(`raw/words/${id}`, JSON.stringify(word));
+      const forms = new Set([word.content, word.simplified].filter(Boolean));
+      const substrings = new Set<string>();
+      for (const form of forms) {
+        await writer.put(`indexes/${form}-${id}`, id);
+        allSubstrings(form).forEach((substring) => substrings.add(substring));
+      }
+      for (const substring of substrings) await writer.put(`${PARTIAL_INDEX}${substring}-${id}`, id);
+    }
+    const characterIds = storageIds(raw.characters);
+    for (const [index, character] of raw.characters.entries()) {
+      const id = characterIds[index];
+      await writer.put(`raw/char/${id}`, JSON.stringify(character));
+      await writer.put(`indexchar/${character.content}-${id}`, id);
+    }
+  },
+  metadata: (raw) => ({"raw/version": raw.version})
+};
+
 export const setupChineseDictionary = async (dbPath: string, importPath = "") => {
-  const {db, metadata} = await openDictionary<ChineseDictionaryFile>(dbPath, importPath, {
-    metadataKeys: ["raw/version"],
-    // The desktop app writes these keys in Rust (src-tauri/src/sys/dict_import.rs): change both.
-    nativeLayout: "chinese",
-    writeEntries: async (raw, writer) => {
-      const wordIds = storageIds(raw.words);
-      for (const [index, word] of raw.words.entries()) {
-        const id = wordIds[index];
-        await writer.put(`raw/words/${id}`, JSON.stringify(word));
-        const forms = new Set([word.content, word.simplified].filter(Boolean));
-        const substrings = new Set<string>();
-        for (const form of forms) {
-          await writer.put(`indexes/${form}-${id}`, id);
-          allSubstrings(form).forEach((substring) => substrings.add(substring));
-        }
-        for (const substring of substrings) await writer.put(`${PARTIAL_INDEX}${substring}-${id}`, id);
-      }
-      const characterIds = storageIds(raw.characters);
-      for (const [index, character] of raw.characters.entries()) {
-        const id = characterIds[index];
-        await writer.put(`raw/char/${id}`, JSON.stringify(character));
-        await writer.put(`indexchar/${character.content}-${id}`, id);
-      }
-    },
-    metadata: (raw) => ({"raw/version": raw.version})
-  });
+  const {db, metadata} = await openDictionary<ChineseDictionaryFile>(dbPath, importPath, chineseImport);
   return {db, version: metadata["raw/version"]};
 };
 
