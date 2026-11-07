@@ -65,6 +65,20 @@ test("the bundled root comes first", async () => {
   );
 });
 
+test("a pack's root is only asked for the plugin folders it carries", async () => {
+  // The Japanese pack's folder happens to hold a Vietnamese file, but its manifest entry does not list it.
+  const packRoots = [{dir: japanese, plugins: ["japanese", "han-character-core"]}, {dir: bundled}];
+  assert.equal(await resolveAsset(packRoots, "vietnamese", "vietnamese/vnedict.txt", ""), path.join(bundled, "vietnamese/vietnamese/vnedict.txt"));
+  assert.equal(await resolveAsset(packRoots, "japanese", "dict/jmdict.json", ""), path.join(japanese, "japanese/dict/jmdict.json"));
+  // A root that may hold anything (a plain string, or no plugin list) is asked for every plugin.
+  assert.equal(await resolveAsset([japanese], "vietnamese", "vietnamese/vnedict.txt", ""), path.join(japanese, "vietnamese/vietnamese/vnedict.txt"));
+});
+
+test("with no root that may hold the plugin, the bundled location is named", async () => {
+  const named = await resolveAsset([{dir: hanzi, plugins: ["han-character-core"]}], "mandarin", "chinese/chinese.json", "");
+  assert.ok(named.endsWith(path.join("language-assets", "mandarin", "chinese", "chinese.json")), named);
+});
+
 test("data nowhere falls back to the first root, so the error names the bundled location", async () => {
   assert.equal(await resolveAsset(roots(), "mandarin", "chinese/chinese.json", ""), path.join(bundled, "mandarin/chinese/chinese.json"));
   const legacy = await resolveAsset([], "mandarin", "chinese/chinese.json", "x/y.json");
