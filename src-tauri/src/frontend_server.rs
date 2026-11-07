@@ -66,7 +66,9 @@ pub fn start(app: &App) -> Result<Url, String> {
             .window("main")
             .permission("core:default")
             .permission("core:window:allow-set-fullscreen")
-            .permission("app-commands"),
+            .permission("app-commands")
+            .permission("updater:default")
+            .permission("process:allow-restart"),
     )
     .map_err(|e| format!("frontend capability: {e}"))?;
 

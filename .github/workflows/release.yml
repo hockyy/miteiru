@@ -47,11 +47,15 @@ jobs:
           python3 - <<'PY'
           import json, os
           bundle = "src-tauri/target/release/bundle"
+          # The .sig files and the macOS .app.tar.gz are for in-app updates (latest.json, built by
+          # the updater-manifest job); they exist only when the updater signing key is set.
           jobs = [
-            {"os": "windows-latest", "key": "windows", "bundles": "nsis", "assets": f"{bundle}/nsis/*.exe"},
-            {"os": "macos-latest", "key": "macos", "bundles": "dmg", "assets": f"{bundle}/dmg/*.dmg"},
+            {"os": "windows-latest", "key": "windows", "bundles": "nsis",
+             "assets": f"{bundle}/nsis/*.exe {bundle}/nsis/*.exe.sig"},
+            {"os": "macos-latest", "key": "macos", "bundles": "app,dmg",
+             "assets": f"{bundle}/dmg/*.dmg {bundle}/macos/*.app.tar.gz {bundle}/macos/*.app.tar.gz.sig"},
             {"os": "ubuntu-22.04", "key": "linux", "bundles": "deb,appimage",
-             "assets": f"{bundle}/deb/*.deb {bundle}/appimage/*.AppImage"},
+             "assets": f"{bundle}/deb/*.deb {bundle}/appimage/*.AppImage {bundle}/appimage/*.AppImage.sig"},
           ]
           platform = os.environ["PLATFORM"]
           rows = jobs if platform == "all" else [j for j in jobs if j["key"] == platform]
@@ -108,9 +112,38 @@ jobs:
         run: npm run build:live-captions
 
       # Stages language assets, libmpv and the live captions helper (scripts/stageTauriResources.mjs)
-      # and builds the installers.
+      # and builds the installers. With the updater key (secrets TAURI_SIGNING_PRIVATE_KEY and
+      # TAURI_SIGNING_PRIVATE_KEY_PASSWORD, from `npx tauri signer generate`) it also signs the
+      # update artifacts the app installs from latest.json.
       - name: Build installers
-        run: npx tauri build --config src-tauri/tauri.release.conf.json --bundles ${{ matrix.bundles }}
+        shell: bash
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          updater=()
+          if [ -n "$TAURI_SIGNING_PRIVATE_KEY" ]; then
+            if [ -z "$(node -p "require('./src-tauri/tauri.conf.json').plugins.updater.pubkey")" ]; then
+              echo "::error::The updater key is set, but plugins.updater.pubkey in src-tauri/tauri.conf.json is empty. Put the matching public key there."
+              exit 1
+            fi
+            updater=(--config '{"bundle":{"createUpdaterArtifacts":true}}')
+          else
+            echo "::warning::No TAURI_SIGNING_PRIVATE_KEY secret: this release is built without update artifacts, so installed copies will not be offered it."
+          fi
+          npx tauri build --config src-tauri/tauri.release.conf.json "${updater[@]}" --bundles ${{ matrix.bundles }}
+
+      # Tauri names the macOS update archive after the app only; give it the version and architecture.
+      - name: Name the macOS update archive
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          cd src-tauri/target/release/bundle/macos
+          version=$(node -p "require('../../../../../package.json').version")
+          for file in Miteiru.app.tar.gz Miteiru.app.tar.gz.sig; do
+            [ -e "$file" ] && mv "$file" "Miteiru_${version}_aarch64${file#Miteiru}"
+          done
+          ls
 
       # The packaged app runs its smoke test (renderer/platform/smokeTest.ts) before anything is
       # uploaded: the signed .app on macOS, the AppImage on Linux (Windows is checked locally).
@@ -157,6 +190,8 @@ jobs:
             src-tauri/target/release/bundle/dmg/*.dmg
             src-tauri/target/release/bundle/deb/*.deb
             src-tauri/target/release/bundle/appimage/*.AppImage
+            src-tauri/target/release/bundle/*/*.sig
+            src-tauri/target/release/bundle/macos/*.app.tar.gz
           if-no-files-found: error
           retention-days: 7
 
@@ -201,3 +236,21 @@ jobs:
           # Safety net: ensure the release ends up published + latest.
           gh release edit "${{ steps.meta.outputs.tag }}" \
             --repo "${{ github.repository }}" --draft=false --latest
+
+  # latest.json, which installed copies read to find this release (plugins.updater.endpoints in
+  # src-tauri/tauri.conf.json). Built from the .sig files the build jobs uploaded; a rebuild of one
+  # platform keeps the others. Nothing is written when the release has no signed update artifacts.
+  updater-manifest:
+    needs: build
+    if: ${{ !cancelled() && inputs.publish }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Publish latest.json
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node scripts/makeUpdaterManifest.mjs "${{ inputs.tag }}"

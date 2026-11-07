@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '../Utils/Button';
 import { FontPicker } from '../Utils/FontPicker';
 import { useAppFont } from '../../hooks/useAppFont';
+import { useStoreData } from '../../hooks/useStoreData';
+import { useUpdateState } from '../../hooks/useUpdateState';
+import { checkForUpdate, installUpdate, UPDATE_SETTING_KEY, updatesSupported, type UpdateState } from '../../platform/updates';
 import { APP_FONT_OPTIONS } from '../../utils/fonts';
 import {
   HOME_BODY,
@@ -74,6 +77,56 @@ const AppearancePanel = () => {
   );
 };
 
+const updateStatus = (state: UpdateState): string => {
+  switch (state.kind) {
+    case 'unsupported': return 'This copy of Miteiru does not update itself.';
+    case 'checking': return 'Checking…';
+    case 'current': return 'Miteiru is up to date.';
+    case 'available': return `Miteiru ${state.version} is available.`;
+    case 'downloading': return `Downloading Miteiru ${state.version}…`;
+    case 'installing': return `Installing Miteiru ${state.version}…`;
+    case 'error': return `Could not ${state.version ? 'install the update' : 'check for updates'}: ${state.message}`;
+    default: return '';
+  }
+};
+
+/** Updates from GitHub Releases (platform/updates.ts): the start-up check, and a manual one. */
+const UpdatesPanel = () => {
+  const state = useUpdateState();
+  const [checkOnStart, setCheckOnStart] = useStoreData<boolean>(UPDATE_SETTING_KEY, true);
+  const [supported, setSupported] = useState<boolean | null>(null);
+  useEffect(() => {
+    updatesSupported().then(setSupported);
+  }, []);
+  const busy = state.kind === 'checking' || state.kind === 'downloading' || state.kind === 'installing';
+  return (
+    <details className={HOME_INNER_PANEL}>
+      <summary className={`${HOME_INNER_LABEL} cursor-pointer rounded-t-2xl`}>Updates</summary>
+      <div className="space-y-2 bg-blue-50 px-3 py-2.5 text-sm text-blue-900">
+        {supported === false ? (
+          <p className="text-[12px] text-blue-800">{updateStatus({kind: 'unsupported'})} New versions are on GitHub.</p>
+        ) : (
+          <>
+            <label className="flex items-center gap-2 font-semibold">
+              <input type="checkbox" checked={checkOnStart} onChange={(event) => setCheckOnStart(event.target.checked)}/>
+              Check for updates when Miteiru starts
+            </label>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button type="secondary" size="small" disabled={busy || supported === null} onPress={() => checkForUpdate()}>
+                Check now
+              </Button>
+              {state.kind === 'available' && (
+                <Button size="small" onPress={() => installUpdate()}>Restart to update</Button>
+              )}
+            </div>
+            {updateStatus(state) && <p className="break-words text-[12px] text-blue-800">{updateStatus(state)}</p>}
+          </>
+        )}
+      </div>
+    </details>
+  );
+};
+
 export const HomeSystemPanel: React.FC<HomeSystemPanelProps> = ({
   liveCaptionsSymbol,
   liveCaptionsMessage,
@@ -97,7 +150,7 @@ export const HomeSystemPanel: React.FC<HomeSystemPanelProps> = ({
     <summary className={`${HOME_SECTION_LABEL} flex cursor-pointer list-none items-center justify-between gap-3 rounded-t-3xl [&::-webkit-details-marker]:hidden`}>
       <span>Settings &amp; tools</span>
       <span className="text-[11px] font-semibold normal-case tracking-normal text-blue-800 group-open:hidden">
-        Font · Live CC · FFmpeg · caches
+        Font · Updates · Live CC · FFmpeg · caches
       </span>
       <span className="hidden text-[11px] font-semibold normal-case tracking-normal text-blue-800 group-open:inline">
         Collapse
@@ -114,6 +167,8 @@ export const HomeSystemPanel: React.FC<HomeSystemPanelProps> = ({
       </div>
 
       <AppearancePanel/>
+
+      <UpdatesPanel/>
 
       <details className={HOME_INNER_PANEL}>
         <summary className={`${HOME_INNER_LABEL} cursor-pointer rounded-t-2xl`}>Optional media tools</summary>
