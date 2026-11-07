@@ -359,33 +359,6 @@ export function registerMediaHandlers() {
     }
   });
 
-  ipcMain.handle("reencode-video-with-audio-track", async (event, inputPath, audioStreamIndex, convertToX264, convertAudioToAac, totalDuration) => {
-    console.log("[IPC] reencode-video-with-audio-track called:", {inputPath, audioStreamIndex, convertToX264, convertAudioToAac, totalDuration});
-    try {
-      const toolsStatus = await MediaAnalyzer.checkToolsAvailable();
-      if (!toolsStatus.ffmpeg) {
-        throw new Error("FFmpeg not found. Please install FFmpeg and make sure it's in your PATH.");
-      }
-
-      const result = await MediaAnalyzer.reencodeVideoWithAudioTrack(
-        inputPath,
-        audioStreamIndex,
-        convertToX264,
-        convertAudioToAac,
-        totalDuration,
-        (progress) => {
-          console.log("[IPC] Sending progress to renderer:", progress);
-          event.sender.send("reencode-progress", progress);
-        }
-      );
-      console.log("[IPC] Video with selected audio processed:", result);
-      return result;
-    } catch (error) {
-      console.error("[IPC] Video audio track processing failed:", error);
-      throw error;
-    }
-  });
-
   ipcMain.handle("cleanup-temp-subtitle", async (event, filePath) => {
     // Only the subtitle files extractEmbeddedSubtitle wrote to the temp folder may be deleted.
     if (!MediaAnalyzer.isTempSubtitlePath(filePath)) {

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { MediaInfo, MediaTrack } from '../types/media';
+import { MediaInfo } from '../types/media';
 import { TrackSelection } from '../components/Utils/MediaTrackSelectionModal';
-import { getActiveNativePlayer, isTauri } from '../utils/nativePlayer';
+import { getActiveNativePlayer } from '../utils/nativePlayer';
 
 const deleteTempSubtitle = (filePath: string) => {
   window.electronAPI.cleanupTempSubtitle(filePath).catch(err =>
@@ -23,10 +23,7 @@ const useMediaAnalysis = (videoPath: string) => {
   // The video those subtitles belong to; null once the page closes.
   const activeVideoPath = useRef<string | null>(videoPath);
   const [showTrackSelectionModal, setShowTrackSelectionModal] = useState(false);
-  const [showAudioReencodeModal, setShowAudioReencodeModal] = useState(false);
-  const [showReencodeProgress, setShowReencodeProgress] = useState(false);
-  const [reencodeProgress, setReencodeProgress] = useState('');
-  const [selectedAudioForRencode, setSelectedAudioForRencode] = useState<MediaTrack | null>(null);
+  const [showAudioTrackModal, setShowAudioTrackModal] = useState(false);
   const [selectedTracks, setSelectedTracks] = useState<TrackSelection | null>(null);
 
   const analyzeMedia = useCallback(async (path: string): Promise<void> => {
@@ -53,15 +50,10 @@ const useMediaAnalysis = (videoPath: string) => {
         const hasMultipleAudio = analysis.audioTracks.length > 1;
         const hasSingleAudio = analysis.audioTracks.length === 1;
         const hasSubtitles = analysis.subtitleTracks.length > 0;
-        const hasHEVC = analysis.videoTracks.some(track => 
-          track.codec.toLowerCase().includes('hevc') || 
-          track.codec.toLowerCase().includes('h265') ||
-          track.codec.toLowerCase().includes('h.265')
-        );
-        
-        // libmpv (desktop shell) plays HEVC as-is; only a choice of audio track is left to ask.
-        if (hasMultipleAudio || (hasHEVC && !isTauri())) {
-          setTimeout(() => setShowAudioReencodeModal(true), 100);
+
+        // libmpv plays every codec as-is; only a choice of audio track is left to ask.
+        if (hasMultipleAudio) {
+          setTimeout(() => setShowAudioTrackModal(true), 100);
         } else if (hasSingleAudio && hasSubtitles) {
           setTimeout(() => setShowTrackSelectionModal(true), 100);
         } else {
@@ -191,78 +183,17 @@ const useMediaAnalysis = (videoPath: string) => {
     setShowTrackSelectionModal(false);
   }, []);
 
-  const handleCloseAudioReencodeModal = useCallback(() => {
-    setShowAudioReencodeModal(false);
-  }, []);
-
-  const handleAudioReencodeConfirm = useCallback(async (selectedAudioTrack: number, onVideoLoad?: (videoPath: string) => void, convertToX264?: boolean, convertAudioToAac?: boolean) => {
-    console.log(`[DEBUG Frontend] Starting media processing - Track: ${selectedAudioTrack}, convertToX264: ${convertToX264}, convertAudioToAac: ${convertAudioToAac}`);
-    setShowAudioReencodeModal(false);
-    
-    const selectedTrack = mediaInfo.audioTracks[selectedAudioTrack];
-    console.log(`[DEBUG Frontend] Selected track:`, selectedTrack);
-    console.log(`[DEBUG Frontend] Video path:`, videoPath);
-    console.log(`[DEBUG Frontend] Media duration:`, mediaInfo.duration);
-    
-    setSelectedAudioForRencode(selectedTrack);
-    setShowReencodeProgress(true);
-    setReencodeProgress(convertToX264 ? 'Starting video conversion...' : convertAudioToAac ? 'Starting audio conversion...' : 'Starting fast remux...');
-    
-    // Set up progress listener; removed in `finally` so a failed conversion does not leak it.
-    const progressHandler = (progress: string) => {
-      console.log(`[DEBUG Frontend] Progress update:`, progress);
-      setReencodeProgress(progress);
-    };
-    const removeProgressListener = window.backend.on('reencode-progress', progressHandler);
-
-    try {
-      
-      // Start media processing
-      console.log(`[DEBUG Frontend] Calling reencodeVideoWithAudioTrack...`);
-      const reencodedVideoPath = await window.electronAPI.reencodeVideoWithAudioTrack(
-        videoPath,
-        selectedTrack.index,
-        convertToX264,
-        convertAudioToAac,
-        mediaInfo.duration
-      );
-      
-      console.log(`[DEBUG Frontend] Media processing completed:`, reencodedVideoPath);
-      
-      setShowReencodeProgress(false);
-      setReencodeProgress('');
-      
-      // Load the processed video
-      if (onVideoLoad) {
-        onVideoLoad(reencodedVideoPath);
-        
-        // After loading the new video, show subtitle selection if there are embedded subtitles
-        if (mediaInfo.subtitleTracks.length > 0) {
-          setTimeout(() => setShowTrackSelectionModal(true), 1000);
-        }
-      }
-      
-    } catch (error) {
-      console.error(`[DEBUG Frontend] Media processing error:`, error);
-      setShowReencodeProgress(false);
-      setReencodeProgress('');
-      // TODO: Show error toast
-    } finally {
-      removeProgressListener();
-    }
-  }, [videoPath, mediaInfo.audioTracks, mediaInfo.duration, mediaInfo.subtitleTracks.length]);
-
-  // Desktop shell: libmpv switches audio tracks itself (aid counts audio tracks from 1).
+  // libmpv switches audio tracks itself (aid counts audio tracks from 1).
   const handleAudioTrackSelect = useCallback((audioTrackIndex: number) => {
-    setShowAudioReencodeModal(false);
+    setShowAudioTrackModal(false);
     getActiveNativePlayer()?.setAudioTrack(audioTrackIndex + 1);
     if (mediaInfo.subtitleTracks.length > 0) {
       setTimeout(() => setShowTrackSelectionModal(true), 100);
     }
   }, [mediaInfo.subtitleTracks.length]);
 
-  const handleAudioReencodeSkip = useCallback(() => {
-    setShowAudioReencodeModal(false);
+  const handleAudioTrackSkip = useCallback(() => {
+    setShowAudioTrackModal(false);
     
     // Check if we should show subtitle selection for the default audio
     if (mediaInfo.subtitleTracks.length > 0) {
@@ -289,15 +220,10 @@ const useMediaAnalysis = (videoPath: string) => {
     hasEmbeddedSubtitles: mediaInfo.subtitleTracks.length > 0,
     hasMultipleAudioTracks: mediaInfo.audioTracks.length > 1,
     showTrackSelectionModal,
-    showAudioReencodeModal,
-    showReencodeProgress,
-    reencodeProgress,
-    selectedAudioForRencode,
+    showAudioTrackModal,
     handleTrackSelection,
     handleCloseTrackSelectionModal,
-    handleCloseAudioReencodeModal,
-    handleAudioReencodeConfirm,
-    handleAudioReencodeSkip,
+    handleAudioTrackSkip,
     handleAudioTrackSelect,
     selectedTracks
   };

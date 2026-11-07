@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/miteiru-player", "crates/miteiru-node", "crates/miteiru-mpv"]
+members = ["crates/miteiru-mpv"]
 
 [workspace.package]
 version = "0.0.0"

@@ -1,6 +1,6 @@
 /*
- * electron-builder beforePack hook (buildConfig/base.config.json): gzips the large language assets in
- * app/language-assets before they are packed, replacing each file with `<name>.gz`. Only files read
+ * Gzips the large language assets in a staged app directory (scripts/stageTauriResources.mjs) before
+ * they are packed, replacing each file with `<name>.gz`. Only files read
  * by the main process through main/helpers/assetFiles.ts are listed; files the renderer fetches by URL
  * (pitch accents, grammar) and anything read another way stay plain.
  *
@@ -70,11 +70,7 @@ const compressLanguageAssets = (appDirectory) => {
   return totals;
 };
 
-// electron-builder calls the default export with the pack context; projectDir holds app/.
-module.exports = async (context) => {
-  compressLanguageAssets(path.join(context.packager.projectDir, 'app'));
-};
-module.exports.compressLanguageAssets = compressLanguageAssets;
+module.exports = {compressLanguageAssets};
 
 if (require.main === module) {
   compressLanguageAssets(path.resolve(process.argv[2] ?? 'app'));

@@ -4,7 +4,17 @@ export type WorkerInbound =
   | { kind: 'sys-result'; id: number; ok: boolean; value?: unknown; error?: string }
   | { kind: 'invoke'; id: number; channel: string; args: unknown[] }
   | { kind: 'send'; channel: string; args: unknown[] }
-  | { kind: 'proc-event'; event: 'data' | 'exit'; payload: unknown };
+  | { kind: 'proc-event'; event: 'data' | 'exit'; payload: unknown }
+  /** A request to the local analyzer API (src-tauri/src/analyzer.rs), answered with analyzer_respond. */
+  | { kind: 'analyzer-request'; payload: AnalyzerRequestEvent };
+
+export interface AnalyzerRequestEvent {
+  id: number;
+  method: string;
+  path: string;
+  token?: string | null;
+  body: string;
+}
 
 export type WorkerOutbound =
   | { kind: 'ready' }

@@ -24,6 +24,9 @@ const OBSERVED = ["time-pos", "duration", "pause", "eof-reached", "speed", "volu
 let activePlayer: NativePlayer | null = null;
 /** The player on screen, for hooks that act on playback outside the video component. */
 export const getActiveNativePlayer = () => activePlayer;
+const setActiveNativePlayer = (player: NativePlayer | null) => {
+  activePlayer = player;
+};
 
 /**
  * libmpv playing in the window under the page, behind the same small video.js-shaped API the
@@ -46,7 +49,7 @@ export class NativePlayer {
     await invoke("player_open", {options: {"sub-visibility": "no"}});
     this.unlisten = await getCurrentWebviewWindow().listen<PlayerEvent>("player://event", (e) => this.onEvent(e.payload));
     await invoke("player_observe", {names: OBSERVED});
-    activePlayer = this;
+    setActiveNativePlayer(this);
   }
 
   private onEvent(ev: PlayerEvent) {
@@ -208,7 +211,7 @@ export class NativePlayer {
   dispose() {
     if (this.disposed) return;
     this.disposed = true;
-    if (activePlayer === this) activePlayer = null;
+    if (activePlayer === this) setActiveNativePlayer(null);
     this.unlisten?.();
     this.listeners.clear();
     invoke("player_close").catch(() => undefined);

@@ -10,6 +10,7 @@ export interface SysInfo {
   resources: string;
   exePath: string;
   isPackaged: boolean;
+  pid: number;
 }
 
 const guessPlatform = (): SysInfo['platform'] => {
@@ -34,7 +35,8 @@ export const runtime: SysInfo = {
   home: '',
   resources: '',
   exePath: '',
-  isPackaged: false
+  isPackaged: false,
+  pid: 0
 };
 
 export const initRuntime = (info: SysInfo) => {

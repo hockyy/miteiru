@@ -1,12 +1,10 @@
 import assert from "node:assert/strict";
-import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import {test} from "node:test";
 import iconv from "iconv-lite";
 import {decodeText} from "../main/helpers/textEncoding";
 import {parseSubtitleCues} from "../main/helpers/subtitleParser";
-import {resolveAppFile} from "../main/appProtocol";
 import Japanese from "../main/handler/japanese";
 
 const srt = (text: string) => `1\n00:00:01,000 --> 00:00:03,000\n${text}\n\n2\n00:00:04,000 --> 00:00:06,000\n${text}\n`;
@@ -60,22 +58,6 @@ test("parseSubtitleCues handles the inputs @plussub/srt-vtt-parser got wrong", (
     {id: "", from: 3000, to: 4000, text: "world"},
   ]);
   assert.equal(first("1\n10:02:03,040 --> 10:02:04,000\nlate\n").from, ((10 * 60 + 2) * 60 + 3) * 1000 + 40);
-});
-
-test("resolveAppFile maps app:// URLs onto the exported renderer", async () => {
-  const directory = await fs.mkdtemp(path.join(os.tmpdir(), "miteiru-app-test-"));
-  await fs.mkdir(path.join(directory, "home"));
-  await fs.writeFile(path.join(directory, "home", "index.html"), "home");
-  await fs.writeFile(path.join(directory, "index.html"), "root");
-  await fs.writeFile(path.join(directory, "app.js"), "js");
-
-  assert.equal(await resolveAppFile(directory, "app://./home/"), path.join(directory, "home", "index.html"));
-  assert.equal(await resolveAppFile(directory, "app://./home"), path.join(directory, "home", "index.html"));
-  assert.equal(await resolveAppFile(directory, "app://./app.js"), path.join(directory, "app.js"));
-  assert.equal(await resolveAppFile(directory, "app://./missing.js"), null);
-  assert.equal(await resolveAppFile(directory, "app://./unknown-page"), path.join(directory, "index.html"));
-  assert.equal(await resolveAppFile(directory, "app://./%2e%2e/%2e%2e/secret.txt"), null);
-  await fs.rm(directory, {recursive: true, force: true});
 });
 
 test("a failed Kuromoji dictionary load can be retried", async () => {

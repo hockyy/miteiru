@@ -16,6 +16,9 @@ pub struct SysInfo {
   pub resources: String,
   pub exe_path: String,
   pub is_packaged: bool,
+  pub pid: u32,
+  /// MITEIRU_SMOKE_TEST: where the smoke test writes its results (renderer/platform/smokeTest.ts).
+  pub smoke_test: Option<String>,
 }
 
 pub fn platform() -> &'static str {
@@ -95,5 +98,17 @@ pub async fn sys_info(app: tauri::AppHandle) -> Result<SysInfo, String> {
     resources: s(app.path().resource_dir().unwrap_or_default()),
     exe_path: s(std::env::current_exe().unwrap_or_default()),
     is_packaged: !cfg!(debug_assertions),
+    pid: std::process::id(),
+    smoke_test: std::env::var("MITEIRU_SMOKE_TEST").ok().filter(|p| !p.is_empty()),
   })
+}
+
+/// Ends the app with `code`; only in a smoke test run, which has no one to close the window.
+#[tauri::command]
+pub fn smoke_test_exit(app: tauri::AppHandle, code: i32) -> Result<(), String> {
+  if std::env::var_os("MITEIRU_SMOKE_TEST").is_none() {
+    return Err("EPERM: smoke_test_exit is only available in a smoke test run".into());
+  }
+  app.exit(code);
+  Ok(())
 }

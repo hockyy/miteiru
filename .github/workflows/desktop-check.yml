@@ -1,7 +1,9 @@
 name: Desktop build check
 
-# Manual only, like CI and Release: builds the Tauri desktop app on each OS without packaging
-# a release, so platform code can be checked on macOS and Linux from a Windows machine.
+# Manual only, like CI and Release: builds the Tauri desktop app on each OS without packaging a
+# release, then runs its smoke test (renderer/platform/smokeTest.ts): the backend worker, the store,
+# the analyzer API, libmpv drawing under the page and a YouTube embed. The results and a screenshot
+# are uploaded, so platform code can be checked on macOS and Linux from a Windows machine.
 on:
   workflow_dispatch:
     inputs:
@@ -39,23 +41,55 @@ jobs:
           node-version: 22
           cache: npm
       - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
       - name: Linux packages
         if: matrix.key == 'linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev librsvg2-dev libayatana-appindicator3-dev patchelf libmpv-dev xvfb
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev librsvg2-dev libayatana-appindicator3-dev \
+            patchelf libmpv-dev xvfb imagemagick
       - run: npm ci
+      - name: Fetch libmpv
+        if: matrix.key != 'linux'
+        run: node scripts/fetchLibmpv.mjs --if-needed
       - name: Build renderer
         run: npm run build:renderer
-      - name: Build desktop app (debug, no bundle)
+      - name: Build desktop app (debug, frontend embedded)
         working-directory: src-tauri
-        run: cargo build
-      - name: Upload binary
+        run: cargo build --features tauri/custom-protocol
+
+      - name: Smoke test
+        if: matrix.key != 'windows'
+        shell: bash
+        run: |
+          export MITEIRU_SMOKE_TEST="$PWD/smoke.json" MITEIRU_USER_DATA_DIR="$RUNNER_TEMP/miteiru-profile"
+          run_app() {
+            ./src-tauri/target/debug/miteiru & app=$!
+            sleep 30
+            if [ "$RUNNER_OS" = "macOS" ]; then screencapture -x smoke.png || true; else import -window root smoke.png || true; fi
+            for _ in $(seq 1 90); do kill -0 "$app" 2>/dev/null || break; sleep 1; done
+            kill "$app" 2>/dev/null || true
+            code=0; wait "$app" || code=$?
+            echo "app exit code: $code"
+          }
+          export -f run_app
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            xvfb-run -a -s "-screen 0 1280x800x24" bash -c run_app
+          else
+            run_app
+          fi
+          cat smoke.json || echo "no smoke.json"
+          node -e 'const r = require("./smoke.json"); const bad = Object.entries(r).filter(([, v]) => !v.ok); if (bad.length) { console.error("failed:", bad.map(([k]) => k).join(", ")); process.exit(1); }'
+
+      - name: Upload smoke test results
+        if: always() && matrix.key != 'windows'
         uses: actions/upload-artifact@v4
         with:
-          name: miteiru-${{ matrix.key }}
+          name: smoke-${{ matrix.key }}
           path: |
-            src-tauri/target/debug/miteiru
-            src-tauri/target/debug/miteiru.exe
+            smoke.json
+            smoke.png
           if-no-files-found: warn
-          retention-days: 3
+          retention-days: 7

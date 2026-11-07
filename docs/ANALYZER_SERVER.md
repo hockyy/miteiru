@@ -4,7 +4,7 @@ Miteiru exposes a local analyzer server while the desktop app is running. The se
 
 ## Registration
 
-The server binds to `127.0.0.1` on port `0`, so the OS assigns a free port. After startup, Miteiru writes `analyzer-server.json` in Electron's user data directory.
+The server binds to `127.0.0.1` on port `0`, so the OS assigns a free port. After startup, Miteiru writes `analyzer-server.json` in its user data directory (`%APPDATA%\miteiru` on Windows, `~/Library/Application Support/miteiru` on macOS, `~/.config/miteiru` on Linux).
 
 ```json
 {

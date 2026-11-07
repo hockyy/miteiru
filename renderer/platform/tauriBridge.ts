@@ -7,7 +7,8 @@
 import {invoke} from '@tauri-apps/api/core';
 import {listen} from '@tauri-apps/api/event';
 import {getCurrentWebview} from '@tauri-apps/api/webview';
-import type {WorkerInbound, WorkerOutbound} from './backend/protocol';
+import {getCurrentWindow} from '@tauri-apps/api/window';
+import type {AnalyzerRequestEvent, WorkerInbound, WorkerOutbound} from './backend/protocol';
 import {SYS_WRITE_BYTES} from './backend/protocol';
 import {
   ELECTRON_API_INVOKE_CHANNELS,
@@ -71,12 +72,16 @@ class BackendHost {
   }
 
   private forwardProcessEvents() {
-    // Rust emits these for child processes the worker spawned (proc_spawn); the worker cannot listen itself.
+    // Rust emits these for the worker (child processes it spawned, analyzer API requests); a worker
+    // cannot listen to Tauri events itself.
     for (const event of ['data', 'exit'] as const) {
       listen(`proc://${event}`, ({payload}) => this.post({kind: 'proc-event', event, payload})).catch((error) => {
         console.error(`[backend] could not listen for proc://${event}:`, error);
       });
     }
+    listen<AnalyzerRequestEvent>('analyzer://request', ({payload}) => this.post({kind: 'analyzer-request', payload})).catch((error) => {
+      console.error('[backend] could not listen for analyzer requests:', error);
+    });
   }
 
   private failAll(reason: string) {
@@ -168,8 +173,6 @@ const detectPlatform = (): NodeJS.Platform => {
 const buildElectronApi = (host: BackendHost) => {
   const api: Record<string, unknown> = {
     platform: detectPlatform(),
-    // Electron adds .path to dropped File objects; under Tauri drops arrive through onFileDrop instead.
-    getPath: (file: File) => file?.path ?? '',
     onFileDrop
   };
   for (const [method, channel] of Object.entries(ELECTRON_API_INVOKE_CHANNELS)) {
@@ -205,4 +208,20 @@ export const installTauriBridge = () => {
     get: (key: string, defaultValue?: unknown) => host.invoke(STORE_CHANNELS.get, [key, defaultValue]),
     set: (key: string, value: unknown) => host.invoke(STORE_CHANNELS.set, [key, value])
   };
+  document.addEventListener('keydown', toggleFullscreenOnShortcut);
+  // CI's per-OS self-check (renderer/platform/smokeTest.ts), only when MITEIRU_SMOKE_TEST is set.
+  invoke<{ smokeTest?: string | null; userData: string }>('sys_info').then((info) => {
+    if (info.smokeTest) return import('./smokeTest').then(({runSmokeTest}) => runSmokeTest(info.smokeTest!, info.userData));
+  }).catch((error) => console.error('[smoke] failed:', error));
+};
+
+/** F11, or Ctrl+Cmd+F on macOS: the full-screen toggle Electron's default menu used to provide. */
+const toggleFullscreenOnShortcut = (event: KeyboardEvent) => {
+  const macShortcut = event.ctrlKey && event.metaKey && event.key.toLowerCase() === 'f';
+  if (event.key !== 'F11' && !macShortcut) return;
+  event.preventDefault();
+  const appWindow = getCurrentWindow();
+  appWindow.isFullscreen()
+    .then((fullscreen) => appWindow.setFullscreen(!fullscreen))
+    .catch((error) => console.error('[window] could not toggle full screen:', error));
 };

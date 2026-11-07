@@ -21,7 +21,7 @@ with the reading on top, the meaning underneath and a full dictionary entry one 
 ## Why Miteiru?
 
 - **Every word is clickable.** Subtitles are split into words (Kuromoji for Japanese, Jieba for Chinese) with furigana, pinyin or jyutping on top and short meanings underneath. Click a word for its full dictionary entry, pitch accent, conjugations and kanji breakdown.
-- **Your videos, your subtitles.** Drop in local files (`.mkv`, `.mp4`, `.mov` and anything else Chromium plays) with `.srt`, `.ass`, `.vtt` or `.lrc` subtitles, or paste a YouTube link and pick one of its caption tracks.
+- **Your videos, your subtitles.** Drop in local files (MKV, MP4, HEVC, AV1, multiple audio tracks: anything [mpv](https://mpv.io) plays, with no converting) with `.srt`, `.ass`, `.vtt` or `.lrc` subtitles, or paste a YouTube link and pick one of its caption tracks.
 - **Dictionaries ship with the app.** JMdict, KANJIDIC, CC-CEDICT, CantoDict and VNEDict work offline. No account, no subscription, no server.
 - **Made for immersion.** Your target language on top and English underneath, a key to repeat the current line, karaoke lyrics, colours for the words you know, flashcards and one-click Anki cards.
 
@@ -56,9 +56,11 @@ Get the newest version from **[Releases](https://github.com/hockyy/miteiru/relea
 
 | Platform | File | Note |
 | --- | --- | --- |
-| Windows 10/11 | `miteiru-<version>-win-x64.exe` | The installer isn't code-signed, so SmartScreen may warn: **More info → Run anyway**. |
-| macOS (Apple silicon) | `miteiru-<version>-mac-arm64.pkg` | Not notarized (no paid Apple Developer account): [open it anyway](https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unidentified-developer-mh40616/mac). |
-| Linux | `.deb` or `.AppImage` | Built on Ubuntu 22.04 and 24.04. Pick yours; on other distributions, try the 22.04 AppImage. |
+| Windows 10/11 | `Miteiru_<version>_x64-setup.exe` | The installer isn't code-signed, so SmartScreen may warn: **More info → Run anyway**. |
+| macOS (Apple silicon) | `Miteiru_<version>_aarch64.dmg` | Not notarized (no paid Apple Developer account): [open it anyway](https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unidentified-developer-mh40616/mac). |
+| Linux | `Miteiru_<version>_amd64.deb` or `.AppImage` | Built on Ubuntu 22.04. Video plays through the system's libmpv: the `.deb` installs it; for the AppImage, install `libmpv2` (or `libmpv1` on Ubuntu 22.04). |
+
+Upgrading from 7.x keeps your words, notes and settings: Miteiru 8 reads the same data folder.
 
 <details>
 <summary>macOS: what the warning looks like</summary>
@@ -125,17 +127,14 @@ If Miteiru helps you learn, **[give it a ⭐](https://github.com/hockyy/miteiru/
 
 ## For developers
 
-Needs **Node.js 22.12+**. `script:initrepo` downloads language assets from the [assets release](https://github.com/hockyy/miteiru/releases/tag/assets) into `renderer/public/language-assets`.
+Miteiru is a [Tauri](https://tauri.app) app: a Next.js interface in the system webview, a Rust shell (`src-tauri/`) and [libmpv](https://mpv.io) for video. It needs **Node.js 22.12+**, a stable **Rust** toolchain and [Tauri's system dependencies](https://tauri.app/start/prerequisites/) (on Linux also `libmpv-dev`). `script:initrepo` downloads language assets from the [assets release](https://github.com/hockyy/miteiru/releases/tag/assets) into `renderer/public/language-assets`; Windows and macOS builds fetch a pinned LGPL libmpv on their own.
 
 ```bash
 npm install
 npm run script:initrepo
-npm run dev
-npm run build:nsis       # Windows installer (includes Live Captions helper)
-npm run build:linux22    # Ubuntu 22.04
-npm run build:linux24    # Ubuntu 24.04
-npm run build:linux26    # Ubuntu 26.04
-npm run build:macos      # macOS .pkg
+npm run dev              # the app with hot reload
+npm run build            # installers for this OS (NSIS, DMG, or deb and AppImage)
+npm run build:live-captions   # Windows and macOS: the Live Captions helper, before `npm run build`
 ```
 
 Language assets:
@@ -151,6 +150,6 @@ npm run script:download-language-assets -- mandarin han-character-core
 
 ## Credits and license
 
-Dictionary data comes from JMdict and KANJIDIC ([EDRDG](https://www.edrdg.org/)), CC-CEDICT, CantoDict, VNEDict and KanjiVG, each under its own license.
+Dictionary data comes from JMdict and KANJIDIC ([EDRDG](https://www.edrdg.org/)), CC-CEDICT, CantoDict, VNEDict and KanjiVG, each under its own license. Video playback uses [libmpv](https://mpv.io) and [FFmpeg](https://ffmpeg.org) in their LGPL 2.1 builds; the licence text ships with the app.
 
 Miteiru is made by [Hocky Yudhiono](https://github.com/hockyy) and licensed under [CC BY-NC-SA 4.0](LICENSE.md). It is provided as is; use it at your own risk. Found a security issue? Email [miteiru@hocky.id](mailto:miteiru@hocky.id) or open an issue.

@@ -169,9 +169,9 @@ Each language provides integrated dictionary lookup:
 ## Technical Implementation
 
 ### Architecture
-- **Main Process**: Language handlers for tokenization and dictionary
-- **Renderer Process**: UI components and subtitle rendering
-- **IPC Communication**: Electron IPC for tokenization requests
+- **Backend**: Language handlers for tokenization and dictionaries (`main/`), running in a Web Worker beside the page; a Rust shell (`src-tauri/`) provides files, processes and storage
+- **Interface**: UI components and subtitle rendering (`renderer/`)
+- **Messaging**: the page calls the backend through `window.backend.invoke(channel, ...args)`
 - **Dictionary Storage**: Plugin-owned local assets under `renderer/public/language-assets`
 - **Asset Packaging**: Each plugin asset folder has an `asset-manifest.json` and can be packed into or restored from `<plugin-id>-assets.zip` for future download/install flows
 - **Asset Downloading**: `npm run script:initrepo` or `npm run script:download-language-assets` downloads plugin zips from the [assets release](https://github.com/hockyy/miteiru/releases/tag/assets)

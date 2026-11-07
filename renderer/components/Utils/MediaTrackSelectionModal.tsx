@@ -229,7 +229,7 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
             </label>
           </div>
 
-          <div className="space-y-4">{/* Audio selection removed - handled by separate AudioReencodeModal */}
+          <div className="space-y-4">
 
             {/* Primary Subtitle Selection */}
             <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">

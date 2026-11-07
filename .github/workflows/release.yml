@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag to build and upload to (e.g. v7.4.5)'
+        description: 'Tag to build and upload to (e.g. v8.0.0)'
         required: true
       platform:
         description: 'Which installers to build'
@@ -40,21 +40,19 @@ jobs:
         run: |
           python3 - <<'PY'
           import json, os
+          bundle = "src-tauri/target/release/bundle"
           jobs = [
-            {"os": "windows-latest", "build": "npm run build:nsis", "extensions": "exe", "key": "windows"},
-            {"os": "macos-latest", "build": "npm run build:macos", "extensions": "pkg", "key": "macos"},
-            {"os": "ubuntu-22.04", "build": "npm run build:linux22", "extensions": "deb,AppImage", "key": "linux"},
-            {"os": "ubuntu-24.04", "build": "npm run build:linux24", "extensions": "deb,AppImage", "key": "linux"},
+            {"os": "windows-latest", "key": "windows", "bundles": "nsis", "assets": f"{bundle}/nsis/*.exe"},
+            {"os": "macos-latest", "key": "macos", "bundles": "dmg", "assets": f"{bundle}/dmg/*.dmg"},
+            {"os": "ubuntu-22.04", "key": "linux", "bundles": "deb,appimage",
+             "assets": f"{bundle}/deb/*.deb {bundle}/appimage/*.AppImage"},
           ]
           platform = os.environ["PLATFORM"]
           rows = jobs if platform == "all" else [j for j in jobs if j["key"] == platform]
           for row in rows:
               del row["key"]
-          payload = json.dumps(rows)
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
-              fh.write("include<<EOF\n")
-              fh.write(payload + "\n")
-              fh.write("EOF\n")
+              fh.write("include<<EOF\n" + json.dumps(rows) + "\nEOF\n")
           PY
 
   build:
@@ -73,6 +71,19 @@ jobs:
           node-version: 22
           cache: npm
 
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev librsvg2-dev \
+            libayatana-appindicator3-dev patchelf file
+
       - name: Install dependencies
         run: npm ci
 
@@ -85,21 +96,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build artifacts
-        run: ${{ matrix.build }}
-        env:
-          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build the live captions helper
+        if: runner.os != 'Linux'
+        run: npm run build:live-captions
+
+      # Stages language assets, libmpv and the live captions helper (scripts/stageTauriResources.mjs)
+      # and builds the installers.
+      - name: Build installers
+        run: npx tauri build --config src-tauri/tauri.release.conf.json --bundles ${{ matrix.bundles }}
 
       - name: Resolve tag
         id: meta
         shell: bash
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
-          fi
+        run: echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
 
       - name: Create release if missing
         shell: bash
@@ -125,13 +134,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           shopt -s nullglob
-          files=()
-          IFS=',' read -ra exts <<< "${{ matrix.extensions }}"
-          for ext in "${exts[@]}"; do
-            files+=(dist/*."${ext}")
-          done
+          files=(${{ matrix.assets }})
           if [ ${#files[@]} -eq 0 ]; then
-            echo "No artifacts found in dist/"; ls -la dist/; exit 1
+            echo "No installers found"; ls -R src-tauri/target/release/bundle || true; exit 1
           fi
           gh release upload "${{ steps.meta.outputs.tag }}" "${files[@]}" \
             --repo "${{ github.repository }}" --clobber

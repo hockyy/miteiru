@@ -5,31 +5,10 @@ import path from "node:path";
 import {test} from "node:test";
 import React from "react";
 import {renderToStaticMarkup} from "react-dom/server";
-import {isAppUrl, isInsideDirectory, isLyricsFilePath, isWebUrl} from "../main/helpers/navigationGuard";
+import {isInsideDirectory, isLyricsFilePath, isWebUrl} from "../main/helpers/navigationGuard";
 import {readStrokeSvg} from "../main/helpers/strokeSvg";
-import {createMiteiruFileResponse} from "../main/miteiruProtocol";
 import {MediaAnalyzer} from "../main/helpers/mediaAnalyzer";
 import {renderSubtitleHtml} from "../renderer/utils/subtitleHtml";
-
-test("only Miteiru's own pages count as app URLs", () => {
-  assert.equal(isAppUrl("app://./video"), true);
-  assert.equal(isAppUrl("http://localhost:8888/home"), true);
-  assert.equal(isAppUrl("https://www.youtube.com/watch?v=x"), false);
-  assert.equal(isAppUrl("file:///C:/Windows/System32/calc.exe"), false);
-  assert.equal(isAppUrl("not a url"), false);
-});
-
-test("a packaged build does not treat localhost as Miteiru", () => {
-  const env = process.env as Record<string, string | undefined>;
-  const previous = env.NODE_ENV;
-  env.NODE_ENV = "production";
-  try {
-    assert.equal(isAppUrl("http://localhost:3000/"), false);
-    assert.equal(isAppUrl("app://./home"), true);
-  } finally {
-    env.NODE_ENV = previous;
-  }
-});
 
 test("open-path and write-file guards", () => {
   const root = path.join(os.tmpdir(), "miteiru-user-data");
@@ -77,25 +56,6 @@ test("stroke SVGs are read only by bare code-point file names", async () => {
   assert.equal(await readStrokeSvg(directory, "..secret.svg"), "");
   assert.equal(await readStrokeSvg(directory, path.join(directory, "05b57.svg")), "");
   assert.equal(await readStrokeSvg(directory, 42), "");
-  await fs.rm(directory, {recursive: true, force: true});
-});
-
-test("miteiru:// shares files cross-origin only with Miteiru's pages", async () => {
-  const directory = await fs.mkdtemp(path.join(os.tmpdir(), "miteiru-protocol-test-"));
-  const file = path.join(directory, "clip.mp4");
-  await fs.writeFile(file, "0123456789");
-  const allowOrigin = async (origin?: string) => {
-    const response = createMiteiruFileResponse(
-      file,
-      new Request("miteiru://local/clip.mp4", {headers: origin ? {origin} : {}})
-    );
-    await response.body?.cancel();
-    return response.headers.get("access-control-allow-origin");
-  };
-
-  assert.equal(await allowOrigin("app://."), "app://.");
-  assert.equal(await allowOrigin("https://www.youtube.com"), null);
-  assert.equal(await allowOrigin(), null);
   await fs.rm(directory, {recursive: true, force: true});
 });
 

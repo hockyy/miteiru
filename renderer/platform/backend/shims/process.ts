@@ -20,7 +20,7 @@ export const process = {
   versions: {} as Record<string, string>,
   version: 'v22.0.0',
   argv: [] as string[],
-  pid: 1,
+  get pid() { return runtime.pid; },
   title: 'miteiru-backend',
   cwd: () => runtime.userData || '/',
   nextTick: (callback: Listener, ...args: unknown[]) => queueMicrotask(() => callback(...args)),

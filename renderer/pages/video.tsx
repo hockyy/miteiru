@@ -2,7 +2,6 @@ import React, {useCallback, useEffect, useMemo} from "react";
 import {useRouter} from "next/router";
 import VideoJS from "../components/VideoPlayer/VideoJS";
 import {NativeVideo} from "../components/VideoPlayer/NativeVideo";
-import {isTauri} from "../utils/nativePlayer";
 import MiteiruDropzone from "../components/VideoPlayer/MiteiruDropzone";
 import MeaningBox from "../components/Meaning/MeaningBox";
 import {VideoController} from "../components/VideoPlayer/VideoController";
@@ -38,9 +37,7 @@ import {SubtitleDisplay} from "../components/Subtitle/SubtitleDisplay";
 import LyricsSearchModal from "../components/Lyrics/LyricsSearchModal";
 import SubtitleSelectionModal from "../components/Utils/SubtitleSelectionModal";
 import MediaTrackSelectionModal from "../components/Utils/MediaTrackSelectionModal";
-import AudioReencodeModal from "../components/Utils/AudioReencodeModal";
 import AudioTrackModal from "../components/Utils/AudioTrackModal";
-import ReencodeProgressModal from "../components/Utils/ReencodeProgressModal";
 import CommandPalette from "../components/Utils/CommandPallete";
 import useWordOfTheDay from "../hooks/useWordOfTheDay";
 import WordOfTheDay from "../components/WordOfTheDay/WordOfTheDay";
@@ -185,15 +182,10 @@ function Video() {
   const {
     mediaInfo,
     showTrackSelectionModal,
-    showAudioReencodeModal,
-    showReencodeProgress,
-    reencodeProgress,
-    selectedAudioForRencode,
+    showAudioTrackModal,
     handleTrackSelection,
     handleCloseTrackSelectionModal,
-    handleCloseAudioReencodeModal,
-    handleAudioReencodeConfirm,
-    handleAudioReencodeSkip,
+    handleAudioTrackSkip,
     handleAudioTrackSelect
   } = useMediaAnalysis(videoSrc.path);
   const liveCaptions = useLiveCaptions();
@@ -229,12 +221,6 @@ function Video() {
     }
   }), [videoSrc]);
 
-  // Handle loading processed video with selected audio
-  const handleReencodedVideoLoad = useCallback((videoPath: string) => {
-    // Load the processed video file
-    onLoadFiles([{path: videoPath}]);
-  }, [onLoadFiles]);
-
   const handleMediaTrackSelection = useMediaTrackSubtitleSelection({
     videoPath: videoSrc.path,
     handleTrackSelection,
@@ -254,16 +240,6 @@ function Video() {
       () => videoSrc.path.startsWith('http') ? videoSrc.path : undefined,
       [videoSrc.path]
   );
-  const selectedAudioTrackLabel = useMemo(
-      () => selectedAudioForRencode
-        ? `${selectedAudioForRencode.title || selectedAudioForRencode.language || 'Track'} (${selectedAudioForRencode.codec})`
-        : '',
-      [selectedAudioForRencode]
-  );
-  const handleAudioReencodeModalConfirm = useCallback((trackIndex, convertToX264, convertAudioToAac) => {
-    handleAudioReencodeConfirm(trackIndex, handleReencodedVideoLoad, convertToX264, convertAudioToAac);
-  }, [handleAudioReencodeConfirm, handleReencodedVideoLoad]);
-
   const {
     autoPause,
     setAutoPause,
@@ -303,15 +279,15 @@ function Video() {
 
   // While a video plays, the controls fade out when the mouse rests; not while a panel or dialog is open.
   const panelOpen = showSidebar || showVocabSidebar || showCommandPalette || meaning !== '' ||
-      showSubtitleModal || showLyricsSearch || showTrackSelectionModal || showAudioReencodeModal || showReencodeProgress;
+      showSubtitleModal || showLyricsSearch || showTrackSelectionModal || showAudioTrackModal;
   const {controlsRef} = useIdleControls<HTMLDivElement>(hasVideo && Boolean(isPlaying), !panelOpen);
 
   // Pause player when media selection modals open
   useEffect(() => {
-    if (showTrackSelectionModal || showAudioReencodeModal) {
+    if (showTrackSelectionModal || showAudioTrackModal) {
       setIsPlaying(0);
     }
-  }, [showTrackSelectionModal, showAudioReencodeModal, setIsPlaying]);
+  }, [showTrackSelectionModal, showAudioTrackModal, setIsPlaying]);
 
   return (
       <React.Fragment>
@@ -354,10 +330,10 @@ function Video() {
           )}
 
           {hasVideo && (
-            // The desktop shell plays local files with libmpv; YouTube stays in the page.
-            isTauri() && videoSrc.type !== 'video/youtube'
-                ? <NativeVideo options={videoOptions} onReady={readyCallback} clock={clock}/>
-                : <VideoJS options={videoOptions} onReady={readyCallback} clock={clock}/>
+            // Local files play in libmpv; YouTube stays in the page.
+            videoSrc.type === 'video/youtube'
+                ? <VideoJS options={videoOptions} onReady={readyCallback} clock={clock}/>
+                : <NativeVideo options={videoOptions} onReady={readyCallback} clock={clock}/>
           )}
 
           <div>
@@ -458,31 +434,12 @@ function Video() {
             appLanguageCode={lang}
             videoUrl={mediaVideoUrl}
         />
-        {isTauri() ? (
-            <AudioTrackModal
-                isOpen={showAudioReencodeModal}
-                onClose={handleAudioReencodeSkip}
-                onSelect={handleAudioTrackSelect}
-                fileName={mediaFileName}
-                audioTracks={mediaInfo.audioTracks}
-            />
-        ) : (
-            <AudioReencodeModal
-                isOpen={showAudioReencodeModal}
-                onClose={handleCloseAudioReencodeModal}
-                onConfirm={handleAudioReencodeModalConfirm}
-                onSkip={handleAudioReencodeSkip}
-                fileName={mediaFileName}
-                audioTracks={mediaInfo.audioTracks}
-                videoTracks={mediaInfo.videoTracks || []}
-                currentAppLanguage={currentAppLanguage}
-            />
-        )}
-        <ReencodeProgressModal
-            isOpen={showReencodeProgress}
+        <AudioTrackModal
+            isOpen={showAudioTrackModal}
+            onClose={handleAudioTrackSkip}
+            onSelect={handleAudioTrackSelect}
             fileName={mediaFileName}
-            selectedAudioTrack={selectedAudioTrackLabel}
-            progress={reencodeProgress}
+            audioTracks={mediaInfo.audioTracks}
         />
         <CommandPalette
             showCommandPalette={showCommandPalette}
