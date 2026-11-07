@@ -14,12 +14,14 @@ else
   "$app_binary" &
 fi
 app=$!
-sleep 30
-if [ "$(uname)" = "Darwin" ]; then
-  screencapture -x "$screenshot" || true
-else
-  import -window root "$screenshot" || true
-fi
+shoot() {
+  if [ "$(uname)" = "Darwin" ]; then screencapture -x "$1" || true; else import -window root "$1" || true; fi
+}
+# One while the home page shows, one while the player test draws under the hidden page.
+sleep 6
+shoot "${screenshot%.png}-early.png"
+sleep 24
+shoot "$screenshot"
 # The test exits the app when done (about 40 s after start).
 for _ in $(seq 1 90); do
   kill -0 "$app" 2>/dev/null || break

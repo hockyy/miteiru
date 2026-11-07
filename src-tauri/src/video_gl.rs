@@ -321,12 +321,18 @@ mod imp {
         {
             let renderer = renderer.clone();
             let backend = backend.clone();
+            let first_frame = std::cell::Cell::new(true);
             area.connect_render(move |area, _| {
                 if let Some(r) = renderer.borrow().as_ref() {
                     let scale = area.scale_factor();
+                    let (fbo, width, height) =
+                        (current_framebuffer(backend.get()), area.allocated_width() * scale, area.allocated_height() * scale);
+                    if first_frame.replace(false) {
+                        log::info!("GLArea: first frame, {width}x{height} into framebuffer {fbo}");
+                    }
                     r.update();
                     // GtkGLArea's framebuffer has its origin at the bottom-left.
-                    r.render(current_framebuffer(backend.get()), area.allocated_width() * scale, area.allocated_height() * scale, true);
+                    r.render(fbo, width, height, true);
                     r.report_swap();
                 }
                 glib::Propagation::Stop
