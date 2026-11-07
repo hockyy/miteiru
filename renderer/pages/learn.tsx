@@ -32,7 +32,7 @@ import {AnkiCardBuilderPanel} from "../components/Learn/AnkiCardBuilderPanel";
 import {useSentenceAnalysis} from "../hooks/useSentenceAnalysis";
 import {useSentenceAnki} from "../hooks/useSentenceAnki";
 import {splitIntoLines} from "../utils/textUtils";
-import {speechLanguageCodes} from "../languages/manifest";
+import {getLanguageDisplayName, languageCodes, speechLanguageCodes} from "../languages/manifest";
 import useLiveCaptions from "../hooks/useLiveCaptions";
 import {LiveCaptionOverlay} from "../components/Subtitle/LiveCaptionOverlay";
 import {LearnLiveCaptionControl} from "../components/Learn/LearnLiveCaptionControl";
@@ -42,6 +42,9 @@ import {
   MiteiruPanel,
   MiteiruSubtitleSlot,
   UI_COLUMN_BG,
+  UI_HINT_TEXT,
+  UI_SECTION,
+  UI_SECTION_LABEL,
   UI_SELECT,
   UI_TEXTAREA,
 } from "../components/UI";
@@ -55,7 +58,7 @@ function Learn() {
   const [currentTime, setCurrentTime] = useState(0);
   const [primarySub, setPrimarySub] = useState(new SubtitleContainer(''))
   const [directInput, setDirectInput] = useState('');
-  const [showSidebar, setShowSidebar] = useState(0)
+  const [showSidebar, setShowSidebar] = useState(false)
   const [primaryStyling, setPrimaryStyling] = useStoreData('user.styling.learning', defaultLearningStyling, withCurrentDefaultFont);
   const [rubyContent, setRubyCopyContent] = useRubyCopy();
   const [sentences, setSentences] = useState<string[]>([]);
@@ -88,7 +91,25 @@ function Learn() {
 
   const [leftColumnWidth, setLeftColumnWidth] = useStoreData('learn.layout.leftColumnWidth', 35);
   const [middleColumnWidth, setMiddleColumnWidth] = useStoreData('learn.layout.middleColumnWidth', 45);
-  const rightColumnWidth = 100 - leftColumnWidth - middleColumnWidth;
+
+  const [openRouterApiKey] = useStoreData('openrouter.apiKey', '');
+  const [openRouterModel] = useStoreData('openrouter.model', 'z-ai/glm-5.2:nitro');
+  const {
+    tokenizerMode,
+    tokenizeMiteiru,
+    lang
+  } = useMiteiruTokenizer();
+  const hasApiKey = openRouterApiKey.trim() !== '';
+  // The AI tools are folded away until there is a key to use; the learner can open them either way.
+  const [aiToolsChoice, setAiToolsChoice] = useState<boolean | null>(null);
+  const aiToolsOpen = aiToolsChoice ?? hasApiKey;
+  // Their column only takes room while it is showing; the text column grows into it otherwise.
+  const showAiColumn = aiToolsOpen && (hasApiKey || lang === languageCodes.japanese);
+  const effectiveLeftWidth = showAiColumn ? leftColumnWidth : 0;
+  const effectiveMiddleWidth = showAiColumn ? middleColumnWidth : middleColumnWidth + leftColumnWidth;
+  const rightColumnWidth = 100 - effectiveLeftWidth - effectiveMiddleWidth;
+  const openSettings = useCallback(() => setShowSidebar(true), []);
+  const languageName = getLanguageDisplayName(lang);
 
   // Right column vertical split state (percentage for sentences vs AI)
   const [sentencesSectionHeight, setSentencesSectionHeight] = useStoreData('learn.layout.sentencesSectionHeight', 50);
@@ -124,11 +145,12 @@ function Learn() {
       }
     } else if (isDraggingRight) {
       const containerWidth = window.innerWidth;
-      const newMiddleWidth = ((e.clientX - (leftColumnWidth / 100 * containerWidth)) / containerWidth) * 100;
+      const newMiddleWidth = ((e.clientX - (effectiveLeftWidth / 100 * containerWidth)) / containerWidth) * 100;
       
       // Constrain middle column between 30% and 70%, right column minimum 15%
-      if (newMiddleWidth >= 30 && newMiddleWidth <= 70 && (100 - leftColumnWidth - newMiddleWidth) >= 15) {
-        setMiddleColumnWidth(newMiddleWidth);
+      if (newMiddleWidth >= 30 && newMiddleWidth <= 70 && (100 - effectiveLeftWidth - newMiddleWidth) >= 15) {
+        // Without the AI column the text column shows the left column's share too.
+        setMiddleColumnWidth(showAiColumn ? newMiddleWidth : Math.max(20, newMiddleWidth - leftColumnWidth));
       }
     } else if (isDraggingVertical) {
       const containerHeight = window.innerHeight;
@@ -139,7 +161,7 @@ function Learn() {
         setSentencesSectionHeight(newSentencesHeight);
       }
     }
-  }, [isDraggingLeft, isDraggingRight, isDraggingVertical, leftColumnWidth, middleColumnWidth, setLeftColumnWidth, setMiddleColumnWidth, setSentencesSectionHeight]);
+  }, [isDraggingLeft, isDraggingRight, isDraggingVertical, leftColumnWidth, middleColumnWidth, effectiveLeftWidth, showAiColumn, setLeftColumnWidth, setMiddleColumnWidth, setSentencesSectionHeight]);
 
   // Handle mouse up to stop dragging
   const handleMouseUp = useCallback(() => {
@@ -166,9 +188,7 @@ function Learn() {
   }, [isDraggingLeft, isDraggingRight, isDraggingVertical, handleMouseMove, handleMouseUp]);
 
   const [selectedVoice, setSelectedVoice] = useStoreData('tts.option.voice','');
-  const [openRouterApiKey] = useStoreData('openrouter.apiKey', '');
-  const [openRouterModel] = useStoreData('openrouter.model', 'z-ai/glm-5.2:nitro');
-  
+
   const {
     showVocabSidebar,
     setShowVocabSidebar,
@@ -176,11 +196,6 @@ function Learn() {
 
   useLearningKeyBind(setMeaning, setShowSidebar, undo, rubyContent, setShowVocabSidebar);
   const router = useRouter();
-  const {
-    tokenizerMode,
-    tokenizeMiteiru,
-    lang
-  } = useMiteiruTokenizer();
   const {
     analysis: sentenceAnalysis,
     errorMessage: analysisErrorMessage,
@@ -339,7 +354,8 @@ function Learn() {
           />
           {/* 3-Column Layout */}
           <div className="flex h-screen w-full relative">
-            {/* Left Column - AI Translation */}
+            {/* Left Column - AI tools (only while open) */}
+            {showAiColumn && (<>
             <div
               className="overflow-hidden"
               style={{ width: `${leftColumnWidth}%` }}
@@ -366,13 +382,24 @@ function Learn() {
               </div>
             </div>
 
+            </>)}
+
             {/* Middle Column - Main Content */}
             <div 
               className={`flex flex-col overflow-y-auto ${UI_COLUMN_BG}`}
-              style={{ width: `${middleColumnWidth}%` }}
+              style={{ width: `${effectiveMiddleWidth}%` }}
             >
               <div className="flex-1 space-y-3 p-3">
-                <MiteiruPanel label="Enter text (one sentence per line)">
+                <div className="flex items-center justify-between gap-2">
+                  <Button type="secondary" size="small" onPress={() => router.push('/home')}>
+                    ← Home
+                  </Button>
+                  <Button type="secondary" size="small" onPress={openSettings} title="AI key and subtitle look (X)">
+                    Settings
+                  </Button>
+                </div>
+
+                <MiteiruPanel label={`Paste or type ${languageName ? languageName + ' ' : ''}text. Click any word to look it up.`}>
                   <textarea
                     className={UI_TEXTAREA}
                     value={sentenceInput}
@@ -380,7 +407,7 @@ function Learn() {
                       setSentenceInput(val.target.value)
                       setSentences(splitIntoLines(val.target.value))
                     }}
-                    placeholder="Each line becomes a separate sentence."
+                    placeholder="Each line becomes a sentence in the list on the right."
                   />
                 </MiteiruPanel>
 
@@ -463,14 +490,14 @@ function Learn() {
                   }
                 >
                   <Button type="primary" size="small" onPress={() => handleTranslate(true)}>
-                    Translate
+                    Google Translate
                   </Button>
                   <Button
                     type={isAutoTranslating ? 'secondary' : 'primary'}
                     size="small"
                     onPress={toggleAutoTranslate}
                   >
-                    {isAutoTranslating ? 'Stop Auto' : 'Auto Translate'}
+                    {isAutoTranslating ? 'Stop auto-translate' : 'Auto-translate'}
                   </Button>
                   <Button
                     type="primary"
@@ -480,23 +507,6 @@ function Learn() {
                   >
                     {speaking ? '…' : <FaVolumeUp/>}
                   </Button>
-                  <Button
-                    type="primary"
-                    size="small"
-                    onPress={handleAnalyzeSentence}
-                    disabled={isAnalyzing || !directInput.trim()}
-                  >
-                    {isAnalyzing ? '…' : '🤖 Analyze'}
-                  </Button>
-                  <Button
-                    type="primary"
-                    size="small"
-                    className="sm:col-span-2"
-                    onPress={handleBuildAnkiCard}
-                    disabled={isBuildingAnkiCard || !directInput.trim()}
-                  >
-                    {isBuildingAnkiCard ? 'Building…' : '📇 Build Anki'}
-                  </Button>
                 </MiteiruActionBar>
 
                 {/* Translation Display */}
@@ -505,6 +515,52 @@ function Learn() {
                     <TranslationDisplay translation={translation}/>
                   </div>
                 )}
+
+                {/* AI tools: folded away until there is an OpenRouter key */}
+                <details
+                  open={aiToolsOpen}
+                  onToggle={(event) => setAiToolsChoice(event.currentTarget.open)}
+                  className={UI_SECTION}
+                >
+                  <summary className={`${UI_SECTION_LABEL} cursor-pointer`}>
+                    AI tools (needs an OpenRouter key)
+                  </summary>
+                  <div className="space-y-2 bg-white px-3 py-2">
+                    {hasApiKey ? (
+                      <>
+                        <p className={UI_HINT_TEXT}>
+                          Translate with AI, study grammar, analyze a sentence or turn it into an Anki card.
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            type="primary"
+                            size="small"
+                            onPress={handleAnalyzeSentence}
+                            disabled={isAnalyzing || !directInput.trim()}
+                          >
+                            {isAnalyzing ? '…' : '🤖 Analyze this text'}
+                          </Button>
+                          <Button
+                            type="primary"
+                            size="small"
+                            onPress={handleBuildAnkiCard}
+                            disabled={isBuildingAnkiCard || !directInput.trim()}
+                          >
+                            {isBuildingAnkiCard ? 'Building…' : '📇 Build an Anki card'}
+                          </Button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <p className={UI_HINT_TEXT}>
+                          Add an OpenRouter key to translate with AI, analyze a sentence and build Anki cards.
+                          Everything above works without one.
+                        </p>
+                        <Button type="primary" size="small" onPress={openSettings}>Set up AI…</Button>
+                      </>
+                    )}
+                  </div>
+                </details>
 
                 {/* Navigation */}
                 <div className="flex justify-center mt-4">

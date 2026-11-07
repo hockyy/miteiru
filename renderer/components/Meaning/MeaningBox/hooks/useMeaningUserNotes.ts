@@ -48,7 +48,7 @@ export const useMeaningUserNotes = (
 
   const generateNoteWithAI = useCallback(async () => {
     if (!openRouterApiKey) {
-      alert('Please set your OpenRouter API key in settings (Ctrl+X)');
+      alert('Add your OpenRouter key first: open Study a text from Home, press X (or click Settings), and paste it in.');
       return;
     }
 

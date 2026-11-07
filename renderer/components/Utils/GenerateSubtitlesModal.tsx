@@ -118,7 +118,7 @@ const GenerateSubtitlesModal = ({
         <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70">
           Source: {sourceKind === "youtube" ? "YouTube audio via yt-dlp" : "local file via ffmpeg"}
           {!hasVideo ? " · load a video first" : ""}
-          {!hasApiKey ? " · OpenRouter key missing (Ctrl+X)" : ""}
+          {!hasApiKey ? " · OpenRouter key missing (add it on Study a text: press X)" : ""}
         </div>
 
         <label className="block space-y-1">

@@ -43,7 +43,7 @@ export const SidebarSection = ({
 }) => (
   <section className="w-full min-w-0 rounded-2xl border border-white/10 bg-white/[0.06] p-4 shadow-xl shadow-black/20 backdrop-blur">
     {title && (
-      <div className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-white/50">
+      <div className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-white/60">
         {title}
       </div>
     )}
@@ -78,6 +78,9 @@ export const SidebarShell = ({
   children
 }: SidebarShellProps) => (
   <aside
+    // A closed panel is only slid off screen: inert keeps its controls out of the Tab order.
+    inert={!showSidebar}
+    aria-hidden={!showSidebar}
     style={{
       transform: `translateX(${showSidebar ? "0" : "100%"})`,
       width: RIGHT_SIDEBAR_WIDTH,
@@ -90,7 +93,7 @@ export const SidebarShell = ({
 
     <div className="mb-5 mt-4">
       <div className="text-3xl font-black tracking-tight">{title}</div>
-      {subtitle && <div className="mt-1 text-sm text-white/55">{subtitle}</div>}
+      {subtitle && <div className="mt-1 text-sm text-white/60">{subtitle}</div>}
     </div>
 
     <div className="flex flex-col gap-4">
@@ -125,6 +128,8 @@ export const LeftSidebarShell = ({
 }: LeftSidebarShellProps) => (
   <aside
     ref={scrollRef}
+    inert={!showSidebar}
+    aria-hidden={!showSidebar}
     style={{
       transform: `translateX(${showSidebar ? "0" : "-100%"})`,
       width,
@@ -155,7 +160,7 @@ export const LeftSidebarShell = ({
 
     <div className="mb-4">
       <div className="text-2xl font-black tracking-tight">{title}</div>
-      {subtitle && <div className="mt-1 text-sm text-white/55">{subtitle}</div>}
+      {subtitle && <div className="mt-1 text-sm text-white/60">{subtitle}</div>}
     </div>
 
     {children}

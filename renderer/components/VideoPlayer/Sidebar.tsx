@@ -45,7 +45,7 @@ const READING_NAME: Record<string, string> = {
 };
 
 const Hint = ({children}: { children: ReactNode }) => (
-  <div className="text-xs text-white/50">{children}</div>
+  <div className="text-xs text-white/60">{children}</div>
 );
 
 const ToggleRow = ({label, hint, checked, onChange}: {
@@ -435,15 +435,22 @@ export const Sidebar = ({
           </Button>
           <Hint>Words without My Notes are skipped. Add one in a word&rsquo;s popup.</Hint>
         </SidebarSection>
-        <SidebarSection title={mainName}>
-          <Button type="secondary" className="w-full min-w-0 max-w-full" onPress={exportHufHandler}>
-            Save as lyrics (.huf)…
-          </Button>
-          <Hint>Miteiru’s lyrics format, with the word splits and readings.</Hint>
-        </SidebarSection>
-        <SidebarSection title="Sync with a GitHub Gist">
-          <GistManager lang={lang}/>
-        </SidebarSection>
+        <details className="rounded-2xl border border-white/10 bg-white/[0.04]">
+          <summary className="cursor-pointer rounded-2xl px-4 py-3 text-xs font-black uppercase tracking-[0.18em] text-white/60 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400">
+            Advanced
+          </summary>
+          <div className="flex flex-col gap-4 p-3 pt-0">
+            <SidebarSection title={mainName}>
+              <Button type="secondary" className="w-full min-w-0 max-w-full" onPress={exportHufHandler}>
+                Save as lyrics (.huf)…
+              </Button>
+              <Hint>Miteiru’s lyrics format, with the word splits and readings.</Hint>
+            </SidebarSection>
+            <SidebarSection title="Sync with a GitHub Gist">
+              <GistManager lang={lang}/>
+            </SidebarSection>
+          </div>
+        </details>
       </TabPanel>}
     </SidebarShell>
   </>;

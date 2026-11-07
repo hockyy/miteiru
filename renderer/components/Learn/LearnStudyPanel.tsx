@@ -1,5 +1,5 @@
 /**
- * Learn page — left column: AI translation + Japanese grammar study.
+ * Learn page — the "AI tools" column: AI translation (needs an OpenRouter key) + Japanese grammar study.
  * Translation: hooks/useAiTranslation.ts
  * Grammar: hooks/useGrammarStudy.ts, useGrammarNotes.ts, useGrammarAiNotes.ts
  */
@@ -217,12 +217,13 @@ export const LearnStudyPanel: React.FC<LearnStudyPanelProps> = ({
       <div
         className={`space-y-3 p-3 ${showResultsSection ? 'shrink-0' : 'min-h-0 flex-1 overflow-y-auto'}`}
       >
-        <MiteiruPanel label="Text to translate">
+        {!missingApiKey && (<>
+        <MiteiruPanel label="Translate with AI">
           <textarea
             className={`${UI_TEXTAREA} min-h-[160px]`}
             value={sourceInput}
             onChange={(e) => setSourceInput(e.target.value)}
-            placeholder="Each line will be translated separately."
+            placeholder="Type or paste text. Each line is translated separately."
           />
         </MiteiruPanel>
 
@@ -260,6 +261,7 @@ export const LearnStudyPanel: React.FC<LearnStudyPanelProps> = ({
             {isTranslating ? 'Translating…' : 'Translate with AI'}
           </Button>
         </MiteiruActionBar>
+        </>)}
 
         {isJapanese && (
           <GrammarStudyControls
@@ -272,15 +274,12 @@ export const LearnStudyPanel: React.FC<LearnStudyPanelProps> = ({
           />
         )}
 
-        <div className={`${UI_HINT_TEXT} space-y-1`}>
+        {!missingApiKey && <div className={`${UI_HINT_TEXT} space-y-1`}>
           {sourceSentences.length > 0 && (
             <p>{sourceSentences.length} line{sourceSentences.length !== 1 ? 's' : ''} to translate</p>
           )}
           {missingSentences && (
             <p className="text-amber-800">Enter text above (one sentence per line).</p>
-          )}
-          {missingApiKey && (
-            <p className="text-amber-800">{openRouterMessages.missingApiKey}</p>
           )}
           {missingModel && (
             <p className="text-amber-800">{openRouterMessages.missingModel}</p>
@@ -288,7 +287,7 @@ export const LearnStudyPanel: React.FC<LearnStudyPanelProps> = ({
           {unsupportedLang && (
             <p className="text-amber-800">AI translation supports Japanese, Chinese, and Cantonese only.</p>
           )}
-        </div>
+        </div>}
       </div>
 
       {showResultsSection && (

@@ -34,18 +34,7 @@ export const ShortcutSheet = ({isOpen, onClose, languageName}: ShortcutSheetProp
       [languageName]
   );
 
-  // Esc closes the sheet, and only the sheet.
-  useEffect(() => {
-    if (!isOpen) return;
-    const close = (event: KeyboardEvent) => {
-      if (event.code !== "Escape") return;
-      event.stopPropagation();
-      onClose();
-    };
-    window.addEventListener("keydown", close, true);
-    return () => window.removeEventListener("keydown", close, true);
-  }, [isOpen, onClose]);
-
+  // ModalShell handles Esc (closes the sheet, and only the sheet), focus and the dialog role.
   if (!isOpen) return null;
   return (
       <ModalShell

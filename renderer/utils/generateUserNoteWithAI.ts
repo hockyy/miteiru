@@ -21,7 +21,7 @@ export const generateUserNoteWithAI = async ({
   openRouterModel,
 }: GenerateUserNoteParams): Promise<MiteiruUserEntry> => {
   if (!openRouterApiKey) {
-    throw new Error('Please set your OpenRouter API key in settings (Ctrl+X)');
+    throw new Error('Add your OpenRouter key first: open Study a text from Home, press X (or click Settings), and paste it in.');
   }
 
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {

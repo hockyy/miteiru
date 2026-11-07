@@ -81,7 +81,7 @@ export const VocabWordCard = ({
           </span>
         ) : null}
 
-        <span className="shrink-0 whitespace-nowrap text-[10px] font-medium leading-none text-white/40">
+        <span className="shrink-0 whitespace-nowrap text-[10px] font-medium leading-none text-white/60">
           {getRelativeTime(state.updTime)}
         </span>
 

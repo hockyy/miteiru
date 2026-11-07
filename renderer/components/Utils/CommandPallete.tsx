@@ -1,12 +1,17 @@
 // components/CommandPalette/CommandPalette.jsx
-import React, {useState, useMemo, useEffect, useRef, useCallback} from 'react';
+import React, {useState, useMemo, useEffect, useRef, useCallback, useId} from 'react';
 import {Command, X, Search} from 'lucide-react';
 import {commandKeys} from '../../utils/shortcuts';
 import {hasCtrlModifier} from '../../utils/platform';
+import {useDialogFocus} from '../../hooks/useDialogFocus';
 
 const CommandPalette = ({showCommandPalette, setShowCommandPalette, commands}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const searchInputRef = useRef(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  // Before the search box takes focus below, so focus goes back to where it was on close. Esc is handled further down.
+  useDialogFocus(dialogRef, {active: showCommandPalette});
 
   // Add a keyboard shortcut to open the command palette (e.g., Ctrl+Shift+P)
   useEffect(() => {
@@ -115,18 +120,25 @@ const CommandPalette = ({showCommandPalette, setShowCommandPalette, commands}) =
           onClick={() => setShowCommandPalette(false)}
       >
         <div
-            className="bg-gray-900 rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col"
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+            tabIndex={-1}
+            className="bg-gray-900 rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col focus:outline-none"
             onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-700">
-            <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+            <h2 id={titleId} className="text-xl font-semibold text-white flex items-center gap-2">
               <Command className="w-5 h-5"/>
               Keyboard Shortcuts
             </h2>
             <button
+                type="button"
+                aria-label="Close"
                 onClick={() => setShowCommandPalette(false)}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-400 hover:text-white transition-colors rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
               <X className="w-5 h-5"/>
             </button>
