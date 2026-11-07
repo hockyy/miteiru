@@ -1,6 +1,6 @@
-// Async function to read a JSON file and parse its content
-import fsPromises from "node:fs/promises";
+// Reads a JSON file (a packaged build may store it compressed: helpers/assetFiles.ts) and parses it
+import {readTextAsset} from "./helpers/assetFiles";
 
 export async function readJsonFile(filePath) {
-  return JSON.parse(await fsPromises.readFile(filePath, 'utf8'));
+  return JSON.parse(await readTextAsset(filePath));
 }

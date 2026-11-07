@@ -120,15 +120,17 @@ const checkYouTube = (videoId: string) => new Promise<string>((resolveCheck, rej
 });
 
 /**
- * Loads Japanese and Cantonese from the assets as this build ships them (gzipped when packaged):
- * their tokenizers and dictionary tables (src-tauri/src/sys/table.rs), a real lookup in each, then
- * one stroke-order SVG from each stroke pack. A build without language assets (the desktop check's)
- * skips it; a build with them must load both.
+ * Loads every language from the assets as this build ships them (zstd-compressed or in tables
+ * when packaged): their tokenizers (kuromoji, jieba) and dictionaries (src-tauri/src/sys/table.rs,
+ * vnedict.txt.zst), a real lookup in each, then one stroke-order SVG from each stroke pack. A build
+ * without language assets (the desktop check's) skips it; a build with them must load all four.
  * Packaged 8.0 builds once failed Chinese this way, unseen, because nothing here loaded a language.
  */
 const SMOKE_LANGUAGES = [
   {plugin: 'japanese', channel: 'loadKuromoji', query: 'queryJapanese', word: '日本'},
-  {plugin: 'cantonese', channel: 'loadCantonese', query: 'queryChinese', word: '中國'}
+  {plugin: 'cantonese', channel: 'loadCantonese', query: 'queryChinese', word: '中國'},
+  {plugin: 'mandarin', channel: 'loadChinese', query: 'queryChinese', word: '中国'},
+  {plugin: 'vietnamese', channel: 'loadVietnamese', query: 'queryVietnamese', word: 'nước'}
 ];
 
 const checkLanguages = async () => {
@@ -137,16 +139,15 @@ const checkLanguages = async () => {
   const separator = resources.includes('\\') ? '\\' : '/';
   const loaded: Record<string, number> = {};
   const lookups: Record<string, number> = {};
-  for (const {plugin, channel} of SMOKE_LANGUAGES) {
+  for (const {plugin, channel, query, word} of SMOKE_LANGUAGES) {
     const manifest = [resources, 'language-assets', plugin, 'asset-manifest.json'].join(separator);
     if (!await invoke('fs_stat', {path: manifest}).catch(() => null)) return 'skipped: this build has no language assets';
     const t0 = Date.now();
     const result = await window.backend.invoke(channel) as { ok?: number; message?: string } | undefined;
     if (result?.ok !== 1) throw new Error(`${channel}: ${result?.message ?? 'no answer'}`);
     loaded[plugin] = Date.now() - t0;
-  }
-  // A real lookup through the backend: the table must open and answer, not only load.
-  for (const {plugin, query, word} of SMOKE_LANGUAGES) {
+    // A real lookup through the backend, right after this language loads: Mandarin and Cantonese
+    // share one Chinese dictionary slot, so a later load would answer for an earlier one.
     const entries = await window.backend.invoke(query, word, 5);
     if (!Array.isArray(entries) || entries.length === 0) throw new Error(`${query}(${word}) returned no entries`);
     lookups[plugin] = entries.length;

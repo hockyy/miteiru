@@ -8,8 +8,10 @@
  *  - each dictionary (JMdict, KANJIDIC, CC-CEDICT, CantoDict) becomes a table beside its JSON,
  *    `jmdict.pack` and so on, built by scripts/data/buildDictionaryTables.ts with the keys the
  *    first-load import used to write; the JSON is removed, and the app reads the table directly;
- *  - the other large files the main process reads (the jieba word lists) are gzipped in place,
- *    `<name>` becoming `<name>.gz`.
+ *  - the other large files the main process or the Rust side reads (kuromoji's `.dat`, the jieba word
+ *    lists, the Vietnamese dictionary, the WaniKani JSON) are zstd-compressed in place, `<name>`
+ *    becoming `<name>.zst` (docs/DATA_FORMAT.md). kuromoji's files come gzipped in the asset
+ *    download (`base.dat.gz`); they are decompressed first and stored as `base.dat.zst`.
  * Only files read by the main process through main/helpers/assetFiles.ts are listed; files the
  * renderer fetches by URL (pitch accents, grammar) and anything read another way stay plain.
  *
@@ -21,14 +23,25 @@ const zlib = require('node:zlib');
 const {execFileSync} = require('node:child_process');
 
 // Directory (under language-assets) → the files in it to compress. Add a file here only if the
-// main process reads it through readAsset/readTextAsset/readAssetSync.
+// main process reads it through readAsset/readTextAsset or Rust through sys::fs::read_asset.
+// A target's name is the plain one; a gzipped source (`name.gz`) is accepted too, for kuromoji.
 const TARGETS = [
+  ['japanese/dict', (name) => /^[a-z_]+.dat$/.test(name)],
   ['mandarin/chinese', (name) => name === 'zh.jieba.txt'],
   ['cantonese/cantonese', (name) => name === 'yue.jieba.txt'],
+  ['vietnamese/vietnamese', (name) => name === 'vnedict.txt'],
+  ['han-character-core/wanikani', (name) => name === 'kanji.json' || name === 'radical.json'],
 ];
 
 const GZIP_SUFFIX = '.gz';
-const GZIP_OPTIONS = {level: zlib.constants.Z_BEST_COMPRESSION};
+const ZSTD_SUFFIX = '.zst';
+// Level 19 with a 128 MB window and long-distance matching: kuromoji's files repeat across a long
+// distance, and the app's decoder (the zstd crate) accepts windows up to 128 MB.
+const ZSTD_OPTIONS = {params: {
+  [zlib.constants.ZSTD_c_compressionLevel]: 19,
+  [zlib.constants.ZSTD_c_windowLog]: 27,
+  [zlib.constants.ZSTD_c_enableLongDistanceMatching]: 1,
+}};
 
 // Builds the stroke tables with the TypeScript builder (run through tsx, from the repo root so the
 // import resolves). Without the stroke folders (none staged, or already packed) nothing changes.
@@ -72,31 +85,51 @@ const packDictionaries = (root) => {
   return result;
 };
 
+// Sources to compress in a directory: the plain name, read from the plain file or its `.gz`.
+const sourcesIn = (names, isTarget) => {
+  const sources = new Map();
+  for (const name of names) {
+    if (isTarget(name)) sources.set(name, name);
+    else if (name.endsWith(GZIP_SUFFIX) && isTarget(name.slice(0, -GZIP_SUFFIX.length))) {
+      if (!sources.has(name.slice(0, -GZIP_SUFFIX.length))) sources.set(name.slice(0, -GZIP_SUFFIX.length), name);
+    }
+  }
+  return sources;
+};
+
 const compressDirectory = (directory, isTarget) => {
   const result = {files: 0, before: 0, after: 0};
   if (!fs.existsSync(directory)) return result;
   const names = fs.readdirSync(directory);
-  const plain = names.filter((name) => isTarget(name) && fs.statSync(path.join(directory, name)).isFile());
+  const sources = sourcesIn(names.filter((name) => fs.statSync(path.join(directory, name)).isFile()), isTarget);
 
-  // A fresh export brought plain files back: drop compressed copies of assets that no longer exist.
-  // (When nothing is plain, this is a repeat run for another architecture and everything is kept.)
-  if (plain.length > 0) {
+  // A fresh export brought plain or gzipped files back: drop compressed copies of assets that no
+  // longer exist. (When there are no sources, this is a repeat run for another architecture and
+  // everything is kept.)
+  if (sources.size > 0) {
     for (const name of names) {
-      if (name.endsWith(GZIP_SUFFIX) && isTarget(name.slice(0, -GZIP_SUFFIX.length)) && !plain.includes(name.slice(0, -GZIP_SUFFIX.length))) {
+      if (name.endsWith(ZSTD_SUFFIX) && isTarget(name.slice(0, -ZSTD_SUFFIX.length)) && !sources.has(name.slice(0, -ZSTD_SUFFIX.length))) {
         fs.unlinkSync(path.join(directory, name));
       }
     }
   }
 
-  for (const name of plain) {
-    const source = path.join(directory, name);
-    const contents = fs.readFileSync(source);
-    const compressed = zlib.gzipSync(contents, GZIP_OPTIONS);
-    fs.writeFileSync(source + GZIP_SUFFIX, compressed);
-    fs.unlinkSync(source);
+  for (const [plainName, sourceName] of sources) {
+    const source = path.join(directory, sourceName);
+    const stored = fs.readFileSync(source);
+    const contents = sourceName.endsWith(GZIP_SUFFIX) ? zlib.gunzipSync(stored) : stored;
+    const compressed = zlib.zstdCompressSync(contents, ZSTD_OPTIONS);
+    if (!zlib.zstdDecompressSync(compressed).equals(contents)) throw new Error(`zstd round trip failed for ${source}`);
+    const target = path.join(directory, plainName + ZSTD_SUFFIX);
+    fs.writeFileSync(target, compressed);
+    // Nothing but the zstd copy stays in the stage: not the plain file, not the gzipped one.
+    for (const old of [path.join(directory, plainName), path.join(directory, plainName + GZIP_SUFFIX)]) {
+      if (fs.existsSync(old)) fs.unlinkSync(old);
+    }
     result.files++;
     result.before += contents.length;
     result.after += compressed.length;
+    console.log(`[compressLanguageAssets] ${path.relative(directory, target).padEnd(18)} ${path.basename(directory)}: ${(contents.length / 1048576).toFixed(2)} MB (${(stored.length / 1048576).toFixed(2)} MB as stored) -> ${(compressed.length / 1048576).toFixed(2)} MB`);
   }
   return result;
 };

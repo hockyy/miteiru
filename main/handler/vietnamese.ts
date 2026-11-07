@@ -14,7 +14,7 @@
 import {ipcMain} from "electron";
 import {glossAll, pickVietnameseGloss} from "./languages/learningGlosses";
 import path from "path";
-import fsPromises from "node:fs/promises";
+import {readTextAsset} from "../helpers/assetFiles";
 
 interface VietnameseTokenResult {
   origin: string;
@@ -48,7 +48,7 @@ class Vietnamese {
 
   static async loadDictionary() {
     try {
-      const data = await fsPromises.readFile(this.dictPath, 'utf-8');
+      const data = await readTextAsset(this.dictPath);
       const lines = data.split('\n');
       
       this.dictionary.clear();
