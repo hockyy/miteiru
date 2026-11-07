@@ -55,6 +55,8 @@ import {LiveCaptionOverlay} from "../components/Subtitle/LiveCaptionOverlay";
 import {LiveCaptionControl} from "../components/Subtitle/LiveCaptionControl";
 import {useMediaTrackSubtitleSelection} from "../hooks/useMediaTrackSubtitleSelection";
 import {getFileNameFromPath, loadMediaPaths} from "../utils/mediaUtils";
+import PlaybackFailedPanel from "../components/VideoPlayer/PlaybackFailedPanel";
+import {analysisFailureMessage} from "../utils/toolSetup";
 
 function Video() {
   const {
@@ -239,7 +241,8 @@ function Video() {
     handleTrackSelection,
     handleCloseTrackSelectionModal,
     loadEmbeddedSubtitle,
-    setToastInfo
+    setToastInfo,
+    languageName: currentAppLanguage
   });
   const pendingSubtitleFileName = useMemo(
       () => getFileNameFromPath(pendingSubtitlePath),
@@ -265,19 +268,47 @@ function Video() {
   const goHome = useCallback(() => router.push('/home'), [router]);
   const openFiles = useCallback(async () => {
     try {
-      await loadMediaPaths(await window.electronAPI.pickMediaFiles(), onLoadFiles);
+      await loadMediaPaths(await window.electronAPI.pickMediaFiles(), onLoadFiles, lang);
     } catch (error) {
       console.error('[video] opening files failed', error);
       setToastInfo({message: `Could not open the files: ${error.message}`, update: String(Date.now())});
     }
-  }, [onLoadFiles, setToastInfo]);
+  }, [onLoadFiles, setToastInfo, lang]);
+
+  // A short message for the settings panel (imports, styles).
+  const notify = useCallback((message: string) => {
+    setToastInfo({message, update: String(Date.now())});
+  }, [setToastInfo]);
+
+  // The tracks inside the video could not be read (no FFmpeg, usually): say so, and offer a subtitle file.
+  // Once per analysis: a ref keeps the toast from coming back whenever the open function is rebuilt.
+  const openFilesRef = useRef(openFiles);
+  openFilesRef.current = openFiles;
+  useEffect(() => {
+    if (!mediaInfo.error) return;
+    setToastInfo({
+      message: analysisFailureMessage(mediaInfo.error),
+      update: String(Date.now()),
+      action: {label: 'Open a subtitle file', onPress: () => openFilesRef.current()}
+    });
+  }, [mediaInfo, setToastInfo]);
+
+  // "Open a subtitle file instead…" in the subtitle picker: close it, then pick.
+  const openSubtitleFileInstead = useCallback(() => {
+    handleCloseTrackSelectionModal();
+    openFiles();
+  }, [handleCloseTrackSelectionModal, openFiles]);
+
+  // mpv could not play this local file: a panel instead of a black screen.
+  const [failedPath, setFailedPath] = useState('');
+  const playbackFailed = hasVideo && failedPath === videoSrc.path;
 
   const commands = useKeyBind(setMeaning, setShowController, setShowSidebar, undo,
       setShowPrimarySub, setShowSecondarySub, primaryStyling, setPrimaryStyling,
       openDeepL, openGoogleTranslate, reloadLastPrimarySubtitle, reloadLastSecondarySubtitle,
       setShowVocabSidebar, rubyContent, contentString, setShowLyricsSearch, openFiles, currentAppLanguage);
   useVideoKeyboardControls(togglePlay, deltaTime, setPrimaryShift, setSecondaryShift,
-      setToastInfo, backToHead, setIsPlaying);
+      setToastInfo, backToHead, setIsPlaying, currentAppLanguage);
   usePlayNextAfterEnd(player, onVideoChangeHandler, setEnableSeeker, setIsPlaying);
 
 
@@ -399,8 +430,8 @@ function Video() {
       <React.Fragment>
         <Head>
           <title>{hasVideo
-              ? getMiteiruVideoTitle(videoSrc.path, primarySub.path, secondarySub.path, showPrimarySub, showSecondarySub, youtubeTitle ?? undefined)
-              : `${getMiteiruAppName()} - Word of the Day`}</title>
+              ? getMiteiruVideoTitle(videoSrc.path, primarySub.path, secondarySub.path, youtubeTitle ?? undefined)
+              : `${getMiteiruAppName()} - Watch`}</title>
         </Head>
         <div>
           <Toast info={toastInfo}/>
@@ -460,8 +491,10 @@ function Video() {
             // YouTube embed otherwise.
             videoSrc.type === 'video/youtube'
                 ? <YouTubeVideo options={videoOptions} onReady={readyCallback} clock={clock}/>
-                : <NativeVideo options={videoOptions} onReady={readyCallback} clock={clock}/>
+                : <NativeVideo options={videoOptions} onReady={readyCallback} clock={clock}
+                               onError={() => setFailedPath(videoSrc.path)}/>
           )}
+          {playbackFailed && <PlaybackFailedPanel fileName={mediaFileName} onTryAnother={openFiles}/>}
 
           <div>
             <SubtitleDisplay
@@ -533,7 +566,7 @@ function Video() {
                 primaryLines={primarySub.lines}
                 primaryShift={primaryShift}/>}
           </div>
-          {tokenizerMode !== '' && <MiteiruDropzone onDrop={onLoadFiles} deltaTime={deltaTime}/>}
+          {tokenizerMode !== '' && <MiteiruDropzone onDrop={onLoadFiles} deltaTime={deltaTime} lang={lang}/>}
         </div>
 
         <LyricsSearchModal
@@ -561,6 +594,7 @@ function Video() {
             currentAppLanguage={currentAppLanguage}
             appLanguageCode={lang}
             videoUrl={mediaVideoUrl}
+            onOpenSubtitleFile={openSubtitleFileInstead}
         />
         <AudioTrackModal
             isOpen={showAudioTrackModal}
@@ -568,6 +602,7 @@ function Video() {
             onSelect={handleAudioTrackSelect}
             fileName={mediaFileName}
             audioTracks={mediaInfo.audioTracks}
+            appLanguageCode={lang}
         />
         <CommandPalette
             showCommandPalette={showCommandPalette}
@@ -589,7 +624,12 @@ function Video() {
                  setSubtitleMode={setSubtitleMode}
                  setShowLyricsSearch={setShowLyricsSearch}
                  pauseOnLookup={pauseOnLookup}
-                 setPauseOnLookup={setPauseOnLookup}/>
+                 setPauseOnLookup={setPauseOnLookup}
+                 secondarySub={secondarySub}
+                 primaryShift={primaryShift} setPrimaryShift={setPrimaryShift}
+                 secondaryShift={secondaryShift} setSecondaryShift={setSecondaryShift}
+                 languageName={currentAppLanguage}
+                 notify={notify}/>
         <ShortcutSheet isOpen={showShortcuts} onClose={closeShortcuts} languageName={currentAppLanguage}/>
         <VocabSidebar
             showVocabSidebar={showVocabSidebar}

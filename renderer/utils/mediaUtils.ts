@@ -1,10 +1,18 @@
 import type {MediaTrack} from "../types/media";
 import {getLanguageDisplayName as getManifestLanguageDisplayName} from "../languages/manifest";
-import {isLocalPath, isVideo, isYoutube} from "./utils";
+import {isLocalPath, isSubtitle, isVideo, isYoutube} from "./utils";
 import {NORMALIZED_SUBTITLE_PREFIX} from "./constants";
 import {playbackMimeForPath} from "./mediaMime";
+import {type RoutedSubtitle, routeSubtitlesBesideVideo} from "./subtitleTags";
 
 export type SubtitleTarget = "primary" | "secondary";
+
+/** A web link of any site in a dragged link, for telling the learner that only YouTube opens. */
+export const droppedWebLink = (data: Pick<DataTransfer, "getData">): string | undefined => (
+  [data.getData("text/uri-list"), data.getData("text/plain")]
+    .flatMap((text) => text.split(/\r?\n/).map((line) => line.trim()))
+    .find((line) => !line.startsWith("#") && looksLikeWebLink(line))
+);
 
 /** Safari and Chrome may provide dragged links as URI lists, plain text, or both. */
 export const droppedYoutubeUrl = (data: Pick<DataTransfer, "getData">): string | undefined => (
@@ -78,17 +86,33 @@ const samePathKey = (filePath: string) => (/^[a-z]:[\\/]|\\/i.test(filePath) ? f
  * Loads dropped or picked files one at a time: the first video, then the subtitles given with it, then
  * those beside it that share its name. Further videos are ignored, since only one plays.
  * `loadFile` takes one file per call (useLoadFiles' onLoadFiles).
+ * With `appLang`, subtitles beside the video are routed by the language in their name (show.ja.srt is
+ * the main subtitle, show.en.srt the translation, other languages are left out); without it, they all load
+ * and the learner is asked where each goes.
  */
-export const loadMediaPaths = async (paths: string[], loadFile: (files: { path: string }[]) => unknown) => {
+export const loadMediaPaths = async (
+  paths: string[],
+  loadFile: (files: { path: string; target?: SubtitleTarget }[]) => unknown,
+  appLang?: string
+) => {
+  // A video dropped with, say, its .nfo file just ignores the .nfo; a drop of nothing usable still reaches
+  // the loader, which says why it can't open it.
+  const usable = paths.filter((filePath) => isVideo(filePath) || isSubtitle(filePath));
+  paths = usable.length > 0 ? usable : paths;
   const video = paths.find((filePath) => isVideo(filePath));
   const besideVideo = video ? await window.electronAPI.checkSubtitleFile(video) : [];
-  const ordered = video ? [video, ...paths.filter((filePath) => !isVideo(filePath)), ...besideVideo] : paths;
+  const routed: RoutedSubtitle[] = !video ? [] : appLang
+    ? routeSubtitlesBesideVideo(video, besideVideo, appLang)
+    : besideVideo.map((path) => ({path}));
+  const ordered: RoutedSubtitle[] = video
+    ? [{path: video}, ...paths.filter((filePath) => !isVideo(filePath)).map((path) => ({path})), ...routed]
+    : paths.map((path) => ({path}));
   const seen = new Set<string>();
-  for (const filePath of ordered) {
-    const key = samePathKey(filePath);
+  for (const {path, target} of ordered) {
+    const key = samePathKey(path);
     if (seen.has(key)) continue;
     seen.add(key);
-    loadFile([{path: filePath}]);
+    loadFile([target ? {path, target} : {path}]);
   }
 };
 
@@ -159,6 +183,8 @@ export interface SubtitleCandidate {
   type: "embedded" | "youtube";
   index: number;
   language?: string;
+  /** Can't be used (picture subtitles): never preselected. */
+  unusable?: boolean;
 }
 
 // ffprobe's ISO 639-2 tags, spelled the way YouTube does.
@@ -175,7 +201,7 @@ const SUBTITLE_LANGUAGE_PREFERENCES: Record<string, string[][]> = {
 
 const baseLanguage = (code: string) => code.split("-")[0];
 
-const normalizeSubtitleLanguage = (language: string) => {
+export const normalizeSubtitleLanguage = (language: string) => {
   const [base, ...region] = language.toLowerCase().replace(/-orig$/, "").split("-");
   return [ISO_639_2_TO_YOUTUBE[base] ?? base, ...region].join("-");
 };
@@ -200,7 +226,7 @@ export const pickDefaultSubtitleTracks = (
   appLang: string
 ): { primary: SubtitleCandidate | null; secondary: SubtitleCandidate | null } => {
   const ranked = candidates.flatMap((candidate) => {
-    if (!candidate.language) return [];
+    if (!candidate.language || candidate.unusable) return [];
     const language = normalizeSubtitleLanguage(candidate.language);
     return [{candidate, language, rank: subtitleLanguageRank(language, appLang)}];
   });
@@ -217,3 +243,46 @@ export const pickDefaultSubtitleTracks = (
 
   return {primary: primary?.candidate ?? null, secondary: secondary?.candidate ?? null};
 };
+
+/**
+ * The audio track to preselect: the one in the language being learned (the best match when several),
+ * otherwise the file's default track, otherwise the first. An index into `tracks`.
+ */
+export const pickDefaultAudioTrack = (
+  tracks: Pick<MediaTrack, "language" | "default">[],
+  appLang: string
+): number => {
+  let best = -1;
+  let bestRank = Infinity;
+  tracks.forEach((track, index) => {
+    if (!track.language) return;
+    const rank = subtitleLanguageRank(normalizeSubtitleLanguage(track.language), appLang);
+    if (rank >= 0 && rank < bestRank) {
+      best = index;
+      bestRank = rank;
+    }
+  });
+  if (best >= 0) return best;
+  const fallback = tracks.findIndex((track) => track.default);
+  return fallback >= 0 ? fallback : 0;
+};
+
+const listFormats = (formats: string[]) => formats.join(", ");
+
+// The few formats worth naming when a file is refused; the full lists are longer.
+const EXAMPLE_VIDEO_FORMATS = ["mp4", "mkv", "webm"];
+const EXAMPLE_SUBTITLE_FORMATS = ["srt", "ass", "vtt", "lrc"];
+
+/** What to tell the learner when a dropped or picked file is neither a video nor a subtitle. */
+export const unsupportedFileMessage = (filePath: string): string => {
+  const name = getFileNameFromPath(filePath);
+  const dot = name.lastIndexOf(".");
+  const extension = dot > 0 && dot < name.length - 1 ? name.slice(dot).toLowerCase() : "";
+  const what = extension ? `"${extension}" files` : `"${name}"`;
+  return `Miteiru can't open ${what}. Videos: ${listFormats(EXAMPLE_VIDEO_FORMATS)}…; subtitles: ${listFormats(EXAMPLE_SUBTITLE_FORMATS)}.`;
+};
+
+export const NOT_YOUTUBE_LINK_MESSAGE = "Only YouTube links open directly. For other sites, download the video first.";
+
+/** Whether pasted text looks like a web link (so it deserves the message above), not just words. */
+export const looksLikeWebLink = (text: string): boolean => /^https?:\/\/\S+$/i.test(text.trim());

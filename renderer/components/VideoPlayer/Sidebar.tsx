@@ -16,6 +16,21 @@ import {videoConstants} from "../../utils/constants";
 import {FontPicker} from "../Utils/FontPicker";
 import {SUBTITLE_FONT_OPTIONS} from "../../utils/fonts";
 import {ColorKey} from "./ColorKey";
+import {SubtitleTimingRow} from "./SubtitleTimingRow";
+import {mainSubtitleName, TRANSLATION_NAME} from "../../utils/subtitleLabels";
+import {getLanguageDisplayName} from "../../languages/manifest";
+import {
+  NOT_PROGRESS_FILE_MESSAGE,
+  NOT_STYLE_FILE_MESSAGE,
+  parseProgressFile,
+  parseStyleFile,
+  progressImportedMessage
+} from "../../utils/importFiles";
+import {formatKeys} from "../../utils/platform";
+
+/** Tells the learner something short: the video page shows a toast; pages without one use an alert. */
+export type Notify = (message: string) => void;
+const alertNotify: Notify = (message) => window.alert(message);
 
 /** Sets one (possibly nested) field of a subtitle style, e.g. `update("text.color", "#fff")`. */
 const useStylingUpdate = (styling: CJKStyling, setStyling: (styling: CJKStyling) => void) =>
@@ -76,21 +91,27 @@ const ColorRow = ({label, color, onChange}: { label: string; color: string; onCh
   </div>
 );
 
-const LearningFileButtons = ({lang}: { lang: string }) => {
+const LearningFileButtons = ({lang, notify = alertNotify}: { lang: string; notify?: Notify }) => {
   const saveLearning = useCallback(() => {
     window.backend.invoke('loadLearningState', lang).then((val) => {
       window.backend.invoke("saveFile", ["json"], JSON.stringify(val))
     })
   }, [lang]);
   const loadLearning = useCallback(() => {
-    window.backend.invoke("readFile", ["json"]).then((val) => {
-      try {
-        window.backend.invoke("updateContentBatch", JSON.parse(val), lang)
-      } catch (e) {
-        console.error(e)
+    window.backend.invoke("readFile", ["json"]).then(async (val) => {
+      const progress = parseProgressFile(val);
+      if (progress.kind === "cancelled") return;
+      if (progress.kind === "invalid") {
+        notify(NOT_PROGRESS_FILE_MESSAGE);
+        return;
       }
-    })
-  }, [lang]);
+      const saved = await window.backend.invoke("updateContentBatch", progress.words, lang);
+      notify(saved === false ? "Couldn't save the words from that file" : progressImportedMessage(progress.count));
+    }).catch((error) => {
+      console.error(error);
+      notify("Couldn't read that file");
+    });
+  }, [lang, notify]);
   return <div className="flex min-w-0 flex-row gap-2 w-full">
     <Button type="secondary" className="miteiru-btn--fill" onPress={saveLearning}>Save to a file…</Button>
     <Button type="secondary" className="miteiru-btn--fill" onPress={loadLearning}>Load from a file…</Button>
@@ -140,12 +161,14 @@ export const SubtitleContentSettings = ({subtitleStyling, setSubtitleStyling, la
 };
 
 /** How a subtitle looks: font, colours, outline, background and position. */
-export const SubtitleLookSettings = ({subtitleStyling, setSubtitleStyling, defaultStyling, name, withMeaning}: {
+export const SubtitleLookSettings = ({subtitleStyling, setSubtitleStyling, defaultStyling, name, withMeaning, notify = alertNotify}: {
   subtitleStyling: CJKStyling;
   setSubtitleStyling: (styling: CJKStyling) => void;
   defaultStyling: CJKStyling;
+  /** What the learner calls this subtitle: "Japanese subtitles" or "Translation". */
   name: string;
   withMeaning: boolean;
+  notify?: Notify;
 }) => {
   const update = useStylingUpdate(subtitleStyling, setSubtitleStyling);
   const exportStyle = useCallback(() => {
@@ -153,21 +176,27 @@ export const SubtitleLookSettings = ({subtitleStyling, setSubtitleStyling, defau
   }, [subtitleStyling]);
   const importStyle = useCallback(() => {
     window.backend.invoke("readFile", ["json"]).then((val) => {
-      try {
-        setSubtitleStyling(JSON.parse(val) as CJKStyling)
-      } catch (e) {
-        console.error(e)
+      const style = parseStyleFile(val, defaultStyling);
+      if (style.kind === "cancelled") return;
+      if (style.kind === "invalid") {
+        notify(NOT_STYLE_FILE_MESSAGE);
+        return;
       }
-    })
-  }, [setSubtitleStyling]);
+      setSubtitleStyling(style.style);
+      notify("Style loaded");
+    }).catch((error) => {
+      console.error(error);
+      notify("Couldn't read that file");
+    });
+  }, [setSubtitleStyling, defaultStyling, notify]);
   const resetStyle = useCallback(() => {
-    if (window.confirm(`Reset the ${name} subtitle style to the defaults?`)) setSubtitleStyling(defaultStyling);
+    if (window.confirm(`Reset the style of the ${name} to the defaults?`)) setSubtitleStyling(defaultStyling);
   }, [defaultStyling, name, setSubtitleStyling]);
   return <div className="flex flex-col gap-3">
     <div className="flex flex-col gap-1.5 text-sm text-white/85">
       Font
       <FontPicker value={subtitleStyling.text.fontFamily} onChange={(value) => update("text.fontFamily", value)}
-                  options={SUBTITLE_FONT_OPTIONS} label={`${name} subtitle font`}/>
+                  options={SUBTITLE_FONT_OPTIONS} label={`${name} font`}/>
     </div>
     <SliderRow label="Size" valueLabel={subtitleStyling.text.fontSize} min={10} max={100} step={1}
                value={parseInt(subtitleStyling.text.fontSize)} onChange={(value) => update("text.fontSize", `${value}px`)}/>
@@ -205,14 +234,14 @@ export const SubtitleLookSettings = ({subtitleStyling, setSubtitleStyling, defau
 };
 
 /** Content, learning files and look of one subtitle, in one column (the Learn page's sidebar). */
-export const StylingBox = ({subtitleStyling, setSubtitleStyling, subtitleName, defaultStyling, lang}) => {
-  const primary = subtitleName === "CJK";
+export const StylingBox = ({subtitleStyling, setSubtitleStyling, isMain, defaultStyling, lang}) => {
+  const primary = Boolean(isMain);
   return <div className="w-full min-w-0 flex flex-col content-start gap-3 unselectable text-sm text-white/85">
     {primary && <SubtitleContentSettings subtitleStyling={subtitleStyling} setSubtitleStyling={setSubtitleStyling}
                                          lang={lang}/>}
     {primary && <LearningFileButtons lang={lang}/>}
     <SubtitleLookSettings subtitleStyling={subtitleStyling} setSubtitleStyling={setSubtitleStyling}
-                          defaultStyling={defaultStyling} name={primary ? "primary" : "secondary"}
+                          defaultStyling={defaultStyling} name={primary ? mainSubtitleName(getLanguageDisplayName(lang)) : TRANSLATION_NAME}
                           withMeaning={primary}/>
   </div>;
 };
@@ -296,15 +325,23 @@ export const Sidebar = ({
                           setSubtitleMode,
                           setShowLyricsSearch,
                           pauseOnLookup,
-                          setPauseOnLookup
+                          setPauseOnLookup,
+                          secondarySub,
+                          primaryShift,
+                          setPrimaryShift,
+                          secondaryShift,
+                          setSecondaryShift,
+                          languageName,
+                          notify
                         }) => {
   const {exportAllAnkiCards, ankiExportModal} = useExportAllAnkiCards({lang, tokenizeMiteiru});
   const [tab, setTab] = useState<SettingsTab>("playback");
   const [lookTarget, setLookTarget] = useState<"primary" | "secondary">("primary");
+  const mainName = mainSubtitleName(languageName);
   const usesToneNumbers = lang === videoConstants.chineseLang || lang === videoConstants.cantoneseLang;
   const exportHufHandler = useCallback(() => {
     if (!primarySub || !primarySub.lines || primarySub.lines.length === 0) {
-      alert('No primary subtitle loaded to export.');
+      alert(`No ${mainName.toLowerCase()} loaded to export.`);
       return;
     }
 
@@ -315,7 +352,7 @@ export const Sidebar = ({
       console.error('Failed to export HUF:', error);
       alert(`Failed to export HUF: ${error.message || 'Unknown error'}`);
     }
-  }, [primarySub]);
+  }, [primarySub, mainName]);
   const isKaraoke = subtitleMode == SubtitleMode.Karaoke;
   return <>
     {ankiExportModal}
@@ -346,7 +383,19 @@ export const Sidebar = ({
       </SidebarSection></TabPanel>}
 
       {tab === "subtitles" && <TabPanel group="settings" id="subtitles">
-        <SidebarSection title="Primary subtitle">
+        <SidebarSection title="Timing">
+          {primarySub?.lines?.length > 0 &&
+              <SubtitleTimingRow name={mainName} shiftMs={primaryShift} setShiftMs={setPrimaryShift}/>}
+          {secondarySub?.lines?.length > 0 &&
+              <SubtitleTimingRow name={TRANSLATION_NAME} shiftMs={secondaryShift} setShiftMs={setSecondaryShift}/>}
+          {!(primarySub?.lines?.length > 0) && !(secondarySub?.lines?.length > 0) &&
+              <Hint>Load a subtitle to move it earlier or later.</Hint>}
+          <Hint>
+            Subtitles that show too early or too late? Move them here, or press [ (earlier) and ] (later);
+            {" "}{formatKeys(["Ctrl", "["])} and {formatKeys(["Ctrl", "]"])} move the translation.
+          </Hint>
+        </SidebarSection>
+        <SidebarSection title={mainName}>
           <SubtitleContentSettings subtitleStyling={primaryStyling} setSubtitleStyling={setPrimaryStyling}
                                    lang={lang}/>
         </SidebarSection>
@@ -361,23 +410,24 @@ export const Sidebar = ({
       </TabPanel>}
 
       {tab === "look" && <TabPanel group="settings" id="look"><SidebarSection>
-        <Segmented<"primary" | "secondary"> group="subtitle-style" options={[{id: "primary", label: "Primary"}, {id: "secondary", label: "Secondary"}]}
+        <Segmented<"primary" | "secondary"> group="subtitle-style" options={[{id: "primary", label: languageName || "Main"}, {id: "secondary", label: TRANSLATION_NAME}]}
                    value={lookTarget} onChange={setLookTarget} label="Subtitle to style"/>
         <TabPanel group="subtitle-style" id={lookTarget}>
         {lookTarget === "primary"
           ? <SubtitleLookSettings key="primary" subtitleStyling={primaryStyling} setSubtitleStyling={setPrimaryStyling}
-                                  defaultStyling={defaultPrimarySubtitleStyling} name="primary" withMeaning/>
+                                  defaultStyling={defaultPrimarySubtitleStyling} name={mainName} withMeaning
+                                  notify={notify}/>
           : <SubtitleLookSettings key="secondary" subtitleStyling={secondaryStyling}
                                   setSubtitleStyling={setSecondaryStyling}
-                                  defaultStyling={defaultSecondarySubtitleStyling} name="secondary"
-                                  withMeaning={false}/>}
+                                  defaultStyling={defaultSecondarySubtitleStyling} name={TRANSLATION_NAME}
+                                  withMeaning={false} notify={notify}/>}
         </TabPanel>
       </SidebarSection></TabPanel>}
 
       {tab === "data" && <TabPanel group="settings" id="data">
         <SidebarSection title="Learning progress">
           <Hint>How well you know each word, for backups or another computer.</Hint>
-          <LearningFileButtons lang={lang}/>
+          <LearningFileButtons lang={lang} notify={notify}/>
         </SidebarSection>
         <SidebarSection title="Anki">
           <Button type="secondary" className="w-full min-w-0 max-w-full" onPress={exportAllAnkiCards}>
@@ -385,7 +435,7 @@ export const Sidebar = ({
           </Button>
           <Hint>Words without My Notes are skipped. Add one in a word&rsquo;s popup.</Hint>
         </SidebarSection>
-        <SidebarSection title="Primary subtitle">
+        <SidebarSection title={mainName}>
           <Button type="secondary" className="w-full min-w-0 max-w-full" onPress={exportHufHandler}>
             Save as lyrics (.huf)…
           </Button>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from '../Utils/Button';
+import { CopyButton } from '../Utils/CopyButton';
 import { UI_LINK_PILL } from '../UI/miteiruUiTheme';
 import { MITEIRU_REPO_URL } from '../../utils/constants';
 import type { LanguageMode } from '../../hooks/useLanguageManager';
@@ -23,6 +24,8 @@ interface MainMenuProps {
   miteiruVersion: string;
   /** Something to tell the user about loading a language (an error, a notice), or null. */
   languageNotice: string | null;
+  /** The raw reason behind a failure notice, shown under "Details" with a Copy button. */
+  languageNoticeDetails?: string | null;
   languageModes: LanguageMode[];
   tokenizerMode: number;
   isLoadingLanguage: boolean;
@@ -67,6 +70,7 @@ const LanguageCard = ({mode, selected, onSelect}: { mode: LanguageMode; selected
 export const MainMenu: React.FC<MainMenuProps> = ({
   miteiruVersion,
   languageNotice,
+  languageNoticeDetails = null,
   languageModes,
   tokenizerMode,
   isLoadingLanguage,
@@ -168,9 +172,19 @@ export const MainMenu: React.FC<MainMenuProps> = ({
             </div>
 
             {languageNotice && (
-              <p role="status" className="rounded-xl border border-yellow-300 bg-yellow-50 px-3 py-2 text-xs font-semibold text-blue-900">
-                {languageNotice}
-              </p>
+              <div role="status" className="rounded-xl border border-yellow-300 bg-yellow-50 px-3 py-2 text-xs font-semibold text-blue-900">
+                <p>{languageNotice}</p>
+                {languageNoticeDetails && (
+                  <details className="mt-1 font-normal">
+                    <summary className="cursor-pointer font-semibold">Details</summary>
+                    <p className="mt-1 break-words text-blue-800">{languageNoticeDetails}</p>
+                    <div className="mt-1">
+                      <CopyButton text={languageNoticeDetails} label="Copy"
+                                  className="border-blue-300 bg-white text-blue-900 hover:bg-blue-50"/>
+                    </div>
+                  </details>
+                )}
+              </div>
             )}
           </div>
         </section>

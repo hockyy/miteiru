@@ -1,10 +1,10 @@
 import {dialog, ipcMain, shell} from "electron";
 import * as fsPromises from "node:fs/promises";
-import {access} from "node:fs/promises";
-import path, {basename, dirname, extname, join} from "path";
+import path, {dirname, join} from "path";
 import Japanese from "../japanese";
 import Chinese from "../chinese";
 import {videoConstants} from "../../../renderer/utils/constants";
+import {subtitleTagBesideVideo} from "../../../renderer/utils/subtitleTags";
 import {RegisterCommonHandlersArgs} from "./types";
 import {removeDictionaryStore} from "../../dictionary/levelDictionary";
 import {revealAnkiImportFile} from "../../helpers/ankiImportReveal";
@@ -108,24 +108,19 @@ export function registerBasicHandlers({
     return packageJson.version;
   });
 
+  // Subtitles beside a video named like it: `show.srt`, `show.en.srt`, `show.ja.ass`, `show.zh-Hans.srt`.
+  // The renderer decides which slot each goes to (renderer/utils/subtitleTags.ts).
   ipcMain.handle("check-subtitle-file", async (event, videoFilePath) => {
-    const videoFileName = basename(videoFilePath, extname(videoFilePath));
     const videoDirectory = dirname(videoFilePath);
-    const subtitleExtensions = [...videoConstants.supportedSubtitleFormats];
-    for (const ext of videoConstants.supportedSubtitleFormats) {
-      subtitleExtensions.push("en." + ext);
+    try {
+      const names = (await fsPromises.readdir(videoDirectory)).sort((a, b) => a.localeCompare(b));
+      return names
+        .filter((name) => isSubtitle(name) && subtitleTagBesideVideo(videoFilePath, name) !== null)
+        .map((name) => join(videoDirectory, name));
+    } catch {
+      // An unreadable folder has no subtitles for us.
+      return [];
     }
-    const availableSubs = [];
-    for (const ext of subtitleExtensions) {
-      const subtitleFilePath = join(videoDirectory, videoFileName + "." + ext);
-      try {
-        await access(subtitleFilePath);
-        availableSubs.push(subtitleFilePath);
-      } catch {
-        // Subtitle file does not exist, continue to the next extension
-      }
-    }
-    return availableSubs;
   });
 
   ipcMain.handle("find-position-delta-in-folder", async (event, filePath, delta = 1) => {

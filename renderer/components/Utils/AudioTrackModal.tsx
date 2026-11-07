@@ -2,28 +2,28 @@ import React, {useEffect, useState} from 'react';
 import {Play, Volume2} from 'lucide-react';
 import {Button} from './Button';
 import {MediaTrack} from '../../types/media';
-import {getLanguageEmoji, getTrackLabel} from "../../utils/mediaUtils";
+import {getLanguageEmoji, pickDefaultAudioTrack} from "../../utils/mediaUtils";
+import {describeEmbeddedTrack} from "../../utils/subtitleLabels";
 import {ModalShell} from "./ModalShell";
 
 /**
  * Desktop shell: libmpv plays every track as-is, so a file with several audio tracks only needs
- * a choice of track, not a conversion.
+ * a choice of track, not a conversion. The track in the language being learned is preselected when
+ * the file has one, otherwise the file's default.
  */
-const AudioTrackModal = ({isOpen, onClose, onSelect, fileName, audioTracks}: {
+const AudioTrackModal = ({isOpen, onClose, onSelect, fileName, audioTracks, appLanguageCode = ''}: {
   isOpen: boolean;
   onClose: () => void;
   onSelect: (audioTrackIndex: number) => void;
   fileName: string;
   audioTracks: MediaTrack[];
+  appLanguageCode?: string;
 }) => {
-  const defaultIndex = () => {
-    const track = audioTracks.find(t => t.default);
-    return track ? audioTracks.indexOf(track) : 0;
-  };
+  const defaultIndex = () => pickDefaultAudioTrack(audioTracks, appLanguageCode);
   const [selected, setSelected] = useState<number>(defaultIndex);
   useEffect(() => setSelected(defaultIndex()),
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      [audioTracks]);
+      [audioTracks, appLanguageCode]);
 
   if (!isOpen) return null;
   return (
@@ -52,8 +52,7 @@ const AudioTrackModal = ({isOpen, onClose, onSelect, fileName, audioTracks}: {
                        className="w-4 h-4 text-blue-600 bg-gray-600 border-gray-500"/>
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   {getLanguageEmoji(track.language)}
-                  <span className="text-white text-sm truncate">{getTrackLabel(track)}</span>
-                  <span className="text-gray-400 text-xs">{track.codec.toUpperCase()}</span>
+                  <span className="text-white text-sm truncate">{describeEmbeddedTrack(track, index).label}</span>
                 </div>
               </label>
           ))}

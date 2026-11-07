@@ -1,12 +1,18 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {isYoutube} from "../../utils/utils";
-import {droppedYoutubeUrl, loadMediaPaths} from "../../utils/mediaUtils";
+import {droppedWebLink, droppedYoutubeUrl, loadMediaPaths, looksLikeWebLink} from "../../utils/mediaUtils";
 import {isTextEntryTarget} from "../../utils/keyboardTargets";
 
 export const MiteiruDropzone = ({
                                   onDrop,
-                                  deltaTime
-                                }) => {
+                                  deltaTime,
+                                  lang
+                                }: {
+  onDrop: (files: { path: string; target?: 'primary' | 'secondary' }[]) => unknown;
+  deltaTime?: (seconds: number) => void;
+  /** The language being learned: subtitles beside a dropped video are routed by the language in their name. */
+  lang?: string;
+}) => {
   const dropRef = useRef<HTMLDivElement>(null);
   // Files are being dragged over the window: show where they go. The browser sends dragover every
   // few dozen ms while a drag is over the window, and a drag can leave or be cancelled without a
@@ -42,19 +48,25 @@ export const MiteiruDropzone = ({
       onDrop([{path: url}]);
       return;
     }
+    // Another site's link: the loader says that only YouTube opens.
+    const otherLink = dt.files.length === 0 ? droppedWebLink(dt) : undefined;
+    if (otherLink) {
+      onDrop([{path: otherLink}]);
+      return;
+    }
     // Windows and macOS deliver DOM drops and preserve file paths through their native hooks.
     const pathsForDroppedFiles = window.electronAPI?.pathsForDroppedFiles;
     if (pathsForDroppedFiles && dt.files.length > 0) {
-      pathsForDroppedFiles(dt.files).then((paths) => loadMediaPaths(paths, onDrop));
+      pathsForDroppedFiles(dt.files).then((paths) => loadMediaPaths(paths, onDrop, lang));
     }
-  }, [onDrop]);
+  }, [onDrop, lang]);
 
   // Linux: files dropped on the window arrive as paths from the native drag-drop event.
   useEffect(() => {
     const onFileDrop = window.electronAPI?.onFileDrop;
     if (!onFileDrop) return;
-    return onFileDrop((paths: string[]) => loadMediaPaths(paths, onDrop), setDraggingFiles);
-  }, [onDrop]);
+    return onFileDrop((paths: string[]) => loadMediaPaths(paths, onDrop, lang), setDraggingFiles);
+  }, [onDrop, lang]);
 
   const pasteEvent = useCallback((event: ClipboardEvent) => {
     const target = event.target as HTMLElement | null;
@@ -63,7 +75,8 @@ export const MiteiruDropzone = ({
     }
 
     const clipText = event.clipboardData?.getData('text')?.trim() ?? '';
-    if (!clipText || !isYoutube(clipText)) {
+    // Other text is a normal paste; another site's link gets the "only YouTube" message from the loader.
+    if (!clipText || !(isYoutube(clipText) || looksLikeWebLink(clipText))) {
       return;
     }
 

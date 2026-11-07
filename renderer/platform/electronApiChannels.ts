@@ -21,6 +21,7 @@ export const ELECTRON_API_INVOKE_CHANNELS = {
   ensureDir: 'ensure-dir',
   writeFile: 'write-file',
   openPath: 'open-path',
+  openToolsFolder: 'open-tools-folder',
   showItemInFolder: 'show-item-in-folder',
   revealAnkiImport: 'reveal-anki-import',
   checkFile: 'check-file',

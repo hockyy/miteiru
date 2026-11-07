@@ -3,10 +3,13 @@ import { useRouter } from 'next/router';
 import useLanguageManager from './useLanguageManager';
 import { languageModes as manifestLanguageModes } from '../languages/manifest';
 import { setLearningLanguage } from '../utils/fonts';
+import { languageSetupFailure } from '../utils/languageErrors';
 
 interface LanguageCheckResult {
   ok: number;
   message: string;
+  /** The raw reason behind a friendly message, for the "Details" under it. */
+  details?: string | null;
 }
 
 const initialCheck: LanguageCheckResult = { 
@@ -75,17 +78,16 @@ export const useLanguageLoader = () => {
     
     try {
       const res = await window.backend.invoke(mode.channel);
-      setCheck(res);
 
       if (res.ok === 1) {
+        setCheck(res);
         setLanguage(modeId);
         await router.push(destination);
+      } else {
+        setCheck({ok: 0, ...languageSetupFailure(mode.englishName, res?.message)});
       }
     } catch (error) {
-      setCheck({
-        ok: 0,
-        message: `Error loading language: ${error.message}`
-      });
+      setCheck({ok: 0, ...languageSetupFailure(mode.englishName, error?.message)});
     } finally {
       setIsLoadingLanguage(false);
     }
@@ -112,10 +114,12 @@ export const useLanguageLoader = () => {
   const ableToProceedToVideo = check.ok !== 2 && !isLoadingLanguage && languageLoaded;
   // What the user should read: a failed load or a notice, not the idle placeholder or "checking...".
   const notice = check.ok === 0 && check !== initialCheck ? check.message : null;
+  const noticeDetails = notice ? check.details ?? null : null;
 
   return {
     // State
     notice,
+    noticeDetails,
     tokenizerMode,
     setTokenizerMode: selectTokenizerMode,
     isLoadingLanguage,

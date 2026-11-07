@@ -43,9 +43,8 @@ const useMediaAnalysis = (videoPath: string) => {
       const analysis = await window.electronAPI.analyzeMediaFile(path);
       setMediaInfo(analysis);
       
-      // Show error toast if tools are not available
-      if (analysis.error) {
-      } else {
+      // A failed analysis (FFmpeg missing, usually) is reported by the video page from `mediaInfo.error`.
+      if (!analysis.error) {
         // Determine what modal to show based on track availability
         const hasMultipleAudio = analysis.audioTracks.length > 1;
         const hasSingleAudio = analysis.audioTracks.length === 1;

@@ -124,7 +124,7 @@ export const LearningSidebar = ({
 
     <SidebarSection title="Learning Subtitle">
     <StylingBox subtitleStyling={primaryStyling} setSubtitleStyling={setPrimaryStyling}
-                subtitleName={"CJK"} defaultStyling={defaultLearningStyling} lang={lang}/>
+                isMain defaultStyling={defaultLearningStyling} lang={lang}/>
     </SidebarSection>
 
     <SidebarSection title="Anki Export">

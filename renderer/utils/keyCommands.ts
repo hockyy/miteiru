@@ -1,3 +1,5 @@
+import {mainSubtitleNameInSentence} from "./subtitleLabels";
+
 /** A video-page shortcut: what it is called, which key runs it, and where it is grouped. */
 export type KeyCommand<Id extends string = string> = {
   id: Id;
@@ -35,7 +37,7 @@ export const keyCommandDefinitions = (languageName: string = 'main'): KeyCommand
   {id: 'toggle-sidebar', commandName: 'Open or close video settings', currentKey: 'X', modifiers: [], category: 'Panels'},
   {id: 'toggle-vocab-sidebar', commandName: 'Open or close My words', currentKey: 'X', modifiers: ['Ctrl'], category: 'Panels'},
   {id: 'toggle-furigana', commandName: 'Show or hide the reading above words', currentKey: 'Y', modifiers: [], category: 'Subtitles'},
-  {id: 'toggle-primary-sub', commandName: `Show or hide the ${languageName} subtitle`, currentKey: 'O', modifiers: [], category: 'Subtitles'},
+  {id: 'toggle-primary-sub', commandName: `Show or hide the ${mainSubtitleNameInSentence(languageName)}`, currentKey: 'O', modifiers: [], category: 'Subtitles'},
   {id: 'toggle-secondary-sub', commandName: 'Show or hide the translation', currentKey: 'P', modifiers: [], category: 'Subtitles'},
   {id: 'reload-subtitles', commandName: 'Load both subtitles again', currentKey: 'A', modifiers: [], category: 'Subtitles'},
   {id: 'open-google-translate', commandName: 'Translate the line in Google Translate', currentKey: 'G', modifiers: [], category: 'Look up'},
