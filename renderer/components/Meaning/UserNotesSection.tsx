@@ -249,6 +249,7 @@ export const UserNotesSection: React.FC<UserNotesSectionProps> = ({
                 size="small"
                 onPress={handleAIGenerate}
                 disabled={isGenerating}
+                title="Needs an OpenRouter key, set on Study a text (press X)"
               >
                 {isGenerating ? 'Generating…' : 'AI generate'}
               </Button>
@@ -277,7 +278,7 @@ export const UserNotesSection: React.FC<UserNotesSectionProps> = ({
             <Button type="primary" onPress={startEditing}>
               Write manually
             </Button>
-            <Button type="secondary" onPress={handleAIGenerate} disabled={isGenerating}>
+            <Button type="secondary" onPress={handleAIGenerate} disabled={isGenerating} title="Needs an OpenRouter key, set on Study a text (press X)">
               {isGenerating ? 'Generating…' : 'AI generate'}
             </Button>
           </div>

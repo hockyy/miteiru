@@ -14,8 +14,8 @@ const MITEIRU_OPENROUTER_HEADERS = {
 };
 
 export const openRouterMessages = {
-  missingApiKey: 'Please set your OpenRouter API key in settings (Ctrl+X).',
-  missingModel: 'Please set and save your AI model in settings (Ctrl+X).',
+  missingApiKey: 'Add your OpenRouter key first: open Study a text from Home, press X (or click Settings), and paste it in.',
+  missingModel: 'Choose and save an AI model first: open Study a text from Home and press X (or click Settings).',
 };
 
 type OpenRouterMessage = {

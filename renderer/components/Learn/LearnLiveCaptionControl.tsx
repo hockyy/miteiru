@@ -1,4 +1,4 @@
-/** Live CC toggle for /learn — uses shared UI kit tokens (see components/UI). */
+/** Live captions toggle for /learn — uses shared UI kit tokens (see components/UI). */
 import React, {useMemo} from 'react';
 import {liveCaptionRefreshIntervals} from '../../types/liveCaptions';
 import {
@@ -51,7 +51,7 @@ export const LearnLiveCaptionControl: React.FC<LearnLiveCaptionControlProps> = (
   return (
     <MiteiruPanel
       variant={running ? 'live' : 'default'}
-      label="Live CC"
+      label="Live captions"
       headerAction={
         <span className={`text-[11px] font-bold normal-case tracking-normal ${error ? 'text-red-600' : running ? 'text-green-800' : 'text-blue-700'}`}>
           {statusText}
@@ -69,9 +69,10 @@ export const LearnLiveCaptionControl: React.FC<LearnLiveCaptionControlProps> = (
         </button>
         <details className={UI_HINT_TEXT}>
           <summary className="cursor-pointer text-blue-700 hover:text-blue-900">
-            Refresh: {refreshIntervalMs < 1000 ? `${refreshIntervalMs}ms` : '1s'}
+            Troubleshooting
           </summary>
           <div className="mt-1 flex flex-wrap gap-1">
+            <span className="w-full text-[10px] font-bold text-blue-700">Subtitle refresh</span>
             {liveCaptionRefreshIntervals.map((interval) => (
               <button
                 key={interval}
@@ -85,7 +86,7 @@ export const LearnLiveCaptionControl: React.FC<LearnLiveCaptionControlProps> = (
                 {interval < 1000 ? `${interval}ms` : '1s'}
               </button>
             ))}
-            <span className="w-full text-[10px] text-blue-500">state: {state}</span>
+            <span className="w-full text-[10px] text-blue-700">state: {state}</span>
           </div>
         </details>
       </div>

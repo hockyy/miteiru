@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Layers } from 'lucide-react';
 import { AnkiExportPreview } from './ankiExport';
+import { useDialogFocus } from '../../hooks/useDialogFocus';
 
 interface AnkiExportConfirmModalProps {
   preview: AnkiExportPreview;
@@ -29,7 +30,7 @@ const AnkiExportPreviewField = ({
   compact?: boolean;
 }) => (
   <div>
-    <span className="text-[11px] font-bold uppercase tracking-wide text-white/35">{label}</span>
+    <span className="text-[11px] font-bold uppercase tracking-wide text-white/60">{label}</span>
     {html ? (
       <div
         className={[
@@ -39,7 +40,7 @@ const AnkiExportPreviewField = ({
         dangerouslySetInnerHTML={{ __html: html }}
       />
     ) : (
-      <p className="mt-1 text-sm italic text-white/45">(empty)</p>
+      <p className="mt-1 text-sm italic text-white/60">(empty)</p>
     )}
   </div>
 );
@@ -50,6 +51,9 @@ export const AnkiExportConfirmModal: React.FC<AnkiExportConfirmModalProps> = ({
   onCancel,
 }) => {
   const confirmLabel = preview.mode === 'open' ? 'Export to Anki' : 'Save file';
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  useDialogFocus(dialogRef, { onEscape: onCancel });
 
   return createPortal(
     <div
@@ -57,15 +61,20 @@ export const AnkiExportConfirmModal: React.FC<AnkiExportConfirmModalProps> = ({
       onClick={onCancel}
     >
       <div
-        className="w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-slate-950/95 text-white shadow-2xl shadow-black/50"
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        className="focus:outline-none w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-slate-950/95 text-white shadow-2xl shadow-black/50"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="border-b border-white/10 bg-white/[0.03] px-5 py-4">
-          <div className="flex items-center gap-2 text-lg font-black">
+          <div id={titleId} className="flex items-center gap-2 text-lg font-black">
             <Layers className="h-4 w-4 text-blue-300" />
             Export {preview.cardCount} Anki card{preview.cardCount === 1 ? '' : 's'}
           </div>
-          <p className="mt-1 text-sm text-white/55">
+          <p className="mt-1 text-sm text-white/60">
             {preview.decks.join(' · ')}
           </p>
         </div>
@@ -80,7 +89,7 @@ export const AnkiExportConfirmModal: React.FC<AnkiExportConfirmModalProps> = ({
                 <span className="rounded-full bg-blue-500/20 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-blue-200">
                   {card.deckName}
                 </span>
-                <span className="text-[11px] text-white/40">{card.tags}</span>
+                <span className="text-[11px] text-white/60">{card.tags}</span>
               </div>
               <div className="space-y-2 text-sm">
                 <AnkiExportPreviewField label="Front" html={card.frontHtml} />
@@ -89,14 +98,14 @@ export const AnkiExportConfirmModal: React.FC<AnkiExportConfirmModalProps> = ({
             </div>
           ))}
           {preview.moreCount > 0 && (
-            <p className="text-center text-xs text-white/45">
+            <p className="text-center text-xs text-white/60">
               + {preview.moreCount} more card{preview.moreCount === 1 ? '' : 's'} not shown
             </p>
           )}
         </div>
 
         <div className="border-t border-white/10 bg-white/[0.03] px-5 py-4">
-          <p className="mb-3 text-xs text-white/50">
+          <p className="mb-3 text-xs text-white/60">
             {preview.mode === 'open'
               ? 'Saves an Anki import file, reveals it in your file manager, and opens Anki if installed. In Anki use File → Import.'
               : 'Choose where to save the Anki import file.'}

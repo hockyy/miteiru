@@ -33,8 +33,8 @@ const TONES = {
   dark: {
     input: "border-white/25 bg-white text-blue-950 placeholder:text-blue-400 focus:border-blue-400 focus:ring-blue-300/50",
     list: "border-white/10 bg-slate-900 text-white shadow-black/50",
-    group: "text-white/45",
-    note: "text-white/50",
+    group: "text-white/60",
+    note: "text-white/60",
     active: "bg-white/15",
   },
   light: {

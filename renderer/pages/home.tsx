@@ -11,14 +11,9 @@ import { HomeSystemPanel } from "../components/Home/HomeSystemPanel";
 import { HOME_PAGE_BG } from "../components/Home/homeMenuTheme";
 import { getMiteiruAppName } from "../utils/utils";
 
-const DICT_CACHE_CONFIRM_STEPS = [
-  'Remove all dictionary caches?\n\nThis deletes locally stored dictionary data.',
-  'Languages will need to re-download dictionaries on next use. Continue?',
-  'Final confirmation — this cannot be undone. Remove dict caches now?',
-] as const;
-
-const confirmDictCacheRemoval = () => (
-  DICT_CACHE_CONFIRM_STEPS.every((message) => window.confirm(message))
+// One honest question: nothing here touches the learner's own data.
+const confirmOldDictionaryClear = () => (
+  window.confirm('Removes dictionary files left by older versions. Your saved words and notes stay.')
 );
 
 function Home() {
@@ -42,7 +37,6 @@ function Home() {
 
   const [cacheCheck, setCacheCheck] = useState({ ok: 0, message: '🐸 ゲロゲロ' });
   const [liveCaptionsSupported, setLiveCaptionsSupported] = useState(false);
-  const [liveCaptionsChecked, setLiveCaptionsChecked] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -60,10 +54,6 @@ function Home() {
         .catch(() => {
           if (!mounted) return;
           setLiveCaptionsSupported(false);
-        })
-        .finally(() => {
-          if (!mounted) return;
-          setLiveCaptionsChecked(true);
         });
     };
 
@@ -75,36 +65,19 @@ function Home() {
   }, [checkMediaTools]);
 
   const handleRemoveCacheWithState = useCallback(async () => {
-    if (!confirmDictCacheRemoval()) {
+    if (!confirmOldDictionaryClear()) {
       return;
     }
 
     setCacheCheck({
       ok: 2,
-      message: 'Removing caches...'
+      message: 'Clearing old dictionary data…'
     });
 
     const result = await handleRemoveCache();
-    setCacheCheck(result);
+    // The handler's own wording is technical; say it plainly.
+    setCacheCheck(result.ok === 1 ? { ok: 1, message: 'Old dictionary data cleared.' } : result);
   }, [handleRemoveCache]);
-
-  const liveCaptionsMessage = !liveCaptionsChecked
-    ? 'Checking Live CC…'
-    : liveCaptionsSupported
-      ? 'Live CC available'
-      : 'Live CC unavailable';
-
-  const liveCaptionsTone = !liveCaptionsChecked
-    ? 'slate'
-    : liveCaptionsSupported
-      ? 'green'
-      : 'orange';
-
-  const liveCaptionsSymbol = !liveCaptionsChecked
-    ? '🙃'
-    : liveCaptionsSupported
-      ? '✅'
-      : '🙃';
 
   const showCacheStatus = cacheCheck.ok !== 0 || cacheCheck.message !== '🐸 ゲロゲロ';
 
@@ -132,9 +105,7 @@ function Home() {
           />
 
           <HomeSystemPanel
-            liveCaptionsSymbol={liveCaptionsSymbol}
-            liveCaptionsMessage={liveCaptionsMessage}
-            liveCaptionsTone={liveCaptionsTone}
+            liveCaptionsSupported={liveCaptionsSupported}
             toolsCheckOk={toolsCheck.ok}
             toolsCheckMessage={toolsCheck.message}
             toolsCheckInProgress={toolsCheckInProgress}

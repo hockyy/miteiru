@@ -126,7 +126,7 @@ export const GistManager: React.FC<GistManagerProps> = ({lang}) => {
             {showToken ? "Hide" : "Show"}
           </Button>
         </div>
-        <div className="text-sm text-red-500 mb-2">
+        <div className="text-sm text-amber-200 mb-2">
           <strong>Warning: The token ONLY requires &apos;gist&apos; scope permissions.</strong>
           <p>Do not share your token with others.</p>
           <a

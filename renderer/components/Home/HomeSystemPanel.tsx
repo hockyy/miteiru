@@ -43,9 +43,8 @@ const StatusPill = ({
 };
 
 interface HomeSystemPanelProps {
-  liveCaptionsSymbol: string;
-  liveCaptionsMessage: string;
-  liveCaptionsTone: 'blue' | 'green' | 'orange' | 'slate';
+  /** Windows Live Captions can be used here (shown only where they can). */
+  liveCaptionsSupported: boolean;
   toolsCheckOk: number;
   toolsCheckMessage: string;
   toolsCheckInProgress: boolean;
@@ -128,9 +127,7 @@ const UpdatesPanel = () => {
 };
 
 export const HomeSystemPanel: React.FC<HomeSystemPanelProps> = ({
-  liveCaptionsSymbol,
-  liveCaptionsMessage,
-  liveCaptionsTone,
+  liveCaptionsSupported,
   toolsCheckOk,
   toolsCheckMessage,
   toolsCheckInProgress,
@@ -163,7 +160,7 @@ export const HomeSystemPanel: React.FC<HomeSystemPanelProps> = ({
     <summary className={`${HOME_SECTION_LABEL} flex cursor-pointer list-none items-center justify-between gap-3 rounded-t-3xl [&::-webkit-details-marker]:hidden`}>
       <span>Settings &amp; tools</span>
       <span className="text-[11px] font-semibold normal-case tracking-normal text-blue-800 group-open:hidden">
-        Font · Updates · Live CC · Subtitle helpers · caches
+        Font · Updates · YouTube and subtitle tools{liveCaptionsSupported ? ' · Live captions' : ''}
       </span>
       <span className="hidden text-[11px] font-semibold normal-case tracking-normal text-blue-800 group-open:inline">
         Collapse
@@ -172,7 +169,7 @@ export const HomeSystemPanel: React.FC<HomeSystemPanelProps> = ({
 
     <div className={`${HOME_BODY} bg-blue-100 pt-4`}>
       <div className="flex flex-wrap gap-2">
-        <StatusPill symbol={liveCaptionsSymbol} message={liveCaptionsMessage} variant={liveCaptionsTone} />
+        {liveCaptionsSupported && <StatusPill symbol="✅" message="Live captions available" variant="green" />}
         <StatusPill symbol={checkSymbol[checked && !toolsCheckInProgress ? (allFound ? 1 : 2) : toolsCheckOk]} message={toolsPillMessage} variant="blue" />
         {showCacheStatus && (
           <StatusPill symbol={checkSymbol[cacheCheckOk]} message={cacheCheckMessage} variant="slate" />
@@ -223,12 +220,18 @@ export const HomeSystemPanel: React.FC<HomeSystemPanelProps> = ({
         </div>
       </details>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <Button type="danger" size="small" disabled={isRemovingCache} onPress={onRemoveDictCaches}>
-          {isRemovingCache ? 'Removing…' : 'Remove dict caches'}
-        </Button>
-        <span className="text-[11px] font-medium text-blue-800">Requires 3 confirmations</span>
-      </div>
+      <details className={HOME_INNER_PANEL}>
+        <summary className={`${HOME_INNER_LABEL} cursor-pointer rounded-t-2xl`}>Troubleshooting</summary>
+        <div className="space-y-2 bg-blue-50 px-3 py-2.5 text-sm text-blue-900">
+          <p className="text-[12px] text-blue-800">
+            If a language will not load after an update, clearing old dictionary data can help.
+            Your saved words and notes stay.
+          </p>
+          <Button type="secondary" size="small" disabled={isRemovingCache} onPress={onRemoveDictCaches}>
+            {isRemovingCache ? 'Clearing…' : 'Clear old dictionary data'}
+          </Button>
+        </div>
+      </details>
     </div>
   </details>
   );

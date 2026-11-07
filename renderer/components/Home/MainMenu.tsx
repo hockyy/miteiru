@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '../Utils/Button';
 import { CopyButton } from '../Utils/CopyButton';
 import { UI_LINK_PILL } from '../UI/miteiruUiTheme';
@@ -84,6 +84,16 @@ export const MainMenu: React.FC<MainMenuProps> = ({
 }) => {
   const selected = languageModes.find((mode) => mode.id === tokenizerMode);
   const blocked = !ableToProceedToVideo || isLoadingLanguage;
+  // Loading is normally instant; only say it is taking a while once it really is.
+  const [loadingIsSlow, setLoadingIsSlow] = useState(false);
+  useEffect(() => {
+    if (!isLoadingLanguage) {
+      setLoadingIsSlow(false);
+      return;
+    }
+    const timer = setTimeout(() => setLoadingIsSlow(true), 2000);
+    return () => clearTimeout(timer);
+  }, [isLoadingLanguage]);
   const languageName = selected?.englishName ?? 'the language';
 
   // Arrow keys pick the next or previous language and move the focus with it, wrapping around.
@@ -154,7 +164,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
               </Button>
               <p className="text-center text-[11px] font-medium text-blue-800">
                 {isLoadingLanguage
-                  ? 'The first time takes a few seconds while the dictionary is set up.'
+                  ? (loadingIsSlow ? 'Still getting ready. This can take longer on a slow disk.' : 'Just a moment…')
                   : 'Next, open a video file, drop one on the window, or paste a YouTube link.'}
               </p>
               {onContinue && <div className="flex justify-center">
