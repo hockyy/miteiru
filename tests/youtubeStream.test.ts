@@ -38,3 +38,13 @@ test("no playable stream is an error, not an empty EDL", () => {
   // Only http(s): yt-dlp's other "urls" (a local file, edl://) must not reach mpv.
   assert.throws(() => youtubeStreamSource({url: "file:///etc/passwd"}), /no playable stream/);
 });
+
+test("yt-dlp is asked for HLS first, then up to 1080p by the smaller side, H.264 first", async () => {
+  const {YOUTUBE_STREAM_FORMAT_ARGS} = await import("../main/helpers/youtubeStream");
+  const sort = YOUTUBE_STREAM_FORMAT_ARGS[YOUTUBE_STREAM_FORMAT_ARGS.indexOf("-S") + 1];
+  // Segments keep every request small: whole-file URLs can refuse large or open-ended ranges (#135).
+  assert.equal(sort.split(",")[0], "proto:m3u8_native");
+  assert.match(sort, /res:1080/);
+  assert.match(sort, /vcodec:h264/);
+  assert.ok(YOUTUBE_STREAM_FORMAT_ARGS.includes("--ignore-no-formats-error"));
+});
