@@ -27,6 +27,8 @@ serde_json = "1"
 flate2 = "1"
 # Data table blocks (sys/zstd.rs; docs/DATA_FORMAT.md).
 zstd = "0.13"
+# Language pack downloads are checked against the manifest's sha256 (sys/langpack.rs).
+sha2 = "0.10"
 log = "0.4"
 tauri-plugin-log = "2"
 base64 = "0.22"

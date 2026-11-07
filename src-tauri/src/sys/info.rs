@@ -19,6 +19,9 @@ pub struct SysInfo {
   pub pid: u32,
   /// MITEIRU_SMOKE_TEST: where the smoke test writes its results (renderer/platform/smokeTest.ts).
   pub smoke_test: Option<String>,
+  /// MITEIRU_SMOKE_LANGUAGE_PACKS: a folder of language packs the smoke test installs from files
+  /// (renderer/platform/smokeTest.ts).
+  pub smoke_language_packs: Option<String>,
   /// Whether this build checks for updates: a release build whose updater has a public key
   /// (`plugins.updater.pubkey` in tauri.conf.json). Test runs (MITEIRU_SMOKE_TEST) never do.
   pub updates: bool,
@@ -108,6 +111,7 @@ pub async fn sys_info(app: tauri::AppHandle) -> Result<SysInfo, String> {
     is_packaged: !cfg!(debug_assertions),
     pid: std::process::id(),
     smoke_test: std::env::var("MITEIRU_SMOKE_TEST").ok().filter(|p| !p.is_empty()),
+    smoke_language_packs: std::env::var("MITEIRU_SMOKE_LANGUAGE_PACKS").ok().filter(|p| !p.is_empty()),
     updates: updates_enabled(&app),
   })
 }

@@ -59,4 +59,9 @@ permissions = [
   "allow-analyzer-respond",
   "allow-mkv-tracks",
   "allow-mkv-extract-subtitle",
+  "allow-langpack-status",
+  "allow-langpack-install",
+  "allow-langpack-install-file",
+  "allow-langpack-cancel",
+  "allow-langpack-remove",
 ]

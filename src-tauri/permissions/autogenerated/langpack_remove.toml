@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-langpack-remove"
+description = "Enables the langpack_remove command without any pre-configured scope."
+commands.allow = ["langpack_remove"]
+
+[[permission]]
+identifier = "deny-langpack-remove"
+description = "Denies the langpack_remove command without any pre-configured scope."
+commands.deny = ["langpack_remove"]

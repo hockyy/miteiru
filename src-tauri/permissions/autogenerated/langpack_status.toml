@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-langpack-status"
+description = "Enables the langpack_status command without any pre-configured scope."
+commands.allow = ["langpack_status"]
+
+[[permission]]
+identifier = "deny-langpack-status"
+description = "Denies the langpack_status command without any pre-configured scope."
+commands.deny = ["langpack_status"]

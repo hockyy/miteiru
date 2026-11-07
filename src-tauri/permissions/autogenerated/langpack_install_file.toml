@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-langpack-install-file"
+description = "Enables the langpack_install_file command without any pre-configured scope."
+commands.allow = ["langpack_install_file"]
+
+[[permission]]
+identifier = "deny-langpack-install-file"
+description = "Denies the langpack_install_file command without any pre-configured scope."
+commands.deny = ["langpack_install_file"]

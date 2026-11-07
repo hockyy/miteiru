@@ -7,6 +7,7 @@ pub mod http;
 pub mod info;
 pub mod jieba;
 pub mod kv;
+pub mod langpack;
 pub mod mkv;
 pub mod proc;
 pub mod shell;

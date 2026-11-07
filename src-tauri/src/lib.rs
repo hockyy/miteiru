@@ -37,6 +37,7 @@ pub fn run() {
     .manage(jieba::JiebaStore::default())
     .manage(player::Players::default())
     .manage(analyzer::Analyzer::default())
+    .manage(sys::langpack::Installs::default())
     .on_window_event(|window, event| {
       if let tauri::WindowEvent::Destroyed = event {
         player::on_window_destroyed(window.app_handle(), window.label());
@@ -102,6 +103,11 @@ pub fn run() {
       analyzer::analyzer_respond,
       sys::mkv::mkv_tracks,
       sys::mkv::mkv_extract_subtitle,
+      sys::langpack::langpack_status,
+      sys::langpack::langpack_install,
+      sys::langpack::langpack_install_file,
+      sys::langpack::langpack_cancel,
+      sys::langpack::langpack_remove,
     ])
     .setup(|app| {
       // First, so what happens while the window is made (frontend_server.rs, window.rs) is logged.
@@ -111,6 +117,14 @@ pub fn run() {
             .level(log::LevelFilter::Info)
             .build(),
         )?;
+      }
+      // Language packs an interrupted install or an older version left behind; never blocks the window.
+      if let Ok(root) = sys::langpack::root_dir(app.handle()) {
+        std::thread::spawn(move || {
+          for line in sys::langpack::collect_garbage(&root) {
+            log::info!("langpack cleanup: {line}");
+          }
+        });
       }
       window::create_main(app)?;
       Ok(())
