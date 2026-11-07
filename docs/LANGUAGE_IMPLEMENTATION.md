@@ -431,3 +431,10 @@ renderer/
 ---
 
 This guide should help you implement support for new languages following the established patterns in Miteiru.
+
+## Subtitles Inside Video Files
+
+Text subtitles stored in MKV and WebM files (SRT, ASS, SSA, WebVTT) are read natively, with no FFmpeg:
+
+- `src-tauri/src/sys/mkv.rs` reads only the Matroska headers, so a large episode costs a scan of its cluster headers. `mkv_tracks` lists the tracks in the shape `MediaAnalyzer.parseFFprobeOutput` builds (same stream indexes and codec names as ffprobe), and `mkv_extract_subtitle` writes one text track to `miteiru_subtitle_<ms>_<index>.<srt|ass|vtt>` in the temp folder.
+- `main/helpers/mediaAnalyzer.ts` tries that reader first (`setNativeSubtitleReader`, set by `renderer/platform/backend/worker.ts`; `main/` stays testable in plain Node). A file that is not Matroska, a read error, or a picture track (PGS, VobSub) falls back to ffprobe/ffmpeg, so other containers such as MP4 still need FFmpeg.

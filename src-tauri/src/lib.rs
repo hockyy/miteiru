@@ -100,6 +100,8 @@ pub fn run() {
       player::player_close,
       analyzer::analyzer_start,
       analyzer::analyzer_respond,
+      sys::mkv::mkv_tracks,
+      sys::mkv::mkv_extract_subtitle,
     ])
     .setup(|app| {
       // First, so what happens while the window is made (frontend_server.rs, window.rs) is logged.

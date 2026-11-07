@@ -116,6 +116,13 @@ const boot = async () => {
     return store.get('toneType', 'num') as string;
   };
 
+  // Subtitles inside MKV/WebM files are read in Rust, so they need no FFmpeg.
+  const {setNativeSubtitleReader} = await import('../../../main/helpers/mediaAnalyzer');
+  setNativeSubtitleReader({
+    tracks: (path) => sys('mkv_tracks', {path}),
+    extract: (path, index) => sys('mkv_extract_subtitle', {path, index})
+  });
+
   registerCommonHandlers(getTokenizer, packageJson, appDataDirectory);
   registerStartupHandlers(setTokenizer, appDataDirectory);
   registerAnalyzerHandlers({getTokenizer, getToneType});

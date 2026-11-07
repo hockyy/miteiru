@@ -23,6 +23,23 @@ interface MediaInfo {
   videoTracks: MediaTrack[];
 }
 
+/** Reads the subtitles of Matroska files without FFmpeg. The app injects it (Rust, src-tauri/src/sys/mkv.rs). */
+export interface NativeSubtitleReader {
+  /** The tracks of a Matroska/WebM file, or null for any other file. */
+  tracks(filePath: string): Promise<MediaInfo | null>;
+  /** Writes one text subtitle track to the temp folder and returns the file's path. */
+  extract(filePath: string, streamIndex: number): Promise<string>;
+}
+
+let nativeReader: NativeSubtitleReader | null = null;
+
+/** Subtitle codecs the native reader can write out; picture subtitles (PGS, VobSub) need FFmpeg and a renderer. */
+const NATIVE_TEXT_CODECS = new Set(['subrip', 'ass', 'ssa', 'webvtt']);
+
+export const setNativeSubtitleReader = (reader: NativeSubtitleReader | null) => {
+  nativeReader = reader;
+};
+
 export class MediaAnalyzer {
   /**
    * Check if ffprobe/ffmpeg are available
@@ -49,7 +66,16 @@ export class MediaAnalyzer {
    * Analyze media file to get track information
    */
   static async analyzeFile(filePath: string): Promise<MediaInfo> {
-    
+    // MKV and WebM are read natively, so they need no FFmpeg; any other file (or a read error) goes to ffprobe.
+    if (nativeReader) {
+      try {
+        const native = await nativeReader.tracks(filePath);
+        if (native) return native;
+      } catch (error) {
+        console.warn('[media] native track reading failed, using ffprobe:', error);
+      }
+    }
+
     // Check if tools are available
     const toolsStatus = await this.checkToolsAvailable();
     
@@ -102,6 +128,24 @@ export class MediaAnalyzer {
         reject(new Error(`Failed to spawn ffprobe: ${err.message}`));
       });
     });
+  }
+
+  /**
+   * Extract a text subtitle track of a Matroska file natively. Null means "not applicable"
+   * (another container, or a picture track): the caller uses FFmpeg then.
+   */
+  static async extractSubtitleNatively(filePath: string, streamIndex: number): Promise<string | null> {
+    if (!nativeReader) return null;
+    let info: MediaInfo | null;
+    try {
+      info = await nativeReader.tracks(filePath);
+    } catch (error) {
+      console.warn('[media] native track reading failed, using ffmpeg:', error);
+      return null;
+    }
+    const track = info?.subtitleTracks.find((candidate) => candidate.index === streamIndex);
+    if (!track || !NATIVE_TEXT_CODECS.has(track.codec)) return null;
+    return nativeReader.extract(filePath, streamIndex);
   }
 
   /**

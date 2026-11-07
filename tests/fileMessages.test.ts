@@ -111,7 +111,7 @@ describe("imports", () => {
 
 describe("tool messages", () => {
   it("tells a missing ffprobe from a bad file", () => {
-    assert.match(analysisFailureMessage("FFprobe not found. Please install FFmpeg and make sure it's in your PATH."), /Some files need FFmpeg.*Home → Settings & tools/);
+    assert.match(analysisFailureMessage("FFprobe not found. Please install FFmpeg and make sure it's in your PATH."), /Files other than MKV need FFmpeg.*Home → Settings & tools/);
     assert.ok(!/FFmpeg/.test(analysisFailureMessage("ffprobe failed: Invalid data found")));
   });
 
@@ -134,7 +134,7 @@ describe("tool messages", () => {
     const rows = capabilityRows({"yt-dlp": {available: true}, ffmpeg: {available: true}, ffprobe: {available: false}});
     assert.deepEqual(rows.map((row) => [row.title, row.needs, row.found]), [
       ["YouTube captions", "needs yt-dlp", true],
-      ["Subtitles inside some video files", "needs FFmpeg", false]
+      ["Subtitles inside MP4 and other non-MKV files", "needs FFmpeg", false]
     ]);
     assert.equal(capabilityRows(undefined).every((row) => !row.found), true);
   });

@@ -1,11 +1,11 @@
 /**
  * What the helper tools (yt-dlp, FFmpeg) are for and how to get them, in plain words.
- * Videos with separate subtitle files need neither; YouTube captions need yt-dlp, and subtitles
- * stored inside some video files need FFmpeg.
+ * Videos with separate subtitle files need neither; YouTube captions need yt-dlp. Subtitles stored
+ * inside MKV and WebM files are read natively; those inside other containers (MP4, AVI, ...) need FFmpeg.
  */
 
 export const SUBTITLES_UNREADABLE_TOAST =
-  "Couldn't read the subtitles inside this video. Some files need FFmpeg for that: Home → Settings & tools.";
+  "Couldn't read the subtitles inside this video. Files other than MKV need FFmpeg for that: Home → Settings & tools.";
 
 /** What the toast says when a video's tracks could not be read: missing FFmpeg, or the file itself. */
 export const analysisFailureMessage = (error: string | null | undefined): string => (
@@ -67,7 +67,7 @@ export const capabilityRows = (details: ToolStatusMap | undefined): CapabilityRo
   },
   {
     id: "inside-files",
-    title: "Subtitles inside some video files",
+    title: "Subtitles inside MP4 and other non-MKV files",
     needs: "needs FFmpeg",
     found: Boolean(details?.ffmpeg?.available && details?.ffprobe?.available),
     getTool: "ffmpeg"
