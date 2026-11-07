@@ -26,11 +26,14 @@ struct RenderParam {
     data: *mut c_void,
 }
 
-/// `mpv_opengl_init_params`.
+/// `mpv_opengl_init_params`. libmpv 1.x (mpv 0.34, as Ubuntu 22.04 ships) also reads `extra_exts`,
+/// which 2.0 removed: left out, 0.34 read whatever followed the struct as a string and crashed.
+/// NULL there, and ignored by libmpv 2.
 #[repr(C)]
 struct OpenGlInitParams {
     get_proc_address: unsafe extern "C" fn(ctx: *mut c_void, name: *const c_char) -> *mut c_void,
     get_proc_address_ctx: *mut c_void,
+    extra_exts: *const c_char,
 }
 
 /// `mpv_opengl_fbo`.
@@ -75,7 +78,7 @@ impl GlRenderer {
         request_redraw: impl Fn() + Send + Sync + 'static,
     ) -> Result<GlRenderer, String> {
         let mpv: &Mpv = client.mpv();
-        let mut init = OpenGlInitParams { get_proc_address, get_proc_address_ctx };
+        let mut init = OpenGlInitParams { get_proc_address, get_proc_address_ctx, extra_exts: std::ptr::null() };
         let mut params = [
             RenderParam { type_: MPV_RENDER_PARAM_API_TYPE, data: MPV_RENDER_API_TYPE_OPENGL.as_ptr() as *mut c_void },
             RenderParam { type_: MPV_RENDER_PARAM_OPENGL_INIT_PARAMS, data: &mut init as *mut _ as *mut c_void },
