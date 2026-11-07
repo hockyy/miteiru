@@ -6,11 +6,18 @@ export const languageCodes = {
   vietnamese: "vi"
 };
 
+/**
+ * The languages Miteiru teaches. `flag`, `nativeName` and `englishName` are what the home page
+ * shows; `name` keeps the tokenizer for logs and older settings.
+ */
 export const languageModes = [
   {
     id: 0,
     pluginId: "japanese-kuromoji",
     name: "Kuromoji - Japanese",
+    flag: "🇯🇵",
+    nativeName: "日本語",
+    englishName: "Japanese",
     channel: "loadKuromoji",
     emoji: "🐣",
     description: "うん、ちょっと見てるだけ 😏",
@@ -22,6 +29,9 @@ export const languageModes = [
     id: 2,
     pluginId: "cantonese-jieba",
     name: "Jieba - Cantonese",
+    flag: "🇭🇰",
+    nativeName: "廣東話",
+    englishName: "Cantonese",
     channel: "loadCantonese",
     emoji: "🥘",
     description: "準備好啦，行啊",
@@ -33,6 +43,9 @@ export const languageModes = [
     id: 3,
     pluginId: "mandarin-jieba",
     name: "Jieba - Chinese",
+    flag: "🇨🇳",
+    nativeName: "中文",
+    englishName: "Chinese",
     channel: "loadChinese",
     emoji: "🐉",
     description: "加油! 💥",
@@ -44,6 +57,9 @@ export const languageModes = [
     id: 4,
     pluginId: "vietnamese",
     name: "Vietnamese",
+    flag: "🇻🇳",
+    nativeName: "Tiếng Việt",
+    englishName: "Vietnamese",
     channel: "loadVietnamese",
     emoji: "🏯",
     description: "Chúc may mắn! 🌟",

@@ -20,29 +20,13 @@ const confirmDictCacheRemoval = () => (
   DICT_CACHE_CONFIRM_STEPS.every((message) => window.confirm(message))
 );
 
-const getLanguageMeta = (name: string) => {
-  const [engine, language] = name.split(' - ');
-
-  return {
-    engine: engine || name,
-    language: language || name,
-  };
-};
-
-const formatLanguageOption = (mode: { id: number; name: string; emoji: string }, isLastUsed: boolean) => {
-  const {engine, language} = getLanguageMeta(mode.name);
-  const lastSuffix = isLastUsed ? ' · last used' : '';
-  return `${mode.emoji} ${engine} — ${language}${lastSuffix}`;
-};
-
 function Home() {
   const { miteiruVersion } = useMiteiruVersion();
   const { toolsCheck, isChecking: toolsCheckInProgress, isDownloading, checkMediaTools, downloadTool } = useToolsCheck();
   const {
-    check,
+    notice,
     tokenizerMode,
     setTokenizerMode,
-    lastLanguageMode,
     isLoadingLanguage,
     languageModes,
     ableToProceedToVideo,
@@ -118,7 +102,6 @@ function Home() {
       ? '✅'
       : '🙃';
 
-  const selectedLanguageMode = languageModes.find((mode) => mode.id === tokenizerMode);
   const showCacheStatus = cacheCheck.ok !== 0 || cacheCheck.message !== '🐸 ゲロゲロ';
 
   return (
@@ -130,19 +113,15 @@ function Home() {
         <div className="mx-auto flex min-h-full w-full max-w-4xl flex-col gap-4">
           <MainMenu
             miteiruVersion={miteiruVersion}
-            checkOk={check.ok}
-            checkMessage={check.message}
+            languageNotice={notice}
             languageModes={languageModes}
             tokenizerMode={tokenizerMode}
-            lastLanguageMode={lastLanguageMode}
-            selectedLanguageMode={selectedLanguageMode}
             isLoadingLanguage={isLoadingLanguage}
             ableToProceedToVideo={ableToProceedToVideo}
             onLanguageChange={setTokenizerMode}
             onOpenVideo={handleLanguageButtonClick}
             onOpenLearn={handleOpenLearn}
             onOpenFlash={handleOpenFlash}
-            formatLanguageOption={formatLanguageOption}
           />
 
           <HomeSystemPanel
