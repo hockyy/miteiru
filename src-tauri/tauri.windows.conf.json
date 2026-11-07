@@ -2,5 +2,12 @@
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "build": {
     "beforeDevCommand": "node scripts/fetchLibmpv.mjs --if-needed && npm run dev:renderer"
+  },
+  "bundle": {
+    "windows": {
+      "nsis": {
+        "installerHooks": "windows/installer-hooks.nsh"
+      }
+    }
   }
 }

@@ -219,16 +219,22 @@ jobs:
 
       # Windows: the installer as a user gets it, on the runner's fresh account. A silent install, the
       # installed app's smoke test (as below), then a silent uninstall, which must take the app with it.
+      # The install goes over language data like the first 8.0.0 build's, which the installer's hook
+      # (src-tauri/windows/installer-hooks.nsh) must clear: left there, it passes for bundled data.
       - name: Install, smoke-test and uninstall the Windows installer
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
+          $dir = Join-Path $env:LOCALAPPDATA 'Miteiru'
+          $app = Join-Path $dir 'miteiru.exe'
+          $stale = Join-Path $dir 'language-assets/japanese/dict'
+          New-Item -ItemType Directory -Force -Path $stale | Out-Null
+          Set-Content -Path (Join-Path $stale 'jmdict.json') -Value '{}'
           $installer = Get-ChildItem src-tauri/target/release/bundle/nsis/*-setup.exe | Select-Object -First 1
           $install = Start-Process -FilePath $installer.FullName -ArgumentList '/S' -PassThru -Wait
           "installer exit code: $($install.ExitCode)"
-          $dir = Join-Path $env:LOCALAPPDATA 'Miteiru'
-          $app = Join-Path $dir 'miteiru.exe'
           if (-not (Test-Path $app)) { throw "the installer left no $app" }
+          if (Test-Path (Join-Path $dir 'language-assets')) { throw 'the installer left the old language-assets folder' }
           $files = Get-ChildItem $dir -Recurse -File
           "installed: $($files.Count) files, $([math]::Round(($files | Measure-Object Length -Sum).Sum / 1MB, 1)) MiB in $dir"
           $server = Start-Process python -ArgumentList '-m', 'http.server', '--bind', '127.0.0.1', '8765', '--directory', 'dist/language-packs' -PassThru -WindowStyle Hidden
