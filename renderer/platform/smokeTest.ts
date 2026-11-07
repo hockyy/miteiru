@@ -175,9 +175,10 @@ const checkLanguages = async () => {
   // Windows reports a verbatim path (\\?\C:\...), where "/" is not a separator.
   const separator = resources.includes('\\') ? '\\' : '/';
   let installed: Awaited<ReturnType<typeof installLanguagePacks>> = null;
+  // fs_stat answers null for a missing file (it does not reject), so only a stat counts as bundled.
   const bundled = await Promise.all(SMOKE_LANGUAGES.map(({plugin}) => invoke('fs_stat', {
     path: [resources, 'language-assets', plugin, 'asset-manifest.json'].join(separator)
-  }).then(() => true, () => false)));
+  }).then((stat) => stat != null, () => false)));
   if (!bundled.every(Boolean)) {
     installed = await installLanguagePacks(smokeLanguagePacks);
     if (!installed) return 'skipped: no language packs to install';
