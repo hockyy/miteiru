@@ -4,9 +4,57 @@
  * `getMany` gives undefined for missing keys, iterators are async-iterable and paged.
  */
 import {sys} from '../sys';
+import {SYS_KV_BATCH} from '../protocol';
 import {nodeError, type NodeError} from './errors';
 
 const PAGE_SIZE = 5000;
+
+const utf8 = new TextEncoder();
+
+/**
+ * kv_batch's body (src-tauri/src/sys/kv.rs decode_batch): the number of writes (u32), then for each
+ * a kind byte (0 put, 1 del), the key, and for a put the value, each as its UTF-8 byte length
+ * (u32) and bytes. Little-endian. Raw bytes travel to Rust about twice as fast as the same batch
+ * as JSON, and a dictionary import sends a few hundred megabytes.
+ */
+export const encodeBatch = (operations: { type: 'put' | 'del'; key: unknown; value?: unknown }[]): ArrayBuffer => {
+  const texts: string[] = [];
+  // UTF-8 takes at most 3 bytes per UTF-16 unit, so the strings always fit in this many bytes.
+  let room = 4;
+  for (const op of operations) {
+    if (op.type !== 'put' && op.type !== 'del') {
+      throw nodeError(`EINVAL: invalid argument, kv batch op '${String(op.type)}'`);
+    }
+    if (op.type === 'put' && op.value === undefined) {
+      throw nodeError(`EINVAL: invalid argument, kv batch put without value for '${String(op.key)}'`);
+    }
+    const key = String(op.key);
+    texts.push(key);
+    room += 5 + 3 * key.length;
+    if (op.type === 'put') {
+      const value = String(op.value);
+      texts.push(value);
+      room += 4 + 3 * value.length;
+    }
+  }
+  // Encoded in place (encodeInto): no buffer per string, about 3x faster on an import.
+  const bytes = new Uint8Array(room);
+  const view = new DataView(bytes.buffer);
+  view.setUint32(0, operations.length, true);
+  let at = 4;
+  let next = 0;
+  const text = () => {
+    const {written} = utf8.encodeInto(texts[next++], bytes.subarray(at + 4));
+    view.setUint32(at, written, true);
+    at += 4 + written;
+  };
+  for (const op of operations) {
+    bytes[at++] = op.type === 'put' ? 0 : 1;
+    text();
+    if (op.type === 'put') text();
+  }
+  return bytes.buffer.slice(0, at);
+};
 
 export interface RangeOptions {
   gt?: string;
@@ -197,7 +245,8 @@ export class Level<K = string, V = string> {
 
   async batch(operations: { type: 'put' | 'del'; key: K; value?: V }[]): Promise<void> {
     if (operations.length === 0) return;
-    await sys('kv_batch', {handle: await this.handle(), ops: operations});
+    const data = encodeBatch(operations);
+    await sys(SYS_KV_BATCH, {handle: await this.handle(), data});
   }
 
   /** Not in `level`: bulk mode for building a database from scratch (src-tauri/src/sys/kv.rs set_bulk). */

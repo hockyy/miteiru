@@ -25,6 +25,11 @@ export type WorkerOutbound =
   /** What Electron's `webContents.send` did: an event for window.backend.on subscribers. */
   | { kind: 'event'; channel: string; args: unknown[] };
 
-/** The Rust commands that carry raw bytes instead of JSON (see desktop-contract.md). */
+/**
+ * The Rust commands that carry raw bytes instead of JSON: fs_write_bytes and kv_batch send a raw
+ * body (other values go in headers), and fs_read_bytes answers with one.
+ */
 export const SYS_WRITE_BYTES = 'fs_write_bytes';
+/** A batch of store writes, encoded by shims/level.ts encodeBatch (src-tauri/src/sys/kv.rs decode_batch). */
+export const SYS_KV_BATCH = 'kv_batch';
 export const SYS_READ_BYTES = 'fs_read_bytes';
