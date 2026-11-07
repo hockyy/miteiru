@@ -13,6 +13,7 @@ import { MeaningBoxHeader } from './components/MeaningBoxHeader';
 import { MeaningBoxShell } from './components/MeaningBoxShell';
 import { PitchAccentSection } from './components/PitchAccentSection';
 import { QuickActionsSection } from './components/QuickActionsSection';
+import Toast from '../../VideoPlayer/Toast';
 import { useMeaningAnkiExport } from './hooks/useMeaningAnkiExport';
 import { useMeaningCopyShortcuts } from './hooks/useMeaningCopyShortcuts';
 import { useMeaningInflection } from './hooks/useMeaningInflection';
@@ -44,7 +45,7 @@ const MeaningBox = ({
   subtitleStyling = defaultMeaningBoxStyling,
   customComponent = null,
   lang,
-  changeLearningState = null,
+  setLearningLevel = null,
   getLearningState = null,
   showMeaning = true,
   sidebarInsets = {},
@@ -124,7 +125,7 @@ const MeaningBox = ({
     [generateInflectionExamples, inflectionTable, wordMeaning],
   );
 
-  const { isExportingAnki, exportToAnki, ankiExportModal } = useMeaningAnkiExport({
+  const { isExportingAnki, exportToAnki, ankiExportModal, ankiNotice } = useMeaningAnkiExport({
     meaning,
     lang,
     tokenizeMiteiru,
@@ -179,12 +180,13 @@ const MeaningBox = ({
   );
 
   if (!isOpen) {
-    return <>{ankiExportModal}</>;
+    return <>{ankiExportModal}<Toast info={ankiNotice} /></>;
   }
 
   return (
     <>
       {ankiExportModal}
+      <Toast info={ankiNotice} />
       <MeaningBoxShell
         sidebarInsets={sidebarInsets}
         onClose={handleClose}
@@ -204,7 +206,7 @@ const MeaningBox = ({
             onPrevious={goToPreviousMeaning}
             onNext={goToNextMeaning}
             getLearningState={getLearningState}
-            changeLearningState={changeLearningState}
+            setLearningLevel={setLearningLevel}
             onBack={onBack}
             onClose={showCloseButton ? handleClose : null}
           />

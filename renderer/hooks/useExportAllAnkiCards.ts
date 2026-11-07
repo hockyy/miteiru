@@ -18,7 +18,7 @@ type UseExportAllAnkiCardsParams = {
   tokenizeMiteiru: (text: string) => Promise<unknown>;
 };
 
-/** Bulk export My Notes vocabulary + grammar cards to a single Anki TSV. */
+/** Bulk export of saved words that have My Notes, plus grammar notes, to a single Anki import file. */
 export const useExportAllAnkiCards = ({ lang, tokenizeMiteiru }: UseExportAllAnkiCardsParams) => {
   const { userNotes } = useUserNotes();
   const { confirmExport, modal: ankiExportModal } = useAnkiExportConfirm();
@@ -62,7 +62,7 @@ export const useExportAllAnkiCards = ({ lang, tokenizeMiteiru }: UseExportAllAnk
       }
 
       if (cards.length === 0) {
-        alert('No saved My Notes or grammar notes found for this language.');
+        alert("None of your saved words have My Notes yet. Add one in a word's popup, then export again.");
         return;
       }
 

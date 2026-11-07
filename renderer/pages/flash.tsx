@@ -4,7 +4,17 @@ import {useRouter} from 'next/router';
 import useMiteiruTokenizer from "../hooks/useMiteiruTokenizer";
 import MeaningBox from '../components/Meaning/MeaningBox';
 import {Button} from "../components/Utils/Button";
-import {getMiteiruAppName, getRelativeTime} from "../utils/utils";
+import {getMiteiruAppName} from "../utils/utils";
+import {
+  DIFFICULTY_INTERVAL_MS,
+  dueCards,
+  flashKeyAction,
+  formatTimeUntil,
+  GRADE_KEY_LABELS,
+  nextReviewText,
+  type Difficulty,
+} from "../utils/flashcards";
+import {isTextEntryTarget} from "../utils/keyboardTargets";
 import useLearningState from "../hooks/useLearningState";
 import useLearningKeyBind from "../hooks/useLearningKeyBind";
 import {
@@ -24,8 +34,6 @@ interface LearningStateEntry {
 
 type SortedVocabEntry = [string, LearningStateEntry];
 
-type Difficulty = 'hard' | 'good' | 'easy' | 'banish';
-
 const VocabFlashCards: React.FC = () => {
   const {lang, tokenizeMiteiru} = useMiteiruTokenizer();
   const router = useRouter();
@@ -41,13 +49,18 @@ const VocabFlashCards: React.FC = () => {
   }, []);
   const cardInsets = useMemo(() => ({top: `${headerBottom + 8}px`}), [headerBottom]);
 
+  // Every saved word, and the cards in this sitting: the due ones, or all of them after "Review more anyway".
   const [sortedVocab, setSortedVocab] = useState<SortedVocabEntry[]>([]);
-  const [currentWord, setCurrentWord] = useState<SortedVocabEntry | null>(null);
+  const [deck, setDeck] = useState<SortedVocabEntry[]>([]);
+  const [reviewAll, setReviewAll] = useState(false);
+  const [finished, setFinished] = useState(false);
+  const [reviewedCount, setReviewedCount] = useState(0);
   const [index, setIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
+  const currentWord = deck[index] ?? null;
 
   const {
-    changeLearningState,
+    setLearningLevel,
     getLearningState,
     updateTimeWithSameLevel,
   } = useLearningState(lang);
@@ -56,14 +69,17 @@ const VocabFlashCards: React.FC = () => {
     try {
       if (!lang) return;
       const loadedState = await window.backend.invoke('loadLearningState', lang);
-      // Most overdue first, as handleAnswer keeps them.
+      // Most overdue first.
       const sorted = Object.entries(loadedState).sort((a, b) =>
           (a[1] as LearningStateEntry).updTime - (b[1] as LearningStateEntry).updTime
       ) as SortedVocabEntry[];
+      const due = dueCards(sorted, Date.now());
       setSortedVocab(sorted);
-      if (sorted.length > 0) {
-        setCurrentWord(sorted[0]);
-      }
+      setDeck(due);
+      setIndex(0);
+      setReviewedCount(0);
+      setReviewAll(false);
+      setFinished(sorted.length > 0 && due.length === 0);
       setLoaded(true);
     } catch (error) {
       console.error('Error loading vocabulary:', error);
@@ -75,89 +91,87 @@ const VocabFlashCards: React.FC = () => {
     loadVocabulary();
   }, [lang, loadVocabulary]);
 
-  const showNextCard = useCallback(() => {
-    const nextIndex = (index + 1) % sortedVocab.length;
-    setCurrentWord(sortedVocab[nextIndex]);
-    setIndex(nextIndex);
+  const reviewMore = useCallback(() => {
+    setDeck(sortedVocab);
+    setIndex(0);
+    setReviewAll(true);
+    setFinished(false);
     setShowAnswer(false);
-  }, [index, sortedVocab]);
+  }, [sortedVocab]);
+
   const handleAnswer = useCallback((difficulty: Difficulty) => {
-    if (currentWord) {
-      const [content, state] = currentWord;
-      const now = Date.now();
-      let interval: number;
-
-      switch (difficulty) {
-        case 'hard':
-          interval = 24 * 60 * 60 * 1000; // 1 day
-          break;
-        case 'good':
-          interval = 3 * 24 * 60 * 60 * 1000; // 3 days
-          break;
-        case 'easy':
-          interval = 7 * 24 * 60 * 60 * 1000; // 7 days
-          break;
-        case 'banish':
-          interval = 365 * 24 * 60 * 60 * 1000; // 1 year lmao
-          break;
-      }
-
-      const newUpdTime = now + interval;
-      updateTimeWithSameLevel(content, newUpdTime);
-
-      const updatedVocab = sortedVocab.map(word =>
-          word[0] === content ? [content, {...state, updTime: newUpdTime}] : word
-      );
-
-      const newSortedVocab = updatedVocab.sort((a, b) => {
-        if (typeof a[1] === 'string' || typeof b[1] === 'string') {
-          console.error('Unexpected state format:', a[1], b[1]);
-          return 0;
-        }
-        return a[1].updTime - b[1].updTime;
-      });
-      setSortedVocab(newSortedVocab as SortedVocabEntry[]);
-
-      showNextCard();
+    if (!currentWord) return;
+    const [content, state] = currentWord;
+    const newUpdTime = Date.now() + DIFFICULTY_INTERVAL_MS[difficulty];
+    updateTimeWithSameLevel(content, newUpdTime);
+    setSortedVocab((old) => old.map((word) =>
+        word[0] === content ? [content, {...state, updTime: newUpdTime}] : word
+    ));
+    setReviewedCount((count) => count + 1);
+    setShowAnswer(false);
+    // The due deck ends after its last card; the review-all deck wraps around.
+    if (index + 1 >= deck.length && !reviewAll) {
+      setFinished(true);
+      return;
     }
-  }, [currentWord, sortedVocab, updateTimeWithSameLevel, showNextCard]);
+    setIndex((index + 1) % deck.length);
+  }, [currentWord, deck.length, index, reviewAll, updateTimeWithSameLevel]);
+
+  // Space shows the answer; 1-4 grade it. Not while typing in a field.
+  useEffect(() => {
+    if (!currentWord || finished) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey || event.metaKey || event.altKey || isTextEntryTarget(event.target)) return;
+      const action = flashKeyAction(event.key, showAnswer);
+      if (!action) return;
+      event.preventDefault();
+      if (action.type === 'show') setShowAnswer(true);
+      else handleAnswer(action.difficulty);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [currentWord, finished, showAnswer, handleAnswer]);
+
+  const nextReview = finished ? nextReviewText(sortedVocab, Date.now()) : null;
+
   const customComponent = useMemo(() => {
     if (!currentWord) return null;
 
     const [, state] = currentWord;
+    const now = Date.now();
+    const gradeButton = (difficulty: Difficulty, label: string, title?: string) => (
+        <Button type="secondary" onPress={() => handleAnswer(difficulty)} title={title}>
+          {label} <kbd className="ml-1 rounded border border-current px-1 text-[10px] font-bold opacity-70">
+          {GRADE_KEY_LABELS[difficulty]}</kbd>
+        </Button>
+    );
 
     return (
         <div className={`${HOME_SECTION} m-3 flex flex-col items-center gap-2 p-3 text-center text-blue-950`}>
           <div className="text-sm font-bold">
-            Card {index + 1} of {sortedVocab.length}
+            Card {index + 1} of {deck.length}
           </div>
           <div className="text-xs text-blue-800">
-            Review due {getRelativeTime(state.updTime)} · {new Date(state.updTime).toLocaleString()}
+            {state.updTime > now ? `Not due yet · due in ${formatTimeUntil(state.updTime, now)}` : 'Due now'}
           </div>
           {!showAnswer ? (
               <Button type="primary" onPress={() => setShowAnswer(true)}>
-                Show answer
+                Show answer <kbd className="ml-1 rounded border border-current px-1 text-[10px] font-bold opacity-70">Space</kbd>
               </Button>
           ) : (
-              <div className={'flex flex-row flex-wrap justify-center gap-2'}>
-                <Button type="secondary"
-                               onPress={() => handleAnswer('hard')}>
-                  Hard 🧠
-                </Button>
-                <Button type="secondary" onPress={() => handleAnswer('good')}>
-                  Good 😊
-                </Button>
-                <Button type="secondary" onPress={() => handleAnswer('easy')}>
-                  Easy 😎
-                </Button>
-                <Button type="secondary" onPress={() => handleAnswer('banish')}>
-                  Banish 👻
-                </Button>
-              </div>
+              <>
+                <div className={'flex flex-row flex-wrap justify-center gap-2'}>
+                  {gradeButton('hard', 'Hard 🧠', 'See it again tomorrow')}
+                  {gradeButton('good', 'Good 😊', 'See it again in 3 days')}
+                  {gradeButton('easy', 'Easy 😎', 'See it again in a week')}
+                  {gradeButton('banish', 'Banish 👻', 'I know this, hide it for a year')}
+                </div>
+                <div className="text-[11px] text-blue-800">Banish: I know this, hide it for a year.</div>
+              </>
           )}
         </div>
     );
-  }, [currentWord, index, sortedVocab.length, showAnswer, handleAnswer]);
+  }, [currentWord, index, deck.length, showAnswer, handleAnswer]);
 
   useLearningKeyBind(() => {
   }, () => {
@@ -176,7 +190,9 @@ const VocabFlashCards: React.FC = () => {
                 <div>
                   <div className="text-sm font-black tracking-tight text-blue-950">Flashcards</div>
                   <div className="text-[11px] font-bold text-blue-800">
-                    {sortedVocab.length > 0 ? `${sortedVocab.length} words to review` : 'Review the words you learn'}
+                    {sortedVocab.length === 0 ? 'Review the words you learn'
+                      : finished ? 'All done for today'
+                      : reviewAll ? `${sortedVocab.length} words` : `${deck.length - index} due today`}
                   </div>
                 </div>
               </div>
@@ -191,16 +207,30 @@ const VocabFlashCards: React.FC = () => {
                     <div className={HOME_SECTION_LABEL}>No cards yet</div>
                     <div className="space-y-3 bg-white px-4 py-3 text-sm text-blue-900">
                       <p>
-                        Cards are the words you mark while watching or reading. Click a word in a subtitle and
-                        set how well you know it; it shows up here to review.
+                        Cards are the words you save while watching or reading. Right-click a word in the subtitles,
+                        or choose Learning or Known in its popup; it shows up here to review.
                       </p>
                       <Button type="primary" onPress={() => router.push('/video')}>Open a video</Button>
                     </div>
                   </section>
                 </div>
             )}
+            {finished && sortedVocab.length > 0 && (
+                <div className={HOME_BODY}>
+                  <section className={HOME_SECTION}>
+                    <div className={HOME_SECTION_LABEL}>All done for today</div>
+                    <div className="space-y-3 bg-white px-4 py-3 text-sm text-blue-900">
+                      <p>
+                        {reviewedCount} card{reviewedCount === 1 ? '' : 's'} reviewed
+                        {nextReview ? ` · ${nextReview}` : ''}
+                      </p>
+                      <Button type="secondary" onPress={reviewMore}>Review more anyway</Button>
+                    </div>
+                  </section>
+                </div>
+            )}
           </section>
-          {sortedVocab.length === 0 ? null : (
+          {sortedVocab.length === 0 || finished ? null : (
               currentWord && (
                   <MeaningBox
                       lang={lang}
@@ -210,7 +240,7 @@ const VocabFlashCards: React.FC = () => {
                       tokenizeMiteiru={tokenizeMiteiru}
                       sidebarInsets={cardInsets}
                       customComponent={customComponent}
-                      changeLearningState={changeLearningState}
+                      setLearningLevel={setLearningLevel}
                       getLearningState={getLearningState}
                       showMeaning={showAnswer}
                   />

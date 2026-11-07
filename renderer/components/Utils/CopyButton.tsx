@@ -1,10 +1,13 @@
 /** Reusable clipboard button. Used in Learn translation rows and MeaningBox. */
 import React, {useCallback, useState} from 'react';
 import {FaCheck, FaCopy} from 'react-icons/fa';
+import {writeRubyToClipboard} from '../../utils/rubyText';
 
 interface CopyButtonProps {
   text: string;
   label?: string;
+  /** Copy `text` as ruby markup: pasted as ruby into rich editors and as `食(た)べる` into plain ones. */
+  ruby?: boolean;
   /** Keyboard shortcut hint rendered inside the button (e.g. "W"). */
   shortcut?: string;
   /** Tailwind classes for border/text/hover — defaults to purple (Learn panel) */
@@ -17,6 +20,7 @@ const defaultClassName =
 export const CopyButton: React.FC<CopyButtonProps> = ({
   text,
   label = 'Copy',
+  ruby = false,
   shortcut,
   className = defaultClassName,
 }) => {
@@ -27,13 +31,17 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
       return;
     }
     try {
-      await navigator.clipboard.writeText(text);
+      if (ruby) {
+        await writeRubyToClipboard(text);
+      } else {
+        await navigator.clipboard.writeText(text);
+      }
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1500);
     } catch (error) {
       console.error('Failed to copy:', error);
     }
-  }, [text]);
+  }, [ruby, text]);
 
   return (
     <button

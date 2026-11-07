@@ -133,8 +133,9 @@ export const LearningSidebar = ({
           className={"w-full min-w-0 max-w-full"}
           onPress={exportAllAnkiCards}
       >
-        Export All Anki Cards
+        Export words with notes to Anki…
       </Button>
+      <div className="text-xs text-white/50">Words without My Notes are skipped. Add one in a word&rsquo;s popup.</div>
     </SidebarSection>
   </SidebarShell>
   </>;

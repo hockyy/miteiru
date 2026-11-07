@@ -15,6 +15,7 @@ import {useExportAllAnkiCards} from "../../hooks/useExportAllAnkiCards";
 import {videoConstants} from "../../utils/constants";
 import {FontPicker} from "../Utils/FontPicker";
 import {SUBTITLE_FONT_OPTIONS} from "../../utils/fonts";
+import {ColorKey} from "./ColorKey";
 
 /** Sets one (possibly nested) field of a subtitle style, e.g. `update("text.color", "#fff")`. */
 const useStylingUpdate = (styling: CJKStyling, setStyling: (styling: CJKStyling) => void) =>
@@ -350,10 +351,11 @@ export const Sidebar = ({
                                    lang={lang}/>
         </SidebarSection>
         <SidebarSection title="Words to learn">
-          <SliderRow label="Treat the most common words as mastered"
+          <ColorKey/>
+          <SliderRow label="Treat the most common words as known"
                      valueLabel={`top ${Math.round(learningPercentage * 10) / 10}%`}
                      min={0} max={100} step={0.4} value={learningPercentage} onChange={setLearningPercentage}/>
-          <Hint>Words you have not marked yet that are this common in the subtitle show as mastered, so the
+          <Hint>Words you have not saved yet that are this common in the subtitle count as known, so the
             rarer ones stand out.</Hint>
         </SidebarSection>
       </TabPanel>}
@@ -379,8 +381,9 @@ export const Sidebar = ({
         </SidebarSection>
         <SidebarSection title="Anki">
           <Button type="secondary" className="w-full min-w-0 max-w-full" onPress={exportAllAnkiCards}>
-            Export all Anki cards…
+            Export words with notes to Anki…
           </Button>
+          <Hint>Words without My Notes are skipped. Add one in a word&rsquo;s popup.</Hint>
         </SidebarSection>
         <SidebarSection title="Primary subtitle">
           <Button type="secondary" className="w-full min-w-0 max-w-full" onPress={exportHufHandler}>

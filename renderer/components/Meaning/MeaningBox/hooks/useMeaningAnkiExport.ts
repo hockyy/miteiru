@@ -1,7 +1,8 @@
 import { useCallback, useState } from 'react';
+import type { ToastInfo } from '../../../VideoPlayer/Toast';
+import { ankiSavedMessage } from '../../../../utils/ankiNotice';
 import { useAnkiExportConfirm } from '../../../../hooks/useAnkiExportConfirm';
 import {
-  buildDeckList,
   createAnkiCardsForTerm,
   openAnkiCards,
   safeAnkiFilename,
@@ -29,6 +30,8 @@ export const useMeaningAnkiExport = ({
 }: UseMeaningAnkiExportParams) => {
   const [isExportingAnki, setIsExportingAnki] = useState(false);
   const { confirmExport, modal: ankiExportModal } = useAnkiExportConfirm();
+  // The result shows in a toast with a button, not a native alert.
+  const [notice, showNotice] = useState<ToastInfo>({ message: '' });
 
   const exportToAnki = useCallback(async () => {
     setIsExportingAnki(true);
@@ -47,23 +50,16 @@ export const useMeaningAnkiExport = ({
         return;
       }
 
-      const deckList = buildDeckList(cards);
-      if (result.ankiLaunched) {
-        alert(
-          `Opened ${cards.length} Anki card${cards.length === 1 ? '' : 's'} (${deckList}).\n\nIn Anki: File → Import → select:\n${result.filePath}`,
-        );
-      } else if (result.openedFolderOnly) {
-        alert(
-          `Import file ready (${deckList}).\n\nIts folder was opened — select the file for Anki import:\n${result.filePath}`,
-        );
-      } else {
-        alert(
-          `Import file ready (${deckList}).\n\nHighlighted in your file manager. In Anki: File → Import → select:\n${result.filePath}`,
-        );
-      }
+      // The file is saved (and, where possible, shown in the file manager); say where it is and what to do next.
+      showNotice({
+        message: ankiSavedMessage(result.filePath),
+        update: String(Date.now()),
+        duration: 15000,
+        action: {label: 'Show in folder', onPress: () => window.electronAPI.showItemInFolder(result.filePath)},
+      });
     } catch (error) {
       console.error('Failed to open Anki card:', error);
-      alert(`Failed to open Anki card: ${(error as Error).message}`);
+      showNotice({message: `Could not export to Anki: ${(error as Error).message}`, update: String(Date.now()), error: true});
     } finally {
       setIsExportingAnki(false);
     }
@@ -77,5 +73,5 @@ export const useMeaningAnkiExport = ({
     userNote,
   ]);
 
-  return { isExportingAnki, exportToAnki, ankiExportModal };
+  return { isExportingAnki, exportToAnki, ankiExportModal, ankiNotice: notice };
 };

@@ -206,7 +206,9 @@ export const JapaneseSentence = ({
     handleChange(e.shiftKey ? origin : (basicForm || origin));
   }, [handleChange, origin, basicForm]);
 
-  const handleRightClick = useCallback(() => {
+  const handleRightClick = useCallback((e: React.MouseEvent) => {
+    // Right-click saves the word; the webview's own menu would open on top of that.
+    e.preventDefault();
     changeLearningState(basicForm);
   }, [changeLearningState, basicForm]);
 
@@ -354,7 +356,9 @@ export const ChineseSentence = ({
     handleChange(origin);
   }, [handleChange, origin]);
 
-  const handleRightClick = useCallback(() => {
+  const handleRightClick = useCallback((e: React.MouseEvent) => {
+    // Right-click saves the word; the webview's own menu would open on top of that.
+    e.preventDefault();
     changeLearningState(origin);
   }, [changeLearningState, origin]);
 

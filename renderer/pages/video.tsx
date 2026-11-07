@@ -124,6 +124,7 @@ function Video() {
   const {
     getLearningStateClass,
     changeLearningState,
+    setLearningLevel,
     setFrequencyPrimary,
     learningPercentage,
     setLearningPercentage,
@@ -326,6 +327,18 @@ function Video() {
     }
   }, [showTrackSelectionModal, showAudioTrackModal, setIsPlaying]);
 
+  // Once, when the first subtitle line shows: how to look a word up and how to save it.
+  const [wordHintShown, setWordHintShown, wordHintLoaded] = useStoreData('hint.wordLookupShown', false);
+  useEffect(() => {
+    if (!wordHintLoaded || wordHintShown || !contentString) return;
+    setWordHintShown(true);
+    setToastInfo({
+      message: 'Click a word to look it up · Right-click to save it',
+      update: String(Date.now()),
+      duration: 9000
+    });
+  }, [wordHintLoaded, wordHintShown, contentString, setWordHintShown, setToastInfo]);
+
   // Removing a subtitle can be undone from the toast that says it happened.
   const removeSubtitle = useCallback((slot: 'primary' | 'secondary') => {
     const toast = (message: string, restore: () => void) => setToastInfo({
@@ -407,7 +420,7 @@ function Video() {
               onRemovePrimary={removePrimarySubtitle}
               onRemoveSecondary={removeSecondarySubtitle}/>}
           <MeaningBox meaning={meaning} setMeaning={setMeaning} tokenizeMiteiru={tokenizeMiteiru}
-                      lang={lang} changeLearningState={changeLearningState}
+                      lang={lang} setLearningLevel={setLearningLevel}
                       getLearningState={getLearningState}
                       onBack={canGoBack ? undo : null}
                       showCloseButton

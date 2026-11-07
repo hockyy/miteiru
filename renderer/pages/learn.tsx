@@ -225,6 +225,7 @@ function Learn() {
   const {
     getLearningStateClass,
     changeLearningState,
+    setLearningLevel,
     getLearningState,
     refreshTrigger,
   } = useLearningState(lang);
@@ -327,7 +328,7 @@ function Learn() {
                       meaning={meaning} 
                       setMeaning={setMeaning}
                       tokenizeMiteiru={tokenizeMiteiru}
-                      changeLearningState={changeLearningState}
+                      setLearningLevel={setLearningLevel}
                       getLearningState={getLearningState}
                       showCloseButton
                       sentenceCopyKey={formatKeys(['Ctrl', 'G'])}

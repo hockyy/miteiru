@@ -16,7 +16,8 @@ export type MeaningBoxProps = {
   subtitleStyling?: typeof defaultMeaningBoxStyling;
   customComponent?: ReactNode;
   lang: string;
-  changeLearningState?: ((term: string) => void) | null;
+  /** Saves a word at a chosen level (0 New, 1 Learning, 2 Known); the header's three-part control uses it. */
+  setLearningLevel?: ((term: string, level: number) => void) | null;
   getLearningState?: ((term: string) => number) | null;
   showMeaning?: boolean;
   sidebarInsets?: SidebarInsets;
