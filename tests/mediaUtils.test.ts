@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import {describe, it} from "node:test";
 import {
   buildVideoSource,
+  droppedYoutubeUrl,
   getEmbeddedSubtitleTarget,
   getFileNameFromPath,
   getLanguageEmoji,
@@ -12,6 +13,24 @@ import {
   pickDefaultSubtitleTracks,
   type SubtitleCandidate
 } from "../renderer/utils/mediaUtils";
+
+describe("droppedYoutubeUrl", () => {
+  const drop = (values: Record<string, string>) => droppedYoutubeUrl({getData: (type) => values[type] ?? ""});
+
+  it("accepts a browser URI list without plain text, ignoring comments", () => {
+    assert.equal(drop({"text/uri-list": "# YouTube\r\nhttps://www.youtube.com/watch?v=example\r\n"}), "https://www.youtube.com/watch?v=example");
+  });
+
+  it("accepts trimmed plain text and Shorts", () => {
+    assert.equal(drop({"text/plain": " https://www.youtube.com/shorts/example \n"}), "https://www.youtube.com/shorts/example");
+  });
+
+  it("leaves non-YouTube and file drops to their handlers", () => {
+    assert.equal(drop({"text/uri-list": "file:///tmp/video.mp4"}), undefined);
+    assert.equal(drop({"text/plain": "https://example.com"}), undefined);
+    assert.equal(drop({}), undefined);
+  });
+});
 
 describe("normalizeDroppedPath", () => {
   it("leaves URLs untouched", () => {

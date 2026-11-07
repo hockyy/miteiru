@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-drop-paths-take"
+description = "Enables the drop_paths_take command without any pre-configured scope."
+commands.allow = ["drop_paths_take"]
+
+[[permission]]
+identifier = "deny-drop-paths-take"
+description = "Denies the drop_paths_take command without any pre-configured scope."
+commands.deny = ["drop_paths_take"]

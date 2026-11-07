@@ -1,4 +1,6 @@
 mod analyzer;
+#[cfg(target_os = "macos")]
+mod macos_drop;
 #[cfg(windows)]
 mod webview2;
 mod frontend_server;
@@ -37,10 +39,14 @@ pub fn run() {
     .on_window_event(|window, event| {
       if let tauri::WindowEvent::Destroyed = event {
         player::on_window_destroyed(window.app_handle(), window.label());
+        #[cfg(target_os = "macos")]
+        macos_drop::forget(window.label());
       }
     })
     .invoke_handler(tauri::generate_handler![
       info::sys_info,
+      #[cfg(target_os = "macos")]
+      macos_drop::drop_paths_take,
       info::smoke_test_exit,
       fs::fs_read_text,
       fs::fs_read_bytes,

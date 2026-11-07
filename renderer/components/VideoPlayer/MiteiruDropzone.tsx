@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {isYoutube} from "../../utils/utils";
-import {loadMediaPaths} from "../../utils/mediaUtils";
+import {droppedYoutubeUrl, loadMediaPaths} from "../../utils/mediaUtils";
 import {isTextEntryTarget} from "../../utils/keyboardTargets";
 
 export const MiteiruDropzone = ({
@@ -37,20 +37,19 @@ export const MiteiruDropzone = ({
     const dt = e.dataTransfer;
     if (!dt) return;
 
-    const url = dt.getData('text/plain');
-    if (isYoutube(url)) {
+    const url = droppedYoutubeUrl(dt);
+    if (url) {
       onDrop([{path: url}]);
       return;
     }
-    // Windows delivers dropped files here and looks up their paths; macOS and Linux send the
-    // paths through onFileDrop instead (the page never sees those drops).
+    // Windows and macOS deliver DOM drops and preserve file paths through their native hooks.
     const pathsForDroppedFiles = window.electronAPI?.pathsForDroppedFiles;
     if (pathsForDroppedFiles && dt.files.length > 0) {
       pathsForDroppedFiles(dt.files).then((paths) => loadMediaPaths(paths, onDrop));
     }
   }, [onDrop]);
 
-  // macOS and Linux: files dropped on the window arrive as paths from the native drag-drop event.
+  // Linux: files dropped on the window arrive as paths from the native drag-drop event.
   useEffect(() => {
     const onFileDrop = window.electronAPI?.onFileDrop;
     if (!onFileDrop) return;

@@ -263,6 +263,9 @@ const buildElectronApi = (host: BackendHost) => {
     listenForDropPaths();
     ignoreUnhandledFileDrops();
     api.pathsForDroppedFiles = pathsForDroppedFiles;
+  } else if (api.platform === 'darwin') {
+    ignoreUnhandledFileDrops();
+    api.pathsForDroppedFiles = () => invoke<string[]>('drop_paths_take');
   }
   for (const [method, channel] of Object.entries(ELECTRON_API_INVOKE_CHANNELS)) {
     api[method] = (...args: unknown[]) => host.invoke(channel, args);

@@ -6,6 +6,13 @@ import {playbackMimeForPath} from "./mediaMime";
 
 export type SubtitleTarget = "primary" | "secondary";
 
+/** Safari and Chrome may provide dragged links as URI lists, plain text, or both. */
+export const droppedYoutubeUrl = (data: Pick<DataTransfer, "getData">): string | undefined => (
+  [data.getData("text/uri-list"), data.getData("text/plain")]
+    .flatMap((text) => text.split(/\r?\n/).map((line) => line.trim()))
+    .find((line) => !line.startsWith("#") && isYoutube(line))
+);
+
 export const normalizeDroppedPath = (rawPath: string) => {
   let currentPath = rawPath;
   let pathUri = rawPath;

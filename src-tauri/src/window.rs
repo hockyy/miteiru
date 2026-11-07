@@ -18,8 +18,8 @@ pub fn create_main(app: &App) -> Result<(), Box<dyn std::error::Error>> {
     if !tauri::is_dev() {
         config.url = WebviewUrl::External(crate::frontend_server::start(app)?);
     }
-    // Windows: drops go to the page, which gets file paths from webview2.rs.
-    if cfg!(windows) {
+    // Windows/macOS: DOM drops keep links and OCR working; native hooks preserve file paths.
+    if cfg!(any(windows, target_os = "macos")) {
         config.drag_drop_enabled = false;
     }
     let handle = app.handle().clone();
@@ -50,6 +50,8 @@ pub fn create_main(app: &App) -> Result<(), Box<dyn std::error::Error>> {
         });
     }
     let window = builder.build()?;
+    #[cfg(target_os = "macos")]
+    crate::macos_drop::install(&window)?;
     #[cfg(windows)]
     crate::webview2::forward_dropped_files(&window)?;
     #[cfg(windows)]
