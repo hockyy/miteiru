@@ -4,6 +4,8 @@ import {languageModes} from "../languages/manifest";
 
 export interface LanguageMode {
   id: number;
+  /** The language plugin id language packs are matched by, such as "japanese-kuromoji". */
+  pluginId: string;
   name: string;
   channel: string;
   emoji: string;

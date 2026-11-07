@@ -6,6 +6,9 @@ import { useStoreData } from '../../hooks/useStoreData';
 import { useUpdateState } from '../../hooks/useUpdateState';
 import { checkForUpdate, installUpdate, UPDATE_SETTING_KEY, updatesSupported, type UpdateState } from '../../platform/updates';
 import { APP_FONT_OPTIONS } from '../../utils/fonts';
+import type { LanguagePacksState } from '../../hooks/useLanguagePacks';
+import { openFolder } from '../../platform/languagePacks';
+import { formatSize, packStateLabel, type LanguagePack } from '../../utils/languagePacks';
 import {capabilityRows, ffmpegSetupHint, TOOLS_WITHOUT_NOTE, ytDlpSetupSteps} from '../../utils/toolSetup';
 import {
   HOME_BODY,
@@ -58,7 +61,66 @@ interface HomeSystemPanelProps {
   cacheCheckMessage: string;
   showCacheStatus: boolean;
   onRemoveDictCaches: () => void;
+  /** The language packs, shared with the main menu. Without them (or without a manifest) there is no Languages section. */
+  packs?: LanguagePacksState;
 }
+
+/** The language packs: what is on this computer, what can be downloaded, updated or removed. */
+const LanguagesPanel = ({packs}: { packs: LanguagePacksState }) => {
+  const {status, active, busy, error} = packs;
+  if (!status) return null;
+  const progressText = active
+    ? (active.installing ? 'Installing…' : `Downloading… ${Math.round(active.fraction * 100)}%`)
+    : '';
+  const confirmRemove = (pack: LanguagePack) => {
+    if (window.confirm(`Remove ${pack.title} (${formatSize(pack.bytes)})? You can download it again any time.`)) {
+      packs.remove(pack.id);
+    }
+  };
+  return (
+    <details className={HOME_INNER_PANEL}>
+      <summary className={`${HOME_INNER_LABEL} cursor-pointer rounded-t-2xl`}>Languages</summary>
+      <div className="space-y-2 bg-blue-50 px-3 py-2.5 text-sm text-blue-900">
+        <p className="text-[12px] text-blue-800">
+          Dictionaries and character data for each language are downloaded once, from GitHub.
+        </p>
+        <div className="grid gap-1">
+          {status.packs.map((pack) => (
+            <div key={pack.id}
+                 className="flex items-center justify-between gap-2 rounded-xl border-2 border-blue-300 bg-white px-2 py-1 text-[12px] font-medium text-blue-900">
+              <span>
+                <b>{pack.title}</b> · {formatSize(pack.bytes)} · {packStateLabel(pack.state)}
+              </span>
+              <span className="flex shrink-0 items-center gap-1">
+                {pack.state === 'missing' && (
+                  <Button type="link" size="small" disabled={busy} onPress={() => packs.installPack(pack.id)}>Download</Button>
+                )}
+                {pack.state === 'outdated' && (
+                  <Button type="link" size="small" disabled={busy} onPress={() => packs.installPack(pack.id)}>Update</Button>
+                )}
+                {(pack.state === 'installed' || pack.state === 'outdated') && (
+                  <Button type="link" size="small" disabled={busy} onPress={() => confirmRemove(pack)}>Remove</Button>
+                )}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div aria-live="polite" className="min-h-4 text-[12px] font-semibold text-blue-900">
+          {progressText}
+          {!active && error ? error.message : ''}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button type="secondary" size="small" disabled={busy} onPress={() => packs.installFromFile()}>
+            Install from a file…
+          </Button>
+          <Button type="secondary" size="small" onPress={() => { openFolder(status.root).catch(() => undefined); }}>
+            Open the folder
+          </Button>
+        </div>
+      </div>
+    </details>
+  );
+};
 
 /** The interface font, for every screen. Subtitle fonts are set per subtitle in the video settings. */
 const AppearancePanel = () => {
@@ -141,6 +203,7 @@ export const HomeSystemPanel: React.FC<HomeSystemPanelProps> = ({
   cacheCheckMessage,
   showCacheStatus,
   onRemoveDictCaches,
+  packs,
 }) => {
   const platform = typeof window === 'undefined' ? '' : window.electronAPI?.platform ?? '';
   const rows = capabilityRows(toolsCheckDetails);
@@ -160,7 +223,7 @@ export const HomeSystemPanel: React.FC<HomeSystemPanelProps> = ({
     <summary className={`${HOME_SECTION_LABEL} flex cursor-pointer list-none items-center justify-between gap-3 rounded-t-3xl [&::-webkit-details-marker]:hidden`}>
       <span>Settings &amp; tools</span>
       <span className="text-[11px] font-semibold normal-case tracking-normal text-blue-800 group-open:hidden">
-        Font · Updates · YouTube and subtitle tools{liveCaptionsSupported ? ' · Live captions' : ''}
+        Font · Updates{packs?.packsEnabled ? ' · Languages' : ''} · YouTube and subtitle tools{liveCaptionsSupported ? ' · Live captions' : ''}
       </span>
       <span className="hidden text-[11px] font-semibold normal-case tracking-normal text-blue-800 group-open:inline">
         Collapse
@@ -179,6 +242,8 @@ export const HomeSystemPanel: React.FC<HomeSystemPanelProps> = ({
       <AppearancePanel/>
 
       <UpdatesPanel/>
+
+      {packs?.packsEnabled && <LanguagesPanel packs={packs}/>}
 
       <details className={HOME_INNER_PANEL}>
         <summary className={`${HOME_INNER_LABEL} cursor-pointer rounded-t-2xl`}>YouTube and built-in subtitles</summary>
