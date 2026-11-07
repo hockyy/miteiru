@@ -232,6 +232,16 @@ html.miteiru-native-video #__next {
   pointer-events: none;
 }
 
+/* A subtitle shown at the top keeps clear of the player's top bar while the bar shows; VideoTopBar
+   publishes its height, and useSubtitleContainerStyle moves the subtitle down by at most that. */
+:root {
+  --subtitle-inset-top: var(--player-topbar-height, 0px);
+}
+
+:root[data-controls-idle] {
+  --subtitle-inset-top: 0px;
+}
+
 :root[data-controls-idle],
 :root[data-controls-idle] * {
   cursor: none !important;

@@ -19,6 +19,7 @@ import {getMiteiruAppName, getMiteiruVideoTitle, isLocalPath, isYoutube} from ".
 import {setGlobalSubtitleId, SubtitleContainer} from "../components/Subtitle/DataStructures";
 import {useStoreData} from "../hooks/useStoreData";
 import {lookupPauseStep} from "../utils/lookupPause";
+import {rightClickSaveMessage} from "../utils/vocabSaveLevels";
 import VideoTopBar from "../components/VideoPlayer/VideoTopBar";
 import ShortcutSheet, {useShortcutSheetKey} from "../components/VideoPlayer/ShortcutSheet";
 import useLastVideo from "../hooks/useLastVideo";
@@ -133,6 +134,11 @@ function Video() {
     getLearningState,
     refreshTrigger,
   } = useLearningState(lang);
+  // Right-click on a subtitle word changes its level; say what it did, since only its colour changes.
+  const saveWordByRightClick = useCallback((content: string) => {
+    const level = changeLearningState(content);
+    if (level !== undefined) setToastInfo({message: rightClickSaveMessage(content, level), update: String(Date.now())});
+  }, [changeLearningState, setToastInfo]);
   // Removing the primary subtitle (Subtitles… menu) also clears its word frequencies.
   const primaryCleared = primarySub.lines.length === 0;
   useEffect(() => {
@@ -506,7 +512,7 @@ function Video() {
                 primaryShift={primaryShift}
                 primaryStyling={primaryStyling}
                 getLearningStateClass={getLearningStateClass}
-                changeLearningState={changeLearningState}
+                changeLearningState={saveWordByRightClick}
                 primaryTimeCache={primaryTimeCache}
                 setPrimaryTimeCache={setPrimaryTimeCache}
                 setExternalContent={setExternalContent}
@@ -530,7 +536,7 @@ function Video() {
                 tokenizeMiteiru={tokenizeMiteiru}
                 setMeaning={setMeaning}
                 getLearningStateClass={getLearningStateClass}
-                changeLearningState={changeLearningState}
+                changeLearningState={saveWordByRightClick}
                 setExternalContent={setExternalContent}
                 setRubyCopyContent={setRubyCopyContent}
             />
