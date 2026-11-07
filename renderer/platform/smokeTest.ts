@@ -1,7 +1,9 @@
 /**
  * A self-check for CI on each OS. With MITEIRU_SMOKE_TEST=<results.json> the app checks the backend
- * worker, the store, the analyzer API, libmpv drawing under the page and a YouTube embed, writes the
- * results there and exits (code 1 if a step failed). .github/workflows/desktop-check.yml runs it.
+ * worker, the store, the analyzer API, libmpv drawing under the page, a YouTube embed, reading the
+ * subtitles inside an MKV and every language (installing the language packs first when the build ships
+ * them), writes the results there and exits (code 1 if a step failed). .github/workflows/release.yml
+ * runs it on the packaged apps, and desktop-check.yml on debug builds.
  */
 import {Channel, invoke} from '@tauri-apps/api/core';
 
@@ -209,6 +211,71 @@ const checkLanguages = async () => {
 /** YouTube refusing the video itself, not the embedder, as it does for CI's datacenter addresses. */
 const YOUTUBE_REFUSALS = new Set([100, 101, 150]);
 
+// ---- A tiny Matroska file, built here so the MKV check needs no media file (EBML: id, size, data). ----
+
+const concatBytes = (...parts: Uint8Array[]) => {
+  const out = new Uint8Array(parts.reduce((sum, part) => sum + part.length, 0));
+  let at = 0;
+  for (const part of parts) {
+    out.set(part, at);
+    at += part.length;
+  }
+  return out;
+};
+
+/** A number as `width` big-endian bytes. */
+const bigEndian = (value: number, width: number) => {
+  const out = new Uint8Array(width);
+  for (let i = width - 1, rest = value; i >= 0; i--, rest = Math.floor(rest / 256)) out[i] = rest % 256;
+  return out;
+};
+
+/** An element: its id (which carries its own length marker), an 8-byte size, then the data. */
+const ebml = (id: number, ...data: Uint8Array[]) => {
+  const body = concatBytes(...data);
+  const idBytes = bigEndian(id, id > 0xffffff ? 4 : id > 0xffff ? 3 : id > 0xff ? 2 : 1);
+  return concatBytes(idBytes, Uint8Array.of(0x01), bigEndian(body.length, 7), body);
+};
+
+const ebmlUint = (id: number, value: number, width = 4) => ebml(id, bigEndian(value, width));
+const ebmlText = (id: number, text: string) => ebml(id, new TextEncoder().encode(text));
+
+/** One Japanese SRT track with one cue, `text`, from 1 s to 2.5 s (timestamps in ms). */
+const tinyMkv = (text: string) => concatBytes(
+  ebml(0x1A45DFA3, ebmlText(0x4282, 'matroska'), ebmlUint(0x4287, 4, 1), ebmlUint(0x4285, 2, 1)),
+  ebml(0x18538067,
+    ebml(0x1549A966, ebmlUint(0x2AD7B1, 1_000_000)),
+    ebml(0x1654AE6B, ebml(0xAE, ebmlUint(0xD7, 1, 1), ebmlUint(0x83, 0x11, 1), ebmlText(0x86, 'S_TEXT/UTF8'), ebmlText(0x22B59C, 'jpn'))),
+    // A BlockGroup: Block (track 1, +1000 ms, no lacing, the text) and BlockDuration 1500 ms.
+    ebml(0x1F43B675, ebmlUint(0xE7, 0), ebml(0xA0,
+      ebml(0xA1, Uint8Array.of(0x81, 0x03, 0xE8, 0x00), new TextEncoder().encode(text)),
+      ebmlUint(0x9B, 1500))))
+);
+
+/**
+ * Subtitles inside MKV files are read in Rust (src-tauri/src/sys/mkv.rs), with no FFmpeg: write a tiny
+ * MKV to the temp folder, list its tracks, extract its subtitle and check the cue.
+ */
+const checkMkv = async () => {
+  const {temp} = await invoke<{ temp: string }>('sys_info');
+  const separator = temp.includes('\\') ? '\\' : '/';
+  const path = [temp, `miteiru-smoke-${Date.now()}.mkv`].join(separator);
+  await invoke('fs_write_bytes', tinyMkv('こんにちは'), {headers: {'x-path': encodeURIComponent(path)}});
+  let srt = '';
+  try {
+    const info = await invoke<{ subtitleTracks: Array<{ index: number; codec: string; language?: string }> } | null>('mkv_tracks', {path});
+    const track = info?.subtitleTracks[0];
+    if (!track || track.codec !== 'subrip' || track.language !== 'jpn') throw new Error(`mkv_tracks gave ${JSON.stringify(info)}`);
+    srt = await invoke<string>('mkv_extract_subtitle', {path, index: track.index});
+    const text = await invoke<string>('fs_read_text', {path: srt});
+    if (!text.includes('00:00:01,000 --> 00:00:02,500') || !text.includes('こんにちは')) throw new Error(`extracted ${JSON.stringify(text)}`);
+    return {codec: track.codec, language: track.language, cue: text.trim().split(/\r?\n/).slice(1).join(' | ')};
+  } finally {
+    await invoke('fs_rm', {path, recursive: false, force: true}).catch(() => undefined);
+    if (srt) await invoke('fs_rm', {path: srt, recursive: false, force: true}).catch(() => undefined);
+  }
+};
+
 export const runSmokeTest = async (outPath: string, userData: string, platform: string) => {
   const started = Date.now();
   const results: Record<string, StepResult> = {};
@@ -266,6 +333,7 @@ export const runSmokeTest = async (outPath: string, userData: string, platform: 
     throw error;
   }), 45000);
 
+  await step('mkv', () => checkMkv(), 15000);
   await step('languages', () => checkLanguages(), 180000);
   // Leave the picture up long enough for the workflow's screenshot.
   await sleep(Math.max(0, 40000 - (Date.now() - started)));

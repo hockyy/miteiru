@@ -217,8 +217,41 @@ jobs:
           done
           ls
 
+      # Windows: the installer as a user gets it, on the runner's fresh account. A silent install, the
+      # installed app's smoke test (as below), then a silent uninstall, which must take the app with it.
+      - name: Install, smoke-test and uninstall the Windows installer
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem src-tauri/target/release/bundle/nsis/*-setup.exe | Select-Object -First 1
+          $install = Start-Process -FilePath $installer.FullName -ArgumentList '/S' -PassThru -Wait
+          "installer exit code: $($install.ExitCode)"
+          $dir = Join-Path $env:LOCALAPPDATA 'Miteiru'
+          $app = Join-Path $dir 'miteiru.exe'
+          if (-not (Test-Path $app)) { throw "the installer left no $app" }
+          $files = Get-ChildItem $dir -Recurse -File
+          "installed: $($files.Count) files, $([math]::Round(($files | Measure-Object Length -Sum).Sum / 1MB, 1)) MiB in $dir"
+          $server = Start-Process python -ArgumentList '-m', 'http.server', '--bind', '127.0.0.1', '8765', '--directory', 'dist/language-packs' -PassThru -WindowStyle Hidden
+          $env:MITEIRU_USER_DATA_DIR = Join-Path $env:RUNNER_TEMP 'miteiru-profile'
+          $env:MITEIRU_SMOKE_TEST = Join-Path $PWD 'smoke.json'
+          $env:MITEIRU_SMOKE_LANGUAGE_PACKS = Join-Path $PWD 'dist/language-packs'
+          $env:MITEIRU_LANGUAGE_PACK_URL = 'http://127.0.0.1:8765/'
+          $env:MITEIRU_MUTED = '1'
+          $smoke = Start-Process -FilePath $app -PassThru
+          if (-not $smoke.WaitForExit(240000)) { Stop-Process -Id $smoke.Id -Force; throw 'the smoke test did not finish in 4 minutes' }
+          Stop-Process -Id $server.Id -ErrorAction SilentlyContinue
+          Get-Content smoke.json
+          $results = Get-Content smoke.json -Raw | ConvertFrom-Json
+          $failed = @($results.PSObject.Properties | Where-Object { $_.Name -ne 'running' -and -not $_.Value.ok } | ForEach-Object Name)
+          # The NSIS uninstaller copies itself to %TEMP% and returns at once: wait for the app to go.
+          Start-Process -FilePath (Join-Path $dir 'uninstall.exe') -ArgumentList '/S' -Wait
+          for ($i = 0; $i -lt 60 -and (Test-Path $app); $i++) { Start-Sleep -Seconds 1 }
+          if (Test-Path $app) { throw "the uninstaller left $app" }
+          "uninstalled; left in ${dir}: $(@(Get-ChildItem $dir -Recurse -Force -ErrorAction SilentlyContinue).Count) items"
+          if ($failed.Count -gt 0) { throw "smoke test failed: $($failed -join ', ')" }
+
       # The packaged app runs its smoke test (renderer/platform/smokeTest.ts) before anything is
-      # uploaded: the signed .app on macOS, the AppImage on Linux (Windows is checked locally). It
+      # uploaded: the signed .app on macOS, the AppImage on Linux (Windows above, from its installer). It
       # installs the language packs from the files in dist/language-packs, and Vietnamese through a
       # real download from a local server standing in for the release.
       - name: Smoke test the packaged app
@@ -249,7 +282,7 @@ jobs:
           node -e 'const r = require("./smoke.json"); const bad = Object.entries(r).filter(([, v]) => !v.ok); if (bad.length) { console.error("failed:", bad.map(([k]) => k).join(", ")); process.exit(1); }'
 
       - name: Upload smoke test results
-        if: always() && runner.os != 'Windows'
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: release-smoke-${{ matrix.os }}

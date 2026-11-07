@@ -1277,6 +1277,49 @@ mod tests {
     assert!(newest_install(&env.root, "vietnamese").is_none());
   }
 
+  /// Downloads a real file from a GitHub release the way an install does before unpacking: HTTPS,
+  /// GitHub's redirect to its asset host, then the size and sha256 checks. A wrong sha256 must fail,
+  /// and a missing asset must answer 404 rather than hang. Run it with:
+  ///   MITEIRU_REAL_DOWNLOAD_URL=<release asset url> MITEIRU_REAL_DOWNLOAD_BYTES=<size> MITEIRU_REAL_DOWNLOAD_SHA256=<hex>
+  ///   cargo test --lib langpack::tests::downloads_a_real_release_asset -- --ignored --nocapture
+  #[test]
+  #[ignore]
+  fn downloads_a_real_release_asset() {
+    let url = std::env::var("MITEIRU_REAL_DOWNLOAD_URL").expect("MITEIRU_REAL_DOWNLOAD_URL");
+    let bytes: u64 = std::env::var("MITEIRU_REAL_DOWNLOAD_BYTES").expect("MITEIRU_REAL_DOWNLOAD_BYTES").parse().unwrap();
+    let sha256 = std::env::var("MITEIRU_REAL_DOWNLOAD_SHA256").expect("MITEIRU_REAL_DOWNLOAD_SHA256");
+    let temp = Temp::new("real-download");
+    let part = temp.path().join("download.part");
+    let pack = ManifestPack {
+      id: "real".into(),
+      title: "real".into(),
+      file: "real".into(),
+      bytes,
+      sha256: sha256.to_lowercase(),
+      plugins: Vec::new(),
+      languages: Vec::new(),
+    };
+    let reports = Arc::new(Mutex::new(Vec::<(String, u64)>::new()));
+    let seen = reports.clone();
+    let reporter = Reporter::new(move |p| seen.lock().unwrap().push((p.phase.to_string(), p.done)));
+    let started = Instant::now();
+    tauri::async_runtime::block_on(download(&url, &pack, &part, &no_cancel(), &reporter)).unwrap();
+    let reports = reports.lock().unwrap().clone();
+    println!("{url}: {bytes} bytes in {} ms, {} progress reports, last {:?}", started.elapsed().as_millis(), reports.len(), reports.last());
+    assert_eq!(fs::metadata(&part).unwrap().len(), bytes);
+    assert_eq!(reports.last().map(|(phase, done)| (phase.as_str(), *done)), Some(("verify", bytes)));
+
+    let wrong = ManifestPack { sha256: "0".repeat(64), ..pack.clone() };
+    let message = tauri::async_runtime::block_on(download(&url, &wrong, &part, &no_cancel(), &quiet())).unwrap_err();
+    println!("wrong sha256: {message}");
+    assert!(message.starts_with("ECHECKSUM"), "{message}");
+
+    let missing = format!("{url}-not-there");
+    let message = tauri::async_runtime::block_on(download(&missing, &pack, &part, &no_cancel(), &quiet())).unwrap_err();
+    println!("missing asset: {message}");
+    assert!(message.starts_with("EHTTP 404"), "{message}");
+  }
+
   /// Installs the five real packs from a folder (the output of `npm run build:language-packs`) into a
   /// temp root and leaves the installs in place for a byte comparison. Run it with:
   ///   MITEIRU_REAL_PACKS=<dir with the .mtrpack files and language-packs.json> MITEIRU_REAL_PACKS_OUT=<empty dir>
