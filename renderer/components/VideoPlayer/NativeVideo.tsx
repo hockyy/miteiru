@@ -12,8 +12,11 @@ export const NativeVideo = ({options, onReady, clock, onError}: {
   options: any;
   onReady: (player: any) => void;
   clock: PlaybackClock;
-  /** mpv could not play the source (YouTubeVideo then switches to the YouTube embed). */
-  onError?: () => void;
+  /**
+   * mpv could not play the source (YouTubeVideo then switches to the YouTube embed). `seconds` is
+   * how far this source had played: 0 when it failed to start.
+   */
+  onError?: (seconds: number) => void;
 }) => {
   const elementRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<NativePlayer | null>(null);
@@ -26,7 +29,7 @@ export const NativeVideo = ({options, onReady, clock, onError}: {
     const element = elementRef.current;
     const player = new NativePlayer(element);
     playerRef.current = player;
-    player.on('error', () => onErrorRef.current?.());
+    player.on('error', () => onErrorRef.current?.(player.currentTime()));
     let cancelled = false;
     document.documentElement.classList.add('miteiru-native-video');
     player.open()
@@ -38,7 +41,7 @@ export const NativeVideo = ({options, onReady, clock, onError}: {
         })
         .catch((error) => {
           console.error('[native-video] could not start the player', error);
-          if (!cancelled) onErrorRef.current?.();
+          if (!cancelled) onErrorRef.current?.(0);
         });
     const resize = new ResizeObserver(() => player.updateRect());
     resize.observe(element);

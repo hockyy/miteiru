@@ -21,6 +21,8 @@ type PlayerEvent = {
 };
 
 const OBSERVED = ["time-pos", "duration", "pause", "eof-reached", "speed", "volume", "mute"];
+/** How long a queued player command may take before the ones after it go ahead anyway. */
+const COMMAND_TIMEOUT_MS = 5000;
 
 let activePlayer: NativePlayer | null = null;
 /** The player on screen, for hooks that act on playback outside the video component. */
@@ -107,7 +109,15 @@ export class NativePlayer {
   private run(cmd: string, args: Record<string, unknown>) {
     if (this.disposed) return;
     this.queue = this.queue
-      .then(() => (this.disposed ? undefined : invoke(cmd, args)))
+      .then(() => {
+        if (this.disposed) return undefined;
+        // A call that never answers must not hold back every later one (pause, seek, resize).
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        const stuck = new Promise((_, reject) => {
+          timer = setTimeout(() => reject(new Error(`no answer in ${COMMAND_TIMEOUT_MS} ms`)), COMMAND_TIMEOUT_MS);
+        });
+        return Promise.race([invoke(cmd, args), stuck]).finally(() => clearTimeout(timer));
+      })
       .catch((e) => console.error(`[native-video] ${cmd} failed`, e));
   }
 

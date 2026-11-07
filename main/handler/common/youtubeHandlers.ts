@@ -58,8 +58,13 @@ const INFO_LIFETIME_MS = 20 * 60_000;
 const youtubeInfoCache = new Map<string, { at: number; info: Promise<any> }>();
 
 const youtubeInfo = (videoID: string): Promise<any> => {
+  const now = Date.now();
   const cached = youtubeInfoCache.get(videoID);
-  if (cached && Date.now() - cached.at < INFO_LIFETIME_MS) return cached.info;
+  if (cached && now - cached.at < INFO_LIFETIME_MS) return cached.info;
+  // Each entry holds a few MB of formats and caption tracks: drop the expired ones.
+  for (const [id, entry] of youtubeInfoCache) {
+    if (now - entry.at >= INFO_LIFETIME_MS) youtubeInfoCache.delete(id);
+  }
   const info = (async () => {
     const ytDlpPath = await requireMediaTool("yt-dlp");
     const output = await runYtDlp(ytDlpPath, [
@@ -75,7 +80,7 @@ const youtubeInfo = (videoID: string): Promise<any> => {
       throw new Error("yt-dlp returned video data that could not be read.");
     }
   })();
-  youtubeInfoCache.set(videoID, {at: Date.now(), info});
+  youtubeInfoCache.set(videoID, {at: now, info});
   // A failed run is not kept, so the next try runs yt-dlp again.
   info.catch(() => {
     if (youtubeInfoCache.get(videoID)?.info === info) youtubeInfoCache.delete(videoID);

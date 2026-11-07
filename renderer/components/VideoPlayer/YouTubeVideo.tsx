@@ -75,7 +75,7 @@ export const YouTubeVideo = ({options, onReady, clock}: { options: any; onReady:
   if (mode.kind === 'native') {
     return (
         <NativeVideo options={modeOptions} onReady={onReady} clock={clock}
-                     onError={() => setMode({kind: 'embed', start: Math.floor(clock.get())})}/>
+                     onError={(seconds) => setMode({kind: 'embed', start: Math.floor(seconds)})}/>
     );
   }
   return <VideoJS options={modeOptions} onReady={onReady} clock={clock}/>;
