@@ -19,6 +19,9 @@ pub struct SysInfo {
   pub pid: u32,
   /// MITEIRU_SMOKE_TEST: where the smoke test writes its results (renderer/platform/smokeTest.ts).
   pub smoke_test: Option<String>,
+  /// Whether this build checks for updates: a release build whose updater has a public key
+  /// (`plugins.updater.pubkey` in tauri.conf.json). Test runs (MITEIRU_SMOKE_TEST) never do.
+  pub updates: bool,
 }
 
 pub fn platform() -> &'static str {
@@ -105,7 +108,20 @@ pub async fn sys_info(app: tauri::AppHandle) -> Result<SysInfo, String> {
     is_packaged: !cfg!(debug_assertions),
     pid: std::process::id(),
     smoke_test: std::env::var("MITEIRU_SMOKE_TEST").ok().filter(|p| !p.is_empty()),
+    updates: updates_enabled(&app),
   })
+}
+
+fn updates_enabled(app: &tauri::AppHandle) -> bool {
+  let pubkey = app
+    .config()
+    .plugins
+    .0
+    .get("updater")
+    .and_then(|updater| updater.get("pubkey"))
+    .and_then(|key| key.as_str())
+    .unwrap_or("");
+  !cfg!(debug_assertions) && !pubkey.trim().is_empty() && std::env::var_os("MITEIRU_SMOKE_TEST").is_none()
 }
 
 /// Ends the app with `code`; only in a smoke test run, which has no one to close the window.

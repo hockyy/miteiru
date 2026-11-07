@@ -62,6 +62,8 @@ Get the newest version from **[Releases](https://github.com/hockyy/miteiru/relea
 
 Upgrading from 7.x keeps your words, notes and settings: Miteiru 8 reads the same data folder.
 
+From 8.0 on, Miteiru updates itself on Windows, macOS and the Linux AppImage. It offers a new version a few seconds after it starts, and you choose when to restart. The `.deb` is updated by downloading the new one. Turn the check off under **Settings & tools → Updates**.
+
 <details>
 <summary>macOS: what the warning looks like</summary>
 
@@ -146,7 +148,7 @@ npm run script:unpack-language-assets
 npm run script:download-language-assets -- mandarin han-character-core
 ```
 
-`MITEIRU_FORCE_ASSET_DOWNLOAD=1` redownloads existing zips. More notes are in [`docs/`](docs), and contributions are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md).
+`MITEIRU_FORCE_ASSET_DOWNLOAD=1` redownloads existing zips. Releases and in-app updates: [docs/RELEASING.md](docs/RELEASING.md). More notes are in [`docs/`](docs), and contributions are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Credits and license
 

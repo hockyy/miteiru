@@ -4,6 +4,7 @@ import React, { useEffect } from 'react'
 import type { AppProps } from 'next/app'
 import { UserNotesProvider } from '../hooks/useUserNotes'
 import { useAppFont } from '../hooks/useAppFont'
+import { UpdateNotice } from '../components/UI/UpdateNotice'
 
 // Bundled fonts (renderer/utils/fonts.ts): every weight, loaded per character range as needed.
 import '@fontsource-variable/nunito/wght.css'
@@ -21,6 +22,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <UserNotesProvider>
       <Component {...pageProps} />
+      <UpdateNotice />
     </UserNotesProvider>
   )
 }

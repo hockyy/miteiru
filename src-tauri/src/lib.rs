@@ -26,6 +26,9 @@ pub fn run() {
         )
         .build(),
     )
+    // In-app updates from GitHub Releases (renderer/platform/updates.ts); process restarts after one.
+    .plugin(tauri_plugin_updater::Builder::new().build())
+    .plugin(tauri_plugin_process::init())
     .manage(proc::Procs::default())
     .manage(kv::Kv::default())
     .manage(jieba::JiebaStore::default())
