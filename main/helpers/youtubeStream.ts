@@ -4,10 +4,15 @@
  */
 
 /**
- * What yt-dlp picks: video up to 1080p (H.264 first, which every platform decodes in hardware,
- * Apple's M1/M2 included, where AV1 would run on the CPU) plus the best audio, or one file with both.
+ * What yt-dlp picks: the best video up to 1080p plus the best audio, or one file with both.
+ * - `res` is the smaller side, so a vertical 1080x1920 video (a Short) still counts as 1080p;
+ *   a filter on height would drop it to 480p.
+ * - H.264 first: every platform decodes it in hardware, Apple's M1/M2 included, where AV1
+ *   would run on the CPU.
+ * - A video with no format at all (a premiere not live yet) still describes itself, so its
+ *   captions and title load; it just has no stream for mpv.
  */
-export const YOUTUBE_STREAM_FORMAT_ARGS = ["-f", "bv*[height<=1080]+ba/b[height<=1080]/b", "-S", "vcodec:h264"];
+export const YOUTUBE_STREAM_FORMAT_ARGS = ["-f", "bv*+ba/b", "-S", "res:1080,vcodec:h264", "--ignore-no-formats-error"];
 
 export interface YoutubeStreamSource {
   /** One URL for mpv: an EDL that plays the video and audio streams together. */
