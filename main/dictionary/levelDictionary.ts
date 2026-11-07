@@ -18,9 +18,9 @@ type DictionaryImport<T> = {
   /**
    * The desktop app's store imports this file itself (src-tauri/src/sys/dict_import.rs): the same
    * keys, without parsing and sending 100 MB through the page. writeEntries stays for plain
-   * `level` (the tests). `metadata` then gets the file's dictDate and version only.
+   * `level` (the tests). `metadata` then gets the file's version (and dictDate, if it has one) only.
    */
-  nativeLayout?: "jmdict" | "kanjidic";
+  nativeLayout?: "jmdict" | "kanjidic" | "chinese";
 };
 
 /** The desktop store (renderer/platform/backend/shims/level.ts); plain `level` has neither. */

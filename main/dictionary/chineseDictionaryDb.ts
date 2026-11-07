@@ -44,6 +44,8 @@ const storageIds = (entries: ChineseEntry[]) => {
 export const setupChineseDictionary = async (dbPath: string, importPath = "") => {
   const {db, metadata} = await openDictionary<ChineseDictionaryFile>(dbPath, importPath, {
     metadataKeys: ["raw/version"],
+    // The desktop app writes these keys in Rust (src-tauri/src/sys/dict_import.rs): change both.
+    nativeLayout: "chinese",
     writeEntries: async (raw, writer) => {
       const wordIds = storageIds(raw.words);
       for (const [index, word] of raw.words.entries()) {
