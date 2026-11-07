@@ -12,7 +12,7 @@ const renderMeaning = (meaningContent: MeaningContentState, lang: string) => ren
 );
 
 test("a Cantonese word without a dictionary entry says so instead of rendering empty fields", async () => {
-  (globalThis as Record<string, unknown>).window = {ipc: {invoke: async () => []}};
+  (globalThis as Record<string, unknown>).window = {backend: {invoke: async () => []}};
   const [entry] = await getMeaningEntries("咁樣", videoConstants.cantoneseLang);
 
   const html = renderMeaning(entry, videoConstants.cantoneseLang);

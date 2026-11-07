@@ -1,0 +1,13 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "build": {
+    "beforeBuildCommand": "npm run build:renderer && node scripts/stageTauriResources.mjs"
+  },
+  "bundle": {
+    "resources": {
+      "resources/language-assets/": "language-assets/",
+      "resources/libmpv/": "libmpv/",
+      "resources/live-captions/": "live-captions/"
+    }
+  }
+}

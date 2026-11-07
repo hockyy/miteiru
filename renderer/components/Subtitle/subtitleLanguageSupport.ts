@@ -89,7 +89,7 @@ const fillLearningContent = async (
   if (requests.length > 0) {
     let glosses: unknown;
     try {
-      glosses = await window.ipc.invoke(support.glossChannel, requests);
+      glosses = await window.backend.invoke(support.glossChannel, requests);
     } catch (error) {
       console.error("[learning] gloss lookup failed:", error);
     }

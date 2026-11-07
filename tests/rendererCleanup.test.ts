@@ -95,7 +95,7 @@ test("isTextEntryTarget treats sliders and checkboxes as non-text", () => {
   }
 });
 
-// A subtitle whose lines tokenize to the given words, with window.ipc answering gloss batches.
+// A subtitle whose lines tokenize to the given words, with window.backend answering gloss batches.
 const fakeSubtitle = (lineWords: string[][], onTokenize: () => Promise<void> = async () => {}) => {
   const lines = lineWords.map((words) => ({
     content: words.join(""),
@@ -113,7 +113,7 @@ const withGlossIpc = async (run: (requests: {target: string}[][]) => Promise<voi
   const saved = globals.window;
   const requests: {target: string}[][] = [];
   globals.window = {
-    ipc: {
+    backend: {
       invoke: async (channel: string, batch: {target: string}[]) => {
         assert.equal(channel, "learningGlossesJapanese");
         requests.push(batch);
@@ -175,7 +175,7 @@ test("an empty gloss reply is not cached, so later chunks ask again", async () =
   const saved = globals.window;
   let calls = 0;
   globals.window = {
-    ipc: {
+    backend: {
       // The first reply comes back empty, as when the dictionary is still opening.
       invoke: async (_channel: string, batch: {target: string}[]) => (++calls === 1 ? [] : batch.map(({target}) => `gloss:${target}`))
     }

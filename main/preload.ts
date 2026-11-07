@@ -31,7 +31,7 @@ contextBridge.exposeInMainWorld('electronStore', {
   set: (key, value) => ipcRenderer.invoke('electron-store-set', key, value),
 });
 
-contextBridge.exposeInMainWorld('ipc', handler)
+contextBridge.exposeInMainWorld('backend', handler)
 
 contextBridge.exposeInMainWorld('electronAPI', {
   platform: process.platform,

@@ -144,7 +144,7 @@ const HanziStrokeStepsRow = ({
     }
 
     const ch = character[0];
-    if (!ch || typeof window === "undefined" || !window.ipc?.invoke) {
+    if (!ch || typeof window === "undefined" || !window.backend?.invoke) {
       setFetchedSvg("");
       return;
     }
@@ -152,7 +152,7 @@ const HanziStrokeStepsRow = ({
     let cancelled = false;
     const filename = `${ch.charCodeAt(0)}.svg`;
 
-    window.ipc.invoke("readHanziSVG", filename).then((value: string) => {
+    window.backend.invoke("readHanziSVG", filename).then((value: string) => {
       if (!cancelled) {
         setFetchedSvg(typeof value === "string" ? value : "");
       }

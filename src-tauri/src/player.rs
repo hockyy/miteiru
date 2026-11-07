@@ -38,26 +38,30 @@ pub struct Rect {
     height: f64,
 }
 
-const LIB_NAME: &str = if cfg!(windows) {
-    "libmpv-2.dll"
+/// libmpv's file name, newest ABI first (Ubuntu 22.04 still ships libmpv.so.1).
+const LIB_NAMES: &[&str] = if cfg!(windows) {
+    &["libmpv-2.dll"]
 } else if cfg!(target_os = "macos") {
-    "libmpv.2.dylib"
+    &["libmpv.2.dylib"]
 } else {
-    "libmpv.so.2"
+    &["libmpv.so.2", "libmpv.so.1"]
 };
 
-/// The bundled libmpv (resources/libmpv), the repo copy in dev, or MITEIRU_LIBMPV. On Linux a bare
-/// name lets the system loader find the distribution's libmpv.
-fn libmpv_path(app: &AppHandle) -> PathBuf {
+/// Where libmpv may be, in order: MITEIRU_LIBMPV, the bundled copy (resources/libmpv), the repo copy
+/// in a dev run, then bare names for the system loader (Linux uses the distribution's libmpv).
+fn libmpv_candidates(app: &AppHandle) -> Vec<PathBuf> {
     if let Ok(p) = std::env::var("MITEIRU_LIBMPV") {
-        return PathBuf::from(p);
+        return vec![PathBuf::from(p)];
     }
-    let mut candidates = Vec::new();
+    let mut dirs = Vec::new();
     if let Ok(dir) = app.path().resource_dir() {
-        candidates.push(dir.join("libmpv").join(LIB_NAME));
+        dirs.push(dir.join("libmpv"));
     }
-    candidates.push(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("resources").join("libmpv").join(LIB_NAME));
-    candidates.into_iter().find(|p| p.exists()).unwrap_or_else(|| PathBuf::from(LIB_NAME))
+    dirs.push(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..").join("resources").join("libmpv"));
+    let mut found: Vec<PathBuf> =
+        dirs.iter().flat_map(|d| LIB_NAMES.iter().map(move |n| d.join(n))).filter(|p| p.exists()).collect();
+    found.extend(LIB_NAMES.iter().map(PathBuf::from));
+    found
 }
 
 #[cfg(windows)]
@@ -138,15 +142,22 @@ pub fn player_open(
         }
         let _ = target.emit_to(target.label(), "player://event", out);
     });
-    let mpv = MpvClient::new(
-        ClientOptions {
-            dll_path: libmpv_path(&app),
-            video,
-            mpv_options: options.unwrap_or_default().into_iter().collect(),
-        },
-        on_event,
-    )?;
-    let mpv = Arc::new(mpv);
+    let mpv_options: Vec<(String, String)> = options.unwrap_or_default().into_iter().collect();
+    let mut last_error = String::from("libmpv was not found");
+    let mut client = None;
+    for dll_path in libmpv_candidates(&app) {
+        let opts = ClientOptions { dll_path, video: video.clone(), mpv_options: mpv_options.clone() };
+        match MpvClient::new(opts, on_event.clone()) {
+            Ok(c) => {
+                client = Some(c);
+                break;
+            }
+            // Not loadable from here: try the next place. Any other failure is final.
+            Err(e) if e.starts_with("cannot load ") => last_error = e,
+            Err(e) => return Err(e),
+        }
+    }
+    let mpv = Arc::new(client.ok_or(last_error)?);
     #[cfg(windows)]
     mpv.observe(&["window-id".to_string()])?;
     #[cfg(not(windows))]

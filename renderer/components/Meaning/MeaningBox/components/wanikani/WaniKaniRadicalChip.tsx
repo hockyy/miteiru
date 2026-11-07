@@ -11,7 +11,7 @@ export const WaniKaniRadicalChip = ({ slug }: WaniKaniRadicalChipProps) => {
   const [radicalName, setRadicalName] = useState('');
 
   useEffect(() => {
-    window.ipc.invoke('getWaniRadical', slug).then((radical) => {
+    window.backend.invoke('getWaniRadical', slug).then((radical) => {
       setRadicalDisplay(radical.character);
       setRadicalName(radical.meaning);
     });

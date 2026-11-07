@@ -36,7 +36,7 @@ declare global {
   }
 
   interface Window {
-    ipc: IpcHandler;
+    backend: IpcHandler;
     electronStore: any;
     electronAPI: ElectronApi;
   }

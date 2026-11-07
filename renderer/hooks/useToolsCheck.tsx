@@ -53,7 +53,7 @@ export const useToolsCheck = () => {
     setToolsCheck(checkingToolsMessage);
     
     try {
-      const res = await window.ipc.invoke('checkMediaTools', forceRefresh);
+      const res = await window.backend.invoke('checkMediaTools', forceRefresh);
       
       if (res && typeof res === 'object') {
         setToolsCheck(res);
@@ -76,7 +76,7 @@ export const useToolsCheck = () => {
   // Get tools configuration
   const getToolsConfig = useCallback(async () => {
     try {
-      return await window.ipc.invoke('getToolsConfig');
+      return await window.backend.invoke('getToolsConfig');
     } catch (error) {
       console.error('[useToolsCheck] Error getting tools config:', error);
       return { tools: [], toolsPath: '' };
@@ -102,7 +102,7 @@ export const useToolsCheck = () => {
       }
       
       console.log(`[useToolsCheck] Opening download link for ${toolName}: ${tool.download_link}`);
-      await window.ipc.invoke('open-external', tool.download_link);
+      await window.backend.invoke('open-external', tool.download_link);
       
       return { success: true, message: `Download link opened for ${toolName}` };
     } catch (error) {

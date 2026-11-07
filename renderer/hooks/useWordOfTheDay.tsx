@@ -41,7 +41,7 @@ const useWordOfTheDay = (lang: string) => {
       const seededRandom = new SeededRandom(dateNumber);
       
       // Load all words for the current language
-      const learningState = await window.ipc.invoke('loadLearningState', lang);
+      const learningState = await window.backend.invoke('loadLearningState', lang);
       const allWords = Object.entries(learningState);
       
       if (allWords.length === 0) {

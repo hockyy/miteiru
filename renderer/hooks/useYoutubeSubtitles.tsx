@@ -46,7 +46,7 @@ export const useYoutubeSubtitles = () => {
       console.log(`[useYoutubeSubtitles] Fetching available subtitles for ${videoId}`);
 
       // Use our new yt-dlp based subtitle listing
-      const result = await window.ipc.invoke('getYoutubeSubtitleLanguages', videoId);
+      const result = await window.backend.invoke('getYoutubeSubtitleLanguages', videoId);
       if (request !== latestRequest.current) return;
 
       // yt-dlp missing or failing comes back as an error beside an empty list; show why instead of "0 subtitles".
@@ -97,7 +97,7 @@ export const useYoutubeSubtitles = () => {
     
     try {
       // Use our updated getYoutubeSubtitle with better language matching
-      const entries = await window.ipc.invoke('getYoutubeSubtitle', videoId, language);
+      const entries = await window.backend.invoke('getYoutubeSubtitle', videoId, language);
       
       if (!entries || entries.length === 0) {
         throw new Error(`No subtitle entries found for ${language}`);

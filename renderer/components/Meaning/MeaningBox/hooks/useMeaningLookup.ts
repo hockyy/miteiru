@@ -32,15 +32,15 @@ export const useMeaningLookup = (meaning: string, lang: string, showMeaning: boo
       }
 
       if (lang === videoConstants.japaneseLang && isKanji(meaning)) {
-        const result = await window.ipc.invoke('queryKanji', meaning);
-        const waniResult = await window.ipc.invoke('getWaniKanji', meaning);
+        const result = await window.backend.invoke('queryKanji', meaning);
+        const waniResult = await window.backend.invoke('getWaniKanji', meaning);
         setMeaningCharacter({ ...result, wanikani: waniResult });
         return;
       }
 
       if (lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang) {
-        const result = await window.ipc.invoke('queryHanzi', meaning);
-        const waniResult = await window.ipc.invoke('getWaniKanji', meaning);
+        const result = await window.backend.invoke('queryHanzi', meaning);
+        const waniResult = await window.backend.invoke('getWaniKanji', meaning);
         setMeaningCharacter({
           ...result,
           literal: meaning[0],
@@ -52,7 +52,7 @@ export const useMeaningLookup = (meaning: string, lang: string, showMeaning: boo
     const fetchMeaningData = async () => {
       const entries = (await getMeaningEntries(meaning, lang)) as MeaningContentState[];
       if (lang === videoConstants.japaneseLang) {
-        setTags(await window.ipc.invoke('japaneseTags'));
+        setTags(await window.backend.invoke('japaneseTags'));
       }
       setOtherMeanings(entries);
       setMeaningContent(entries[0] ?? INITIAL_MEANING_CONTENT);

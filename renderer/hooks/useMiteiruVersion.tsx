@@ -5,7 +5,7 @@ const useMiteiruVersion = () => {
 
   useEffect(() => {
     // Use the exposed ipc object from the window
-    window.ipc.invoke('getAppVersion').then((version) => {
+    window.backend.invoke('getAppVersion').then((version) => {
       setMiteiruVersion(version as string);
     });
   }, []);

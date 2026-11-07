@@ -55,7 +55,7 @@ const VocabFlashCards: React.FC = () => {
   const loadVocabulary = useCallback(async () => {
     try {
       if (!lang) return;
-      const loadedState = await window.ipc.invoke('loadLearningState', lang);
+      const loadedState = await window.backend.invoke('loadLearningState', lang);
       // Most overdue first, as handleAnswer keeps them.
       const sorted = Object.entries(loadedState).sort((a, b) =>
           (a[1] as LearningStateEntry).updTime - (b[1] as LearningStateEntry).updTime

@@ -36,7 +36,7 @@ const useLearningState = (lang: string) => {
   const saveLearningEntry = useCallback((content: string, entry: LearningStateType) => {
     savedEntries.current[content] = entry;
     setCachedLearningState((oldCached) => ({...oldCached, [content]: entry}));
-    window.ipc.invoke('updateContent', content, lang, entry);
+    window.backend.invoke('updateContent', content, lang, entry);
     setRefreshTrigger((prev) => prev + 1);
   }, [lang]);
 
@@ -53,7 +53,7 @@ const useLearningState = (lang: string) => {
   }, [getLearningState, saveLearningEntry]);
 
   useEffect(() => {
-    window.ipc.invoke('loadLearningState', lang).then((val) => {
+    window.backend.invoke('loadLearningState', lang).then((val) => {
       setLearningState(val);
     })
   }, [lang]);

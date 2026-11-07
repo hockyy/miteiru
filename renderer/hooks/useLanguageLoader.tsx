@@ -74,7 +74,7 @@ export const useLanguageLoader = () => {
     setCheck(checkingMessage);
     
     try {
-      const res = await window.ipc.invoke(mode.channel);
+      const res = await window.backend.invoke(mode.channel);
       setCheck(res);
 
       if (res.ok === 1) {

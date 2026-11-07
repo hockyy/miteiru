@@ -1,4 +1,4 @@
-// Must stay first: under Tauri it defines window.ipc before any page code runs.
+// Must stay first: under Tauri it defines window.backend before any page code runs.
 import '../platform/installTauriBridge'
 import React, { useEffect } from 'react'
 import type { AppProps } from 'next/app'

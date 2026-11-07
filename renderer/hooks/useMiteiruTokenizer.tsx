@@ -13,7 +13,7 @@ const useMiteiruTokenizer = (): {
   const [tokenizerMode, setMode] = useState('');
   const [toneType, setToneType] = useStoreData('toneType', 'num');
   useEffect(() => {
-    window.ipc.invoke('getTokenizerMode').then(val => {
+    window.backend.invoke('getTokenizerMode').then(val => {
       setMode(val);
     });
   }, []);
@@ -24,7 +24,7 @@ const useMiteiruTokenizer = (): {
     if (!sentence) {
       return [];
     }
-    return window.ipc.invoke('analyzeText', sentence, toneType);
+    return window.backend.invoke('analyzeText', sentence, toneType);
   }, [toneType]);
   return {
     tokenizeMiteiru,

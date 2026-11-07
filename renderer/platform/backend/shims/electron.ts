@@ -6,7 +6,7 @@
 import pathe from 'pathe';
 import {sys} from '../sys';
 import {httpFetch} from './httpFetch';
-import {runtime} from './runtime';
+import {appRoot, runtime} from './runtime';
 
 type Listener = (event: IpcMainEvent, ...args: any[]) => unknown;
 type EventSink = (channel: string, args: unknown[]) => void;
@@ -137,7 +137,7 @@ export const app = {
   getVersion: () => runtime.version,
   getName: () => 'Miteiru',
   /** Bundled files live under the resources folder. */
-  getAppPath: () => runtime.resources,
+  getAppPath: () => appRoot(),
   get isPackaged() { return runtime.isPackaged; },
   whenReady: () => Promise.resolve(),
   isReady: () => true,

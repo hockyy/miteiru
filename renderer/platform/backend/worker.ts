@@ -13,7 +13,7 @@
 import {setSys} from './sys';
 import type {WorkerInbound, WorkerOutbound} from './protocol';
 import {SYS_WRITE_BYTES} from './protocol';
-import {initRuntime, type SysInfo} from './shims/runtime';
+import {appRoot, initRuntime, type SysInfo} from './shims/runtime';
 import {dispatchInvoke, dispatchSend, setEventSink} from './shims/electron';
 import {dispatchProcEvent} from './shims/childProcess';
 import {installFetch} from './shims/httpFetch';
@@ -55,18 +55,12 @@ setEventSink((channel, args) => {
 // ---- boot ------------------------------------------------------------------------------------
 
 /**
- * The folder holding `language-assets/` (what Electron's `__dirname` was). In a dev run the repo's
- * renderer/public is used, so `tauri dev` works without bundling; a packaged app reads the copy under
- * the resource directory (tauri.conf.json bundle.resources).
+ * The folder holding `language-assets/` (what Electron's `__dirname` was): the repo's renderer/public
+ * in a dev run, so `tauri dev` needs no bundling, and the resource directory when packaged
+ * (scripts/stageTauriResources.mjs).
  */
 const resolveAssetRoot = async (info: SysInfo) => {
-  const candidates: string[] = [];
-  if (!info.isPackaged && info.exePath) {
-    // <repo>/src-tauri/target/<profile>/miteiru(.exe)
-    const repo = pathe.dirname(pathe.dirname(pathe.dirname(pathe.dirname(info.exePath))));
-    candidates.push(pathe.join(repo, 'renderer/public'));
-  }
-  candidates.push(info.resources, pathe.join(info.resources, 'resources'));
+  const candidates = info.isPackaged ? [info.resources] : [pathe.join(appRoot(), 'renderer/public'), info.resources];
   for (const candidate of candidates) {
     try {
       if ((await fsImpl.stat(pathe.join(candidate, 'language-assets'))).isDirectory()) return candidate;

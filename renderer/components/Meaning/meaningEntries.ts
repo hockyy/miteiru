@@ -16,18 +16,18 @@ const uniqueNonEmpty = (values) => Array.from(new Set(
 export const getMeaningEntries = async (term, lang) => {
   let entries = [];
   if (lang === videoConstants.japaneseLang) {
-    entries = await window.ipc.invoke('queryJapanese', term, 5);
+    entries = await window.backend.invoke('queryJapanese', term, 5);
     entries.forEach(entry => {
       const variants = entry.kanji.length ? entry.kanji : [{text: term}];
       entry.single = variants.map((item, index) => ({...item, key: item.key ?? index}));
     });
   } else if (lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang) {
-    entries = await window.ipc.invoke('queryChinese', term, 5);
+    entries = await window.backend.invoke('queryChinese', term, 5);
     entries.forEach(entry => {
       entry.single = entry.content.split('，').map((text, index) => ({key: index, text}));
     });
   } else if (lang === videoConstants.vietnameseLang) {
-    entries = await window.ipc.invoke('queryVietnamese', term, 5);
+    entries = await window.backend.invoke('queryVietnamese', term, 5);
     entries.forEach(entry => {
       entry.single = entry.content.split(' ').map((text, index) => ({key: index, text}));
     });

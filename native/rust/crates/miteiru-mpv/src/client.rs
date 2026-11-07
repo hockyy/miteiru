@@ -15,6 +15,7 @@ use crate::mpv::*;
 use crate::{Event, EventFn};
 
 /// Where mpv's video goes.
+#[derive(Clone, Copy, Debug)]
 pub enum VideoOutput {
     /// Draw into this native window with mpv's own renderer (`--wid`; Windows HWND as u32).
     Window(i64),
