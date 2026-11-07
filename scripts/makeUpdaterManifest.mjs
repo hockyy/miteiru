@@ -44,7 +44,11 @@ const main = () => {
   const version = tag.replace(/^v/, '');
   const work = fs.mkdtempSync(path.join(os.tmpdir(), 'miteiru-updater-'));
 
-  gh('release', 'download', tag, '--repo', repo, '--dir', work, '--pattern', '*.sig', '--clobber');
+  try {
+    gh('release', 'download', tag, '--repo', repo, '--dir', work, '--pattern', '*.sig', '--clobber');
+  } catch {
+    // gh fails when nothing matches: the release was built without the updater key.
+  }
   const signatures = {};
   for (const name of fs.readdirSync(work).filter((n) => n.endsWith('.sig'))) {
     signatures[name.slice(0, -'.sig'.length)] = fs.readFileSync(path.join(work, name), 'utf8');
