@@ -17,6 +17,11 @@ on:
         description: "Optional: a published release (e.g. v8.0.1) to download a language pack from on each OS"
         required: false
         default: ""
+      wayland:
+        description: "Linux: also run the smoke test under a headless Wayland compositor (weston), with no X server"
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -102,13 +107,36 @@ jobs:
           cat smoke.json || echo "no smoke.json"
           node -e 'const r = require("./smoke.json"); const bad = Object.entries(r).filter(([, v]) => !v.ok); if (bad.length) { console.error("failed:", bad.map(([k]) => k).join(", ")); process.exit(1); }'
 
+      # Most Linux desktops are Wayland sessions now. The smoke test above runs on X11 (Xvfb), where
+      # GTK's GL area gets a GLX context; under Wayland it gets an EGL one, which video_gl.rs handles
+      # separately. Here the app runs on a headless weston with no X server at all, with software GL.
+      - name: Smoke test under Wayland
+        if: matrix.key == 'linux' && github.event.inputs.wayland == 'true'
+        shell: bash
+        run: |
+          sudo apt-get install -y weston
+          export XDG_RUNTIME_DIR="$RUNNER_TEMP/xdg"
+          mkdir -p -m 700 "$XDG_RUNTIME_DIR"
+          weston --backend=headless-backend.so --socket=wayland-smoke --width=1280 --height=800 --idle-time=0 > "$RUNNER_TEMP/weston.log" 2>&1 &
+          weston_pid=$!
+          for _ in $(seq 1 50); do [ -S "$XDG_RUNTIME_DIR/wayland-smoke" ] && break; sleep 0.2; done
+          if [ ! -S "$XDG_RUNTIME_DIR/wayland-smoke" ]; then cat "$RUNNER_TEMP/weston.log"; exit 1; fi
+          unset DISPLAY
+          export WAYLAND_DISPLAY=wayland-smoke GDK_BACKEND=wayland LIBGL_ALWAYS_SOFTWARE=1
+          export MITEIRU_USER_DATA_DIR="$RUNNER_TEMP/miteiru-profile-wayland"
+          MITEIRU_SMOKE_GDB=1 bash scripts/runSmokeTest.sh src-tauri/target/debug/miteiru "$PWD/smoke-wayland.json" "$PWD/smoke-wayland.png"
+          kill "$weston_pid" 2>/dev/null || true
+          echo "--- weston log (tail)"; tail -n 20 "$RUNNER_TEMP/weston.log" || true
+          cat smoke-wayland.json || echo "no smoke-wayland.json"
+          node -e 'const r = require("./smoke-wayland.json"); const bad = Object.entries(r).filter(([, v]) => !v.ok); if (bad.length) { console.error("failed under Wayland:", bad.map(([k]) => k).join(", ")); process.exit(1); }'
+
       - name: Upload smoke test results
         if: always() && matrix.key != 'windows'
         uses: actions/upload-artifact@v4
         with:
           name: smoke-${{ matrix.key }}
           path: |
-            smoke.json
+            smoke*.json
             smoke*.png
           if-no-files-found: warn
           retention-days: 7
