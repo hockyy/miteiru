@@ -190,3 +190,25 @@ test('the live hook applies cached analyses to newly arriving cues and restores 
     else globals.window = saved;
   }
 });
+
+test('two windows that split the same line differently settle on one split, so a change listener cannot loop', async () => {
+  await withGlosses(async () => {
+    const subtitle = subtitleOf();
+    await fillSubtitleWithLearningContent(subtitle, async () => [token('old')]);
+    // A line crossing a context window: one window saw 1000–3000 ms of it, the next 3000–4000 ms,
+    // and the model split it differently each time (the owner's "Maximum call stack size exceeded").
+    const early = analysis({to: 3000, tokens: [token('学生', 'student'), token('です', 'polite ending')]});
+    const late = analysis({from: 3000, tokens: [token('学', 'study'), token('生です', 'life is')]});
+    let applications = 0;
+    // useSubtitleRetokenization re-applies the analyses on every subtitle change, like this.
+    subtitle.onChange(() => {
+      if (++applications > 20) throw new Error('the analyses keep replacing each other');
+      applyAiSubtitleRetokenizations(subtitle, [early, late]);
+    });
+    assert.equal(applyAiSubtitleRetokenizations(subtitle, [early, late]), 1);
+    assert.equal(applications, 1);
+    // The window that saw more of the line wins, in either order.
+    assert.deepEqual((subtitle.lines[0].content as any[]).map(({origin}) => origin), ['学生', 'です']);
+    assert.equal(applyAiSubtitleRetokenizations(subtitle, [late, early]), 0);
+  });
+});

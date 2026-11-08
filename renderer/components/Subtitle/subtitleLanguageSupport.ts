@@ -132,7 +132,12 @@ const commitLineFrequency = (line: Line, tokens: any[], support: SubtitleLanguag
 export const applyAiSubtitleRetokenizations = (subtitle: SubtitleContainer, analyses: readonly AiSubtitleRetokenization[]): number => {
   const support = getSubtitleLanguageSupport(subtitle.language);
   if (!support || !analyses.length || !subtitle.lines.length) return 0;
-  let changed = 0;
+  // A line that crosses a context window comes back once per window, clipped differently and often
+  // split differently. Keep one analysis per line: the one that saw the most of it, the later one on
+  // a tie. Applying the same list twice then changes nothing. Applying both would make each pass
+  // switch between them, and the change listener that applies analyses would recurse until the
+  // stack overflows.
+  const chosen = new Map<Line, AiSubtitleRetokenization>();
   for (const analysis of analyses) {
     if (!analysis || !Number.isFinite(analysis.from) || !Number.isFinite(analysis.to) || analysis.to <= analysis.from
       || typeof analysis.text !== 'string' || !Array.isArray(analysis.tokens) || !analysis.tokens.length || analysis.tokens.length > 500) continue;
@@ -150,6 +155,11 @@ export const applyAiSubtitleRetokenizations = (subtitle: SubtitleContainer, anal
     }
     const line = subtitle.lines[low];
     if (line.timeStart > analysis.from + 1 || line.timeEnd + 1 < analysis.to || comparableText(line.text) !== text) continue;
+    const previous = chosen.get(line);
+    if (!previous || analysis.to - analysis.from >= previous.to - previous.from) chosen.set(line, analysis);
+  }
+  let changed = 0;
+  for (const [line, analysis] of chosen) {
     const fingerprint = JSON.stringify(analysis.tokens);
     if (aiLineAnalysis.get(line)?.fingerprint === fingerprint) continue;
     const tokens = withCurrentDictionary(analysis.tokens, Array.isArray(line.content) ? line.content : [])
