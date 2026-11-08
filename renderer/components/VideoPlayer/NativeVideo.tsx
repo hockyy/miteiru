@@ -26,24 +26,45 @@ export const NativeVideo = ({options, onReady, clock, onError}: {
   const onErrorRef = useRef(onError);
   onErrorRef.current = onError;
 
+  // Where the player is: still opening, ready for sources, or failed to start (then the next source
+  // set tries to open it again). `wanted` is the latest source asked for, whenever that was.
+  const phaseRef = useRef<'opening' | 'ready' | 'failed'>('opening');
+  const wantedRef = useRef(options.sources);
+  wantedRef.current = options.sources;
+  const startRef = useRef<() => void>(() => undefined);
+  // The loaded file stopped with an error; opening it again must load it again.
+  const playbackFailedRef = useRef(false);
+
   useEffect(() => {
     const element = elementRef.current;
     const player = new NativePlayer(element);
     playerRef.current = player;
-    player.on('error', () => onErrorRef.current?.(player.currentTime()));
+    player.on('error', () => {
+      playbackFailedRef.current = true;
+      onErrorRef.current?.(player.currentTime());
+    });
     let cancelled = false;
     document.documentElement.classList.add('miteiru-native-video');
-    player.open()
-        .then(() => {
-          if (cancelled) return;
-          onReadyRef.current?.(player);
-          player.src(options.sources);
-          player.updateRect();
-        })
-        .catch((error) => {
-          console.error('[native-video] could not start the player', error);
-          if (!cancelled) onErrorRef.current?.(0, error instanceof Error ? error.message : String(error));
-        });
+    const start = () => {
+      phaseRef.current = 'opening';
+      player.open()
+          .then(() => {
+            if (cancelled) return;
+            phaseRef.current = 'ready';
+            onReadyRef.current?.(player);
+            // The source may have changed while opening; load the newest, not the first.
+            player.src(wantedRef.current);
+            player.updateRect();
+          })
+          .catch((error) => {
+            console.error('[native-video] could not start the player', error);
+            if (cancelled) return;
+            phaseRef.current = 'failed';
+            onErrorRef.current?.(0, error instanceof Error ? error.message : String(error));
+          });
+    };
+    startRef.current = start;
+    start();
     const resize = new ResizeObserver(() => player.updateRect());
     resize.observe(element);
     return () => {
@@ -55,13 +76,22 @@ export const NativeVideo = ({options, onReady, clock, onError}: {
       onReadyRef.current?.(null);
     };
     // Mount once; source changes go through the effect below.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     const player = playerRef.current;
     const source = options.sources?.[0];
-    if (player && source && source.src !== player.currentSrc() && player.currentSrc() !== '') {
+    if (!player || !source) return;
+    // A failed start is tried again whenever a source is set (the same file again too).
+    if (phaseRef.current === 'failed') {
+      startRef.current();
+      return;
+    }
+    // Still opening: open() loads the latest source when it finishes.
+    if (phaseRef.current === 'opening') return;
+    if (player.currentSrc() === '') return;
+    if (source.src !== player.currentSrc() || playbackFailedRef.current) {
+      playbackFailedRef.current = false;
       player.src(options.sources);
     }
   }, [options]);

@@ -4,7 +4,7 @@ import {SHIFT_STEP_MS, subtitleShiftToast} from "../utils/subtitleTiming";
 import {mainSubtitleName, TRANSLATION_NAME} from "../utils/subtitleLabels";
 import {isTextEntryTarget} from "../utils/keyboardTargets";
 import {hasCtrlModifier} from "../utils/platform";
-import type {PlaybackClock} from "../utils/playbackClock";
+import {type PlaybackClock, seekSeconds} from "../utils/playbackClock";
 
 
 export const useVideoPlayingToggle = (player, metadata) => {
@@ -103,8 +103,9 @@ export const useVideoTimeChanger = (player, clock: PlaybackClock, metadata) => {
     player.on('durationchange', updateDuration);
     return () => player.off('durationchange', updateDuration);
   }, [player, metadata]);
-  const changeTimeTo = useCallback((seekedTime: number) => {
+  const changeTimeTo = useCallback((target: number) => {
     if (player) {
+      const seekedTime = seekSeconds(target);
       clock.set(seekedTime)
       player.currentTime(seekedTime)
     }

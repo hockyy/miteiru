@@ -312,6 +312,10 @@ function Video() {
   const [failedPath, setFailedPath] = useState('');
   const [failureReason, setFailureReason] = useState('');
   const playbackFailed = hasVideo && failedPath === videoSrc.path;
+  // Opening a file again (the same one too) is a retry: its earlier failure no longer stands.
+  useEffect(() => {
+    setFailedPath('');
+  }, [videoSrc]);
 
   const commands = useKeyBind(setMeaning, setShowController, setShowSidebar, undo,
       setShowPrimarySub, setShowSecondarySub, primaryStyling, setPrimaryStyling,
@@ -408,11 +412,16 @@ function Video() {
 
   // Continue watching: the last video is saved while this page is open, and offered on the Watch page.
   const {last: lastVideo, loaded: lastVideoLoaded} = useLastVideo();
-  const [videoStarted, setVideoStarted] = useState(false);
-  useEffect(() => setVideoStarted(false), [videoSrc.path]);
+  // The path whose own playback has started. Comparing paths (not a flag reset in an effect) means the
+  // render right after a path change already counts as "not started", while the clock still holds the
+  // previous video's time.
+  const [startedPath, setStartedPath] = useState('');
   useEffect(() => {
-    if (metadata > 0) setVideoStarted(true);
+    if (metadata > 0) setStartedPath(videoSrc.path);
+    // Only a new load of metadata marks the current path as started.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metadata]);
+  const videoStarted = startedPath === videoSrc.path;
   useSaveLastVideo({
     path: videoSrc.path,
     title: mediaFileName,

@@ -127,6 +127,30 @@ const buildRubyMapFromToken = (token: any): Record<string, string> => {
   return rubyMap;
 };
 
+/**
+ * Entries in start order (ASS scripts and MKV tracks keep the script's own order, with the songs
+ * often first), with cues that share both start and end joined into one: two speakers shown at once.
+ */
+export const mergeSameTimeEntries = (entries: Entry[]): Entry[] => {
+  const sorted = entries.map((entry, index) => ({entry, index}))
+      .sort((a, b) => a.entry.from - b.entry.from || a.index - b.index)
+      .map(({entry}) => entry);
+  const merged: Entry[] = [];
+  for (const entry of sorted) {
+    // Equal starts sit side by side after the sort, so only the tail can match.
+    let same: Entry | undefined;
+    for (let i = merged.length - 1; i >= 0 && merged[i].from === entry.from; i--) {
+      if (merged[i].to === entry.to) same = merged[i];
+    }
+    if (!same) {
+      merged.push({...entry});
+    } else if (!same.text.split('\n').includes(entry.text)) {
+      same.text = `${same.text}\n${entry.text}`;
+    }
+  }
+  return merged;
+};
+
 export class Line {
   timeStart: number;
   timeEnd: number;
@@ -246,7 +270,7 @@ export class SubtitleContainer {
       from,
       to,
       text
-    } of entries) {
+    } of mergeSameTimeEntries(entries)) {
       // process transcript entry
       const realFrom = Math.max(from - videoConstants.subtitleFramerate * videoConstants.subtitleStartPlusMultiplier, last);
       const realTo = to + videoConstants.subtitleFramerate * videoConstants.subtitleEndPlusMultiplier;
@@ -365,6 +389,15 @@ export const convertSubtitlesToEntries = (subtitles: YoutubeSubtitleEntry[]): En
   });
 };
 
+// Optional dialogue dash, then a label: ALL CAPS with digits ("MAN 1"), one or two capitalized words
+// ("Narrator", "Mr. Smith"), or a short run before a full-width colon ("男："). A colon inside text has no
+// space after it, and a sentence's own words aren't capitalized ("Rule one: never…" stays).
+const SPEAKER_LABEL = new RegExp(
+    String.raw`^\s*([-\u2013\u2014]\s*)?(?:` +
+    String.raw`[A-Z][A-Z0-9.'\u2019-]*(?: [A-Z0-9.'\u2019-]+){0,3}:(?:\s+|$)` +
+    String.raw`|\p{Lu}[\p{L}'\u2019.-]*(?: \p{Lu}[\p{L}'\u2019.-]*)?:(?:\s+|$)` +
+    String.raw`|[^\s\d:\uFF1A]{1,12}\uFF1A\s*)`, "u");
+
 export const cleanHearingImpaired = (text) => {
   const lines = text.split('\n');
 
@@ -379,8 +412,9 @@ export const cleanHearingImpaired = (text) => {
       cleanedLine = cleanedLine.replace(bracket, '');
     }
 
-    // Discard anything preceding a colon
-    cleanedLine = cleanedLine.replace(/.*?:/g, '');
+    // Drop a speaker label at the start of the line, not every colon: times (10:30), ratios,
+    // links and titles (Re:Zero) have to stay.
+    cleanedLine = cleanedLine.replace(SPEAKER_LABEL, '$1');
 
     // Remove multiple spaces
     cleanedLine = cleanedLine.replace(/\s\s+/g, ' ').trim();
