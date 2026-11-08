@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import type { LearningStateType } from '../components/types';
 
 interface WordOfTheDayItem {
   word: string;
@@ -20,16 +21,22 @@ class SeededRandom {
   }
 }
 
-const useWordOfTheDay = (lang: string) => {
+/**
+ * Eight saved words picked for the day (the same all day), from the saved words the page has
+ * already loaded (useLearningState's savedWords). Loading them all again here made opening a video
+ * load every saved word twice, for a card that only shows while no video is open.
+ */
+const useWordOfTheDay = (lang: string, savedWords: Record<string, LearningStateType> | null) => {
   const [dailyWords, setDailyWords] = useState<WordOfTheDayItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [dateString, setDateString] = useState('');
 
-  const generateDailyWords = useCallback(async () => {
-    if (!lang) return;
+  const generateDailyWords = useCallback(() => {
+    if (!lang || !savedWords) {
+      setIsLoading(true);
+      return;
+    }
 
-    setIsLoading(true);
-    
     try {
       // Get current date as seed (YYYY-MM-DD format)
       const today = new Date();
@@ -40,13 +47,9 @@ const useWordOfTheDay = (lang: string) => {
       const dateNumber = parseInt(currentDate.replace(/-/g, ''), 10);
       const seededRandom = new SeededRandom(dateNumber);
       
-      // Load all words for the current language
-      const learningState = await window.backend.invoke('loadLearningState', lang);
-      const allWords = Object.entries(learningState);
-      
+      const allWords = Object.entries(savedWords);
       if (allWords.length === 0) {
         setDailyWords([]);
-        setIsLoading(false);
         return;
       }
 
@@ -61,7 +64,7 @@ const useWordOfTheDay = (lang: string) => {
       const selectedWords = shuffled.slice(0, Math.min(8, shuffled.length));
       
       // Transform to WordOfTheDayItem format
-      const dailyWordsFormatted: WordOfTheDayItem[] = selectedWords.map(([word, data]: [string, any]) => ({
+      const dailyWordsFormatted: WordOfTheDayItem[] = selectedWords.map(([word, data]) => ({
         word,
         level: data.level || 0,
         updTime: data.updTime || Date.now()
@@ -74,9 +77,9 @@ const useWordOfTheDay = (lang: string) => {
     } finally {
       setIsLoading(false);
     }
-  }, [lang]);
+  }, [lang, savedWords]);
 
-  // Generate words when language changes or on mount
+  // Generate words once the saved words are loaded, and again for another language
   useEffect(() => {
     generateDailyWords();
   }, [generateDailyWords]);

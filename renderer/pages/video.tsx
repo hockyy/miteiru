@@ -96,13 +96,6 @@ function Video() {
   } = useVocabSidebar();
 
   const {
-    dailyWords,
-    isLoading: isDailyWordsLoading,
-    dateString,
-    generateDailyWords
-  } = useWordOfTheDay(lang);
-
-  const {
     primarySub,
     setPrimarySub,
     secondarySub,
@@ -133,7 +126,14 @@ function Video() {
     setLearningPercentage,
     getLearningState,
     refreshTrigger,
+    savedWords,
   } = useLearningState(lang);
+  const {
+    dailyWords,
+    isLoading: isDailyWordsLoading,
+    dateString,
+    generateDailyWords
+  } = useWordOfTheDay(lang, savedWords);
   // Right-click on a subtitle word changes its level; say what it did, since only its colour changes.
   const saveWordByRightClick = useCallback((content: string) => {
     const level = changeLearningState(content);
