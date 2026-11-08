@@ -20,6 +20,7 @@
     "script:build-pitch-accent": "node scripts/buildPitchAccentData.js",
     "script:clean-next": "node scripts/cleanRendererNext.js",
     "test": "tsx --test \"tests/**/*.test.ts\"",
+    "measure:ai": "tsx scripts/measureAiSpeed.ts",
     "test:macos-drop": "node scripts/testMacosDrop.mjs",
     "lint": "npm run lint:smells && npm run lint:eslint",
     "lint:smells": "node scripts/lint-smells.js",
