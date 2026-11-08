@@ -275,6 +275,8 @@ export const KanjiSentence = ({
   }, [setMeaning]);
   return <>
     {separation.map((val, index) => {
+      // A reading that repeats the kana under it (べる over べる, ちょっと over ちょっと) says nothing.
+      const reading = val.hiragana && val.hiragana !== val.main ? val.hiragana : '';
       return <ruby className="ruby-over-reading" style={{
         rubyPosition: "over",
         WebkitTextFillColor: subtitleStyling.text.color,
@@ -291,7 +293,7 @@ export const KanjiSentence = ({
             </StyledSentence>
           })}
         </span>
-        <rt className={"unselectable"}>{subtitleStyling.showFurigana ? (val.hiragana ?? '') : ''}</rt>
+        <rt className={"unselectable"}>{subtitleStyling.showFurigana ? reading : ''}</rt>
       </ruby>
     })}
   </>
