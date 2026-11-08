@@ -2,10 +2,13 @@
  * A self-check for CI on each OS. With MITEIRU_SMOKE_TEST=<results.json> the app checks the backend
  * worker, the store, the analyzer API, libmpv drawing under the page, a YouTube embed, reading the
  * subtitles inside an MKV and every language (installing the language packs first when the build ships
- * them), writes the results there and exits (code 1 if a step failed). .github/workflows/release.yml
- * runs it on the packaged apps, and desktop-check.yml on debug builds.
+ * them), writes the results there and exits (code 1 if a step failed). It also checks, in this OS's
+ * webview, how the My words panel holds its scroll position and how AI answers stream.
+ * .github/workflows/release.yml runs it on the packaged apps, and desktop-check.yml on debug builds.
  */
 import {Channel, invoke} from '@tauri-apps/api/core';
+import {holdScrollPosition, topWithin, VOCAB_EDGE_MARGIN} from '../components/VideoPlayer/vocabScroll';
+import {streamOpenRouterCompletion} from '../utils/openRouterClient';
 
 interface StepResult {
   ok: boolean;
@@ -276,6 +279,154 @@ const checkMkv = async () => {
   }
 };
 
+/**
+ * The My words panel adds cards when a sentinel at either end comes within VOCAB_EDGE_MARGIN of its
+ * visible area, and holds its view by hand when cards change above it (vocabScroll.ts), since the
+ * macOS and Linux webviews have no CSS scroll anchoring. This checks both with the panel's own helper
+ * and margin, and records whether this engine anchors by itself.
+ */
+const checkScrollWindow = async () => {
+  const CARD_PX = 50;
+  const VIEW_PX = 400;
+  const container = document.createElement('div');
+  // On screen, since an off-screen root can be throttled, but all but invisible and out of the way.
+  container.style.cssText = `position:fixed;top:0;left:0;width:300px;height:${VIEW_PX}px;overflow-y:auto;opacity:0.01;pointer-events:none;z-index:2147483647`;
+  const list = document.createElement('div');
+  container.append(list);
+  const card = (label: string) => {
+    const element = document.createElement('div');
+    element.style.height = `${CARD_PX}px`;
+    element.textContent = label;
+    return element;
+  };
+  const cards = Array.from({length: 200}, (_, index) => card(`card ${index}`));
+  list.append(...cards);
+  document.body.append(container);
+  try {
+    // A card 600 px below the visible area counts as near (inside the 800 px margin); one 2,000 px below doesn't.
+    const nearCard = cards[(VIEW_PX + 600) / CARD_PX];
+    const farCard = cards[(VIEW_PX + 2000) / CARD_PX];
+    const seen = await new Promise<Record<string, boolean>>((resolve, reject) => {
+      const found: Record<string, boolean> = {};
+      const observer = new IntersectionObserver((entries) => {
+        for (const entry of entries) found[entry.target === nearCard ? 'near' : 'far'] = entry.isIntersecting;
+        if ('near' in found && 'far' in found) {
+          observer.disconnect();
+          resolve(found);
+        }
+      }, {root: container, rootMargin: VOCAB_EDGE_MARGIN});
+      observer.observe(nearCard);
+      observer.observe(farCard);
+      setTimeout(() => {
+        observer.disconnect();
+        reject(new Error(`the edge observer reported only ${JSON.stringify(found)}`));
+      }, 5000);
+    });
+    if (!seen.near || seen.far) throw new Error(`edge observer: near ${seen.near}, far ${seen.far}`);
+
+    // For the record: does this engine keep the view in place by itself when cards are added above?
+    const anchor = cards[100];
+    container.scrollTop = 100 * CARD_PX - VIEW_PX / 2;
+    const beforeNative = topWithin(container, anchor);
+    list.prepend(...Array.from({length: 20}, (_, index) => card(`native ${index}`)));
+    const nativeAnchoring = Math.abs(topWithin(container, anchor) - beforeNative) < 1;
+
+    // The panel's way: the engine's anchoring off, then the view held by hand, with cards added above...
+    container.style.overflowAnchor = 'none';
+    const beforeAdding = topWithin(container, anchor);
+    list.prepend(...Array.from({length: 120}, (_, index) => card(`added ${index}`)));
+    const movedPx = Math.round(topWithin(container, anchor) - beforeAdding);
+    holdScrollPosition(container, anchor, beforeAdding);
+    const offAfterAdding = Math.abs(topWithin(container, anchor) - beforeAdding);
+    // ...and with cards dropped above, as when the window's far end is trimmed.
+    const beforeDropping = topWithin(container, anchor);
+    for (let index = 0; index < 60; index++) list.firstElementChild?.remove();
+    holdScrollPosition(container, anchor, beforeDropping);
+    const offAfterDropping = Math.abs(topWithin(container, anchor) - beforeDropping);
+    if (offAfterAdding >= 1 || offAfterDropping >= 1) {
+      throw new Error(`the view moved ${offAfterAdding} px after cards were added and ${offAfterDropping} px after they were dropped`);
+    }
+    return {edgeObserver: 'near fires, far does not', nativeAnchoring, movedWithoutHoldingPx: movedPx, heldWithinPx: Math.max(offAfterAdding, offAfterDropping)};
+  } finally {
+    container.remove();
+  }
+};
+
+/**
+ * AI answers stream through the AI SDK and OpenRouter's provider (utils/openRouterClient.ts). This runs
+ * that code in this OS's webview against a stand-in for OpenRouter: fetch is replaced for
+ * https://openrouter.ai/ only, and only during this step, so nothing leaves the machine. It checks the
+ * partial text, the whole answer, cancelling mid-stream and the message for a refused key.
+ */
+const checkAiStream = async () => {
+  const realFetch = window.fetch;
+  const answer = '{"summary": "A polite greeting.", "translation": "Good morning."}';
+  let mode: 'ok' | 'slow' | 'refused' = 'ok';
+  window.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+    if (!url.startsWith('https://openrouter.ai/')) return realFetch(input, init);
+    if (mode === 'refused') {
+      return Promise.resolve(new Response(JSON.stringify({error: {message: 'No auth credentials found', code: 401}}), {
+        status: 401,
+        headers: {'Content-Type': 'application/json'}
+      }));
+    }
+    const encoder = new TextEncoder();
+    const pieces = answer.match(/[^]{1,8}/g) ?? [];
+    const signal = init?.signal;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        let index = 0;
+        const send = (data: unknown) => controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+        const next = () => {
+          if (signal?.aborted) return;
+          if (index < pieces.length) {
+            send({id: 'smoke', model: 'smoke', choices: [{index: 0, delta: {role: 'assistant', content: pieces[index++]}, finish_reason: null}]});
+            timer = setTimeout(next, mode === 'slow' ? 200 : 20);
+            return;
+          }
+          send({id: 'smoke', model: 'smoke', choices: [{index: 0, delta: {content: ''}, finish_reason: 'stop'}], usage: {prompt_tokens: 1, completion_tokens: 1, total_tokens: 2}});
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+          controller.close();
+        };
+        signal?.addEventListener('abort', () => {
+          clearTimeout(timer);
+          try {
+            controller.error(new DOMException('The operation was aborted.', 'AbortError'));
+          } catch {
+            // Already closed.
+          }
+        });
+        next();
+      }
+    });
+    return Promise.resolve(new Response(body, {status: 200, headers: {'Content-Type': 'text/event-stream'}}));
+  }) as typeof fetch;
+  const messages = [{role: 'user' as const, content: 'smoke test'}];
+  try {
+    const partials: string[] = [];
+    const text = await streamOpenRouterCompletion('sk-smoke-test', 'smoke/model', messages, {onText: (latest) => partials.push(latest)});
+    if (text !== answer) throw new Error(`the answer came back as ${JSON.stringify(text)}`);
+    if (partials.length < 2 || partials[partials.length - 1] !== answer) throw new Error(`partial updates: ${JSON.stringify(partials)}`);
+
+    mode = 'slow';
+    const cancel = new AbortController();
+    setTimeout(() => cancel.abort(), 300);
+    const cancelled = await streamOpenRouterCompletion('sk-smoke-test', 'smoke/model', messages, {signal: cancel.signal})
+      .then(() => 'finished anyway', (error: Error) => error.name);
+    if (cancelled !== 'AbortError') throw new Error(`a cancelled request ended with ${cancelled}`);
+
+    mode = 'refused';
+    const refused = await streamOpenRouterCompletion('sk-smoke-test', 'smoke/model', messages)
+      .then(() => 'answered', (error: Error) => error.message);
+    if (!/didn't accept your key/.test(refused)) throw new Error(`a refused key said ${JSON.stringify(refused)}`);
+    return {partialUpdates: partials.length, cancelled, refused};
+  } finally {
+    window.fetch = realFetch;
+  }
+};
+
 export const runSmokeTest = async (outPath: string, userData: string, platform: string) => {
   const started = Date.now();
   const results: Record<string, StepResult> = {};
@@ -334,6 +485,8 @@ export const runSmokeTest = async (outPath: string, userData: string, platform: 
   }), 45000);
 
   await step('mkv', () => checkMkv(), 15000);
+  await step('scrollWindow', () => checkScrollWindow(), 10000);
+  await step('aiStream', () => checkAiStream(), 20000);
   await step('languages', () => checkLanguages(), 180000);
   // Leave the picture up long enough for the workflow's screenshot.
   await sleep(Math.max(0, 40000 - (Date.now() - started)));
