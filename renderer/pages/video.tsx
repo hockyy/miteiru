@@ -306,8 +306,10 @@ function Video() {
     openFiles();
   }, [handleCloseTrackSelectionModal, openFiles]);
 
-  // mpv could not play this local file: a panel instead of a black screen.
+  // mpv could not play this local file: a panel instead of a black screen. The reason is set when the
+  // player itself couldn't start (no libmpv, for one), which no other file would fix either.
   const [failedPath, setFailedPath] = useState('');
+  const [failureReason, setFailureReason] = useState('');
   const playbackFailed = hasVideo && failedPath === videoSrc.path;
 
   const commands = useKeyBind(setMeaning, setShowController, setShowSidebar, undo,
@@ -499,9 +501,12 @@ function Video() {
             videoSrc.type === 'video/youtube'
                 ? <YouTubeVideo options={videoOptions} onReady={readyCallback} clock={clock}/>
                 : <NativeVideo options={videoOptions} onReady={readyCallback} clock={clock}
-                               onError={() => setFailedPath(videoSrc.path)}/>
+                               onError={(_seconds, reason) => {
+                                 setFailedPath(videoSrc.path);
+                                 setFailureReason(reason ?? '');
+                               }}/>
           )}
-          {playbackFailed && <PlaybackFailedPanel fileName={mediaFileName} onTryAnother={openFiles}/>}
+          {playbackFailed && <PlaybackFailedPanel fileName={mediaFileName} reason={failureReason} onTryAnother={openFiles}/>}
 
           <div>
             <SubtitleDisplay
