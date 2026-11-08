@@ -4,6 +4,7 @@ import {
   OPENROUTER_TRANSCRIBE_URL
 } from "../../renderer/utils/openRouterConstants";
 import {JobCancelledError, throwIfAborted} from "./runCommand";
+import {linkAbortSignals, timeoutSignal} from "./abortSignals";
 
 export type OpenRouterChatMessage = {
   role: "system" | "user" | "assistant";
@@ -31,16 +32,6 @@ const readErrorBody = async (response: Response) => {
   }
 };
 
-// The job's signal and the request timeout together. AbortSignal.any drops its listeners on the job
-// signal when the request ends, which a hand-made controller per request did not.
-const abortSignal = (signal?: AbortSignal, timeoutMs?: number) => {
-  const signals = [signal, timeoutMs && timeoutMs > 0 ? AbortSignal.timeout(timeoutMs) : undefined].filter(Boolean);
-  if (signals.length === 0) {
-    return undefined;
-  }
-  return signals.length === 1 ? signals[0] : AbortSignal.any(signals);
-};
-
 const requestJson = async (
   url: string,
   apiKey: string,
@@ -48,34 +39,43 @@ const requestJson = async (
   options: {signal?: AbortSignal; timeoutMs?: number} = {}
 ) => {
   throwIfAborted(options.signal);
-  let response: Response;
+  // The job's signal and the request timeout together, until the response is read. Disposing drops
+  // the listeners on the job's signal (it serves many requests) where AbortSignal.any is missing.
+  const timeout = options.timeoutMs && options.timeoutMs > 0 ? timeoutSignal(options.timeoutMs) : undefined;
+  const linked = linkAbortSignals([options.signal, timeout?.signal]);
   try {
-    response = await fetch(url, {
-      method: "POST",
-      headers: {
-        ...OPENROUTER_REQUEST_HEADERS,
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(body),
-      signal: abortSignal(options.signal, options.timeoutMs)
-    });
-  } catch (error) {
-    if (options.signal?.aborted) {
-      throw new JobCancelledError();
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: "POST",
+        headers: {
+          ...OPENROUTER_REQUEST_HEADERS,
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(body),
+        signal: linked.signal
+      });
+    } catch (error) {
+      if (options.signal?.aborted) {
+        throw new JobCancelledError();
+      }
+      // The timeout rejects with TimeoutError; a combined signal with AbortError.
+      if (error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError")) {
+        throw new Error("OpenRouter request timed out");
+      }
+      throw error;
     }
-    // AbortSignal.timeout rejects with TimeoutError; a combined signal with AbortError.
-    if (error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError")) {
-      throw new Error("OpenRouter request timed out");
-    }
-    throw error;
-  }
 
-  if (!response.ok) {
-    const details = await readErrorBody(response);
-    throw new OpenRouterHttpError(`OpenRouter ${response.status}: ${details || response.statusText}`, response.status);
+    if (!response.ok) {
+      const details = await readErrorBody(response);
+      throw new OpenRouterHttpError(`OpenRouter ${response.status}: ${details || response.statusText}`, response.status);
+    }
+    return await response.json();
+  } finally {
+    linked.dispose();
+    timeout?.dispose();
   }
-  return response.json();
 };
 
 export async function transcribeOpenRouterAudio(options: {

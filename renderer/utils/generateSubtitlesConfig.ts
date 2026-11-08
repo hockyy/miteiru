@@ -9,6 +9,9 @@ export const DEFAULT_TRANSLATE_MODEL = "qwen/qwen3-32b";
 export const ASR_CHUNK_SECONDS = 90;
 export const ASR_CONCURRENCY = 2;
 export const TRANSLATE_BATCH_SIZE = 28;
+// Batches carry their cues' numbers, so a few run at once: a long file translates in about a third
+// of the time. More mostly meets OpenRouter's rate limits (429s are retried).
+export const TRANSLATE_CONCURRENCY = 3;
 export const ASR_REQUEST_TIMEOUT_MS = 180_000;
 export const TRANSLATE_REQUEST_TIMEOUT_MS = 180_000;
 
