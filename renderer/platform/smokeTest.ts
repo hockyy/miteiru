@@ -356,15 +356,30 @@ const checkScrollWindow = async () => {
  * AI answers stream through the AI SDK and OpenRouter's provider (utils/openRouterClient.ts). This runs
  * that code in this OS's webview against a stand-in for OpenRouter: fetch is replaced for
  * https://openrouter.ai/ only, and only during this step, so nothing leaves the machine. It checks the
- * partial text, the whole answer, cancelling mid-stream and the message for a refused key.
+ * partial text, the whole answer, cancelling mid-stream, the message for a refused key, that requests
+ * ask for no thinking by default, and that a model that must think is asked again without that.
  */
 const checkAiStream = async () => {
   const realFetch = window.fetch;
   const answer = '{"summary": "A polite greeting.", "translation": "Good morning."}';
-  let mode: 'ok' | 'slow' | 'refused' = 'ok';
+  let mode: 'ok' | 'slow' | 'refused' | 'mustThink' = 'ok';
+  const bodies: Array<Record<string, unknown>> = [];
   window.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
     const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
     if (!url.startsWith('https://openrouter.ai/')) return realFetch(input, init);
+    let sent: Record<string, unknown> = {};
+    try {
+      sent = JSON.parse(String(init?.body ?? '{}'));
+    } catch {
+      // Not JSON: recorded as empty.
+    }
+    bodies.push(sent);
+    if (mode === 'mustThink' && 'reasoning' in sent) {
+      return Promise.resolve(new Response(JSON.stringify({error: {message: 'Reasoning is mandatory for this endpoint and cannot be disabled.', code: 400}}), {
+        status: 400,
+        headers: {'Content-Type': 'application/json'}
+      }));
+    }
     if (mode === 'refused') {
       return Promise.resolve(new Response(JSON.stringify({error: {message: 'No auth credentials found', code: 401}}), {
         status: 401,
@@ -409,6 +424,9 @@ const checkAiStream = async () => {
     const text = await streamOpenRouterCompletion('sk-smoke-test', 'smoke/model', messages, {onText: (latest) => partials.push(latest)});
     if (text !== answer) throw new Error(`the answer came back as ${JSON.stringify(text)}`);
     if (partials.length < 2 || partials[partials.length - 1] !== answer) throw new Error(`partial updates: ${JSON.stringify(partials)}`);
+    // The smoke profile has no thinking setting, so the request asks for none.
+    const reasoning = JSON.stringify(bodies[0]?.reasoning);
+    if (reasoning !== JSON.stringify({effort: 'none', exclude: true})) throw new Error(`the request's reasoning was ${reasoning}`);
 
     mode = 'slow';
     const cancel = new AbortController();
@@ -421,7 +439,15 @@ const checkAiStream = async () => {
     const refused = await streamOpenRouterCompletion('sk-smoke-test', 'smoke/model', messages)
       .then(() => 'answered', (error: Error) => error.message);
     if (!/didn't accept your key/.test(refused)) throw new Error(`a refused key said ${JSON.stringify(refused)}`);
-    return {partialUpdates: partials.length, cancelled, refused};
+
+    mode = 'mustThink';
+    const before = bodies.length;
+    const thought = await streamOpenRouterCompletion('sk-smoke-test', 'smoke/must-think', messages);
+    const retried = bodies.slice(before).map((body) => 'reasoning' in body);
+    if (thought !== answer || JSON.stringify(retried) !== JSON.stringify([true, false])) {
+      throw new Error(`a model that must think: answer ${JSON.stringify(thought)}, requests with reasoning ${JSON.stringify(retried)}`);
+    }
+    return {partialUpdates: partials.length, reasoning, cancelled, refused, mustThink: 'asked again without reasoning'};
   } finally {
     window.fetch = realFetch;
   }

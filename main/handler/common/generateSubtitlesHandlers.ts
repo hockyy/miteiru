@@ -1,7 +1,7 @@
 import {app, BrowserWindow, ipcMain} from "electron";
 import path from "node:path";
 import {getStore} from "./storeHandlers";
-import {openRouterMessages} from "../../../renderer/utils/openRouterConstants";
+import {DEFAULT_OPENROUTER_THINKING, OPENROUTER_THINKING_KEY, openRouterMessages} from "../../../renderer/utils/openRouterConstants";
 import {isKnownAsrModel, DEFAULT_ASR_MODEL, DEFAULT_TRANSLATE_MODEL} from "../../../renderer/utils/generateSubtitlesConfig";
 import type {
   GenerateSubtitlesProgress,
@@ -30,6 +30,9 @@ const sendProgress = (sender: Electron.WebContents | undefined, progress: Genera
 };
 
 const miteiruDocumentsDir = () => path.join(app.getPath("documents"), "miteiru");
+
+// Whether the translating model may think first ('openrouter.thinking'; off unless the learner turns it on).
+const readThinking = async () => (await getStore()).get(OPENROUTER_THINKING_KEY, DEFAULT_OPENROUTER_THINKING);
 
 const readOpenRouterKey = async () => {
   const store = await getStore();
@@ -123,6 +126,7 @@ export function registerGenerateSubtitlesHandlers() {
           lang,
           translateModel,
           apiKey,
+          thinking: await readThinking(),
           signal,
           onProgress: (progress) => sendProgress(event.sender, progress)
         });

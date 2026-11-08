@@ -8,7 +8,13 @@ import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { APICallError, streamText } from 'ai';
 import { createAbortError } from './aiResultCache';
 import { createThrottledEmitter } from './aiStreaming';
-import { OPENROUTER_REQUEST_HEADERS } from './openRouterConstants';
+import {
+  DEFAULT_OPENROUTER_THINKING,
+  OPENROUTER_REQUEST_HEADERS,
+  OPENROUTER_THINKING_KEY,
+  reasoningForThinking,
+  refusesAnswerWithoutThinking,
+} from './openRouterConstants';
 
 // One wording for every AI feature (openRouterConstants.ts).
 export { openRouterMessages } from './openRouterConstants';
@@ -40,11 +46,46 @@ export interface StreamOptions {
   onText?: (text: string) => void;
 }
 
+type Reasoning = ReturnType<typeof reasoningForThinking>;
+
+// Models that refused to answer without thinking, so later requests leave reasoning to them.
+const modelsThatMustThink = new Set<string>();
+
+/** The learner's thinking setting; off when the store can't be read (tests, a store error). */
+const readThinking = async (): Promise<unknown> => {
+  try {
+    return await window.electronStore?.get(OPENROUTER_THINKING_KEY, DEFAULT_OPENROUTER_THINKING);
+  } catch {
+    return DEFAULT_OPENROUTER_THINKING;
+  }
+};
+
 export async function streamOpenRouterCompletion(
   apiKey: string,
   model: string,
   messages: OpenRouterMessage[],
   options?: StreamOptions,
+): Promise<string> {
+  const reasoning = modelsThatMustThink.has(model) ? undefined : reasoningForThinking(await readThinking());
+  try {
+    return await streamOnce(apiKey, model, messages, options, reasoning);
+  } catch (error) {
+    // Nothing has streamed yet when a request is refused, so asking again shows no doubled text.
+    if (reasoning && APICallError.isInstance(error)
+      && refusesAnswerWithoutThinking(error.statusCode, `${error.message} ${error.responseBody ?? ''}`)) {
+      modelsThatMustThink.add(model);
+      return streamOnce(apiKey, model, messages, options, undefined);
+    }
+    throw error;
+  }
+}
+
+async function streamOnce(
+  apiKey: string,
+  model: string,
+  messages: OpenRouterMessage[],
+  options: StreamOptions | undefined,
+  reasoning: Reasoning,
 ): Promise<string> {
   const openrouter = createOpenRouter({
     apiKey,
@@ -61,7 +102,7 @@ export async function streamOpenRouterCompletion(
   // connection): keep the error, so the caller shows the reason instead of "could not parse".
   let streamError: unknown;
   const result = await streamText({
-    model: openrouter(model),
+    model: openrouter(model, reasoning ? { reasoning } : undefined),
     ...(systemContent ? { system: systemContent } : {}),
     messages: userMessages,
     ...(options?.signal ? { abortSignal: options.signal } : {}),
