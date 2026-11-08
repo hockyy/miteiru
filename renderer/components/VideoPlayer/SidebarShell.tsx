@@ -133,6 +133,9 @@ export const LeftSidebarShell = ({
     style={{
       transform: `translateX(${showSidebar ? "0" : "-100%"})`,
       width,
+      // The word list holds its own scroll position when it adds cards above (Safari's webview has
+      // no scroll anchoring), so the browser's anchoring stays off rather than adjusting twice.
+      overflowAnchor: "none",
     }}
     className={`${SIDEBAR_PANEL_CLASS} left-0 border-r`}
   >
