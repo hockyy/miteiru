@@ -319,3 +319,16 @@ export const NOT_YOUTUBE_LINK_MESSAGE = "Only YouTube links open directly. For o
 
 /** Whether pasted text looks like a web link (so it deserves the message above), not just words. */
 export const looksLikeWebLink = (text: string): boolean => /^https?:\/\/\S+$/i.test(text.trim());
+
+/**
+ * The audio track playing now, as an index into `tracks`: the one the learner chose (when it is
+ * still a track of this file), else the file's default, which is what mpv starts on, else the first.
+ */
+export const playingAudioTrack = (
+  tracks: Pick<MediaTrack, "default">[],
+  chosen: number | null | undefined,
+): number => {
+  if (chosen !== null && chosen !== undefined && Number.isInteger(chosen) && chosen >= 0 && chosen < tracks.length) return chosen;
+  const fallback = tracks.findIndex((track) => track.default);
+  return fallback >= 0 ? fallback : 0;
+};

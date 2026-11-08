@@ -17,6 +17,7 @@ import {
   languageReadyMessage,
   missingPacks,
   progressFraction,
+  recoveredInstallLanguage,
   type LanguagePack,
   type LanguagePackProgress,
   type LanguagePackStatus,
@@ -65,6 +66,7 @@ export const useLanguagePacks = () => {
   const [active, setActive] = useState<PackInstallProgress | null>(null);
   const [error, setError] = useState<LanguagePackError | null>(null);
   const [readyMessage, setReadyMessage] = useState<string | null>(null);
+  const [preferredLanguage, setPreferredLanguage] = useState<string | null>(null);
   const [busy, setBusyState] = useState(false);
   const busyRef = useRef(false);
   const setBusy = (value: boolean) => {
@@ -124,7 +126,7 @@ export const useLanguagePacks = () => {
     const pack = status?.packs.find((candidate) => candidate.id === job.id);
     const packs = [{bytes: pack?.bytes ?? job.progress?.total ?? 0}];
     return {
-      pluginId: pack?.languages[0] ?? null,
+      pluginId: recoveredInstallLanguage(pack, preferredLanguage),
       packIndex: 0,
       packCount: 1,
       progress: job.progress,
@@ -286,6 +288,8 @@ export const useLanguagePacks = () => {
     active: active ?? outsideActive,
     error,
     readyMessage,
+    /** The language picked on Home, so a recovered shared-pack download is labelled with it. */
+    setPreferredLanguage,
     install,
     installPack,
     installFromFile,

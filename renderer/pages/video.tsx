@@ -208,7 +208,10 @@ function Video() {
     handleCloseTrackSelectionModal,
     openTrackSelectionModal,
     handleAudioTrackSkip,
-    handleAudioTrackSelect
+    handleAudioTrackSelect,
+    openAudioTrackModal,
+    audioPickerReason,
+    playingAudioIndex
   } = useMediaAnalysis(videoSrc.path, videoSrc);
   const liveCaptions = useLiveCaptions();
   const visibleLiveCaption = liveCaptions.caption.trim();
@@ -464,6 +467,8 @@ function Video() {
               canChooseTracks={mediaInfo.subtitleTracks.length > 0 || isYoutube(videoSrc.path)}
               isYoutube={isYoutube(videoSrc.path)}
               onChooseTracks={openTrackSelectionModal}
+              canChooseAudio={mediaInfo.audioTracks.length > 1 && !isYoutube(videoSrc.path)}
+              onChooseAudio={openAudioTrackModal}
               languageName={currentAppLanguage}
               hasPrimarySubtitle={primarySub.lines.length > 0}
               hasSecondarySubtitle={secondarySub.lines.length > 0}
@@ -625,6 +630,8 @@ function Video() {
             fileName={mediaFileName}
             audioTracks={mediaInfo.audioTracks}
             appLanguageCode={lang}
+            mode={audioPickerReason}
+            currentIndex={playingAudioIndex}
         />
         <CommandPalette
             showCommandPalette={showCommandPalette}

@@ -13,6 +13,7 @@ import {
   packsForLanguage,
   packStateLabel,
   progressFraction,
+  recoveredInstallLanguage,
   type LanguagePack,
   type LanguagePackStatus,
   type PackState,
@@ -252,5 +253,19 @@ describe("what to say after a pack is installed", () => {
     const after = status([titled("hanzi", ["mandarin-jieba"], "installed"), titled("mandarin", ["mandarin-jieba"], "missing")]);
     assert.equal(languageReadyMessage(after, "mandarin-jieba", "Chinese"), "Chinese still needs mandarin pack.");
     assert.equal(languageReadyMessage(status(packs), "vietnamese", "Vietnamese"), "Vietnamese is ready.");
+  });
+});
+
+describe("recoveredInstallLanguage", () => {
+  const hanzi = pack("hanzi", ["mandarin-jieba", "cantonese-jieba"], "missing");
+  it("prefers the language picked on Home when the pack serves it", () => {
+    assert.equal(recoveredInstallLanguage(hanzi, "cantonese-jieba"), "cantonese-jieba");
+  });
+  it("falls back to the first language otherwise", () => {
+    assert.equal(recoveredInstallLanguage(hanzi, "japanese-kuromoji"), "mandarin-jieba");
+    assert.equal(recoveredInstallLanguage(hanzi, null), "mandarin-jieba");
+  });
+  it("is null without a pack", () => {
+    assert.equal(recoveredInstallLanguage(undefined, "cantonese-jieba"), null);
   });
 });

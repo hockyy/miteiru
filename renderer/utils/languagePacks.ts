@@ -246,3 +246,16 @@ export const languageReadyMessage = (status: LanguagePackStatus | null | undefin
     ? `${languageName} is ready.`
     : `${languageName} still needs ${joinNames(missing.map((m) => m.title))}.`;
 };
+
+/**
+ * The language to label an install this page did not start with: the one picked on Home when the
+ * pack serves it (the shared strokes pack lists Mandarin before Cantonese), else the pack's first.
+ */
+export const recoveredInstallLanguage = (
+  pack: Pick<LanguagePack, 'languages'> | null | undefined,
+  preferred?: string | null,
+): string | null => {
+  const languages = pack?.languages ?? [];
+  if (preferred && languages.includes(preferred)) return preferred;
+  return languages[0] ?? null;
+};
