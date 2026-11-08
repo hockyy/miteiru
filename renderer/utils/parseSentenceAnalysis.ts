@@ -68,6 +68,31 @@ function parseVocabulary(value: unknown): VocabularyItem[] {
     .filter((item): item is VocabularyItem => item !== null);
 }
 
+/** Shapes any (possibly half-streamed) object into a full SentenceAnalysis; null when it has no content. */
+export function normalizeSentenceAnalysis(value: unknown): SentenceAnalysis | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return null;
+  }
+  const data = value as Partial<SentenceAnalysis>;
+  const analysis = emptySentenceAnalysis();
+  analysis.summary = asString(data.summary);
+  analysis.translation = parseTranslation(data.translation);
+  analysis.grammar = parseGrammar(data.grammar);
+  analysis.vocabulary = parseVocabulary(data.vocabulary);
+  analysis.culturalNotes = asStringArray(data.culturalNotes);
+  analysis.learningTips = asStringArray(data.learningTips);
+
+  const hasContent =
+    analysis.summary ||
+    analysis.translation ||
+    analysis.grammar.length > 0 ||
+    analysis.vocabulary.length > 0 ||
+    analysis.culturalNotes.length > 0 ||
+    analysis.learningTips.length > 0;
+
+  return hasContent ? analysis : null; // reject empty JSON shells
+}
+
 export function parseSentenceAnalysis(raw: string): SentenceAnalysis | null {
   const jsonString = extractJsonString(raw);
   if (!jsonString) {
@@ -75,27 +100,16 @@ export function parseSentenceAnalysis(raw: string): SentenceAnalysis | null {
   }
 
   try {
-    const data = JSON.parse(jsonString) as Partial<SentenceAnalysis>;
-    const analysis = emptySentenceAnalysis();
-    analysis.summary = asString(data.summary);
-    analysis.translation = parseTranslation(data.translation);
-    analysis.grammar = parseGrammar(data.grammar);
-    analysis.vocabulary = parseVocabulary(data.vocabulary);
-    analysis.culturalNotes = asStringArray(data.culturalNotes);
-    analysis.learningTips = asStringArray(data.learningTips);
-
-    const hasContent =
-      analysis.summary ||
-      analysis.translation ||
-      analysis.grammar.length > 0 ||
-      analysis.vocabulary.length > 0 ||
-      analysis.culturalNotes.length > 0 ||
-      analysis.learningTips.length > 0;
-
-    return hasContent ? analysis : null; // reject empty JSON shells
+    return normalizeSentenceAnalysis(JSON.parse(jsonString));
   } catch {
     return null;
   }
+}
+
+/** While streaming: show the analysis once the summary or translation has started. */
+export function normalizePartialSentenceAnalysis(value: unknown): SentenceAnalysis | null {
+  const analysis = normalizeSentenceAnalysis(value);
+  return analysis && (analysis.summary || analysis.translation) ? analysis : null;
 }
 
 export function isAnalysisErrorMessage(raw: string): boolean {

@@ -50,7 +50,7 @@ export const AITranslationResults: React.FC<AITranslationResultsProps> = ({
     <div className="space-y-4">
       {result.sentences.map((sentence, index) => (
         <TranslationSentenceCard
-          key={`${sentence.source}-${index}`}
+          key={`sentence-${index}`}
           sentence={sentence}
           index={index}
           pronunciationLabel={pronunciationLabel}

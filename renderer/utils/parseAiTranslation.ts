@@ -114,6 +114,18 @@ function parseSentence(value: unknown): SentenceTranslation | null {
   };
 }
 
+/** Shapes any (possibly half-streamed) object into an AITranslationResult; null without sentences. */
+export function normalizeAiTranslation(value: unknown): AITranslationResult | null {
+  const sentences = (value as { sentences?: unknown } | null)?.sentences;
+  if (!Array.isArray(sentences)) {
+    return null;
+  }
+  const parsed = sentences
+    .map(parseSentence)
+    .filter((item): item is SentenceTranslation => item !== null);
+  return parsed.length > 0 ? { sentences: parsed } : null;
+}
+
 export function parseAiTranslation(raw: string): AITranslationResult | null {
   const jsonString = extractJsonString(raw);
   if (!jsonString) {
@@ -121,19 +133,22 @@ export function parseAiTranslation(raw: string): AITranslationResult | null {
   }
 
   try {
-    const data = JSON.parse(jsonString) as { sentences?: unknown };
-    if (!Array.isArray(data.sentences)) {
-      return null;
-    }
-
-    const sentences = data.sentences
-      .map(parseSentence)
-      .filter((item): item is SentenceTranslation => item !== null);
-
-    return sentences.length > 0 ? { sentences } : null;
+    return normalizeAiTranslation(JSON.parse(jsonString));
   } catch {
     return null;
   }
+}
+
+/** While streaming: keep the sentences that already have a translation line. */
+export function normalizePartialAiTranslation(value: unknown): AITranslationResult | null {
+  const result = normalizeAiTranslation(value);
+  if (!result) {
+    return null;
+  }
+  const sentences = result.sentences.filter(
+    (sentence) => sentence.formal.text || sentence.neutral.text || sentence.casual.text,
+  );
+  return sentences.length > 0 ? { sentences } : null;
 }
 
 export function formatVariantForCopy(variant: TranslationVariant): string {
