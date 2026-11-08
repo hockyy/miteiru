@@ -70,6 +70,7 @@ function Video() {
   } = useSubtitleMode();
   const {
     tokenizerMode,
+    tokenizerModeLoaded,
     tokenizeMiteiru,
     lang,
     toneType,
@@ -650,6 +651,7 @@ function Video() {
             setMeaning={setMeaning}
             tokenizeMiteiru={tokenizeMiteiru}
             refreshTrigger={refreshTrigger}
+            languageLoaded={tokenizerModeLoaded}
         />
       </React.Fragment>
   );

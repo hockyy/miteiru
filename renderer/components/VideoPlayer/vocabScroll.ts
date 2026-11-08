@@ -17,3 +17,22 @@ export const topWithin = (container: HTMLElement, element: HTMLElement) =>
 export const holdScrollPosition = (container: HTMLElement, element: HTMLElement, previousTop: number) => {
   container.scrollTop += topWithin(container, element) - previousTop;
 };
+
+/**
+ * The index of the first card whose bottom edge is below `viewTop`, i.e. the card at the top of the
+ * visible area (`count` when every card is above it). Cards are in order, so this is a binary search
+ * and a scroll event measures only a few of them.
+ */
+export const firstVisibleIndex = (count: number, bottomOf: (index: number) => number, viewTop: number): number => {
+  let low = 0;
+  let high = count;
+  while (low < high) {
+    const middle = (low + high) >> 1;
+    if (bottomOf(middle) > viewTop) {
+      high = middle;
+    } else {
+      low = middle + 1;
+    }
+  }
+  return low;
+};

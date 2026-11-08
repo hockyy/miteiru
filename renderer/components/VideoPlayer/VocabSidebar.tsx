@@ -20,7 +20,7 @@ import {
   windowAround,
   type VocabWindow,
 } from './vocabWindow';
-import { holdScrollPosition, topWithin, VOCAB_EDGE_MARGIN } from './vocabScroll';
+import { firstVisibleIndex, holdScrollPosition, topWithin, VOCAB_EDGE_MARGIN } from './vocabScroll';
 import {
   filterVocab,
   isFiltering,
@@ -38,12 +38,16 @@ type VocabSidebarProps = {
   setMeaning: (word: string) => void;
   tokenizeMiteiru: (word: string) => Promise<unknown>;
   refreshTrigger?: unknown;
+  // False until the page knows its language, so "no language" isn't shown for a moment at startup.
+  languageLoaded?: boolean;
 };
 
 /** The panel's slide-out (SidebarShell's duration-300), after which the cards are taken off the page. */
 const CLOSE_ANIMATION_MS = 350;
 const LEVEL_LABELS = ['New', 'Learning', 'Known', 'Mastered'];
 const NO_WORDS: VocabEntry[] = [];
+/** How often the cards' "5 minutes ago" is brought up to date while the panel is open. */
+const CLOCK_TICK_MS = 30_000;
 
 /**
  * Left sidebar — scrollable list of saved vocabulary for the current language.
@@ -59,6 +63,7 @@ const VocabSidebar = ({
   setMeaning,
   tokenizeMiteiru,
   refreshTrigger,
+  languageLoaded = true,
 }: VocabSidebarProps) => {
   // The loaded words, with the language and save count they were loaded for.
   const [vocab, setVocab] = useState<{ key: string; entries: VocabEntry[] } | null>(null);
@@ -68,12 +73,20 @@ const VocabSidebar = ({
   const [listMounted, setListMounted] = useState(showVocabSidebar);
   const [hoveredWord, setHoveredWord] = useState<string | null>(null);
   const [hoverTokens, setHoverTokens] = useState<{ word: string; tokens: unknown } | null>(null);
-  const [generatingWord, setGeneratingWord] = useState<string | null>(null);
+  // The words whose AI notes are being generated, so each shows "Generating…" and can't be asked twice.
+  const [generatingWords, setGeneratingWords] = useState<ReadonlySet<string>>(() => new Set());
+  const generatingRef = useRef(new Set<string>());
+  // What the cards' relative times count from.
+  const [now, setNow] = useState(() => Date.now());
   // The search box and the level chips (vocabFilter.ts); kept while the panel is closed.
   const [filter, setFilter] = useState<VocabFilter>(NO_VOCAB_FILTER);
   const containerRef = useRef<HTMLElement>(null);
   const topSentinelRef = useRef<HTMLDivElement>(null);
   const bottomSentinelRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  // The card at the top of the visible area and where it sits, kept up to date while scrolling, so a
+  // change above the view that leaves the window alone (a save, a taller note) can be held too.
+  const topCardRef = useRef<{ element: HTMLElement; top: number } | null>(null);
   // A card held in place across the next window change, and its top before the change.
   const anchorRef = useRef<{ element: HTMLElement; top: number } | null>(null);
   // Where the panel scrolls once the next window is on the page.
@@ -111,6 +124,16 @@ const VocabSidebar = ({
     return () => window.clearTimeout(timer);
   }, [showVocabSidebar, lang]);
 
+  // The cards are memoized, so their times only change when this does.
+  useEffect(() => {
+    if (!showVocabSidebar) {
+      return undefined;
+    }
+    setNow(Date.now());
+    const timer = window.setInterval(() => setNow(Date.now()), CLOCK_TICK_MS);
+    return () => window.clearInterval(timer);
+  }, [showVocabSidebar]);
+
   // Loading every saved word costs time with large lists, and a word is saved with each level change
   // while watching, so the panel loads only while it is open.
   useEffect(() => {
@@ -128,6 +151,8 @@ const VocabSidebar = ({
         ) as VocabEntry[];
         setVocab({ key: dataKey, entries: sorted });
         setLoadFailedFor(null);
+        // Each save reloads the words: count the times from now, so the word just saved says "Just now".
+        setNow(Date.now());
       })
       .catch((error: unknown) => {
         console.error('Error loading vocabulary:', error);
@@ -156,6 +181,28 @@ const VocabSidebar = ({
     setRange(windowAround(shown.length, index));
   }, [showVocabSidebar, range, isFresh, shown, filtering]);
 
+  const recordTopCard = useCallback(() => {
+    const container = containerRef.current;
+    const list = listRef.current;
+    if (!container || !list) {
+      topCardRef.current = null;
+      return;
+    }
+    // The sentinels at either end of the list aren't cards.
+    const first = topSentinelRef.current ? 1 : 0;
+    const count = list.children.length - first - (bottomSentinelRef.current ? 1 : 0);
+    const viewTop = container.getBoundingClientRect().top;
+    const index = firstVisibleIndex(
+      count,
+      (i) => list.children[first + i].getBoundingClientRect().bottom,
+      viewTop,
+    );
+    const element = list.children[first + Math.min(index, count - 1)];
+    topCardRef.current = element instanceof HTMLElement && count > 0
+      ? { element, top: topWithin(container, element) }
+      : null;
+  }, []);
+
   // After the window changes: keep the held card where it was, then make any pending scroll.
   useLayoutEffect(() => {
     const container = containerRef.current;
@@ -179,7 +226,33 @@ const VocabSidebar = ({
         container.scrollTop += topWithin(container, card) - (container.clientHeight - card.offsetHeight) / 2;
       }
     }
-  }, [range]);
+    recordTopCard();
+  }, [range, recordTopCard]);
+
+  // Cards above the view can change while the window stays put: a saved word lands above it, a level
+  // change moves a card, a note makes one taller. Hold the card at the top of the view through that.
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    const recorded = topCardRef.current;
+    if (!container || !showVocabSidebar || !range || scrollTargetRef.current || !recorded?.element.isConnected) {
+      return;
+    }
+    holdScrollPosition(container, recorded.element, recorded.top);
+    recordTopCard();
+    // Only the words shown and their notes matter (without a search, `shown` keeps its identity when a
+    // note arrives); the window's own changes are held by the effect above.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shown, userNotes]);
+
+  // Notes the card at the top of the visible area. The cards are in order, so a search finds it.
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || !listMounted) {
+      return undefined;
+    }
+    container.addEventListener('scroll', recordTopCard, { passive: true });
+    return () => container.removeEventListener('scroll', recordTopCard);
+  }, [listMounted, recordTopCard]);
 
   // Scrolling near either rendered end adds cards there. The observer is rebuilt for each window, and
   // a new observer reports at once, so a fast scroll keeps adding until the end is far enough away.
@@ -287,7 +360,12 @@ const VocabSidebar = ({
   }, []);
 
   const handleGenerateNote = useCallback(async (word: string) => {
-    setGeneratingWord(word);
+    // The guard reads a ref, not the state, so this callback stays the same for every card (memo).
+    if (generatingRef.current.has(word)) {
+      return;
+    }
+    generatingRef.current.add(word);
+    setGeneratingWords(new Set(generatingRef.current));
     try {
       const entry = await generateUserNoteWithAI({
         term: word,
@@ -300,7 +378,8 @@ const VocabSidebar = ({
       console.error('AI note generation failed:', error);
       alert(`Failed to generate note: ${(error as Error).message}`);
     } finally {
-      setGeneratingWord(null);
+      generatingRef.current.delete(word);
+      setGeneratingWords(new Set(generatingRef.current));
     }
   }, [lang, openRouterApiKey, openRouterModel, setUserNote]);
 
@@ -320,6 +399,15 @@ const VocabSidebar = ({
   }
 
   const renderList = () => {
+    if (languageLoaded && !lang) {
+      return (
+        <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.04] px-6 py-10 text-center">
+          <p className="text-sm font-semibold text-white/70">
+            Choose the language you’re learning on Home to see your saved words.
+          </p>
+        </div>
+      );
+    }
     if (!visibleRange) {
       // The words are loading for this opening: an error says so, otherwise the space stays empty.
       return loadFailedFor === dataKey ? (
@@ -354,7 +442,7 @@ const VocabSidebar = ({
       );
     }
     return (
-      <div className="flex flex-col gap-2 pb-6">
+      <div ref={listRef} className="flex flex-col gap-2 pb-6">
         {visibleRange.start > 0 && <div ref={topSentinelRef} aria-hidden className="h-px shrink-0" />}
         {shown.slice(visibleRange.start, visibleRange.end).map(([word, state]) => (
           <VocabWordCard
@@ -364,7 +452,8 @@ const VocabSidebar = ({
             isHovered={hoveredWord === word}
             readingPreview={hoveredWord === word ? readingPreview : null}
             userNote={getLocalizedUserNote(userNotes, word, lang)}
-            isGeneratingNote={generatingWord === word}
+            isGeneratingNote={generatingWords.has(word)}
+            now={now}
             onSelect={setMeaning}
             onGenerateNote={handleGenerateNote}
             onHoverStart={handleHoverStart}

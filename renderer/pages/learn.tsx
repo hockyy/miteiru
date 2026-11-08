@@ -678,6 +678,7 @@ function Learn() {
               setMeaning={setMeaning}
               tokenizeMiteiru={tokenizeMiteiru}
               refreshTrigger={refreshTrigger}
+              languageLoaded={tokenizerModeLoaded}
           />
           <LearningSidebar
               showSidebar={showSidebar}
