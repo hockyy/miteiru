@@ -1,4 +1,4 @@
-import React, {ReactNode, useCallback, useState} from "react";
+import React, {ReactNode, useCallback, useEffect, useState} from "react";
 import {PopoverPicker} from "./PopoverPicker";
 import {
   CJKStyling,
@@ -13,6 +13,8 @@ import {announceLearningStateChanged} from "../../utils/learningStateEvents";
 import {rangeFillStyle, SubtitleMode} from "../../utils/utils";
 import {SidebarSection, SidebarSettingRow, SidebarShell} from "./SidebarShell";
 import {OpenRouterSettings} from "./OpenRouterSettings";
+import {AiUsageDetails} from "./AiCostIndicator";
+import type {useSubtitleForecast} from "../../hooks/useSubtitleForecast";
 import {useExportAllAnkiCards} from "../../hooks/useExportAllAnkiCards";
 import {videoConstants} from "../../utils/constants";
 import {FontPicker} from "../Utils/FontPicker";
@@ -50,16 +52,20 @@ const Hint = ({children}: { children: ReactNode }) => (
   <div className="text-xs text-white/60">{children}</div>
 );
 
-const ToggleRow = ({label, hint, checked, onChange}: {
+const ToggleRow = ({label, hint, checked, onChange, disabled = false}: {
   label: string;
   hint?: string;
   checked: boolean;
   onChange: (value: boolean) => void;
+  /** Dimmed and not clickable. */
+  disabled?: boolean;
 }) => (
   <SidebarSettingRow>
-    <Toggle isChecked={Boolean(checked)} onChange={onChange} label={label}/>
+    <Toggle isChecked={Boolean(checked)} onChange={onChange} label={label} disabled={disabled}/>
     {/* The text toggles too; the switch alone is a small target. Keyboard users use the switch. */}
-    <div className="min-w-0 flex-1 cursor-pointer select-none" onClick={() => onChange(!checked)}>
+    <div className={`min-w-0 flex-1 select-none ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+         aria-disabled={disabled || undefined}
+         onClick={() => { if (!disabled) onChange(!checked); }}>
       <div>{label}</div>
       {hint && <Hint>{hint}</Hint>}
     </div>
@@ -250,7 +256,7 @@ export const StylingBox = ({subtitleStyling, setSubtitleStyling, isMain, default
   </div>;
 };
 
-type SettingsTab = "playback" | "subtitles" | "look" | "ai" | "data";
+export type SettingsTab = "playback" | "subtitles" | "look" | "ai" | "data";
 
 const TABS: { id: SettingsTab; label: string }[] = [
   {id: "playback", label: "Playback"},
@@ -310,6 +316,58 @@ const Segmented = <T extends string>({group, options, value, onChange, label}: {
   </div>
 );
 
+/** What the AI Settings tab asks to be told about the AI study tools. */
+export type AiStudyForecast = Pick<ReturnType<typeof useSubtitleForecast>,
+  "tipsEnabled" | "setTipsEnabled" | "dictionaryEnabled" | "setDictionaryEnabled" | "lookahead" | "setLookahead" |
+  "busy" | "error" | "retry" | "hasApiKey">;
+
+const LOOKAHEADS: { id: "30" | "60"; label: string }[] = [{id: "30", label: "30 s"}, {id: "60", label: "1 min"}];
+
+/** The status line under the AI tools: what the forecast is doing, or nothing when every tool is off. */
+export const aiStudyStatus = (forecast: Pick<AiStudyForecast, "tipsEnabled" | "dictionaryEnabled" | "busy" | "error">) =>
+  forecast.error ? "error" : forecast.busy ? "Preparing the next part…"
+    : forecast.tipsEnabled || forecast.dictionaryEnabled ? "Ready. Finished parts are kept, so going back costs nothing." : "";
+
+/** Settings → AI, after the OpenRouter key: the study tools, what they cost, and the user dictionary. */
+export const AiStudySettings = ({forecast, dictionaryCount, onOpenDictionary}: {
+  forecast: AiStudyForecast; dictionaryCount: number; onOpenDictionary: () => void;
+}) => {
+  const status = aiStudyStatus(forecast);
+  return <>
+    <SidebarSection title="While you watch">
+      <ToggleRow label="Box tips" disabled={!forecast.hasApiKey}
+                 hint="A short note when the line on screen has grammar, wordplay or a saying worth knowing."
+                 checked={forecast.tipsEnabled} onChange={forecast.setTipsEnabled}/>
+      <ToggleRow label="AI word splitting" disabled={!forecast.hasApiKey}
+                 hint="AI checks where words begin and end and adds their meaning in this line. Words your dictionaries miss are saved to Your dictionary."
+                 checked={forecast.dictionaryEnabled} onChange={forecast.setDictionaryEnabled}/>
+      <div className="flex flex-col gap-2">
+        <div className="text-sm text-white/85">Looks ahead</div>
+        <Segmented<"30" | "60"> group="lookahead" options={LOOKAHEADS} value={forecast.lookahead === 60 ? "60" : "30"}
+                                onChange={(value) => forecast.setLookahead(Number(value))} label="Looks ahead"/>
+        <Hint>How much of the video each AI request covers. 30 s prepares the part you&rsquo;re watching first, then the next one.</Hint>
+      </div>
+      {!forecast.hasApiKey && <Hint>Add your OpenRouter key above to use these.</Hint>}
+      {status === "error"
+        ? <div role="status" className="flex flex-wrap items-center gap-2 text-xs text-red-200">
+          <span className="min-w-0 break-words">{forecast.error}</span>
+          <Button type="secondary" size="small" onPress={forecast.retry}>Retry</Button>
+        </div>
+        : status && <div role="status" className="text-xs text-white/60">{status}</div>}
+    </SidebarSection>
+    <SidebarSection title="Spending">
+      <AiUsageDetails/>
+    </SidebarSection>
+    <SidebarSection title="Your dictionary">
+      <div>
+        <div className="text-2xl font-black tabular-nums">{dictionaryCount} {dictionaryCount === 1 ? "word" : "words"}</div>
+        <div className="mt-1 text-xs text-white/60">Words added by AI or by you, used on top of the built-in dictionary.</div>
+      </div>
+      <Button type="secondary" className="w-full min-w-0 max-w-full" onPress={onOpenDictionary}>Open your dictionary</Button>
+    </SidebarSection>
+  </>;
+};
+
 export const Sidebar = ({
                           showSidebar,
                           setShowSidebar,
@@ -337,10 +395,26 @@ export const Sidebar = ({
                           secondaryShift,
                           setSecondaryShift,
                           languageName,
-                          notify
-                        }) => {
+                          notify,
+                          requestedTab,
+                          forecast,
+                          dictionaryCount,
+                          onOpenDictionary
+                        }: {
+  requestedTab?: { tab: SettingsTab; nonce: number };
+  forecast: AiStudyForecast;
+  dictionaryCount: number;
+  onOpenDictionary: () => void;
+  [prop: string]: any;
+}) => {
   const {exportAllAnkiCards, ankiExportModal} = useExportAllAnkiCards({lang, tokenizeMiteiru});
   const [tab, setTab] = useState<SettingsTab>("playback");
+  // The top bar opens Settings on a given tab; each request (a new nonce) switches to it again.
+  const requestedNonce = requestedTab?.nonce;
+  useEffect(() => {
+    if (requestedTab) setTab(requestedTab.tab);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [requestedNonce]);
   const [lookTarget, setLookTarget] = useState<"primary" | "secondary">("primary");
   const mainName = mainSubtitleName(languageName);
   const usesToneNumbers = lang === videoConstants.chineseLang || lang === videoConstants.cantoneseLang;
@@ -431,6 +505,7 @@ export const Sidebar = ({
 
       {tab === "ai" && <TabPanel group="settings" id="ai">
         <OpenRouterSettings/>
+        <AiStudySettings forecast={forecast} dictionaryCount={dictionaryCount} onOpenDictionary={onOpenDictionary}/>
       </TabPanel>}
 
       {tab === "data" && <TabPanel group="settings" id="data">

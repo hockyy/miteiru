@@ -1,40 +1,41 @@
-import React from 'react';
+import React, {useId} from 'react';
 import {ModalShell} from '../Utils/ModalShell';
 import {Button} from '../Utils/Button';
+import {SIDEBAR_FIELD_INPUT} from './SidebarShell';
+import {transcriptionStatus} from '../../utils/transcriptionStatus';
 import type {YoutubeTranscriptionState} from '../../utils/youtubeTranscription';
 import type {AsrModelOption} from '../../utils/generateSubtitlesConfig';
 
-export function YoutubeTranscriptionControl({isOpen, onClose, onStart, onStop, onRetry, enabled, state, hasApiKey, asrModel, setAsrModel, asrModelOptions, languageName}: {
+export function YoutubeTranscriptionControl({isOpen, onClose, onStart, onStop, onRetry, enabled, state, hasApiKey, asrModel, setAsrModel, asrModelOptions}: {
   isOpen: boolean; onClose: () => void; onStart: () => void; onStop: () => void; onRetry: () => void;
   enabled: boolean; state: YoutubeTranscriptionState; hasApiKey: boolean; asrModel: string;
-  setAsrModel: (value: string) => unknown; asrModelOptions: AsrModelOption[]; languageName: string;
+  setAsrModel: (value: string) => unknown; asrModelOptions: AsrModelOption[];
 }) {
+  const modelId = useId();
   if (!isOpen) return null;
-  return <ModalShell title="Generate ahead" onClose={onClose} maxWidthClassName="max-w-lg" footer={
+  const status = transcriptionStatus(state, enabled);
+  return <ModalShell title="Subtitles from the audio" onClose={onClose} maxWidthClassName="max-w-lg" footer={
     <div className="flex flex-wrap justify-end gap-2">
       <Button type="secondary" onPress={onClose}>Keep watching</Button>
-      {enabled ? <Button type="danger" onPress={onStop}>Stop generating</Button>
+      {enabled && state.error && <Button type="primary" onPress={onRetry}>Try this piece again</Button>}
+      {enabled ? <Button type="danger" onPress={onStop}>Stop</Button>
         : <Button type="primary" disabled={!hasApiKey} onPress={onStart}>Start from here</Button>}
-      {enabled && state.error && <Button type="primary" onPress={onRetry}>Retry segment</Button>}
     </div>
   }>
     <div className="space-y-4 text-sm text-white/85">
-      <p>Prepare {languageName} subtitles from the audio you are about to watch, with word readings and meanings. Completed segments are reused when you seek back.</p>
-      <p className="text-xs text-white/60">Uses your OpenRouter key in paid, 30-second audio batches. Prepares up to a minute ahead while playing. Playback continues; you can pause while the first segment gets ready.</p>
-      {!hasApiKey && <p className="text-amber-200">Add your OpenRouter key in video settings → AI.</p>}
-      <label className="block space-y-2">
-        <span>Transcription model</span>
-        <select className="w-full rounded-lg bg-white p-2 text-blue-950" value={asrModel} disabled={enabled}
-          onChange={(event) => setAsrModel(event.target.value)}>
+      <p>Miteiru sends the audio just ahead of you to the transcription model and adds the lines, with readings and meanings, before you reach them.</p>
+      <p className="text-xs text-white/60">Uses your OpenRouter key. Each 30-second piece is one paid request; pieces already made are reused.</p>
+      {!hasApiKey && <p className="text-amber-200">Add your OpenRouter key in Settings → AI.</p>}
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor={modelId} className="text-xs font-bold text-white/70">Transcription model</label>
+        <select id={modelId} className={`${SIDEBAR_FIELD_INPUT} w-full cursor-pointer disabled:cursor-not-allowed disabled:opacity-60`}
+          value={asrModel} disabled={enabled} onChange={(event) => setAsrModel(event.target.value)}>
           {asrModelOptions.map((model) => <option key={model.id} value={model.id}>{model.label}</option>)}
         </select>
-      </label>
+      </div>
       <div role="status" className="rounded-xl border border-white/10 bg-white/5 p-3">
-        {state.error ? <span className="text-red-200">{state.error}</span>
-          : enabled ? state.activeSegment ? `Preparing ${Math.floor(state.activeSegment.bucketStartSeconds)}–${Math.ceil(state.activeSegment.bucketEndSeconds)} seconds…`
-            : `Ready through ${Math.floor(state.bufferedUntilSeconds)} seconds`
-          : 'Off — start whenever you need generated subtitles.'}
-        {state.completedSegments > 0 && <div className="mt-1 text-xs text-white/60">{state.completedSegments} segments prepared</div>}
+        <div className={status.kind === 'error' ? 'text-red-200' : ''}>{status.text}</div>
+        {status.pieces && <div className="mt-1 text-xs text-white/60">{status.pieces}</div>}
       </div>
     </div>
   </ModalShell>;

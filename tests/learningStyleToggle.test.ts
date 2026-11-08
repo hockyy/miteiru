@@ -73,3 +73,17 @@ test('the quick control changes only the existing learning-style value and close
     else globals.window = savedWindow;
   }
 });
+
+test('the subtitle menu offers the audio subtitles and Settings → AI, and the spend chip shows only while an AI tool is on', () => {
+  const withAi = {...props, onOpenAiSettings: noop, onGenerateAhead: noop};
+  const menu = renderToStaticMarkup(React.createElement(VideoTopBar, withAi));
+  assert.match(menu, /Subtitles from the audio…/);
+  assert.match(menu, /AI study tools…/);
+  assert.doesNotMatch(menu, /Box tips &amp; user dictionary|Generate audio subtitles/);
+  assert.doesNotMatch(menu, /AI spend on this device/, 'no chip while every AI tool is off');
+  const active = renderToStaticMarkup(React.createElement(VideoTopBar, {...withAi, aiActive: true}));
+  assert.match(active, /title="AI spend on this device\. Click for AI settings\."/);
+  assert.match(active, /tabular-nums/);
+  const plain = renderToStaticMarkup(React.createElement(VideoTopBar, props));
+  assert.doesNotMatch(plain, /AI study tools|Subtitles from the audio/);
+});

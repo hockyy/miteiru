@@ -717,15 +717,17 @@ test("generated-subtitle controls disclose paid batches, disable keyless start a
   const props = {
     isOpen: true, onClose() {}, onStart() {}, onStop() {}, onRetry() {}, enabled: false,
     state: {activeSegment: null, completedSegments: 0, bufferedUntilSeconds: 0, error: null},
-    hasApiKey: false, asrModel: DEFAULT_ASR_MODEL, setAsrModel() {}, asrModelOptions: ASR_MODELS, languageName: "Japanese"
+    hasApiKey: false, asrModel: DEFAULT_ASR_MODEL, setAsrModel() {}, asrModelOptions: ASR_MODELS
   };
   const off = renderToStaticMarkup(React.createElement(YoutubeTranscriptionControl, props));
-  assert.match(off, /paid, 30-second audio batches/);
+  assert.match(off, /Subtitles from the audio/);
+  assert.match(off, /Each 30-second piece is one paid request/);
+  assert.match(off, /Add your OpenRouter key in Settings → AI\./);
   assert.match(off, /disabled=""[^>]*>Start from here/);
   assert.match(off, /Keep watching/);
-  assert.doesNotMatch(off, /Retry segment/);
+  assert.doesNotMatch(off, /Try this piece again/);
   const failed = renderToStaticMarkup(React.createElement(YoutubeTranscriptionControl, {...props, enabled: true, hasApiKey: true, state: {...props.state, error: "Network failed"}}));
-  assert.match(failed, /Retry segment/);
-  assert.match(failed, /Stop generating/);
+  assert.match(failed, /Try this piece again/);
+  assert.match(failed, />Stop</);
   assert.match(failed, /Network failed/);
 });

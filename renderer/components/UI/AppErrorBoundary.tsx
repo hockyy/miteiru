@@ -1,35 +1,37 @@
 import React, {Component, ErrorInfo, ReactNode} from 'react';
 import {AppErrorReport, createAppErrorReport, formatAppErrorReport} from '../../utils/appErrorReport';
+import {Button} from '../Utils/Button';
+import {HOME_SHELL, UI_PAGE_BG} from './miteiruUiTheme';
 
 type CopyState = 'idle' | 'copied' | 'failed';
 interface State {
   failure: AppErrorReport | null;
   asyncError: AppErrorReport | null;
   copyState: CopyState;
+  detailsOpen: boolean;
 }
 
-const buttonStyle: React.CSSProperties = {
-  border: '1px solid #93c5fd', borderRadius: 8, background: '#dbeafe', color: '#172554',
-  padding: '8px 14px', font: 'inherit', fontWeight: 700, cursor: 'pointer'
-};
-const reportStyle: React.CSSProperties = {
-  marginTop: 16, padding: 16, border: '1px solid #bfdbfe', borderRadius: 8,
-  background: '#fff', color: '#172554', fontSize: 13, lineHeight: 1.5,
-  whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', userSelect: 'text'
-};
+const COPY_FAILED = "Couldn't copy automatically. Select the error text below to copy it.";
 
+const ReportText = ({report, className}: {report: AppErrorReport; className: string}) =>
+  <pre className={`select-text overflow-auto whitespace-pre-wrap break-words rounded-xl border p-3 font-mono text-xs leading-relaxed ${className}`}>
+    {formatAppErrorReport(report)}
+  </pre>;
+
+const copyLabel = (copyState: CopyState) => copyState === 'copied' ? 'Copied' : 'Copy details';
+
+/** The copy button, its failure note and the report: shown in the background-error notice once expanded. */
 export const AppErrorDetails = ({report, copyState, onCopy}: {
   report: AppErrorReport; copyState: CopyState; onCopy: () => void;
-}) => <>
-  <p style={{whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', fontWeight: 700}}>{report.message}</p>
-  <button type="button" style={buttonStyle} onClick={onCopy}>{copyState === 'copied' ? 'Copied' : 'Copy error'}</button>
-  {copyState === 'failed' && <p role="status">Couldn&apos;t copy automatically. Select the error text below to copy it.</p>}
-  <pre style={reportStyle}>{formatAppErrorReport(report)}</pre>
-</>;
+}) => <div className="mt-3 flex flex-col items-start gap-2">
+  <Button type="secondary" size="small" onPress={onCopy}>{copyLabel(copyState)}</Button>
+  {copyState === 'failed' && <p role="status" className="text-xs text-amber-200">{COPY_FAILED}</p>}
+  <ReportText report={report} className="max-h-[40vh] w-full border-white/10 bg-black/30 text-white/85"/>
+</div>;
 
 /** Render failures replace the crashed tree; asynchronous errors only add a dismissible notice. */
 export class AppErrorBoundary extends Component<{children: ReactNode}, State> {
-  state: State = {failure: null, asyncError: null, copyState: 'idle'};
+  state: State = {failure: null, asyncError: null, copyState: 'idle', detailsOpen: false};
 
   static getDerivedStateFromError(error: unknown): Partial<State> {
     return {failure: createAppErrorReport(error), copyState: 'idle'};
@@ -51,7 +53,7 @@ export class AppErrorBoundary extends Component<{children: ReactNode}, State> {
 
   private captureAsyncError = (error: unknown) => {
     // Keep the first report until dismissed so a cascade cannot overwrite the original error.
-    this.setState(state => state.failure || state.asyncError ? null : {asyncError: createAppErrorReport(error), copyState: 'idle'});
+    this.setState(state => state.failure || state.asyncError ? null : {asyncError: createAppErrorReport(error), copyState: 'idle', detailsOpen: false});
   };
   private onWindowError = (event: ErrorEvent) => {
     if (event.error || event.message) this.captureAsyncError(event.error ?? event.message);
@@ -70,35 +72,38 @@ export class AppErrorBoundary extends Component<{children: ReactNode}, State> {
   };
 
   render() {
-    const {failure, asyncError, copyState} = this.state;
-    if (failure) return <main role="alert" style={{
-      position: 'fixed', inset: 0, zIndex: 2147483647, overflow: 'auto', boxSizing: 'border-box',
-      padding: 'clamp(20px, 5vw, 64px)', background: '#eff6ff', color: '#172554', userSelect: 'text'
-    }}>
-      <div style={{maxWidth: 1000, margin: '0 auto'}}>
-        <h1 style={{fontSize: 28, fontWeight: 800, marginBottom: 12}}>Miteiru encountered an error</h1>
-        <p style={{marginBottom: 16}}>Copy the details below to help diagnose the crash.</p>
-        <button type="button" style={buttonStyle} onClick={() => window.location.reload()}>Reload Miteiru</button>
-        <AppErrorDetails report={failure} copyState={copyState} onCopy={() => void this.copyError(failure)}/>
+    const {failure, asyncError, copyState, detailsOpen} = this.state;
+    if (failure) return <main role="alert" className={`fixed inset-0 z-[2147483647] flex select-text ${UI_PAGE_BG}`}>
+      <div className={`${HOME_SHELL} m-auto p-6 sm:p-8`}>
+        <h1 className="text-2xl font-black">Something went wrong</h1>
+        <p className="mt-3 text-sm font-medium leading-relaxed text-blue-900">
+          Miteiru hit an error it couldn&apos;t recover from. Reloading usually fixes it. If it keeps happening, copy the details and send them to us.
+        </p>
+        <div className="mt-5 flex flex-wrap gap-2">
+          <Button type="primary" onPress={() => window.location.reload()}>Reload Miteiru</Button>
+          <Button type="secondary" onPress={() => void this.copyError(failure)}>{copyLabel(copyState)}</Button>
+        </div>
+        {copyState === 'failed' && <p role="status" className="mt-3 text-sm font-medium text-red-800">{COPY_FAILED}</p>}
+        <details className="mt-5">
+          <summary className="cursor-pointer text-sm font-bold text-blue-900">Error details</summary>
+          <ReportText report={failure} className="mt-3 max-h-[50vh] border-blue-200 bg-white text-blue-950"/>
+        </details>
       </div>
     </main>;
 
     return <>
       {this.props.children}
-      {asyncError && <aside role="status" style={{
-        position: 'fixed', right: 16, bottom: 16, zIndex: 2147483646,
-        width: 'min(560px, calc(100vw - 32px))', maxHeight: '65vh', overflow: 'auto',
-        padding: 16, border: '1px solid #93c5fd', borderRadius: 12, boxSizing: 'border-box',
-        background: '#eff6ff', color: '#172554', boxShadow: '0 4px 24px #0003', userSelect: 'text'
-      }}>
-        <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16}}>
-          <strong>A client error was caught</strong>
-          <button type="button" style={buttonStyle} onClick={() => this.setState({asyncError: null, copyState: 'idle'})}>Dismiss</button>
+      {asyncError && <aside role="status" className="fixed bottom-4 right-4 z-[2147483646] box-border max-h-[70vh] w-[min(32rem,calc(100vw-2rem))] overflow-auto rounded-2xl border border-white/10 bg-slate-950/95 p-4 text-white shadow-2xl shadow-black/50">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <strong className="text-sm font-bold">Something went wrong in the background.</strong>
+          <div className="flex gap-2">
+            <Button type="secondary" size="small" aria-expanded={detailsOpen}
+              onPress={() => this.setState({detailsOpen: !detailsOpen})}>Details</Button>
+            <Button type="secondary" size="small"
+              onPress={() => this.setState({asyncError: null, copyState: 'idle', detailsOpen: false})}>Dismiss</Button>
+          </div>
         </div>
-        <details style={{marginTop: 12}}>
-          <summary style={{cursor: 'pointer', fontWeight: 700}}>Error details</summary>
-          <AppErrorDetails report={asyncError} copyState={copyState} onCopy={() => void this.copyError(asyncError)}/>
-        </details>
+        {detailsOpen && <AppErrorDetails report={asyncError} copyState={copyState} onCopy={() => void this.copyError(asyncError)}/>}
       </aside>}
     </>;
   }

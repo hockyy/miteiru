@@ -37,11 +37,13 @@ test('legacy saved Japanese entries keep their source and deletable surface with
 
 test('the meaning popup clearly marks AI-generated entries and never offers to delete builtins', () => {
   const ai = renderToStaticMarkup(React.createElement(UserDictionaryEntryNotice, {entry: content(), lang: 'ja'}));
-  assert.match(ai, /AI generated/);
-  assert.match(ai, /Delete entry/);
+  assert.match(ai, /Added by AI/);
+  assert.match(ai, /Not from the built-in dictionary\./);
+  assert.match(ai, />Remove</);
+  assert.match(ai, /aria-label="Delete user dictionary entry /);
   const manual = renderToStaticMarkup(React.createElement(UserDictionaryEntryNotice, {entry: content('manual'), lang: 'ja'}));
-  assert.match(manual, /User dictionary/);
-  assert.ok(!manual.includes('AI generated'));
+  assert.match(manual, /Your entry/);
+  assert.ok(!manual.includes('Added by AI'));
   const builtin = {...content(), id: '12345'};
   delete builtin.userDictionary;
   assert.equal(renderToStaticMarkup(React.createElement(UserDictionaryEntryNotice, {entry: builtin, lang: 'ja'})), '');
@@ -91,6 +93,6 @@ test('a failed dictionary deletion stays visible with its reason', async () => {
     await (action.props.onClick ?? action.props.onPress)();
     const markup = renderToStaticMarkup(read());
     assert.match(markup, /Could not write the dictionary/);
-    assert.match(markup, /AI generated/);
+    assert.match(markup, /Added by AI/);
   } finally {host.dispose();}
 });
