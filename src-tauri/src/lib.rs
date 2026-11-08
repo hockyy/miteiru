@@ -21,6 +21,7 @@ pub fn run() {
     // Size and position come back as they were (what Electron's window-state store did).
     .plugin(
       tauri_plugin_window_state::Builder::default()
+        .with_filename(info::window_state_filename())
         .with_state_flags(
           tauri_plugin_window_state::StateFlags::SIZE
             | tauri_plugin_window_state::StateFlags::POSITION

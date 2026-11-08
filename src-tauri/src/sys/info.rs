@@ -58,6 +58,18 @@ pub fn user_data_dir() -> PathBuf {
   base.join(if cfg!(debug_assertions) { "miteiru (development)" } else { "miteiru" })
 }
 
+/// Keep window geometry in the scratch profile too. Absolute filenames override the plugin's
+/// app-config directory; its default filename keeps existing production window state in place.
+pub fn window_state_filename() -> String {
+  if std::env::var_os("MITEIRU_USER_DATA_DIR").is_some_and(|dir| !dir.is_empty()) {
+    return std::path::absolute(user_data_dir().join(tauri_plugin_window_state::DEFAULT_FILENAME))
+      .expect("could not resolve the scratch window-state path")
+      .to_string_lossy()
+      .into_owned();
+  }
+  tauri_plugin_window_state::DEFAULT_FILENAME.into()
+}
+
 fn run_capture(program: &str, args: &[&str]) -> Option<String> {
   let mut cmd = std::process::Command::new(program);
   cmd.args(args);

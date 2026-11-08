@@ -217,6 +217,7 @@ function Video() {
       [showPrimarySub, visibleLiveCaption]
   );
   const videoOptions = useMemo(() => ({
+    muted: typeof window !== 'undefined' && window.__MITEIRU_START_MUTED__ === true,
     techOrder: ["html5", "youtube"],
     sources: [videoSrc],
     youtube: {
