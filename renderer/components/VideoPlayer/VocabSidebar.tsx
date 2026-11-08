@@ -20,6 +20,7 @@ import {
   windowAround,
   type VocabWindow,
 } from './vocabWindow';
+import { holdScrollPosition, topWithin, VOCAB_EDGE_MARGIN } from './vocabScroll';
 
 type VocabEntry = [string, LearningStateType];
 
@@ -34,14 +35,8 @@ type VocabSidebarProps = {
 
 /** The panel's slide-out (SidebarShell's duration-300), after which the cards are taken off the page. */
 const CLOSE_ANIMATION_MS = 350;
-/** How far past the visible part of the panel a rendered end counts as near, so cards are added in time. */
-const GROW_MARGIN = '800px 0px';
 const LEVEL_LABELS = ['New', 'Learning', 'Known', 'Mastered'];
 const NO_WORDS: VocabEntry[] = [];
-
-/** A card's top edge, in px below the top of the panel's visible area. */
-const topWithin = (container: HTMLElement, element: HTMLElement) =>
-  element.getBoundingClientRect().top - container.getBoundingClientRect().top;
 
 /**
  * Left sidebar — scrollable list of saved vocabulary for the current language.
@@ -144,7 +139,7 @@ const VocabSidebar = ({
     const anchor = anchorRef.current;
     anchorRef.current = null;
     if (anchor?.element.isConnected) {
-      container.scrollTop += topWithin(container, anchor.element) - anchor.top;
+      holdScrollPosition(container, anchor.element, anchor.top);
     }
     const target = scrollTargetRef.current;
     scrollTargetRef.current = null;
@@ -187,7 +182,7 @@ const VocabSidebar = ({
         const next = growWindow(current, length, up ? 'up' : 'down');
         return next.start === current.start && next.end === current.end ? current : next;
       });
-    }, { root: container, rootMargin: GROW_MARGIN });
+    }, { root: container, rootMargin: VOCAB_EDGE_MARGIN });
     if (topSentinelRef.current) {
       observer.observe(topSentinelRef.current);
     }
