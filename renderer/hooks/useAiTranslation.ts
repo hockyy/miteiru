@@ -16,6 +16,8 @@ import {
 } from '../utils/aiTranslationPrompts';
 import { aiResultCache, AiResultError, isAbortError, makeAiCacheKey } from '../utils/aiResultCache';
 import { createPartialHandler } from '../utils/aiStreaming';
+import { DEFAULT_OPENROUTER_THINKING, OPENROUTER_THINKING_KEY } from '../utils/openRouterConstants';
+import { useStoreData } from './useStoreData';
 import { openRouterMessages, streamOpenRouterCompletion } from '../utils/openRouterClient';
 import { normalizePartialAiTranslation, parseAiTranslation } from '../utils/parseAiTranslation';
 
@@ -35,6 +37,9 @@ export function useAiTranslation({
   const [resultDetails, setResultDetails] = useState<TranslationDetailOptions>(defaultTranslationDetailOptions);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isTranslating, setIsTranslating] = useState(false);
+
+  // Part of the cache key and the request: a thinking answer must not come from a not-thinking one.
+  const [thinking] = useStoreData(OPENROUTER_THINKING_KEY, DEFAULT_OPENROUTER_THINKING);
 
   const controllerRef = useRef<AbortController | null>(null);
 
@@ -103,7 +108,7 @@ export function useAiTranslation({
 
     try {
       const request = aiResultCache.run<AITranslationResult>(
-        makeAiCacheKey('translation', openRouterModel, lang, nonEmptySentences, detailOptions),
+        makeAiCacheKey('translation', openRouterModel, lang, nonEmptySentences, { details: detailOptions, thinking }),
         async ({ signal, onText }) => {
           const rawResponse = await streamOpenRouterCompletion(
             openRouterApiKey,
@@ -112,7 +117,7 @@ export function useAiTranslation({
               { role: 'system', content: buildTranslationSystemPrompt(targetLang, detailOptions) },
               { role: 'user', content: buildTranslationUserPrompt(nonEmptySentences) },
             ],
-            { signal, onText },
+            { signal, onText, thinking },
           );
 
           // Model returns JSON; tolerate ```json fences via parseAiTranslation → parseJsonResponse
@@ -156,7 +161,7 @@ export function useAiTranslation({
         setIsTranslating(false);
       }
     }
-  }, [cancelRequest, lang, openRouterApiKey, openRouterModel]);
+  }, [cancelRequest, lang, openRouterApiKey, openRouterModel, thinking]);
   const hasResults = isTranslating || !!result || !!errorMessage;
 
   return {
