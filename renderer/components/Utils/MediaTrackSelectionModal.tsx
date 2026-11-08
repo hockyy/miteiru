@@ -109,10 +109,19 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
     [subtitleTracks]
   );
 
-  // Fetch YouTube subtitles when modal opens for YouTube videos
+  // Start with the video, even while the picker is closed. Keep the result when it closes
+  // so choosing captions later never restarts a listing that is already running or ready.
+  useEffect(() => {
+    if (isYouTubeUrl && videoUrl) {
+      fetchAvailableSubtitles(videoUrl);
+    } else {
+      clearSubtitles();
+    }
+    return clearSubtitles;
+  }, [isYouTubeUrl, videoUrl, fetchAvailableSubtitles, clearSubtitles]);
+
   useEffect(() => {
     if (!isOpen) {
-      clearSubtitles();
       setPreprocessOptions({
         titleCaseAllCaps: true
       });
@@ -124,10 +133,7 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
       return;
     }
 
-    if (isYouTubeUrl && videoUrl) {
-      fetchAvailableSubtitles(videoUrl);
-    }
-  }, [isOpen, isYouTubeUrl, videoUrl, fetchAvailableSubtitles, clearSubtitles]);
+  }, [isOpen]);
 
   // Preselect the learning language on top and English underneath; YouTube tracks arrive after the modal opens.
   // Picture subtitles are never preselected.
@@ -293,7 +299,7 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
         {slot === 'primary' && loadingCaptions && (
           <div className="flex items-center justify-center p-4 text-gray-400">
             <RefreshCw className="w-4 h-4 animate-spin mr-2" />
-            <span className="text-sm">Loading captions…</span>
+            <span className="text-sm">Loading captions… You can keep watching while they load.</span>
           </div>
         )}
       </div>
@@ -320,7 +326,7 @@ const MediaTrackSelectionModal: React.FC<MediaTrackSelectionModalProps> = ({
 
           <div className="flex gap-3">
             <Button type="secondary" onPress={onClose}>
-              Cancel
+              {isYouTubeUrl ? 'Keep watching' : 'Cancel'}
             </Button>
             <Button type="primary" disabled={loadingCaptions} onPress={handleConfirm}>
               <div className="flex items-center gap-2">

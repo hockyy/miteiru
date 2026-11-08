@@ -8,6 +8,7 @@ import {Jieba} from '@node-rs/jieba'
 import {formatPinyinReading} from "./pinyinTones";
 import {readStrokeSvg} from "../helpers/strokeSvg";
 import {readAsset} from "../helpers/assetFiles";
+import {lookupUserDictionaryEntry, userChineseDictionaryResult} from "../helpers/userDictionary";
 
 
 interface JyutpingResult {
@@ -24,6 +25,7 @@ class Chinese {
   static importBaseSVG: string;
   static jiebaDictPath: string;
   static jieba;
+  static languageCode = "zh-CN";
 
   static queryHanziChinese = async (query: string) => {
     try {
@@ -41,6 +43,7 @@ class Chinese {
 
   static getMandarinSettings = (appDataDirectory: string, replacements: any = {}) => {
     return {
+      languageCode: "zh-CN",
       jiebaDictPath: path.join(__dirname, 'chinese/zh.jieba.txt'),
       dictPath: path.join(appDataDirectory, `cccedict-db`),
       importDict: path.join(__dirname, 'chinese/chinese.json'),
@@ -51,6 +54,7 @@ class Chinese {
 
   static getCantoneseSettings = (appDataDirectory: string, replacements: any = {}) => {
     return {
+      languageCode: "yue",
       jiebaDictPath: path.join(__dirname, 'cantonese/yue.jieba.txt'),
       dictPath: path.join(appDataDirectory, `cantodict-db`),
       importDict: path.join(__dirname, 'cantonese/cantodict.json'),
@@ -61,6 +65,7 @@ class Chinese {
 
   // Static setup method to initialize properties
   static async setup(settings) {
+    this.languageCode = settings.languageCode ?? "zh-CN";
     this.dictPath = settings.dictPath;
     this.jiebaDictPath = settings.jiebaDictPath;
     this.importDict = settings.importDict;
@@ -167,7 +172,9 @@ class Chinese {
   static registerHandlers() {
     ipcMain.handle('queryChinese', async (event, query, limit) => {
       try {
-        return await queryChineseDictionary(Chinese.Dict.db, query, limit);
+        const custom = await lookupUserDictionaryEntry(this.languageCode, query);
+        const defaults = Chinese.Dict.db ? await queryChineseDictionary(Chinese.Dict.db, query, limit) : [];
+        return custom ? [userChineseDictionaryResult(custom), ...defaults] : defaults;
       } catch (e) {
         console.error(e)
         return []
@@ -177,8 +184,8 @@ class Chinese {
     // Short glosses for every word of a learning-mode subtitle chunk, in request order.
     ipcMain.handle('learningGlossesChinese', async (_event, requests) => {
       const db = Chinese.Dict.db;
-      if (!db) return [];
-      return glossAll(requests, (request) => chineseLearningGloss(db, request));
+      return glossAll(requests, async (request) => (await lookupUserDictionaryEntry(this.languageCode, request.target))?.meaning
+        ?? (db ? chineseLearningGloss(db, request) : ""));
     })
 
     ipcMain.handle('queryHanzi', async (event, query) => {

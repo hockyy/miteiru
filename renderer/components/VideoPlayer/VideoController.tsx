@@ -25,7 +25,8 @@ export const VideoController = ({
                                   canStepVideos = true,
                                   backToHead,
                                   primaryLines,
-                                  primaryShift
+                                  primaryShift,
+                                  tipRanges = undefined
                                 }) => {
   const step = useCallback((delta) => {
     if (enableSeeker) {
@@ -48,7 +49,7 @@ export const VideoController = ({
   return <div onMouseDown={keepFocusOff} className={"player-panel w-[100vw] pt-6"}>
     <div className={"px-4"}>
       <SeekBar clock={clock} durationMs={duration} onSeek={timeSeekerHandler} getBufferedEnd={getBufferedEnd}
-               lines={primaryLines} shiftMs={primaryShift}/>
+               lines={primaryLines} tipRanges={tipRanges} shiftMs={primaryShift} disabled={!enableSeeker}/>
     </div>
     <SmoothCollapse className={"h-fit unselectable"}
                     eagerRender={true}

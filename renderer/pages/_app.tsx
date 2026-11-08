@@ -5,6 +5,8 @@ import type { AppProps } from 'next/app'
 import { UserNotesProvider } from '../hooks/useUserNotes'
 import { useAppFont } from '../hooks/useAppFont'
 import { UpdateNotice } from '../components/UI/UpdateNotice'
+import {disableDefaultContextMenu} from '../utils/contextMenu'
+import {AppErrorBoundary} from '../components/UI/AppErrorBoundary'
 
 // Bundled fonts (renderer/utils/fonts.ts): every weight, loaded per character range as needed.
 import '@fontsource-variable/nunito/wght.css'
@@ -13,8 +15,9 @@ import '@fontsource-variable/noto-sans-sc/wght.css'
 import '@fontsource-variable/noto-sans-tc/wght.css'
 import '../styles/globals.css'
 
-function MyApp({ Component, pageProps }: AppProps) {
+function AppContents({ Component, pageProps }: AppProps) {
   const [appFont] = useAppFont()
+  useEffect(() => disableDefaultContextMenu(document), [])
   useEffect(() => {
     document.documentElement.style.setProperty('--miteiru-app-font', appFont)
   }, [appFont])
@@ -25,6 +28,10 @@ function MyApp({ Component, pageProps }: AppProps) {
       <UpdateNotice />
     </UserNotesProvider>
   )
+}
+
+function MyApp(props: AppProps) {
+  return <AppErrorBoundary><AppContents {...props} /></AppErrorBoundary>
 }
 
 export default MyApp

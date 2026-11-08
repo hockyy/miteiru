@@ -50,7 +50,8 @@ export type RunCommandOptions = {
   cwd?: string;
 };
 
-export function runCommand(
+/** The factory also permits exercising the Tauri spawn lifecycle without launching OS processes. */
+export const createCommandRunner = (spawnCommand: typeof spawn = spawn) => function runCommand(
   command: string,
   args: string[],
   options: RunCommandOptions = {}
@@ -64,7 +65,7 @@ export function runCommand(
       windowsHide: true,
       stdio: ["ignore", "pipe", "pipe"]
     };
-    const child = spawn(command, args, spawnOptions);
+    const child = spawnCommand(command, args, spawnOptions);
     let stdout = "";
     let stderr = "";
     let settled = false;
@@ -86,17 +87,24 @@ export function runCommand(
       resolve(result);
     };
 
+    const stop = () => {
+      // proc_spawn replies asynchronously in Tauri. Its child.kill() remembers this request
+      // until a process id arrives; killing an undefined pid would leave the tool running.
+      if (child.pid === undefined) child.kill();
+      else killProcessTree(child.pid);
+    };
     const onAbort = () => {
-      killProcessTree(child.pid);
+      stop();
       finish(new JobCancelledError());
     };
 
     if (signal) {
       signal.addEventListener("abort", onAbort, {once: true});
+      if (signal.aborted) onAbort();
     }
-    if (timeoutMs && timeoutMs > 0) {
+    if (!settled && timeoutMs && timeoutMs > 0) {
       timeout = setTimeout(() => {
-        killProcessTree(child.pid);
+        stop();
         finish(new CommandError(`${command} timed out after ${timeoutMs}ms`, null, stderr));
       }, timeoutMs);
     }
@@ -130,6 +138,8 @@ export function runCommand(
       ));
     });
   });
-}
+};
+
+export const runCommand = createCommandRunner();
 
 export const isJobCancelled = (error: unknown) => error instanceof JobCancelledError;

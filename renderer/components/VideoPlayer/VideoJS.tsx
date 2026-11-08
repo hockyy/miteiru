@@ -18,6 +18,8 @@ const hideYouTubeCaptions = (player: any) => {
 export const VideoJS = ({options, onReady, clock}: { options: any; onReady: (player: any) => void; clock: PlaybackClock }) => {
   const videoRef = useRef(null);
   const playerRef = useRef(null);
+  // A new source object is an explicit open, even when it names the same YouTube URL again.
+  const loadedSourceRef = useRef(options.sources[0]);
   const youtubeObserverRef = useRef<MutationObserver | null>(null);
   // The unmount cleanup tells the page the player is gone, using the latest callback.
   const onReadyRef = useRef(onReady);
@@ -58,6 +60,7 @@ export const VideoJS = ({options, onReady, clock}: { options: any; onReady: (pla
   useEffect(() => {
     // Make sure Video.js player is only initialized once
     if (!playerRef.current) {
+      loadedSourceRef.current = options.sources[0];
       console.log('[video-load] initializing player', {sources: options.sources});
       const videoElement = document.createElement("video-js");
       videoElement.classList.add('vjs-big-play-centered');
@@ -95,7 +98,8 @@ export const VideoJS = ({options, onReady, clock}: { options: any; onReady: (pla
         });
       });
     } else {
-      if (options.sources[0].src !== playerRef.current.currentSrc()) {
+      if (options.sources[0] !== loadedSourceRef.current || options.sources[0].src !== playerRef.current.currentSrc()) {
+        loadedSourceRef.current = options.sources[0];
         console.log('[video-load] changing source', {
           from: playerRef.current.currentSrc(),
           to: options.sources[0]

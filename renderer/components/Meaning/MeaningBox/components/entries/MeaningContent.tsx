@@ -5,6 +5,7 @@ import { VietnameseEntry } from './VietnameseEntry';
 import { WordSenseEntry } from './WordSenseEntry';
 import { MEANING_ENTRY, MEANING_GLOSS } from '../../../meaningBoxTheme';
 import type { MeaningContentState } from '../../types';
+import {UserDictionaryEntryNotice} from '../UserDictionaryEntryNotice';
 
 type MeaningContentProps = {
   meaningContent: MeaningContentState;
@@ -24,17 +25,17 @@ export const MeaningContent = ({ meaningContent, lang, tags }: MeaningContentPro
   }
 
   if (meaningContent.sense?.length) {
-    return meaningContent.sense.map((sense, idx) => (
+    return <><UserDictionaryEntryNotice entry={meaningContent} lang={lang}/>{meaningContent.sense.map((sense, idx) => (
       <WordSenseEntry key={idx} sense={sense} index={idx} tags={tags} />
-    ));
+    ))}</>;
   }
 
   if (lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang) {
-    return <ChineseEntry meaningContent={meaningContent} />;
+    return <><UserDictionaryEntryNotice entry={meaningContent} lang={lang}/><ChineseEntry meaningContent={meaningContent} /></>;
   }
 
   if (lang === videoConstants.vietnameseLang) {
-    return <VietnameseEntry meaningContent={meaningContent} />;
+    return <><UserDictionaryEntryNotice entry={meaningContent} lang={lang}/><VietnameseEntry meaningContent={meaningContent} /></>;
   }
 
   return null;

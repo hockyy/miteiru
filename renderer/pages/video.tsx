@@ -58,6 +58,14 @@ import {useMediaTrackSubtitleSelection} from "../hooks/useMediaTrackSubtitleSele
 import {getFileNameFromPath, loadMediaPaths} from "../utils/mediaUtils";
 import PlaybackFailedPanel from "../components/VideoPlayer/PlaybackFailedPanel";
 import {analysisFailureMessage} from "../utils/toolSetup";
+import {useYoutubeTranscription} from '../hooks/useYoutubeTranscription';
+import {useSubtitleForecast} from '../hooks/useSubtitleForecast';
+import {useUserDictionary} from '../hooks/useUserDictionary';
+import {useSubtitleRetokenization} from '../hooks/useSubtitleRetokenization';
+import {YoutubeTranscriptionControl} from '../components/VideoPlayer/YoutubeTranscriptionControl';
+import {VideoAiPanel} from '../components/VideoPlayer/VideoAiPanel';
+import {BoxTipsOverlay} from '../components/VideoPlayer/BoxTipsOverlay';
+import {AiCostIndicator} from '../components/VideoPlayer/AiCostIndicator';
 
 function Video() {
   const {
@@ -182,6 +190,14 @@ function Video() {
       primaryStyling,
       tokenizeMiteiru, setEnableSeeker, changeTimeTo, player, lang, setFrequencyPrimary,
       toneType, setPrimaryTimeCache);
+  const generatedAhead = useYoutubeTranscription({
+    videoPath: videoSrc.path, openedVideo: videoSrc, lang, clock, player, primarySub, setPrimarySub,
+    tokenizeMiteiru, forceSimplified: primaryStyling.forceSimplified, setFrequencyPrimary
+  });
+  const forecast = useSubtitleForecast({subtitle: primarySub, lang, clock, videoPath: videoSrc.path, shiftMs: primaryShift});
+  const userDictionary = useUserDictionary(lang);
+  useSubtitleRetokenization({subtitle: primarySub, enabled: forecast.dictionaryEnabled, aiRetokenizations: forecast.retokenizations, tokenizeMiteiru, clock, setFrequencyPrimary});
+  const [showAiTools, setShowAiTools] = useState(false);
   const {
     showController,
     setShowController,
@@ -269,6 +285,14 @@ function Video() {
       () => isYoutube(videoSrc.path) ? videoSrc.path : undefined,
       [videoSrc.path]
   );
+  useEffect(() => {
+    if (!mediaVideoUrl) return;
+    setToastInfo({
+      message: 'YouTube captions load in the background.',
+      update: String(Date.now()),
+      action: {label: 'Choose subtitles', onPress: openTrackSelectionModal}
+    });
+  }, [mediaVideoUrl, openTrackSelectionModal, setToastInfo]);
   const {
     autoPause,
     setAutoPause,
@@ -349,7 +373,7 @@ function Video() {
   // While a video plays, the controls fade out when the mouse rests; not while a panel or dialog is open.
   const panelOpen = showSidebar || showVocabSidebar || showCommandPalette || meaning !== '' ||
       showSubtitleModal || showLyricsSearch || showTrackSelectionModal || showAudioTrackModal ||
-      showShortcuts || showSubtitleMenu;
+      showShortcuts || showSubtitleMenu || showAiTools || generatedAhead.isOpen;
   const {controlsRef} = useIdleControls<HTMLDivElement>(hasVideo && Boolean(isPlaying), !panelOpen);
 
   // Looking up a word pauses the video, and closing the popup resumes it, but only if Miteiru paused it.
@@ -368,12 +392,12 @@ function Video() {
     if (step.resume) setIsPlaying(1);
   }, [lookupOpen, hasVideo, isPlaying, pauseOnLookup, setIsPlaying]);
 
-  // Pause player when media selection modals open
+  // Local track choices pause the file. YouTube captions can be chosen while it keeps playing.
   useEffect(() => {
-    if (showTrackSelectionModal || showAudioTrackModal) {
+    if ((showTrackSelectionModal && !isYoutube(videoSrc.path)) || showAudioTrackModal) {
       setIsPlaying(0);
     }
-  }, [showTrackSelectionModal, showAudioTrackModal, setIsPlaying]);
+  }, [showTrackSelectionModal, showAudioTrackModal, videoSrc.path, setIsPlaying]);
 
   // Once, when the first subtitle line shows: how to look a word up and how to save it.
   const [wordHintShown, setWordHintShown, wordHintLoaded] = useStoreData('hint.wordLookupShown', false);
@@ -473,7 +497,13 @@ function Video() {
               hasPrimarySubtitle={primarySub.lines.length > 0}
               hasSecondarySubtitle={secondarySub.lines.length > 0}
               onRemovePrimary={removePrimarySubtitle}
-              onRemoveSecondary={removeSecondarySubtitle}/>}
+              onRemoveSecondary={removeSecondarySubtitle}
+              onAiTools={() => setShowAiTools(true)}
+              onGenerateAhead={generatedAhead.open}
+              learningStyleEnabled={Boolean(primaryStyling.learning)}
+              onLearningStyleChange={(enabled) => setPrimaryStyling({...primaryStyling, learning: enabled})}
+              aiCost={<AiCostIndicator/>}/>}
+          <BoxTipsOverlay key={videoSrc.path} tips={forecast.tips} clock={clock} enabled={forecast.tipsEnabled} shiftMs={primaryShift}/>
           <MeaningBox meaning={meaning} setMeaning={setMeaning} tokenizeMiteiru={tokenizeMiteiru}
                       lang={lang} setLearningLevel={setLearningLevel}
                       getLearningState={getLearningState}
@@ -511,8 +541,7 @@ function Video() {
           )}
 
           {hasVideo && (
-            // Local files play in libmpv. YouTube does too when yt-dlp finds its streams, and in the
-            // YouTube embed otherwise.
+            // Local files play in libmpv; Video.js uses YouTube's embedded player for online videos.
             videoSrc.type === 'video/youtube'
                 ? <YouTubeVideo options={videoOptions} onReady={readyCallback} clock={clock}/>
                 : <NativeVideo options={videoOptions} onReady={readyCallback} clock={clock}
@@ -591,6 +620,7 @@ function Video() {
                 canStepVideos={isLocalPath(videoSrc.path) && !isYoutube(videoSrc.path)}
                 backToHead={backToHead}
                 primaryLines={primarySub.lines}
+                tipRanges={forecast.tipsEnabled ? forecast.tips : undefined}
                 primaryShift={primaryShift}/>}
           </div>
           {tokenizerMode !== '' && <MiteiruDropzone onDrop={onLoadFiles} deltaTime={deltaTime} lang={lang}/>}
@@ -612,6 +642,13 @@ function Video() {
             preprocessOptions={subtitlePreprocessOptions}
             onPreprocessOptionsChange={setSubtitlePreprocessOptions}
         />
+        <VideoAiPanel isOpen={showAiTools} onClose={() => setShowAiTools(false)} forecast={forecast} dictionary={userDictionary}
+          languageName={currentAppLanguage} onGenerateAhead={isYoutube(videoSrc.path) ? () => {setShowAiTools(false); generatedAhead.open();} : undefined}/>
+        <YoutubeTranscriptionControl isOpen={generatedAhead.isOpen} onClose={generatedAhead.close}
+          onStart={() => {setShowPrimarySub(true); generatedAhead.start();}} onStop={generatedAhead.stop} onRetry={generatedAhead.retry}
+          enabled={generatedAhead.enabled} state={generatedAhead.state} hasApiKey={generatedAhead.hasApiKey}
+          asrModel={generatedAhead.asrModel} setAsrModel={generatedAhead.setAsrModel} asrModelOptions={generatedAhead.asrModelOptions}
+          languageName={currentAppLanguage}/>
         <MediaTrackSelectionModal
             isOpen={showTrackSelectionModal}
             onClose={handleCloseTrackSelectionModal}

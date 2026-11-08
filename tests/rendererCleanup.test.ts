@@ -152,9 +152,57 @@ test("learning content stops at the next chunk after the subtitle is replaced", 
       tokenized++;
     });
     await fillSubtitleWithLearningContent(subtitle as never, async () => [], () => tokenized < 40);
-    // The chunk running when the check fails finishes; no further chunk starts.
+    // The chunk running when the check fails finishes tokenizing, but its stale writes are discarded.
     assert.equal(tokenized, 64);
-    assert.equal(subtitle.lines.filter((line) => Array.isArray(line.content)).length, 64);
+    assert.equal(subtitle.lines.filter((line) => Array.isArray(line.content)).length, 32);
+  });
+});
+
+test("learning analysis prioritizes playback after a seek and still processes every chunk once", async () => {
+  await withGlossIpc(async () => {
+    let priorityLine = 100;
+    const order: number[] = [];
+    const subtitle = fakeSubtitle(Array.from({length: 128}, () => ["学生"]));
+    subtitle.lines.forEach((line, index) => {
+      const tokenize = line.fillContentSeparations;
+      line.fillContentSeparations = async function () {
+        order.push(index);
+        await tokenize.call(this);
+      };
+    });
+    Object.assign(subtitle, {notifyChanged: () => { priorityLine = 70; }});
+    await fillSubtitleWithLearningContent(subtitle as never, async () => [], () => true, () => priorityLine);
+    assert.deepEqual(order, [
+      ...Array.from({length: 32}, (_, index) => index + 96),
+      ...Array.from({length: 32}, (_, index) => index + 64),
+      ...Array.from({length: 64}, (_, index) => index)
+    ]);
+    assert.equal(subtitle.frequency.get("学生"), 128);
+  });
+});
+
+test("learning analysis gives playback and input a turn between cached chunks", async () => {
+  await withGlossIpc(async () => {
+    let tokenized = 0;
+    let observedAtNextTurn = -1;
+    const subtitle = fakeSubtitle(Array.from({length: 96}, () => ["学生"]), async () => { tokenized++; });
+    Object.assign(subtitle, {notifyChanged: () => {
+      if (tokenized === 32) setTimeout(() => { observedAtNextTurn = tokenized; }, 0);
+    }});
+    await fillSubtitleWithLearningContent(subtitle as never, async () => []);
+    assert.equal(observedAtNextTurn, 32, "the next event-loop turn runs before the second chunk starts");
+    assert.equal(tokenized, 96);
+  });
+});
+
+test("replacing a subtitle during the yield prevents the next chunk from starting", async () => {
+  await withGlossIpc(async () => {
+    let current = true;
+    let tokenized = 0;
+    const subtitle = fakeSubtitle(Array.from({length: 96}, () => ["学生"]), async () => { tokenized++; });
+    Object.assign(subtitle, {notifyChanged: () => { setTimeout(() => { current = false; }, 0); }});
+    await fillSubtitleWithLearningContent(subtitle as never, async () => [], () => current);
+    assert.equal(tokenized, 32);
   });
 });
 

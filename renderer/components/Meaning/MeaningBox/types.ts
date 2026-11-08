@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { defaultMeaningBoxStyling } from '../../../utils/CJKStyling';
+import type {UserDictionaryProvenance} from '../userDictionaryProvenance';
 
 /** Horizontal inset when sidebars are open (keeps the modal visible between panels). */
 export type SidebarInsets = {
@@ -42,6 +43,7 @@ export type MeaningContentState = {
   comments?: string;
   /** Set on the placeholder entry `getMeaningEntries` returns when the dictionary has no match. */
   notFound?: boolean;
+  userDictionary?: UserDictionaryProvenance;
 };
 
 export type SenseEntry = {

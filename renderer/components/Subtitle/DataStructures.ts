@@ -172,7 +172,7 @@ export class Line {
   }
 
   async fillContentSeparations(tokenizeMiteiru: TokenizeMiteiru) {
-    this.content = await tokenizeMiteiru((this.content as string).replace(/\n/g, " "));
+    this.content = await tokenizeMiteiru(this.text.replace(/\n/g, " "));
   }
 }
 
@@ -332,8 +332,19 @@ export class SubtitleContainer {
     return JSON.stringify(this.toHuf(singer, version, syncMs), null, 2);
   }
 
-  async adjustForLearning(tokenizeMiteiru: TokenizeMiteiru) {
-    await fillSubtitleWithLearningContent(this, tokenizeMiteiru, () => isCurrentSubtitle(this.id));
+  async adjustForLearning(tokenizeMiteiru: TokenizeMiteiru, getPlaybackTimeMs?: () => number) {
+    await fillSubtitleWithLearningContent(
+      this,
+      tokenizeMiteiru,
+      () => isCurrentSubtitle(this.id),
+      () => {
+        const time = getPlaybackTimeMs?.() ?? 0;
+        const index = findLastLineStartingBy(this.lines, time);
+        // Between cues, prepare the next line; seeking far into a long video should not wait for
+        // every earlier line's readings and dictionary lookups.
+        return index >= 0 && time > this.lines[index].timeEnd ? index + 1 : Math.max(0, index);
+      }
+    );
   }
 }
 

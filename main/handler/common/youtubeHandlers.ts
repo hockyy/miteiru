@@ -3,8 +3,10 @@ import {spawn} from "child_process";
 import os from "os";
 import path from "path";
 import fs from "fs/promises";
-import {getSubtitles} from "../../helpers/getSubtitles";
+import {findBestLanguageMatch} from "../../helpers/getSubtitles";
 import {listYoutubeCaptionTracks} from "../../helpers/youtubeCaptions";
+import {downloadYoutubeCaption} from "../../helpers/youtubeCaptionDownload";
+import {parseSubtitleCues} from "../../helpers/subtitleParser";
 import {requireMediaTool} from "./mediaTools";
 import {YOUTUBE_STREAM_FORMAT_ARGS, youtubeStreamSource} from "../../helpers/youtubeStream";
 
@@ -49,29 +51,31 @@ const runYtDlp =(ytDlpPath: string, args: string[]) => new Promise<string>((reso
   });
 });
 
-/**
- * yt-dlp's `-J` description of a video: its streams (for mpv) and its caption tracks. Opening a
- * video asks for both, so one run serves them, kept for 20 minutes; the stream URLs it holds stay
- * valid for hours.
- */
+// Caption discovery and titles share compact metadata for 20 minutes. The embedded player does
+// its own streaming; full stream metadata is requested only by resolveYoutubeStream callers.
 const INFO_LIFETIME_MS = 20 * 60_000;
 const youtubeInfoCache = new Map<string, { at: number; info: Promise<any> }>();
 
-const youtubeInfo = (videoID: string): Promise<any> => {
+const youtubeInfo = (videoID: string, forStreams = false): Promise<any> => {
   const now = Date.now();
-  const cached = youtubeInfoCache.get(videoID);
+  const key = `${videoID}:${forStreams ? "streams" : "captions"}`;
+  const cached = youtubeInfoCache.get(key);
   if (cached && now - cached.at < INFO_LIFETIME_MS) return cached.info;
-  // Each entry holds a few MB of formats and caption tracks: drop the expired ones.
+  // Caption maps can still be large for videos with many translations; drop expired entries.
   for (const [id, entry] of youtubeInfoCache) {
     if (now - entry.at >= INFO_LIFETIME_MS) youtubeInfoCache.delete(id);
   }
   const info = (async () => {
     const ytDlpPath = await requireMediaTool("yt-dlp");
     const output = await runYtDlp(ytDlpPath, [
-      "-J",
       "--no-playlist",
       "--no-warnings",
-      ...YOUTUBE_STREAM_FORMAT_ARGS,
+      ...(forStreams ? ["-J", ...YOUTUBE_STREAM_FORMAT_ARGS] : [
+        // Keep every caption language, including manifest-only tracks, but omit the unused
+        // video formats and storyboard fragments from the JSON transferred to this worker.
+        "--print", "%(.{title,subtitles,automatic_captions,http_headers})j",
+        "--skip-download", "--ignore-no-formats-error"
+      ]),
       `https://www.youtube.com/watch?v=${videoID}`
     ]);
     try {
@@ -80,23 +84,94 @@ const youtubeInfo = (videoID: string): Promise<any> => {
       throw new Error("yt-dlp returned video data that could not be read.");
     }
   })();
-  youtubeInfoCache.set(videoID, {at: now, info});
+  youtubeInfoCache.set(key, {at: now, info});
   // A failed run is not kept, so the next try runs yt-dlp again.
   info.catch(() => {
-    if (youtubeInfoCache.get(videoID)?.info === info) youtubeInfoCache.delete(videoID);
+    if (youtubeInfoCache.get(key)?.info === info) youtubeInfoCache.delete(key);
   });
   return info;
 };
 
+type DownloadedSubtitle = {filePath: string; language: string};
+const subtitleDownloads = new Map<string, Promise<DownloadedSubtitle>>();
+const subtitleFiles = new Map<string, {at: number; subtitle: DownloadedSubtitle}>();
+const MAX_CACHED_SUBTITLE_FILES = 32;
+
+const downloadSubtitle = (videoID: string, lang: string): Promise<DownloadedSubtitle> => {
+  const key = `${videoID}:${lang}`;
+  const active = subtitleDownloads.get(key);
+  if (active) return active;
+
+  const download = (async () => {
+    const now = Date.now();
+    for (const [cachedKey, entry] of subtitleFiles) {
+      if (now - entry.at >= INFO_LIFETIME_MS) subtitleFiles.delete(cachedKey);
+    }
+    const cached = subtitleFiles.get(key);
+    if (cached) {
+      try {
+        await fs.access(cached.subtitle.filePath);
+        return cached.subtitle;
+      } catch {
+        subtitleFiles.delete(key);
+      }
+    }
+
+    const tempDirPath = await fs.mkdtemp(path.join(os.tmpdir(), "miteiru_youtube_"));
+    const outputBase = path.join(tempDirPath, `${videoID}_${lang}`);
+    try {
+      let filePath: string | undefined;
+      try {
+        // The title lookup and language picker already extracted these signed URLs. A new yt-dlp
+        // run per selected track repeats all player/manifest requests, especially costly on long videos.
+        const caption = await downloadYoutubeCaption(await youtubeInfo(videoID), lang);
+        if (caption) {
+          const captionPath = `${outputBase}.${caption.ext}`;
+          await fs.writeFile(captionPath, caption.content, "utf8");
+          filePath = captionPath;
+        }
+      } catch (error) {
+        // Expired URLs or a caption-only HLS playlist still work through yt-dlp's downloader.
+        console.warn(`[IPC] Retrying YouTube captions with yt-dlp for ${videoID} (${lang}):`, error.message);
+      }
+
+      if (!filePath) {
+        const ytDlpPath = await requireMediaTool("yt-dlp");
+        await runYtDlp(ytDlpPath, [
+          "--write-subs", "--write-auto-subs",
+          "--sub-langs", lang, "--sub-format", "vtt/srt",
+          "--skip-download", "--no-playlist", "--no-warnings",
+          "--socket-timeout", "15", "--retries", "1",
+          "--output", outputBase, `https://youtube.com/watch?v=${videoID}`
+        ]);
+        const files = await fs.readdir(tempDirPath);
+        const downloadedFile = files.find((file) => file.endsWith(".vtt")) ?? files.find((file) => file.endsWith(".srt"));
+        if (!downloadedFile) throw new Error(`Could not find downloaded subtitle file for ${videoID} (${lang})`);
+        filePath = path.join(tempDirPath, downloadedFile);
+      }
+
+      const subtitle = {filePath, language: lang};
+      subtitleFiles.set(key, {at: Date.now(), subtitle});
+      if (subtitleFiles.size > MAX_CACHED_SUBTITLE_FILES) subtitleFiles.delete(subtitleFiles.keys().next().value);
+      return subtitle;
+    } catch (error) {
+      await fs.rm(tempDirPath, {recursive: true, force: true}).catch(() => undefined);
+      throw error;
+    }
+  })();
+  subtitleDownloads.set(key, download);
+  download.finally(() => subtitleDownloads.delete(key)).catch(() => undefined);
+  return download;
+};
+
 export function registerYoutubeHandlers() {
-  // Where mpv plays a YouTube video from (main/helpers/youtubeStream.ts); {ok: false} sends the page
-  // to the YouTube embed instead.
+  // Retained for explicit native-stream callers; normal YouTube playback uses the embedded player.
   ipcMain.handle("resolveYoutubeStream", async (_event, videoID) => {
     try {
       if (!YOUTUBE_VIDEO_ID.test(String(videoID))) throw new Error(`Invalid YouTube video id: ${videoID}`);
-      return {ok: true, ...youtubeStreamSource(await youtubeInfo(String(videoID)))};
+      return {ok: true, ...youtubeStreamSource(await youtubeInfo(String(videoID), true))};
     } catch (error) {
-      console.warn(`[IPC] resolveYoutubeStream: ${videoID} plays in the YouTube embed:`, error.message);
+      console.warn(`[IPC] Could not resolve a native YouTube stream for ${videoID}:`, error.message);
       return {ok: false, error: error.message};
     }
   });
@@ -122,43 +197,7 @@ export function registerYoutubeHandlers() {
       if (!YOUTUBE_VIDEO_ID.test(String(videoID)) || !SUBTITLE_LANGUAGE.test(String(lang))) {
         throw new Error(`Invalid YouTube video id or language: ${videoID} (${lang})`);
       }
-      const ytDlpPath = await requireMediaTool("yt-dlp");
-      // A fresh folder per download: scanning the shared temp folder could pick up an older
-      // file for the same video, or en-US when en was asked for.
-      const tempDirPath = await fs.mkdtemp(path.join(os.tmpdir(), "miteiru_youtube_"));
-      const outputBase = path.join(tempDirPath, `${videoID}_${lang}`);
-
-      const extractArgs = [
-        "--write-subs",
-        "--write-auto-subs",
-        "--sub-langs", lang,
-        "--sub-format", "srt/vtt",
-        "--skip-download",
-        "--output", outputBase,
-        `https://youtube.com/watch?v=${videoID}`
-      ];
-
-      console.log("[IPC] Running yt-dlp with args:", extractArgs);
-
-      await runYtDlp(ytDlpPath, extractArgs);
-
-      const files = await fs.readdir(tempDirPath);
-      // srt when YouTube offers it, otherwise vtt; Miteiru's parser reads both.
-      const downloadedFile = files.find((file) => file.endsWith(".srt")) ?? files.find((file) => file.endsWith(".vtt"));
-
-      if (!downloadedFile) {
-        console.log("[IPC] Available files:", files);
-        throw new Error(`Could not find downloaded subtitle file for ${videoID} (${lang})`);
-      }
-
-      const actualFilePath = path.join(tempDirPath, downloadedFile);
-      console.log(`[IPC] YouTube subtitle downloaded to: ${actualFilePath}`);
-
-      return {
-        success: true,
-        filePath: actualFilePath,
-        language: lang
-      };
+      return {success: true, ...await downloadSubtitle(String(videoID), String(lang))};
     } catch (error) {
       console.error(`[IPC] Error downloading YouTube subtitle for ${videoID} (${lang}):`, error);
       return {
@@ -170,17 +209,30 @@ export function registerYoutubeHandlers() {
 
   ipcMain.handle("getYoutubeSubtitle", async (event, videoID, lang) => {
     try {
-      return await getSubtitles({
-        videoID,
-        lang
-      });
+      const language = String(lang ?? "ja");
+      if (!YOUTUBE_VIDEO_ID.test(String(videoID)) || !SUBTITLE_LANGUAGE.test(language)) {
+        throw new Error("Invalid YouTube video id or subtitle language.");
+      }
+      const info = await youtubeInfo(String(videoID));
+      const availableLanguages = [...new Set([...Object.keys(info.subtitles ?? {}), ...Object.keys(info.automatic_captions ?? {})])]
+        .filter((code) => code !== "live_chat");
+      const bestMatch = findBestLanguageMatch(language, availableLanguages);
+      if (!bestMatch) return [];
+      const {filePath} = await downloadSubtitle(String(videoID), bestMatch);
+      return parseSubtitleCues(await fs.readFile(filePath, "utf8"))
+        .map((cue) => ({
+          start: (cue.from / 1000).toFixed(3),
+          dur: ((cue.to - cue.from) / 1000).toFixed(3),
+          text: cue.text.replace(/<[^>]*>/g, "").trim()
+        }))
+        .filter((cue) => cue.text);
     } catch (error) {
       console.error("Error fetching subtitles:", error);
       return [];
     }
   });
 
-  // From the yt-dlp run the player and the subtitle list share, so naming the video costs no extra run.
+  // From the yt-dlp run shared with the subtitle list, so naming the video costs no extra run.
   ipcMain.handle("getYoutubeVideoTitle", async (_event, videoID: string) => {
     try {
       if (!YOUTUBE_VIDEO_ID.test(String(videoID))) return null;

@@ -2,7 +2,7 @@ import {renderSubtitleHtml} from "../../utils/subtitleHtml";
 import styled from "styled-components";
 import { CJKStyling, defaultLearningColorStyling } from "../../utils/CJKStyling";
 import { getTextShadowFromStroke } from "../../utils/subtitleStroke";
-import React, { ReactNode, useCallback, useEffect, useState } from "react";
+import React, { ReactNode, useCallback } from "react";
 import { isMixed, toRomaji } from "wanakana"
 
 const writeClipboardText = (value: string) => {
@@ -17,12 +17,6 @@ const disableWebkitStroke = `
   -webkit-text-stroke-width: 0;
   -webkit-text-stroke-color: transparent;
 `;
-
-const rubyOverReadingClass = (...extra: string[]) =>
-  ["ruby-over-reading", ...extra].filter(Boolean).join(" ");
-
-const meaningRubyClass = (positionMeaningTop?: boolean) =>
-  positionMeaningTop ? "ruby-over-reading" : "ruby-under-reading";
 
 const StyledSentence = styled.button<{ subtitleStyling: CJKStyling }>`
   ${disableWebkitStroke}
@@ -160,6 +154,55 @@ const StyledChineseSentence = styled.button<{ subtitleStyling: CJKStyling }>`
 
 `
 
+// Annotation rows are fixed by the subtitle's settings, not by an individual word's contents.
+// An empty reading or gloss therefore cannot move that word's base text to another baseline.
+const StyledAlignedWord = styled.button<{ $subtitleStyling: CJKStyling }>`
+  ${disableWebkitStroke}
+  -webkit-text-fill-color: ${props => props.$subtitleStyling.text.color};
+  text-shadow: ${props => strokeShadow(props.$subtitleStyling.stroke.width, props.$subtitleStyling.stroke.color)};
+
+  &.state0 .subtitle-word__part { -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[0].color}; }
+  &.state1 .subtitle-word__part { -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[1].color}; }
+  &.state2 .subtitle-word__part { -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[2].color}; }
+  &.state3 .subtitle-word__part { -webkit-text-fill-color: ${() => defaultLearningColorStyling.learningColor[3].color}; }
+
+  .subtitle-word__meaning {
+    -webkit-text-fill-color: ${props => props.$subtitleStyling.textMeaning?.color ?? props.$subtitleStyling.text.color};
+    font-weight: ${props => props.$subtitleStyling.textMeaning?.weight ?? 400};
+  }
+
+  &:hover .subtitle-word__part {
+    -webkit-text-fill-color: ${props => props.$subtitleStyling.text.hoverColor};
+    text-shadow: ${props => strokeShadow(props.$subtitleStyling.stroke.width, props.$subtitleStyling.stroke.hoverColor)};
+  }
+  &:hover .subtitle-word__meaning {
+    -webkit-text-fill-color: ${props => props.$subtitleStyling.textMeaning?.hoverColor ?? props.$subtitleStyling.text.hoverColor};
+    text-shadow: ${props => strokeShadow(props.$subtitleStyling.stroke.width, props.$subtitleStyling.stroke.hoverColor)};
+  }
+`;
+
+export const alignedWordRows = (styling: CJKStyling, japanese: boolean, withReading = true) => {
+  const meaning = styling.showMeaning || (!japanese && styling.learning) ? '0.625em' : '0px';
+  return {
+    '--subtitle-reading-height': styling.showFurigana && withReading ? '0.625em' : '0px',
+    '--subtitle-romaji-height': japanese && styling.showRomaji ? '0.625em' : '0px',
+    '--subtitle-meaning-top-height': styling.positionMeaningTop ? meaning : '0px',
+    '--subtitle-meaning-bottom-height': styling.positionMeaningTop ? '0px' : meaning
+  } as React.CSSProperties;
+};
+
+type WordPart = {main: string; reading: string; romaji?: string};
+const AlignedWordContent = ({parts, meaning}: {parts: WordPart[]; meaning: string}) => <>
+  <span className="subtitle-word__parts">
+    {parts.map((part, index) => <span className="subtitle-word__part" key={index}>
+      <span className="subtitle-word__reading unselectable">{part.reading}</span>
+      <span className="subtitle-word__base">{part.main}</span>
+      <span className="subtitle-word__romaji unselectable">{part.romaji ?? ''}</span>
+    </span>)}
+  </span>
+  <span className="subtitle-word__meaning internalMeaning unselectable">{meaning}</span>
+</>;
+
 interface SentenceParam {
   origin: string,
   setMeaning: any,
@@ -185,16 +228,7 @@ export const JapaneseSentence = ({
   changeLearningState = () => '',
   getLearningStateClass = () => ''
 }: SentenceParam) => {
-  const [separationContent, setSeparationContent] = useState([]);
-
-  const [learningClassName, setLearningClassName] = useState('');
-  useEffect(() => {
-    if (!getLearningStateClass) return;
-    setLearningClassName(() => {
-      if (subtitleStyling.learning) return getLearningStateClass(basicForm || origin);
-      return '';
-    })
-  }, [basicForm, origin, getLearningStateClass, subtitleStyling]);
+  const learningClassName = subtitleStyling.learning ? getLearningStateClass?.(basicForm || origin) ?? '' : '';
 
   const handleChange = useCallback((pressedString) => {
     if (!pressedString) return;
@@ -213,50 +247,27 @@ export const JapaneseSentence = ({
     changeLearningState(basicForm || origin);
   }, [changeLearningState, basicForm, origin]);
 
-  useEffect(() => {
-    setSeparationContent(() => {
-      return separation.map((val, index) => {
-        // Plain text only: these render inside an <rt>, and nested <rt>/<rp> is invalid HTML.
-        const hiragana = val.hiragana ?? '';
-        const romaji = val.romaji != '' ? val.romaji : toRomaji(val.main);
-        const showHelp = val.isKanji || val.isMixed || isMixed(origin);
-        const showRomaji = (val.isKana || showHelp);
-        const showFurigana = ((val.isKana && subtitleStyling.showFuriganaOnKana) || showHelp);
-        return <ruby className="ruby-under-reading" style={{
-          rubyPosition: "under",
-        }} key={index}>
-          <ruby className={rubyOverReadingClass(learningClassName)}
-            style={{ rubyPosition: "over" }}>
-            {/* @ts-expect-error rb wtf eslint*/}
-            <rb>{val.main}</rb>
-            <rt className={"unselectable"}>{subtitleStyling.showFurigana && showFurigana && hiragana}</rt>
-          </ruby>
-          <rt className={"unselectable"}>{subtitleStyling.showRomaji && showRomaji && romaji}</rt>
-        </ruby>
-      })
-    })
-  }, [separation, subtitleStyling, learningClassName, origin]);
+  const parts: WordPart[] = (separation?.length ? separation : [{main: origin}]).map((part) => {
+    const showHelp = part.isKanji || part.isMixed || isMixed(origin);
+    return {
+      main: part.main,
+      reading: subtitleStyling.showFurigana && ((part.isKana && subtitleStyling.showFuriganaOnKana) || showHelp) ? part.hiragana ?? '' : '',
+      romaji: subtitleStyling.showRomaji && (part.isKana || showHelp) ? part.romaji || toRomaji(part.hiragana || part.main) : ''
+    };
+  });
+  const meaning = subtitleStyling.showMeaning && wordMeaning.length <= (subtitleStyling.maximalMeaningLengthPerCharacter ?? Infinity) * origin.length
+    ? wordMeaning : '';
 
-
-  return <StyledSentence
-    subtitleStyling={subtitleStyling}
-    className={extraClass}
+  return <StyledAlignedWord
+    type="button"
+    $subtitleStyling={subtitleStyling}
+    className={`subtitle-word ${learningClassName} ${extraClass}`}
+    data-meaning-position={subtitleStyling.positionMeaningTop ? 'top' : 'bottom'}
+    style={alignedWordRows(subtitleStyling, true)}
     onClick={handleClick}
     onContextMenu={handleRightClick}>
-    <ruby className={meaningRubyClass(subtitleStyling.positionMeaningTop)} style={{
-      rubyPosition: subtitleStyling.positionMeaningTop ? "over" : "under",
-      WebkitTextFillColor: wordMeaning ? subtitleStyling.textMeaning.color : '',
-    }}>
-      {/* @ts-expect-error rb wtf eslint*/}
-      <rb>{separationContent}</rb>
-      <rt style={{ fontWeight: subtitleStyling.textMeaning.weight }}
-        className={"internalMeaning unselectable"}>{
-          subtitleStyling.showMeaning
-          && wordMeaning.length <= subtitleStyling.maximalMeaningLengthPerCharacter * origin.length
-          && wordMeaning}</rt>
-
-    </ruby>
-  </StyledSentence>
+    <AlignedWordContent parts={parts} meaning={meaning}/>
+  </StyledAlignedWord>
 }
 
 export const PlainSentence = ({ origin }) => {
@@ -345,15 +356,7 @@ export const ChineseSentence = ({
     writeClipboardText(pressedString);
     setMeaning(pressedString)
   }, [setMeaning]);
-  const [learningClassName, setLearningClassName] = useState('');
-  const [separationContent, setSeparationContent] = useState([]);
-  useEffect(() => {
-    if (!getLearningStateClass) return;
-    setLearningClassName(() => {
-      if (subtitleStyling.learning) return getLearningStateClass(origin);
-      return '';
-    })
-  }, [subtitleStyling, origin, getLearningStateClass]);
+  const learningClassName = subtitleStyling.learning ? getLearningStateClass?.(origin) ?? '' : '';
 
   const handleClick = useCallback(() => {
     handleChange(origin);
@@ -365,60 +368,24 @@ export const ChineseSentence = ({
     changeLearningState(origin);
   }, [changeLearningState, origin]);
 
-  useEffect(() => {
-    // Check if this is Vietnamese (no jyutping/pinyin but has separation)
-    const isVietnamese = separation.length > 0 &&
-      !separation.some(s => s.jyutping || s.pinyin);
-    setSeparationContent(() => {
-      const elements = [];
+  const sourceParts = separation?.length ? separation : [{main: origin}];
+  // Reading keys are retained even for unknown Chinese words, so an empty pinyin still reserves its row.
+  const hasReading = sourceParts.some((part) => 'jyutping' in part || 'pinyin' in part);
+  const parts: WordPart[] = sourceParts.map((part) => ({main: part.main,
+    reading: subtitleStyling.showFurigana && learningClassName !== 'state2' ? part.jyutping ?? part.pinyin ?? '' : ''}));
+  const meaning = (subtitleStyling.showMeaning || learningClassName === 'state0' || learningClassName === 'state3')
+    && wordMeaning.length <= (subtitleStyling.maximalMeaningLengthPerCharacter ?? Infinity) * origin.length ? wordMeaning : '';
 
-      separation.forEach((val, index) => {
-        // Add the main ruby element
-        elements.push(
-          <ruby className={rubyOverReadingClass(learningClassName)}
-            style={{
-              rubyPosition: "over",
-            }} key={`word-${index}`}>
-            {/* @ts-expect-error rb wtf eslint*/}
-            <rb>{val.main}</rb>
-            <rt className={"unselectable"}>{subtitleStyling.showFurigana && learningClassName !== 'state2' && (val.jyutping ?? val.pinyin)}</rt>
-          </ruby>
-        );
-
-        // For Vietnamese, add a space ruby element between components (except after spaces or at the end)
-        if (isVietnamese && index < separation.length - 1) {
-          elements.push(
-            <ruby key={`space-${index}`} style={{ fontSize: '0.8em' }}>
-              {/* @ts-expect-error rb wtf eslint*/}
-              <rb>{' '}</rb>
-            </ruby>
-          );
-        }
-      });
-
-      return elements;
-    });
-  }, [separation, subtitleStyling, learningClassName])
-
-  return <StyledChineseSentence
-    subtitleStyling={subtitleStyling}
-    className={extraClass}
+  return <StyledAlignedWord
+    type="button"
+    $subtitleStyling={subtitleStyling}
+    className={`subtitle-word ${learningClassName} ${extraClass}`}
+    data-meaning-position={subtitleStyling.positionMeaningTop ? 'top' : 'bottom'}
+    style={{...alignedWordRows(subtitleStyling, false, hasReading), '--subtitle-part-gap': hasReading ? '0px' : '0.16em'} as React.CSSProperties}
     onClick={handleClick}
     onContextMenu={handleRightClick}>
-    <ruby className={meaningRubyClass(subtitleStyling.positionMeaningTop)} style={{
-      rubyPosition: subtitleStyling.positionMeaningTop ? "over" : "under",
-      WebkitTextFillColor: wordMeaning ? subtitleStyling.textMeaning.color : '',
-    }}>
-      {/* @ts-expect-error rb wtf eslint*/}
-      <rb>{separationContent}</rb>
-      <rt style={{ fontWeight: subtitleStyling.textMeaning.weight }}
-        className={"internalMeaning unselectable"}>{
-          (subtitleStyling.showMeaning || learningClassName === 'state0' || learningClassName === 'state3')
-          && wordMeaning.length <= subtitleStyling.maximalMeaningLengthPerCharacter * origin.length
-          && wordMeaning}</rt>
-
-    </ruby>
-  </StyledChineseSentence>
+    <AlignedWordContent parts={parts} meaning={meaning}/>
+  </StyledAlignedWord>
 }
 
 

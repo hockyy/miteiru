@@ -3,6 +3,8 @@ import Japanese from "../japanese";
 import Chinese from "../chinese";
 import Vietnamese from "../vietnamese";
 import {MiteiruJapaneseWordWithSeparations} from "./japaneseAnalysis";
+import {analyzeWithUserDictionary, enabledUserDictionaryEntries} from "../../helpers/userDictionary";
+import {hasExactJapaneseDefault} from '../../helpers/japaneseDictionaryPriority';
 
 export type AnalyzeTextOptions = {
   tokenizerMode: string;
@@ -71,6 +73,15 @@ export const analyzeText = async (
   {tokenizerMode, toneType = "num"}: AnalyzeTextOptions
 ): Promise<AnalyzeTextResult> => {
   if (!sentence) return [];
+
+  const language = {kuromoji: "ja", cantonese: "yue", jieba: "zh-CN", vietnamese: "vi"}[tokenizerMode];
+  return analyzeWithUserDictionary(sentence, language, await enabledUserDictionaryEntries(language),
+    (text) => analyzeDefaultText(text, tokenizerMode, toneType), toneType,
+    async (entry) => entry.source === 'manual' || language !== 'ja' || !Japanese.Dict.db
+      || !await hasExactJapaneseDefault(Japanese.Dict.db, entry.surface));
+};
+
+const analyzeDefaultText = async (sentence: string, tokenizerMode: string, toneType: string): Promise<AnalyzeTextResult> => {
 
   if (tokenizerMode === "kuromoji") {
     const kuromojiEntries = await Japanese.tokenizeUsingKuromoji(sentence);

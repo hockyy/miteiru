@@ -23,6 +23,16 @@ export const useMeaningLookup = (meaning: string, lang: string, showMeaning: boo
   const [otherMeanings, setOtherMeanings] = useState<MeaningContentState[]>([]);
   const [meaningIndex, setMeaningIndex] = useState(0);
   const [tags, setTags] = useState<Record<string, string>>({});
+  const [dictionaryRevision, setDictionaryRevision] = useState(0);
+
+  useEffect(() => {
+    if (!meaning) return;
+    return window.backend.on('user-dictionary:changed', (change: {language?: string; surfaces?: string[]}) => {
+      if (change.language && change.language !== lang) return;
+      if (change.surfaces?.length && !change.surfaces.includes(meaning)) return;
+      setDictionaryRevision((revision) => revision + 1);
+    });
+  }, [lang, meaning]);
 
   useEffect(() => {
     // The worker answers lookups concurrently; a slow one for a previous word must not land on this one.
@@ -93,7 +103,7 @@ export const useMeaningLookup = (meaning: string, lang: string, showMeaning: boo
     return () => {
       cancelled = true;
     };
-  }, [lang, meaning, showMeaning]);
+  }, [lang, meaning, showMeaning, dictionaryRevision]);
 
   const goToPreviousMeaning = () => {
     if (meaningIndex <= 0) {

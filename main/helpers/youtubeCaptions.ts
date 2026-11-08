@@ -7,9 +7,34 @@ export interface YoutubeCaptionTrack {
 interface CaptionFormat {
   ext?: string;
   name?: string;
+  url?: string;
+  protocol?: string;
+  http_headers?: Record<string, string>;
 }
 
 type CaptionMap = Record<string, CaptionFormat[]>;
+
+export interface YoutubeCaptionInfo {
+  subtitles?: CaptionMap;
+  automatic_captions?: CaptionMap;
+  http_headers?: Record<string, string>;
+}
+
+/** A complete caption file from the metadata already fetched for playback; HLS needs yt-dlp. */
+export function youtubeCaptionSource(info: YoutubeCaptionInfo, language: string) {
+  const formats = info.subtitles?.[language]?.length
+    ? info.subtitles[language]
+    : info.automatic_captions?.[language] ?? [];
+  // VTT retains the inline timestamps used to unroll YouTube's automatic captions.
+  for (const ext of ["vtt", "srt"] as const) {
+    const format = formats.find((candidate) => candidate.ext === ext
+      && /^https?:\/\//i.test(candidate.url ?? "")
+      && !candidate.protocol?.includes("m3u8")
+      && !/\.m3u8(?:[?#]|$)/i.test(candidate.url));
+    if (format) return {url: format.url, ext, headers: {...info.http_headers, ...format.http_headers}};
+  }
+  return null;
+}
 
 // A livestream's chat replay is listed beside its subtitles; it is not a language track.
 const LIVE_CHAT = "live_chat";
@@ -42,10 +67,7 @@ const nonEmptyEntries = (captions?: CaptionMap) =>
  * vtt playlist, and lists YouTube's machine translations of the original (or of a manual track,
  * keyed `<target>-<source>` and named "English from Chinese") under every language.
  */
-export function listYoutubeCaptionTracks(info: {
-  subtitles?: CaptionMap;
-  automatic_captions?: CaptionMap;
-}): YoutubeCaptionTrack[] {
+export function listYoutubeCaptionTracks(info: YoutubeCaptionInfo): YoutubeCaptionTrack[] {
   const manualEntries = nonEmptyEntries(info?.subtitles).filter(([code]) => code !== LIVE_CHAT);
   const manualCodes = new Set(manualEntries.map(([code]) => code));
   const manual: YoutubeCaptionTrack[] = manualEntries.map(([code, formats]) => ({

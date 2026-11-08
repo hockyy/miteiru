@@ -152,7 +152,8 @@ export const SubtitleContentSettings = ({subtitleStyling, setSubtitleStyling, la
                  min={0} max={20} step={1} value={Number(subtitleStyling.maximalMeaningLengthPerCharacter)}
                  onChange={(value) => update("maximalMeaningLengthPerCharacter", value)}/>
     </>}
-    <ToggleRow label="Colour words by how well you know them" checked={subtitleStyling.learning}
+    <ToggleRow label="Learning style" hint="Colour words by how well you know them."
+               checked={subtitleStyling.learning}
                onChange={(value) => update("learning", value)}/>
     <ToggleRow label="Space between words" checked={subtitleStyling.showSpace}
                onChange={(value) => update("showSpace", value)}/>

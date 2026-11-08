@@ -8,6 +8,7 @@ import {
   modelMustThink,
   readThinkingSetting,
   rememberModelMustThink,
+  recordRendererOpenRouterUsage,
 } from './openRouterClient';
 import {
   openRouterMessages,
@@ -69,6 +70,7 @@ export const generateUserNoteWithAI = async ({
   }
 
   const data = await response.json();
+  if (!data.error) await recordRendererOpenRouterUsage(data.usage);
   const content = data.choices?.[0]?.message?.content || '';
   return parseUserNoteAiResponse(content);
 };

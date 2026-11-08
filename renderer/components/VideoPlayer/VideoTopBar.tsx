@@ -21,6 +21,11 @@ type VideoTopBarProps = {
   hasSecondarySubtitle: boolean;
   onRemovePrimary: () => void;
   onRemoveSecondary: () => void;
+  onAiTools?: () => void;
+  onGenerateAhead?: () => void;
+  aiCost?: React.ReactNode;
+  learningStyleEnabled?: boolean;
+  onLearningStyleChange?: (enabled: boolean) => void;
 };
 
 const BAR_BUTTON =
@@ -51,7 +56,12 @@ export const VideoTopBar = ({
   hasPrimarySubtitle,
   hasSecondarySubtitle,
   onRemovePrimary,
-  onRemoveSecondary
+  onRemoveSecondary,
+  onAiTools,
+  onGenerateAhead,
+  aiCost,
+  learningStyleEnabled,
+  onLearningStyleChange
 }: VideoTopBarProps) => {
   // A subtitle shown at the top moves below the bar while the bar shows (globals.css): publish the
   // height of the buttons' row, without the fade under it. The row wraps in a narrow window.
@@ -121,9 +131,22 @@ export const VideoTopBar = ({
         <div className="fixed inset-0 z-[-1]" onClick={() => setSubtitleMenuOpen(false)}/>
         <div role="menu"
              className="absolute left-0 top-full z-10 mt-1 w-72 max-w-[90vw] rounded-xl border border-white/10 bg-slate-950/95 p-1.5 shadow-2xl shadow-black/50 backdrop-blur-xl">
+          {onLearningStyleChange && <button type="button" role="menuitemcheckbox" aria-checked={Boolean(learningStyleEnabled)}
+              className={MENU_ITEM} onClick={choose(() => onLearningStyleChange(!learningStyleEnabled))}>
+            <span className="flex items-center justify-between gap-3">
+              <span>Learning style</span>
+              <span className={learningStyleEnabled ? 'text-emerald-300' : 'text-white/50'}>{learningStyleEnabled ? 'On' : 'Off'}</span>
+            </span>
+          </button>}
           {canChooseTracks && <button type="button" role="menuitem" className={MENU_ITEM}
                                       onClick={choose(onChooseTracks)}>
             {isYoutube ? "Choose YouTube captions…" : "Choose subtitles from the video…"}
+          </button>}
+          {isYoutube && onGenerateAhead && <button type="button" role="menuitem" className={MENU_ITEM} onClick={choose(onGenerateAhead)}>
+            Generate audio subtitles ahead…
+          </button>}
+          {onAiTools && <button type="button" role="menuitem" className={MENU_ITEM} onClick={choose(onAiTools)}>
+            Box tips & user dictionary…
           </button>}
           {canChooseAudio && <button type="button" role="menuitem" className={MENU_ITEM}
                                      onClick={choose(onChooseAudio)}>
@@ -144,6 +167,9 @@ export const VideoTopBar = ({
         </div>
       </>}
     </div>
+    {onAiTools && <button type="button" className={BAR_BUTTON} onClick={onAiTools} title="AI learning tools and tracked spend">
+      AI · {aiCost}
+    </button>}
     <button type="button" className={BAR_BUTTON} onClick={onShowMyWords}
             title={`The words you are learning (${formatKeys(["Ctrl", "X"])})`}>
       My words
