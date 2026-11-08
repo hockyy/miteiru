@@ -62,6 +62,8 @@ export async function translateSrtToEnglish(options: {
   apiKey: string;
   signal: AbortSignal;
   onProgress: ProgressFn;
+  /** The learner's 'openrouter.thinking' setting (openRouterChatCompletion). */
+  thinking?: unknown;
 }): Promise<{englishSrtPath: string}> {
   throwIfAborted(options.signal);
   const sourceText = await fs.readFile(options.sourceSrtPath, "utf8");
@@ -97,6 +99,7 @@ export async function translateSrtToEnglish(options: {
         apiKey: options.apiKey,
         model: options.translateModel,
         temperature: 0.2,
+        thinking: options.thinking,
         timeoutMs: TRANSLATE_REQUEST_TIMEOUT_MS,
         signal,
         messages: [

@@ -1,7 +1,9 @@
 import {
   OPENROUTER_CHAT_URL,
   OPENROUTER_REQUEST_HEADERS,
-  OPENROUTER_TRANSCRIBE_URL
+  OPENROUTER_TRANSCRIBE_URL,
+  reasoningForThinking,
+  refusesAnswerWithoutThinking
 } from "../../renderer/utils/openRouterConstants";
 import {JobCancelledError, throwIfAborted} from "./runCommand";
 import {linkAbortSignals, timeoutSignal} from "./abortSignals";
@@ -105,6 +107,9 @@ export async function transcribeOpenRouterAudio(options: {
   });
 }
 
+// Models that refused to answer without thinking, so later requests leave reasoning to them.
+const modelsThatMustThink = new Set<string>();
+
 export async function openRouterChatCompletion(options: {
   apiKey: string;
   model: string;
@@ -112,15 +117,27 @@ export async function openRouterChatCompletion(options: {
   temperature?: number;
   signal?: AbortSignal;
   timeoutMs?: number;
+  /** The learner's 'openrouter.thinking' setting: thinking is off unless it is "model". */
+  thinking?: unknown;
 }): Promise<{content: string; usage?: Record<string, unknown>}> {
-  const data = await requestJson(OPENROUTER_CHAT_URL, options.apiKey, {
+  const reasoning = modelsThatMustThink.has(options.model) ? undefined : reasoningForThinking(options.thinking);
+  const ask = (withReasoning: boolean) => requestJson(OPENROUTER_CHAT_URL, options.apiKey, {
     model: options.model,
     temperature: options.temperature ?? 0.2,
-    messages: options.messages
+    messages: options.messages,
+    ...(withReasoning ? {reasoning} : {})
   }, {
     signal: options.signal,
     timeoutMs: options.timeoutMs
   });
+  let data: any;
+  try {
+    data = await ask(Boolean(reasoning));
+  } catch (error) {
+    if (!reasoning || !(error instanceof OpenRouterHttpError) || !refusesAnswerWithoutThinking(error.status, error.message)) throw error;
+    modelsThatMustThink.add(options.model);
+    data = await ask(false);
+  }
   const content = data?.choices?.[0]?.message?.content;
   if (typeof content !== "string" || !content.trim()) {
     throw new Error("OpenRouter returned an empty chat response");

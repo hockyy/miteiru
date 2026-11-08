@@ -1,17 +1,26 @@
 /**
  * The OpenRouter key and model the AI tools use (word notes, translations, sentence analysis), kept in
- * the store as 'openrouter.apiKey' and 'openrouter.model'. Video settings (AI tab) and the Study page's
- * settings both show it and edit the same values.
+ * the store as 'openrouter.apiKey' and 'openrouter.model', and whether models think before answering
+ * ('openrouter.thinking'). Video settings (AI tab) and the Study page's settings both show it and edit
+ * the same values.
  */
 import React, {useCallback, useEffect, useId, useState} from "react";
 import {Button} from "../Utils/Button";
 import {useStoreData} from "../../hooks/useStoreData";
-import {SidebarSection, SIDEBAR_FIELD_INPUT} from "./SidebarShell";
-import {DEFAULT_OPENROUTER_MODEL, OPENROUTER_KEYS_URL} from "../../utils/openRouterConstants";
+import {SidebarSection, SidebarSettingRow, SIDEBAR_FIELD_INPUT} from "./SidebarShell";
+import Toggle from "./Toggle";
+import {
+  DEFAULT_OPENROUTER_MODEL,
+  DEFAULT_OPENROUTER_THINKING,
+  OPENROUTER_KEYS_URL,
+  OPENROUTER_THINKING_KEY,
+  type OpenRouterThinking,
+} from "../../utils/openRouterConstants";
 
 export const OpenRouterSettings = () => {
   const [apiKey, setApiKey] = useStoreData('openrouter.apiKey', '');
   const [model, setModel] = useStoreData('openrouter.model', DEFAULT_OPENROUTER_MODEL);
+  const [thinking, setThinking] = useStoreData<OpenRouterThinking>(OPENROUTER_THINKING_KEY, DEFAULT_OPENROUTER_THINKING);
   const [modelDraft, setModelDraft] = useState(model);
   const [showApiKey, setShowApiKey] = useState(false);
   const modelId = useId();
@@ -73,5 +82,16 @@ export const OpenRouterSettings = () => {
         </Button>
       </div>
     </div>
+    <SidebarSettingRow>
+      <Toggle isChecked={thinking === "model"} onChange={(on) => setThinking(on ? "model" : "off")}
+              label="Let the model think before answering"/>
+      {/* The text toggles too; the switch alone is a small target. Keyboard users use the switch. */}
+      <div className="min-w-0 flex-1 cursor-pointer select-none" onClick={() => setThinking(thinking === "model" ? "off" : "model")}>
+        <div>Let the model think before answering</div>
+        <div className="mt-0.5 text-xs text-white/60">
+          Off: answers start sooner and cost less. On: slower, for models that answer better after thinking.
+        </div>
+      </div>
+    </SidebarSettingRow>
   </SidebarSection>;
 };
