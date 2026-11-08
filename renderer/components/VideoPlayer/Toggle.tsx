@@ -1,10 +1,12 @@
-import {useCallback} from "react";
+import React, {useCallback} from "react";
 
-export default function Toggle({onChange, isChecked, label}: {
+export default function Toggle({onChange, isChecked, label, disabled = false}: {
   onChange: (checked: boolean) => void;
   isChecked: boolean;
   // Accessible name of the switch when no visible label wraps it.
   label?: string;
+  // Dimmed and not clickable.
+  disabled?: boolean;
 }) {
 
   const handleChange = useCallback((e) => {
@@ -16,11 +18,13 @@ export default function Toggle({onChange, isChecked, label}: {
       <div
           className="relative flex flex-col items-center justify-center overflow-hidden">
         <div className="flex">
-          <label className="inline-flex relative items-center cursor-pointer">
+          <label className={`inline-flex relative items-center ${disabled ? "cursor-not-allowed opacity-40" : "cursor-pointer"}`}>
             <input
                 type="checkbox"
                 role="switch"
                 aria-label={label}
+                aria-disabled={disabled || undefined}
+                disabled={disabled}
                 className="sr-only peer"
                 checked={isChecked}
                 onChange={handleChange}

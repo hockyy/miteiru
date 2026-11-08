@@ -3,13 +3,15 @@ import {test} from 'node:test';
 import {createElement} from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 import {BoxTipCard, BoxTipsOverlay} from '../renderer/components/VideoPlayer/BoxTipsOverlay';
-import {formatAiCost} from '../renderer/components/VideoPlayer/AiCostIndicator';
+import {formatAiCost, formatClock} from '../renderer/utils/aiFormat';
+import {transcriptionStatus} from '../renderer/utils/transcriptionStatus';
 import {PlaybackClock} from '../renderer/utils/playbackClock';
 import {boxTipKey, compactBoxTipText, currentBoxTipIndex} from '../renderer/utils/boxTipPresentation';
 
 test('Box tips can prerender while disabled without requiring a live playback clock', () => {
   const markup = renderToStaticMarkup(createElement(BoxTipsOverlay, {clock: new PlaybackClock(), tips: [], enabled: false}));
-  assert.equal(markup, '');
+  assert.ok(!markup.includes('box-tip'), 'no card while disabled');
+  assert.match(markup, /role="status" aria-live="polite"/, 'the live region is always there for screen readers');
 });
 
 test('Box tips stay readable with a stationary paused clock and render escaped text', () => {
@@ -19,7 +21,7 @@ test('Box tips stay readable with a stationary paused clock and render escaped t
   assert.match(markup, /&lt;script&gt;pun&lt;\/script&gt;/);
   assert.match(markup, /A &lt; B &amp; C/);
   assert.equal(renderToStaticMarkup(createElement(BoxTipsOverlay, props)), markup);
-  assert.equal(renderToStaticMarkup(createElement(BoxTipsOverlay, {...props, enabled: false})), '');
+  assert.ok(!renderToStaticMarkup(createElement(BoxTipsOverlay, {...props, enabled: false})).includes('box-tip'));
   assert.ok(!markup.includes('in '));
 });
 
@@ -73,4 +75,37 @@ test('the spend indicator retains precision for small charges', () => {
   assert.equal(formatAiCost(0), '$0.00');
   assert.equal(formatAiCost(0.0012), '$0.0012');
   assert.equal(formatAiCost(1.234), '$1.23');
+});
+
+test('the tip card is a compact kind chip, phrase and explanation with an accessible dismiss button', () => {
+  const tip = {from: 0, to: 5000, kind: 'proverb' as const, title: '七転び八起き', text: 'Fall seven times, get up eight.'};
+  const markup = renderToStaticMarkup(createElement(BoxTipCard, {tip, onDismiss() {}}));
+  assert.match(markup, /box-tip__kind">Saying</, 'sentence-case kind label');
+  assert.match(markup, /box-tip__phrase">七転び八起き</);
+  assert.match(markup, /box-tip__explanation">Fall seven times, get up eight\.</);
+  assert.match(markup, /aria-label="Dismiss this tip"/);
+  assert.ok(!markup.includes('×'));
+  const live = renderToStaticMarkup(createElement(BoxTipsOverlay, {clock: new PlaybackClock(), enabled: true, tips: [tip]}));
+  assert.match(live, /aria-live="polite">Saying tip: 七転び八起き\. Fall seven times/);
+});
+
+test('times in the audio-subtitles dialog read as m:ss', () => {
+  assert.equal(formatClock(0), '0:00');
+  assert.equal(formatClock(9.9), '0:09');
+  assert.equal(formatClock(90), '1:30');
+  assert.equal(formatClock(600), '10:00');
+  assert.equal(formatClock(-4), '0:00');
+  assert.equal(formatClock(Number.NaN), '0:00');
+});
+
+test('the audio-subtitles status says what is being made, how far it is ready, or why it stopped', () => {
+  const base = {activeSegment: null, completedSegments: 0, bufferedUntilSeconds: 0, error: null};
+  const segment = {index: 3, startSeconds: 88, durationSeconds: 34, bucketStartSeconds: 90, bucketEndSeconds: 120};
+  assert.equal(transcriptionStatus(base, false).text, 'Off. Start whenever you want subtitles made from the audio.');
+  assert.equal(transcriptionStatus({...base, activeSegment: segment}, true).text, 'Making 1:30–2:00…');
+  assert.equal(transcriptionStatus({...base, bufferedUntilSeconds: 150.4}, true).text, 'Ready up to 2:30');
+  assert.equal(transcriptionStatus({...base, completedSegments: 1}, true).pieces, '1 piece made');
+  assert.equal(transcriptionStatus({...base, completedSegments: 5}, true).pieces, '5 pieces made');
+  const failed = transcriptionStatus({...base, error: 'The model is busy'}, true);
+  assert.deepEqual([failed.kind, failed.text], ['error', 'The model is busy']);
 });

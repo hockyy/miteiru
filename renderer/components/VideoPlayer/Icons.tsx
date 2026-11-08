@@ -1,3 +1,5 @@
+import React from "react";
+
 export const Cogs =
     <svg className={"pr-3"}
          height="100%"

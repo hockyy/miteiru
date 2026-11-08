@@ -9,7 +9,6 @@ import {Button} from "../Utils/Button";
 import {useStoreData} from "../../hooks/useStoreData";
 import {SidebarSection, SidebarSettingRow, SIDEBAR_FIELD_INPUT} from "./SidebarShell";
 import Toggle from "./Toggle";
-import {AiUsageDetails} from './AiCostIndicator';
 import {
   DEFAULT_OPENROUTER_MODEL,
   DEFAULT_OPENROUTER_THINKING,
@@ -38,7 +37,6 @@ export const OpenRouterSettings = () => {
   const modelChanged = modelDraft.trim() !== model;
 
   return <SidebarSection title="OpenRouter AI">
-    <AiUsageDetails/>
     <div className="flex flex-col gap-2">
       <label htmlFor={keyId} className="text-sm text-white/85">API key</label>
       <div className="flex min-w-0 flex-row items-center gap-2">

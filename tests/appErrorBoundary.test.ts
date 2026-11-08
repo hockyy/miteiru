@@ -62,11 +62,14 @@ test('render failure fallback shows the actual error and component stack with co
   boundary.state = {...boundary.state, ...AppErrorBoundary.getDerivedStateFromError(error)};
   boundary.componentDidCatch(error, {componentStack: '\n    at JapaneseSentence'});
   const html = renderToStaticMarkup(boundary.render());
-  assert.match(html, /Miteiru encountered an error/);
+  assert.match(html, /Something went wrong/);
+  assert.match(html, /Reloading usually fixes it/);
+  assert.match(html, /<summary[^>]*>Error details<\/summary>/);
   assert.match(html, /Cannot read subtitle &lt;entry&gt;/);
   assert.match(html, /at JapaneseSentence/);
-  assert.match(html, /Copy error/);
-  assert.match(html, /Reload Miteiru/);
+  assert.match(html, /Copy details/);
+  assert.match(html, /miteiru-btn--primary[^>]*>Reload Miteiru/);
+  assert.doesNotMatch(html, /style=/, 'the screen uses the app classes, not inline styles');
   assert.doesNotMatch(html, /Healthy player|Try again/);
 });
 
@@ -83,10 +86,15 @@ test('window errors and rejections preserve the player and remove their listener
     handlers.get('unhandledrejection')?.({reason: new Error('Temporary player rejection')});
     const html = renderToStaticMarkup(boundary.render());
     assert.match(html, /Healthy player/);
-    assert.match(html, /Error details/);
-    assert.match(html, /Temporary player rejection/);
+    assert.match(html, /Something went wrong in the background\./);
+    assert.match(html, /Details/);
     assert.match(html, /Dismiss/);
-    assert.doesNotMatch(html, /Miteiru encountered an error|Reload Miteiru/);
+    assert.doesNotMatch(html, /Temporary player rejection/, 'the report stays folded until Details is pressed');
+    boundary.setState({detailsOpen: true});
+    const expanded = renderToStaticMarkup(boundary.render());
+    assert.match(expanded, /Temporary player rejection/);
+    assert.match(expanded, /Copy details/);
+    assert.doesNotMatch(expanded, /Reload Miteiru/);
     handlers.get('error')?.({error: new Error('Later cascade'), message: 'Later cascade'});
     assert.equal(boundary.state.asyncError?.message, 'Temporary player rejection');
     boundary.setState({asyncError: null});

@@ -63,9 +63,8 @@ import {useSubtitleForecast} from '../hooks/useSubtitleForecast';
 import {useUserDictionary} from '../hooks/useUserDictionary';
 import {useSubtitleRetokenization} from '../hooks/useSubtitleRetokenization';
 import {YoutubeTranscriptionControl} from '../components/VideoPlayer/YoutubeTranscriptionControl';
-import {VideoAiPanel} from '../components/VideoPlayer/VideoAiPanel';
+import {UserDictionaryPanel} from '../components/VideoPlayer/UserDictionaryPanel';
 import {BoxTipsOverlay} from '../components/VideoPlayer/BoxTipsOverlay';
-import {AiCostIndicator} from '../components/VideoPlayer/AiCostIndicator';
 
 function Video() {
   const {
@@ -197,7 +196,7 @@ function Video() {
   const forecast = useSubtitleForecast({subtitle: primarySub, lang, clock, videoPath: videoSrc.path, shiftMs: primaryShift});
   const userDictionary = useUserDictionary(lang);
   useSubtitleRetokenization({subtitle: primarySub, enabled: forecast.dictionaryEnabled, aiRetokenizations: forecast.retokenizations, tokenizeMiteiru, clock, setFrequencyPrimary});
-  const [showAiTools, setShowAiTools] = useState(false);
+  const [showDictionary, setShowDictionary] = useState(false);
   const {
     showController,
     setShowController,
@@ -208,6 +207,12 @@ function Video() {
     showCommandPalette,
     setShowCommandPalette
   } = useMenuDisplay();
+  // The top bar opens Settings straight on the AI tab; a new nonce makes the sidebar switch tab again.
+  const [settingsRequest, setSettingsRequest] = useState<{tab: 'ai'; nonce: number}>();
+  const openAiSettings = useCallback(() => {
+    setSettingsRequest((old) => ({tab: 'ai', nonce: (old?.nonce ?? 0) + 1}));
+    setShowSidebar(true);
+  }, [setShowSidebar]);
 
   const [rubyContent, setRubyCopyContent] = useRubyCopy();
   const {
@@ -373,7 +378,7 @@ function Video() {
   // While a video plays, the controls fade out when the mouse rests; not while a panel or dialog is open.
   const panelOpen = showSidebar || showVocabSidebar || showCommandPalette || meaning !== '' ||
       showSubtitleModal || showLyricsSearch || showTrackSelectionModal || showAudioTrackModal ||
-      showShortcuts || showSubtitleMenu || showAiTools || generatedAhead.isOpen;
+      showShortcuts || showSubtitleMenu || showDictionary || generatedAhead.isOpen;
   const {controlsRef} = useIdleControls<HTMLDivElement>(hasVideo && Boolean(isPlaying), !panelOpen);
 
   // Looking up a word pauses the video, and closing the popup resumes it, but only if Miteiru paused it.
@@ -498,11 +503,11 @@ function Video() {
               hasSecondarySubtitle={secondarySub.lines.length > 0}
               onRemovePrimary={removePrimarySubtitle}
               onRemoveSecondary={removeSecondarySubtitle}
-              onAiTools={() => setShowAiTools(true)}
-              onGenerateAhead={generatedAhead.open}
+              onOpenAiSettings={openAiSettings}
+              aiActive={forecast.tipsEnabled || forecast.dictionaryEnabled || generatedAhead.enabled}
+              onGenerateAhead={isYoutube(videoSrc.path) ? generatedAhead.open : undefined}
               learningStyleEnabled={Boolean(primaryStyling.learning)}
-              onLearningStyleChange={(enabled) => setPrimaryStyling({...primaryStyling, learning: enabled})}
-              aiCost={<AiCostIndicator/>}/>}
+              onLearningStyleChange={(enabled) => setPrimaryStyling({...primaryStyling, learning: enabled})}/>}
           <BoxTipsOverlay key={videoSrc.path} tips={forecast.tips} clock={clock} enabled={forecast.tipsEnabled} shiftMs={primaryShift}/>
           <MeaningBox meaning={meaning} setMeaning={setMeaning} tokenizeMiteiru={tokenizeMiteiru}
                       lang={lang} setLearningLevel={setLearningLevel}
@@ -642,13 +647,12 @@ function Video() {
             preprocessOptions={subtitlePreprocessOptions}
             onPreprocessOptionsChange={setSubtitlePreprocessOptions}
         />
-        <VideoAiPanel isOpen={showAiTools} onClose={() => setShowAiTools(false)} forecast={forecast} dictionary={userDictionary}
-          languageName={currentAppLanguage} onGenerateAhead={isYoutube(videoSrc.path) ? () => {setShowAiTools(false); generatedAhead.open();} : undefined}/>
+        <UserDictionaryPanel isOpen={showDictionary} onClose={() => setShowDictionary(false)} dictionary={userDictionary}
+          languageName={currentAppLanguage}/>
         <YoutubeTranscriptionControl isOpen={generatedAhead.isOpen} onClose={generatedAhead.close}
           onStart={() => {setShowPrimarySub(true); generatedAhead.start();}} onStop={generatedAhead.stop} onRetry={generatedAhead.retry}
           enabled={generatedAhead.enabled} state={generatedAhead.state} hasApiKey={generatedAhead.hasApiKey}
-          asrModel={generatedAhead.asrModel} setAsrModel={generatedAhead.setAsrModel} asrModelOptions={generatedAhead.asrModelOptions}
-          languageName={currentAppLanguage}/>
+          asrModel={generatedAhead.asrModel} setAsrModel={generatedAhead.setAsrModel} asrModelOptions={generatedAhead.asrModelOptions}/>
         <MediaTrackSelectionModal
             isOpen={showTrackSelectionModal}
             onClose={handleCloseTrackSelectionModal}
@@ -695,7 +699,11 @@ function Video() {
                  primaryShift={primaryShift} setPrimaryShift={setPrimaryShift}
                  secondaryShift={secondaryShift} setSecondaryShift={setSecondaryShift}
                  languageName={currentAppLanguage}
-                 notify={notify}/>
+                 notify={notify}
+                 requestedTab={settingsRequest}
+                 forecast={forecast}
+                 dictionaryCount={userDictionary.entries.length}
+                 onOpenDictionary={() => setShowDictionary(true)}/>
         <ShortcutSheet isOpen={showShortcuts} onClose={closeShortcuts} languageName={currentAppLanguage}/>
         <VocabSidebar
             showVocabSidebar={showVocabSidebar}
