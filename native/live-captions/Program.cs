@@ -25,6 +25,7 @@ internal static class Program
                 eventArgs.Cancel = true;
                 cancellation.Cancel();
             };
+            StopWhenAppCloses(cancellation);
 
             WriteMessage("debug", "Helper process started.");
             var window = LaunchLiveCaptions();
@@ -43,6 +44,48 @@ internal static class Program
             WriteMessage("error", error.Message);
             return 1;
         }
+    }
+
+    /// <summary>
+    /// Miteiru keeps this helper's stdin open and never writes to it. When the app goes away (quit,
+    /// crash or killed), Windows closes the pipe and stdin ends. Stop then: otherwise the helper keeps
+    /// polling Live Captions with nobody listening, and keeps its files open so an update can't replace them.
+    /// </summary>
+    private static void StopWhenAppCloses(CancellationTokenSource cancellation)
+    {
+        if (!Console.IsInputRedirected)
+        {
+            return; // Started by hand in a console: Ctrl+C stops it.
+        }
+
+        var watcher = new Thread(() =>
+        {
+            try
+            {
+                using var input = Console.OpenStandardInput();
+                var buffer = new byte[256];
+                while (input.Read(buffer, 0, buffer.Length) > 0)
+                {
+                }
+            }
+            catch (System.IO.IOException)
+            {
+            }
+
+            try
+            {
+                cancellation.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+                // Main has already finished.
+            }
+        })
+        {
+            IsBackground = true,
+            Name = "Miteiru stdin watcher",
+        };
+        watcher.Start();
     }
 
     private static AutomationElement LaunchLiveCaptions()
@@ -268,7 +311,14 @@ internal static class Program
 
     private static void WriteJson(object payload)
     {
-        Console.WriteLine(JsonSerializer.Serialize(payload));
-        Console.Out.Flush();
+        try
+        {
+            Console.WriteLine(JsonSerializer.Serialize(payload));
+            Console.Out.Flush();
+        }
+        catch (System.IO.IOException)
+        {
+            // The app has gone and took the pipe with it: there is nobody left to tell.
+        }
     }
 }
