@@ -60,10 +60,21 @@ const useLearningState = (lang: string) => {
     saveLearningEntry(content, {level: savedEntries.current[content]?.level ?? getLearningState(content), updTime});
   }, [getLearningState, saveLearningEntry]);
 
+  // The language the saved words in learningState were loaded for (null until the first load).
+  const [loadedLang, setLoadedLang] = useState<string | null>(null);
+
   useEffect(() => {
+    let cancelled = false;
     window.backend.invoke('loadLearningState', lang).then((val) => {
-      setLearningState(val);
-    })
+      // A load for a language already switched away from must not land over the new one's.
+      if (cancelled) return;
+      // With no language yet the backend answers nothing; `in` needs an object to search.
+      setLearningState(val ?? {});
+      setLoadedLang(lang);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [lang]);
 
   useEffect(() => {
@@ -80,7 +91,10 @@ const useLearningState = (lang: string) => {
     learningPercentage,
     setLearningPercentage,
     updateTimeWithSameLevel,
-    refreshTrigger
+    refreshTrigger,
+    // Every saved word as loaded for this language (later saves go to cachedLearningState), or
+    // null while it loads. Shared so the page doesn't load all of them a second time.
+    savedWords: loadedLang === lang ? learningState as Record<string, LearningStateType> : null,
   };
 }
 
