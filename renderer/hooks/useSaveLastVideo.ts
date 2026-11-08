@@ -19,7 +19,7 @@ type SaveLastVideoInput = {
 };
 
 const saveNow = (input: SaveLastVideoInput) => {
-  if (!input.path || !input.started) return;
+  if (!input.path || !input.started || input.clock.isPreviewing()) return;
   const video = buildLastVideo({
     path: input.path,
     title: input.title,

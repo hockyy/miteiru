@@ -9,6 +9,8 @@ import {processKuromojinToSeparations, KuromojinWord} from "./languages/japanese
 import {buildInflectionTable, type InflectionTableRequest} from "./languages/inflectionTable";
 import {readStrokeSvg} from "../helpers/strokeSvg";
 import {glossAll, japaneseLearningGloss, searchJapanese} from "./languages/learningGlosses";
+import {lookupUserDictionaryEntry, userJapaneseDictionaryResult} from "../helpers/userDictionary";
+import {hasExactJapaneseDefault} from '../helpers/japaneseDictionaryPriority';
 
 const buildKuromojiTokenizer = (dicPath: string) => new Promise<Tokenizer>((resolve, reject) => {
   kuromoji.builder({dicPath}).build((error, tokenizer) => (error ? reject(error) : resolve(tokenizer)));
@@ -173,7 +175,12 @@ class Japanese {
   static registerHandlers() {
     ipcMain.handle('queryJapanese', async (event, query, limit) => {
       try {
-        return await searchJapanese(Japanese.Dict.db, query, limit);
+        const custom = await lookupUserDictionaryEntry("ja", query);
+        const defaults = Japanese.Dict.db ? await searchJapanese(Japanese.Dict.db, query, limit) : [];
+        if (!custom) return defaults;
+        const exactDefault = defaults.some((entry) => [...entry.kanji, ...entry.kana].some((form) => form.text === query));
+        return custom.source === 'manual' || !exactDefault ? [userJapaneseDictionaryResult(custom), ...defaults]
+          : [...defaults, userJapaneseDictionaryResult(custom)];
       } catch (e) {
         console.error(e)
         return []
@@ -184,8 +191,13 @@ class Japanese {
     // Short glosses for every word of a learning-mode subtitle chunk, in request order.
     ipcMain.handle('learningGlossesJapanese', async (_event, requests) => {
       const db = this.Dict.db;
-      if (!db) return [];
-      return glossAll(requests, (request) => japaneseLearningGloss(db, request));
+      return glossAll(requests, async (request) => {
+        const custom = await lookupUserDictionaryEntry('ja', request.target);
+        if (!custom) return db ? japaneseLearningGloss(db, request) : '';
+        if (custom?.source === 'manual') return custom.meaning;
+        if (db && await hasExactJapaneseDefault(db, request.target)) return japaneseLearningGloss(db, request);
+        return custom?.meaning ?? (db ? japaneseLearningGloss(db, request) : '');
+      });
     })
 
     ipcMain.handle('queryKanji', async (event, query) => {

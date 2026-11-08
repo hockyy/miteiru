@@ -2,7 +2,7 @@ import {useEffect, useState} from 'react';
 import {extractVideoId, isYoutube} from '../utils/utils';
 
 /**
- * A YouTube link's video title (from yt-dlp, whose run the player and the subtitle list share), or
+ * A YouTube link's video title (from the same yt-dlp metadata as the subtitle list), or
  * null for anything else, until it is known, or without yt-dlp.
  */
 export const useYoutubeTitle = (url: string): string | null => {

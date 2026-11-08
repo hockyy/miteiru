@@ -80,6 +80,18 @@ export const readThinkingSetting = async (): Promise<unknown> => {
   }
 };
 
+/** Called once for a newly completed provider response, never when reading cached AI content. */
+export const recordRendererOpenRouterUsage = async (usage: unknown): Promise<void> => {
+  if (typeof window === 'undefined' || !window.backend?.invoke) return;
+  const cost = usage && typeof usage === 'object' ? (usage as {cost?: unknown}).cost : undefined;
+  try {
+    await window.backend.invoke('ai-usage:record', {cost});
+  } catch (error) {
+    // A usage-store failure must not make the caller retry a paid request.
+    console.warn('[AI usage] Could not record OpenRouter usage:', error);
+  }
+};
+
 export async function streamOpenRouterCompletion(
   apiKey: string,
   model: string,
@@ -149,5 +161,13 @@ async function streamOnce(
     throw error;
   }
   emitter?.flush(rawResponse);
+  // The installed OpenRouter provider exposes the terminal response's charge here, separately
+  // from the SDK's token counts. Missing charges are recorded as unknown without estimates.
+  let usage: unknown;
+  try {
+    const metadata = await result.providerMetadata;
+    usage = metadata?.openrouter?.usage;
+  } catch { /* A completed text response remains useful even if its metadata is unavailable. */ }
+  await recordRendererOpenRouterUsage(usage);
   return rawResponse;
 }

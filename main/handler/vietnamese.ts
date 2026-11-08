@@ -15,6 +15,7 @@ import {ipcMain} from "electron";
 import {glossAll, pickVietnameseGloss} from "./languages/learningGlosses";
 import path from "path";
 import {readTextAsset} from "../helpers/assetFiles";
+import {lookupUserDictionaryEntry, userVietnameseDictionaryResult} from "../helpers/userDictionary";
 
 interface VietnameseTokenResult {
   origin: string;
@@ -130,6 +131,8 @@ class Vietnamese {
 
   static registerHandlers() {
     ipcMain.handle('queryVietnamese', async (event, query: string) => {
+      const custom = await lookupUserDictionaryEntry("vi", query);
+      if (custom) return [userVietnameseDictionaryResult(custom)];
       if (!this.isLoaded) {
         return [];
       }
@@ -153,8 +156,8 @@ class Vietnamese {
 
     // Short glosses for every word of a learning-mode subtitle chunk, in request order.
     ipcMain.handle('learningGlossesVietnamese', async (_event, requests) => {
-      if (!this.isLoaded) return [];
-      return glossAll(requests, ({target}) => pickVietnameseGloss(this.dictionary.get(target) ?? ''));
+      return glossAll(requests, async ({target}) => (await lookupUserDictionaryEntry("vi", target))?.meaning
+        ?? (this.isLoaded ? pickVietnameseGloss(this.dictionary.get(target) ?? '') : ""));
     });
   }
 }

@@ -7,6 +7,7 @@ import {
 } from "../../renderer/utils/openRouterConstants";
 import {JobCancelledError, throwIfAborted} from "./runCommand";
 import {linkAbortSignals, timeoutSignal} from "./abortSignals";
+import {recordOpenRouterUsage} from "./aiUsage";
 
 export type OpenRouterChatMessage = {
   role: "system" | "user" | "assistant";
@@ -45,9 +46,19 @@ const requestJson = async (
   // the listeners on the job's signal (it serves many requests) where AbortSignal.any is missing.
   const timeout = options.timeoutMs && options.timeoutMs > 0 ? timeoutSignal(options.timeoutMs) : undefined;
   const linked = linkAbortSignals([options.signal, timeout?.signal]);
+  let dispatched = false;
+  let recorded = false;
+  let rejectedWithoutCharge = false;
+  const record = async (usage: unknown) => {
+    recorded = true;
+    // Usage bookkeeping cannot turn a completed paid response into a retry.
+    await recordOpenRouterUsage(usage).catch((error) => console.warn("[AI usage] Could not record OpenRouter usage:", error));
+  };
   try {
     let response: Response;
     try {
+      throwIfAborted(options.signal);
+      dispatched = true;
       response = await fetch(url, {
         method: "POST",
         headers: {
@@ -70,6 +81,7 @@ const requestJson = async (
     }
 
     if (!response.ok) {
+      rejectedWithoutCharge = response.status >= 400 && response.status < 500;
       const details = await readErrorBody(response);
       throw new OpenRouterHttpError(`OpenRouter ${response.status}: ${details || response.statusText}`, response.status);
     }
@@ -80,9 +92,18 @@ const requestJson = async (
       const message = typeof failure.message === "string" ? failure.message : JSON.stringify(failure).slice(0, 300);
       const code = Number(failure.code);
       const status = Number.isInteger(code) && code > 0 ? code : 502;
+      rejectedWithoutCharge = status >= 400 && status < 500;
       throw new OpenRouterHttpError(`OpenRouter ${status}: ${message}`, status);
     }
+    // Count newly completed provider requests, including ASR. Cache hits bypass this function.
+    // Tracking must never turn a paid successful response into a retry when storage is unavailable.
+    await record(data?.usage);
     return data;
+  } catch (error) {
+    // The Rust HTTP request can continue after the caller stops waiting. A dispatched request
+    // without a terminal price may still be billed; preserve that uncertainty exactly once.
+    if (dispatched && !recorded && !rejectedWithoutCharge) await record(undefined);
+    throw error;
   } finally {
     linked.dispose();
     timeout?.dispose();

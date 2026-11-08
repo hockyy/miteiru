@@ -58,6 +58,13 @@ import {useMediaTrackSubtitleSelection} from "../hooks/useMediaTrackSubtitleSele
 import {getFileNameFromPath, loadMediaPaths} from "../utils/mediaUtils";
 import PlaybackFailedPanel from "../components/VideoPlayer/PlaybackFailedPanel";
 import {analysisFailureMessage} from "../utils/toolSetup";
+import {useYoutubeTranscription} from '../hooks/useYoutubeTranscription';
+import {useSubtitleForecast} from '../hooks/useSubtitleForecast';
+import {useUserDictionary} from '../hooks/useUserDictionary';
+import {useSubtitleRetokenization} from '../hooks/useSubtitleRetokenization';
+import {YoutubeTranscriptionControl} from '../components/VideoPlayer/YoutubeTranscriptionControl';
+import {UserDictionaryPanel} from '../components/VideoPlayer/UserDictionaryPanel';
+import {BoxTipsOverlay} from '../components/VideoPlayer/BoxTipsOverlay';
 
 function Video() {
   const {
@@ -182,6 +189,14 @@ function Video() {
       primaryStyling,
       tokenizeMiteiru, setEnableSeeker, changeTimeTo, player, lang, setFrequencyPrimary,
       toneType, setPrimaryTimeCache);
+  const generatedAhead = useYoutubeTranscription({
+    videoPath: videoSrc.path, openedVideo: videoSrc, lang, clock, player, primarySub, setPrimarySub,
+    tokenizeMiteiru, forceSimplified: primaryStyling.forceSimplified, setFrequencyPrimary
+  });
+  const forecast = useSubtitleForecast({subtitle: primarySub, lang, clock, videoPath: videoSrc.path, shiftMs: primaryShift});
+  const userDictionary = useUserDictionary(lang);
+  useSubtitleRetokenization({subtitle: primarySub, enabled: forecast.dictionaryEnabled, aiRetokenizations: forecast.retokenizations, tokenizeMiteiru, clock, setFrequencyPrimary});
+  const [showDictionary, setShowDictionary] = useState(false);
   const {
     showController,
     setShowController,
@@ -192,6 +207,12 @@ function Video() {
     showCommandPalette,
     setShowCommandPalette
   } = useMenuDisplay();
+  // The top bar opens Settings straight on the AI tab; a new nonce makes the sidebar switch tab again.
+  const [settingsRequest, setSettingsRequest] = useState<{tab: 'ai'; nonce: number}>();
+  const openAiSettings = useCallback(() => {
+    setSettingsRequest((old) => ({tab: 'ai', nonce: (old?.nonce ?? 0) + 1}));
+    setShowSidebar(true);
+  }, [setShowSidebar]);
 
   const [rubyContent, setRubyCopyContent] = useRubyCopy();
   const {
@@ -269,6 +290,25 @@ function Video() {
       () => isYoutube(videoSrc.path) ? videoSrc.path : undefined,
       [videoSrc.path]
   );
+  // A failed AI batch pauses the tools until Retry, so say so where the learner is looking.
+  const retryForecast = useRef(forecast.retry);
+  retryForecast.current = forecast.retry;
+  useEffect(() => {
+    if (!forecast.error) return;
+    setToastInfo({
+      message: `AI study tools paused: ${forecast.error}`,
+      update: String(Date.now()),
+      action: {label: 'Retry', onPress: () => retryForecast.current()}
+    });
+  }, [forecast.error, setToastInfo]);
+  useEffect(() => {
+    if (!mediaVideoUrl) return;
+    setToastInfo({
+      message: 'YouTube captions load in the background.',
+      update: String(Date.now()),
+      action: {label: 'Choose subtitles', onPress: openTrackSelectionModal}
+    });
+  }, [mediaVideoUrl, openTrackSelectionModal, setToastInfo]);
   const {
     autoPause,
     setAutoPause,
@@ -349,7 +389,7 @@ function Video() {
   // While a video plays, the controls fade out when the mouse rests; not while a panel or dialog is open.
   const panelOpen = showSidebar || showVocabSidebar || showCommandPalette || meaning !== '' ||
       showSubtitleModal || showLyricsSearch || showTrackSelectionModal || showAudioTrackModal ||
-      showShortcuts || showSubtitleMenu;
+      showShortcuts || showSubtitleMenu || showDictionary || generatedAhead.isOpen;
   const {controlsRef} = useIdleControls<HTMLDivElement>(hasVideo && Boolean(isPlaying), !panelOpen);
 
   // Looking up a word pauses the video, and closing the popup resumes it, but only if Miteiru paused it.
@@ -368,12 +408,12 @@ function Video() {
     if (step.resume) setIsPlaying(1);
   }, [lookupOpen, hasVideo, isPlaying, pauseOnLookup, setIsPlaying]);
 
-  // Pause player when media selection modals open
+  // Local track choices pause the file. YouTube captions can be chosen while it keeps playing.
   useEffect(() => {
-    if (showTrackSelectionModal || showAudioTrackModal) {
+    if ((showTrackSelectionModal && !isYoutube(videoSrc.path)) || showAudioTrackModal) {
       setIsPlaying(0);
     }
-  }, [showTrackSelectionModal, showAudioTrackModal, setIsPlaying]);
+  }, [showTrackSelectionModal, showAudioTrackModal, videoSrc.path, setIsPlaying]);
 
   // Once, when the first subtitle line shows: how to look a word up and how to save it.
   const [wordHintShown, setWordHintShown, wordHintLoaded] = useStoreData('hint.wordLookupShown', false);
@@ -473,7 +513,14 @@ function Video() {
               hasPrimarySubtitle={primarySub.lines.length > 0}
               hasSecondarySubtitle={secondarySub.lines.length > 0}
               onRemovePrimary={removePrimarySubtitle}
-              onRemoveSecondary={removeSecondarySubtitle}/>}
+              onRemoveSecondary={removeSecondarySubtitle}
+              onOpenAiSettings={openAiSettings}
+              aiActive={forecast.tipsEnabled || forecast.dictionaryEnabled || generatedAhead.enabled}
+              onGenerateAhead={isYoutube(videoSrc.path) ? generatedAhead.open : undefined}
+              learningStyleEnabled={Boolean(primaryStyling.learning)}
+              onLearningStyleChange={(enabled) => setPrimaryStyling({...primaryStyling, learning: enabled})}/>}
+          <BoxTipsOverlay key={videoSrc.path} tips={forecast.tips} clock={clock} enabled={forecast.tipsEnabled} shiftMs={primaryShift}
+                          placement={primaryStyling.positionFromTop ? "middle" : "top"}/>
           <MeaningBox meaning={meaning} setMeaning={setMeaning} tokenizeMiteiru={tokenizeMiteiru}
                       lang={lang} setLearningLevel={setLearningLevel}
                       getLearningState={getLearningState}
@@ -591,6 +638,7 @@ function Video() {
                 canStepVideos={isLocalPath(videoSrc.path) && !isYoutube(videoSrc.path)}
                 backToHead={backToHead}
                 primaryLines={primarySub.lines}
+                tipRanges={forecast.tipsEnabled ? forecast.tips : undefined}
                 primaryShift={primaryShift}/>}
           </div>
           {tokenizerMode !== '' && <MiteiruDropzone onDrop={onLoadFiles} deltaTime={deltaTime} lang={lang}/>}
@@ -612,6 +660,12 @@ function Video() {
             preprocessOptions={subtitlePreprocessOptions}
             onPreprocessOptionsChange={setSubtitlePreprocessOptions}
         />
+        <UserDictionaryPanel isOpen={showDictionary} onClose={() => setShowDictionary(false)} dictionary={userDictionary}
+          languageName={currentAppLanguage}/>
+        <YoutubeTranscriptionControl isOpen={generatedAhead.isOpen} onClose={generatedAhead.close}
+          onStart={() => {setShowPrimarySub(true); generatedAhead.start();}} onStop={generatedAhead.stop} onRetry={generatedAhead.retry}
+          enabled={generatedAhead.enabled} state={generatedAhead.state} hasApiKey={generatedAhead.hasApiKey}
+          asrModel={generatedAhead.asrModel} setAsrModel={generatedAhead.setAsrModel} asrModelOptions={generatedAhead.asrModelOptions}/>
         <MediaTrackSelectionModal
             isOpen={showTrackSelectionModal}
             onClose={handleCloseTrackSelectionModal}
@@ -658,7 +712,11 @@ function Video() {
                  primaryShift={primaryShift} setPrimaryShift={setPrimaryShift}
                  secondaryShift={secondaryShift} setSecondaryShift={setSecondaryShift}
                  languageName={currentAppLanguage}
-                 notify={notify}/>
+                 notify={notify}
+                 requestedTab={settingsRequest}
+                 forecast={forecast}
+                 dictionaryCount={userDictionary.entries.length}
+                 onOpenDictionary={() => setShowDictionary(true)}/>
         <ShortcutSheet isOpen={showShortcuts} onClose={closeShortcuts} languageName={currentAppLanguage}/>
         <VocabSidebar
             showVocabSidebar={showVocabSidebar}

@@ -1,6 +1,8 @@
 import { useState, useCallback, useRef } from 'react';
 import {getYoutubeVideoId} from "../utils/mediaUtils";
 
+const CAPTION_LIST_TIMEOUT_MS = 30_000;
+
 export interface YoutubeSubtitleOption {
   language: string;
   name: string;
@@ -24,6 +26,7 @@ export const useYoutubeSubtitles = () => {
   });
   // Bumped per listing and on clear, so a slow listing for an earlier video can't overwrite a newer one.
   const latestRequest = useRef(0);
+  const listingTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Check if URL is a YouTube URL
   const isYoutubeUrl = useCallback((url: string): boolean => {
@@ -32,21 +35,26 @@ export const useYoutubeSubtitles = () => {
 
   // Fetch available YouTube subtitles for a video
   const fetchAvailableSubtitles = useCallback(async (videoUrl: string) => {
+    const request = ++latestRequest.current;
+    clearTimeout(listingTimer.current);
     const videoId = getYoutubeVideoId(videoUrl);
     
     if (!videoId) {
-      setState(prev => ({ ...prev, error: 'Invalid YouTube URL' }));
+      setState({subtitles: [], isLoading: false, hasLoaded: false, error: 'Invalid YouTube URL'});
       return;
     }
 
-    const request = ++latestRequest.current;
     setState(prev => ({ ...prev, isLoading: true, hasLoaded: false, error: null, subtitles: [] }));
 
+    let timer: ReturnType<typeof setTimeout> | undefined;
     try {
       console.log(`[useYoutubeSubtitles] Fetching available subtitles for ${videoId}`);
 
-      // Use our new yt-dlp based subtitle listing
-      const result = await window.backend.invoke('getYoutubeSubtitleLanguages', videoId);
+      const timeout = new Promise<never>((_resolve, reject) => {
+        timer = setTimeout(() => reject(new Error('YouTube captions are taking too long. Keep watching and try again.')), CAPTION_LIST_TIMEOUT_MS);
+        listingTimer.current = timer;
+      });
+      const result = await Promise.race([window.backend.invoke('getYoutubeSubtitleLanguages', videoId), timeout]);
       if (request !== latestRequest.current) return;
 
       // yt-dlp missing or failing comes back as an error beside an empty list; show why instead of "0 subtitles".
@@ -82,6 +90,9 @@ export const useYoutubeSubtitles = () => {
         error: error.message || 'Failed to fetch YouTube subtitles',
         isLoading: false 
       }));
+    } finally {
+      clearTimeout(timer);
+      if (listingTimer.current === timer) listingTimer.current = undefined;
     }
   }, []);
 
@@ -114,6 +125,8 @@ export const useYoutubeSubtitles = () => {
   // Clear current state
   const clearSubtitles = useCallback(() => {
     latestRequest.current++;
+    clearTimeout(listingTimer.current);
+    listingTimer.current = undefined;
     setState({
       subtitles: [],
       isLoading: false,

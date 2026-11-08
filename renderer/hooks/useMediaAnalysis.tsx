@@ -123,18 +123,14 @@ const useMediaAnalysis = (videoPath: string, openedVideo?: object) => {
       if (isAnalysedFile(videoPath)) {
         analyzeMedia(videoPath);
       } else if (isYoutube(videoPath)) {
-        // For YouTube videos, show track selection modal immediately
-        // Set empty media info but trigger modal
+        // Captions load in the background. The learner opens the picker from Subtitles…;
+        // opening a video must not put playback behind a slow YouTube caption listing.
         setMediaInfo({
           duration: 0,
           audioTracks: [],
           subtitleTracks: [], // Will be populated by YouTube subtitles in modal
           videoTracks: []
         });
-        console.log('[useMediaAnalysis] YouTube video detected, showing subtitle selection modal');
-        setTimeout(() => {
-          if (activeVideoPath.current === videoPath) setShowTrackSelectionModal(true);
-        }, 100);
       }
     }
   }, [videoPath, openedVideo, analyzeMedia]);

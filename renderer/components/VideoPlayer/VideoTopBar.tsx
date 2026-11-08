@@ -1,5 +1,6 @@
 import React, {useCallback, useEffect, useRef} from "react";
 import {formatKeys} from "../../utils/platform";
+import {AiSpendChip} from "./AiCostIndicator";
 
 type VideoTopBarProps = {
   onHome: () => void;
@@ -21,11 +22,20 @@ type VideoTopBarProps = {
   hasSecondarySubtitle: boolean;
   onRemovePrimary: () => void;
   onRemoveSecondary: () => void;
+  /** Opens Settings on the AI tab; the menu item and the spend chip use it. */
+  onOpenAiSettings?: () => void;
+  /** Opens "Subtitles from the audio" (YouTube only). */
+  onGenerateAhead?: () => void;
+  /** An AI study tool is on (box tips, AI word splitting or audio subtitles): the spend chip shows. */
+  aiActive?: boolean;
+  learningStyleEnabled?: boolean;
+  onLearningStyleChange?: (enabled: boolean) => void;
 };
 
-const BAR_BUTTON =
-  "rounded-lg px-3 py-1.5 text-sm font-bold text-white/85 transition-colors hover:bg-white/15 hover:text-white " +
+const BAR_BUTTON_BASE =
+  "rounded-lg px-3 py-1.5 text-sm font-bold transition-colors hover:bg-white/15 " +
   "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70";
+const BAR_BUTTON = `${BAR_BUTTON_BASE} text-white/85 hover:text-white`;
 
 const MENU_ITEM =
   "block w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-white/90 transition-colors " +
@@ -51,7 +61,12 @@ export const VideoTopBar = ({
   hasPrimarySubtitle,
   hasSecondarySubtitle,
   onRemovePrimary,
-  onRemoveSecondary
+  onRemoveSecondary,
+  onOpenAiSettings,
+  onGenerateAhead,
+  aiActive,
+  learningStyleEnabled,
+  onLearningStyleChange
 }: VideoTopBarProps) => {
   // A subtitle shown at the top moves below the bar while the bar shows (globals.css): publish the
   // height of the buttons' row, without the fade under it. The row wraps in a narrow window.
@@ -121,9 +136,22 @@ export const VideoTopBar = ({
         <div className="fixed inset-0 z-[-1]" onClick={() => setSubtitleMenuOpen(false)}/>
         <div role="menu"
              className="absolute left-0 top-full z-10 mt-1 w-72 max-w-[90vw] rounded-xl border border-white/10 bg-slate-950/95 p-1.5 shadow-2xl shadow-black/50 backdrop-blur-xl">
+          {onLearningStyleChange && <button type="button" role="menuitemcheckbox" aria-checked={Boolean(learningStyleEnabled)}
+              className={MENU_ITEM} onClick={choose(() => onLearningStyleChange(!learningStyleEnabled))}>
+            <span className="flex items-center justify-between gap-3">
+              <span>Learning style</span>
+              <span className={learningStyleEnabled ? 'text-emerald-300' : 'text-white/50'}>{learningStyleEnabled ? 'On' : 'Off'}</span>
+            </span>
+          </button>}
           {canChooseTracks && <button type="button" role="menuitem" className={MENU_ITEM}
                                       onClick={choose(onChooseTracks)}>
             {isYoutube ? "Choose YouTube captions…" : "Choose subtitles from the video…"}
+          </button>}
+          {isYoutube && onGenerateAhead && <button type="button" role="menuitem" className={MENU_ITEM} onClick={choose(onGenerateAhead)}>
+            Subtitles from the audio…
+          </button>}
+          {onOpenAiSettings && <button type="button" role="menuitem" className={MENU_ITEM} onClick={choose(onOpenAiSettings)}>
+            AI study tools…
           </button>}
           {canChooseAudio && <button type="button" role="menuitem" className={MENU_ITEM}
                                      onClick={choose(onChooseAudio)}>
@@ -144,6 +172,7 @@ export const VideoTopBar = ({
         </div>
       </>}
     </div>
+    {aiActive && onOpenAiSettings && <AiSpendChip className={BAR_BUTTON_BASE} onClick={onOpenAiSettings}/>}
     <button type="button" className={BAR_BUTTON} onClick={onShowMyWords}
             title={`The words you are learning (${formatKeys(["Ctrl", "X"])})`}>
       My words

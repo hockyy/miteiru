@@ -21,6 +21,9 @@ const disableWebkitStroke = `
 const rubyOverReadingClass = (...extra: string[]) =>
   ["ruby-over-reading", ...extra].filter(Boolean).join(" ");
 
+/** Marks an annotation row that is switched on, so an empty one still keeps its height (globals.css). */
+const reservedRow = (classes: string, rowOn?: boolean) => rowOn ? `${classes} ruby-row-reserved` : classes;
+
 const meaningRubyClass = (positionMeaningTop?: boolean) =>
   positionMeaningTop ? "ruby-over-reading" : "ruby-under-reading";
 
@@ -231,7 +234,7 @@ export const JapaneseSentence = ({
             <rb>{val.main}</rb>
             <rt className={"unselectable"}>{subtitleStyling.showFurigana && showFurigana && hiragana}</rt>
           </ruby>
-          <rt className={"unselectable"}>{subtitleStyling.showRomaji && showRomaji && romaji}</rt>
+          <rt className={reservedRow("unselectable", subtitleStyling.showRomaji)}>{subtitleStyling.showRomaji && showRomaji && romaji}</rt>
         </ruby>
       })
     })
@@ -250,7 +253,7 @@ export const JapaneseSentence = ({
       {/* @ts-expect-error rb wtf eslint*/}
       <rb>{separationContent}</rb>
       <rt style={{ fontWeight: subtitleStyling.textMeaning.weight }}
-        className={"internalMeaning unselectable"}>{
+        className={reservedRow("internalMeaning unselectable", subtitleStyling.showMeaning)}>{
           subtitleStyling.showMeaning
           && wordMeaning.length <= subtitleStyling.maximalMeaningLengthPerCharacter * origin.length
           && wordMeaning}</rt>
@@ -412,7 +415,7 @@ export const ChineseSentence = ({
       {/* @ts-expect-error rb wtf eslint*/}
       <rb>{separationContent}</rb>
       <rt style={{ fontWeight: subtitleStyling.textMeaning.weight }}
-        className={"internalMeaning unselectable"}>{
+        className={reservedRow("internalMeaning unselectable", subtitleStyling.showMeaning || subtitleStyling.learning)}>{
           (subtitleStyling.showMeaning || learningClassName === 'state0' || learningClassName === 'state3')
           && wordMeaning.length <= subtitleStyling.maximalMeaningLengthPerCharacter * origin.length
           && wordMeaning}</rt>

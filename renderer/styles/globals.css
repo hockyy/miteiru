@@ -504,6 +504,16 @@ rt {
 .ruby-under-reading > rt:empty {
   display: none;
 }
+
+/* A row that is switched on keeps its height on words with nothing to show in it. Word boxes are
+   bottom-aligned, so a missing meaning or romaji row would otherwise drop that word's text below
+   its neighbours'. */
+.ruby-over-reading > rt.ruby-row-reserved:empty,
+.ruby-under-reading > rt.ruby-row-reserved:empty {
+  display: block;
+  min-height: 1.15em;
+}
+
 /* The player's bottom panel (VideoController): darkest at the bottom, fading out above the seek bar. */
 .player-panel {
   background-image: linear-gradient(to top, rgb(2 6 23 / 0.9), rgb(15 23 42 / 0.72) 55%, rgb(15 23 42 / 0));
@@ -562,6 +572,28 @@ rt {
 
 .seek-bar__progress {
   background-image: linear-gradient(90deg, var(--seek-sky), var(--seek-blue));
+}
+
+/* Prepared learning moments stay red above both future track and already-played blue progress. */
+.seek-bar__tips {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: #f43f5e;
+  stroke: #f43f5e;
+  stroke-width: 2px;
+  opacity: 0.9;
+  pointer-events: none;
+}
+.seek-bar__tooltip-tip {
+  padding: 1px 6px;
+  border-radius: 9999px;
+  background: rgb(244 63 94 / 0.18);
+  color: #fda4af;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
 }
 
 .seek-bar__thumb-rail {
@@ -654,4 +686,52 @@ rt {
 .player-topbar {
   background-image: linear-gradient(to bottom, rgb(2 6 23 / 0.85), rgb(15 23 42 / 0.55) 55%, rgb(15 23 42 / 0));
   transition: opacity 0.3s ease, left 300ms cubic-bezier(0, 0, 0.2, 1), right 300ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+/* A tip card for the cue on screen, at the top right under the bar and clear of the subtitles. It is a dark
+   card with no backdrop blur (the video under the page is a native window that blur cannot sample) and no
+   frame-driven animation: one short fade-in when a tip appears (the card is keyed per tip). */
+.box-tip {
+  position: fixed;
+  z-index: 18;
+  top: max(72px, calc(var(--player-topbar-height, 48px) + 16px));
+  right: calc(var(--subtitle-inset-right, 0px) + 16px);
+  width: min(26rem, calc(100vw - var(--subtitle-inset-left, 0px) - var(--subtitle-inset-right, 0px) - 32px));
+  box-sizing: border-box;
+  padding: 12px 14px 14px 16px;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-left: 3px solid #fde047;
+  border-radius: 16px;
+  background: rgb(2 6 23 / 0.9);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.35);
+  color: white;
+  overflow-wrap: anywhere;
+  animation: box-tip-in 160ms ease-out both;
+}
+/* With the main subtitle at the top, the card sits halfway down the right edge instead, clear of a
+   top subtitle and a bottom one. `translate` leaves `transform` to the fade-in. */
+.box-tip--middle {
+  top: 50%;
+  translate: 0 -50%;
+}
+@keyframes box-tip-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .box-tip { animation-name: box-tip-fade; }
+  @keyframes box-tip-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
+.box-tip__header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.box-tip__kind { padding: 2px 8px; border-radius: 9999px; background: #fde047; color: #172554; font-size: 12px; font-weight: 700; line-height: 16px; }
+.box-tip__close { display: grid; place-items: center; width: 28px; height: 28px; margin: -4px -6px -4px 0; border-radius: 9999px; color: rgb(255 255 255 / 0.6); }
+.box-tip__close:hover { color: white; background: rgb(255 255 255 / 0.1); }
+.box-tip__close:focus-visible { color: white; outline: 2px solid #fde047; outline-offset: 1px; }
+.box-tip__phrase { margin-top: 6px; font-family: var(--miteiru-subtitle-font); font-size: clamp(18px, 1.5vw, 24px); font-weight: 700; line-height: 1.35; color: white; }
+.box-tip__explanation {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden;
+  margin: 6px 0 0; color: rgb(255 255 255 / 0.85); font-size: clamp(14px, 1.1vw, 17px); font-weight: 500; line-height: 1.5;
 }

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import {test} from "node:test";
 import {PlaybackClock} from "../renderer/utils/playbackClock";
 import {findLastLineStartingBy, findLineIndexAt, getLyricsWindow, Line} from "../renderer/components/Subtitle/DataStructures";
+import {HookHost, loadHooks} from './helpers/reactHookHost';
 
 test("PlaybackClock notifies only when the time moves", () => {
   const clock = new PlaybackClock();
@@ -18,6 +19,43 @@ test("PlaybackClock notifies only when the time moves", () => {
   unsubscribe();
   clock.set(3);
   assert.deepEqual(seen, [1.5, 2]);
+});
+
+test('seek previews follow the pointer while retaining real player time for cancellation', () => {
+  const clock = new PlaybackClock();
+  const seen: number[] = [];
+  clock.set(5);
+  clock.subscribe(() => seen.push(clock.get()));
+  clock.preview(30);
+  clock.set(5.03);
+  clock.preview(60);
+  clock.set(5.06);
+  assert.equal(clock.get(), 60);
+  assert.equal(clock.isPreviewing(), true);
+  clock.cancelPreview();
+  assert.equal(clock.get(), 5.06);
+  assert.equal(clock.isPreviewing(), false);
+  assert.deepEqual(seen, [30, 60, 5.06]);
+});
+
+test('committing a seek notifies schedulers even at the same preview time and holds stale player samples', () => {
+  let now = 0;
+  const clock = new PlaybackClock(() => now);
+  const states: {seconds: number; previewing: boolean}[] = [];
+  clock.set(5);
+  clock.subscribe(() => states.push({seconds: clock.get(), previewing: clock.isPreviewing()}));
+  clock.preview(60);
+  clock.commitPreview(60);
+  clock.set(5.1);
+  assert.equal(clock.get(), 60);
+  assert.deepEqual(states, [{seconds: 60, previewing: true}, {seconds: 60, previewing: false}]);
+  now = 100;
+  clock.set(60.05);
+  assert.equal(clock.get(), 60.05);
+  clock.commitPreview(100);
+  now = 3200;
+  clock.set(60.1);
+  assert.equal(clock.get(), 60.1, 'a rejected or unavailable seek cannot freeze the clock forever');
 });
 
 // Lines as SubtitleContainer builds them: in start order, not overlapping.
@@ -74,12 +112,32 @@ test("auto-pause stops once in the last frames of a line and re-arms on the next
   assert.equal(pauseId, -1);
 });
 
+test('previewing subtitle endings does not trigger learning auto-pause', () => {
+  const host = new HookHost();
+  const usePauseAndRepeat = loadHooks<typeof import('../renderer/hooks/usePauseAndRepeat')>('renderer/hooks/usePauseAndRepeat.tsx', host).default;
+  const clock = new PlaybackClock();
+  const pauses: number[] = [];
+  const cache = [1000, 2000];
+  const read = () => host.render(() => usePauseAndRepeat(cache, clock, 0, (value) => pauses.push(value), () => {}));
+  try {
+    clock.set(1.2);
+    read().setAutoPause(true);
+    read();
+    clock.preview(1.99);
+    assert.deepEqual(pauses, []);
+    clock.set(1.3);
+    clock.cancelPreview();
+    clock.set(1.99);
+    assert.deepEqual(pauses, [0]);
+  } finally { host.dispose(); }
+});
+
 test("subtitle learning analysis announces each finished chunk", async () => {
   const {fillSubtitleWithLearningContent} = await import("../renderer/components/Subtitle/subtitleLanguageSupport");
   const {languageCodes} = await import("../renderer/languages/manifest");
   const globals = globalThis as Record<string, unknown>;
   const saved = globals.window;
-  globals.window = {ipc: {invoke: async (_channel: string, batch: unknown[]) => batch.map(() => "")}};
+  globals.window = {backend: {invoke: async (_channel: string, batch: unknown[]) => batch.map(() => "")}};
   try {
     let announcements = 0;
     const lines = Array.from({length: 70}, () => ({

@@ -95,42 +95,22 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     return {tmpSub, subtitlePath};
   }, [lang, primaryStyling.forceSimplified]);
 
+  const playerRef = useRef(player);
+  playerRef.current = player;
   const processSubtitleForLearning = useCallback(async (tmpSub) => {
-    let toastSetter = null;
-    
     try {
-      // Keeps the message on screen for as long as the words are being read.
-      toastSetter = setInterval(() => {
-        // A subtitle that was replaced or closed stops talking over the video that came after it.
-        if (!isCurrentSubtitle(tmpSub.id)) {
-          clearInterval(toastSetter);
-          toastSetter = null;
-          return;
-        }
-        showToast(`Getting the ${currentAppLanguage} subtitles ready…`);
-      }, TOAST_TIMEOUT / 10);
-
-      await tmpSub.adjustForLearning(tokenizeMiteiru);
+      // Read the player when asked: it may not exist yet when preparation starts.
+      await tmpSub.adjustForLearning(tokenizeMiteiru, () => (playerRef.current?.currentTime() ?? 0) * 1000);
 
       // A newer subtitle may have replaced this one while it was processing.
-      const current = isCurrentSubtitle(tmpSub.id);
-      if (current) setFrequencyPrimary(tmpSub.frequency);
+      if (!isCurrentSubtitle(tmpSub.id)) return;
+      setFrequencyPrimary(tmpSub.frequency);
       setPrimaryTimeCache?.([]);
-      if (toastSetter) {
-        clearInterval(toastSetter);
-        toastSetter = null;
-      }
-      if (current) showToast('Subtitles ready: click any word');
+      showToast('Subtitles ready: click any word');
     } catch (error) {
       console.error('Error processing subtitle:', error);
       if (isCurrentSubtitle(tmpSub.id)) {
         showToast(`Couldn't get the ${currentAppLanguage} subtitles ready: ${error.message}`);
-      }
-    } finally {
-      // Always clear the interval
-      if (toastSetter) {
-        clearInterval(toastSetter);
-        toastSetter = null;
       }
     }
   }, [tokenizeMiteiru, setFrequencyPrimary, showToast, setPrimaryTimeCache, currentAppLanguage]);

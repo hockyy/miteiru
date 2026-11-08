@@ -42,6 +42,7 @@ const usePauseAndRepeat = (timeCache: number[] | undefined,
 
   // Pauses once near the end of each line. Runs on clock ticks, not renders.
   const checkAutoPause = (seconds: number) => {
+    if (clock.isPreviewing()) return;
     const step = autoPauseStep(timeCache, adjustTimeWithShift(seconds, shift), autoPause, pauseIdRef.current);
     pauseIdRef.current = step.pauseId;
     if (step.pause) setIsPlaying(0);
