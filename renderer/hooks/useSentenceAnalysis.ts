@@ -8,6 +8,8 @@ import { SentenceAnalysis } from '../types/sentenceAnalysis';
 import { buildAnalysisSystemPrompt, buildAnalysisUserPrompt } from '../utils/aiAnalysisPrompts';
 import { aiResultCache, AiResultError, isAbortError, makeAiCacheKey } from '../utils/aiResultCache';
 import { createPartialHandler } from '../utils/aiStreaming';
+import { DEFAULT_OPENROUTER_THINKING, OPENROUTER_THINKING_KEY } from '../utils/openRouterConstants';
+import { useStoreData } from './useStoreData';
 import { openRouterMessages, streamOpenRouterCompletion } from '../utils/openRouterClient';
 import {
   isAnalysisErrorMessage,
@@ -29,6 +31,9 @@ export function useSentenceAnalysis({
   const [analysis, setAnalysis] = useState<SentenceAnalysis | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  // Part of the cache key and the request: a thinking answer must not come from a not-thinking one.
+  const [thinking] = useStoreData(OPENROUTER_THINKING_KEY, DEFAULT_OPENROUTER_THINKING);
 
   const controllerRef = useRef<AbortController | null>(null);
 
@@ -61,6 +66,11 @@ export function useSentenceAnalysis({
       return;
     }
 
+    if (!openRouterModel.trim()) {
+      fail(openRouterMessages.missingModel);
+      return;
+    }
+
     if (!trimmed) {
       fail('Please enter a sentence to analyze.');
       return;
@@ -80,7 +90,7 @@ export function useSentenceAnalysis({
 
     try {
       const request = aiResultCache.run<SentenceAnalysis>(
-        makeAiCacheKey('analysis', openRouterModel, lang, trimmed),
+        makeAiCacheKey('analysis', openRouterModel, lang, trimmed, { thinking }),
         async ({ signal, onText }) => {
           const rawResponse = await streamOpenRouterCompletion(
             openRouterApiKey,
@@ -89,7 +99,7 @@ export function useSentenceAnalysis({
               { role: 'system', content: buildAnalysisSystemPrompt(lang) },
               { role: 'user', content: buildAnalysisUserPrompt(trimmed, lang) },
             ],
-            { signal, onText },
+            { signal, onText, thinking },
           );
 
           const result = parseSentenceAnalysis(rawResponse);
@@ -136,7 +146,7 @@ export function useSentenceAnalysis({
         setIsAnalyzing(false);
       }
     }
-  }, [cancelRequest, lang, openRouterApiKey, openRouterModel]);
+  }, [cancelRequest, lang, openRouterApiKey, openRouterModel, thinking]);
   const hasAnalysisPanel = isAnalyzing || !!analysis || !!errorMessage;
 
   return {

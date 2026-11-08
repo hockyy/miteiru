@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import {test} from "node:test";
-import {OpenRouterHttpError, withRetries} from "../main/helpers/openRouterHttp";
+import {OpenRouterHttpError, openRouterChatCompletion, withRetries} from "../main/helpers/openRouterHttp";
 import {JobCancelledError} from "../main/helpers/runCommand";
 
 const failing = (error: Error) => {
@@ -35,4 +35,25 @@ test("withRetries retries rate limits, server errors and network failures", asyn
     return "ok";
   };
   assert.equal(await withRetries(flaky, {delayMs: 0}), "ok");
+});
+
+test("a 200 response whose body is an error fails with its real reason, without retries", async () => {
+  const realFetch = globalThis.fetch;
+  let calls = 0;
+  globalThis.fetch = (async () => {
+    calls++;
+    return new Response(JSON.stringify({error: {code: 402, message: "Insufficient credits"}}), {
+      status: 200,
+      headers: {"Content-Type": "application/json"}
+    });
+  }) as typeof fetch;
+  try {
+    await assert.rejects(
+      withRetries(() => openRouterChatCompletion({apiKey: "sk-test", model: "test/model", messages: [{role: "user", content: "hi"}]}), {delayMs: 0}),
+      (error: unknown) => error instanceof OpenRouterHttpError && error.status === 402 && /Insufficient credits/.test(error.message)
+    );
+    assert.equal(calls, 1);
+  } finally {
+    globalThis.fetch = realFetch;
+  }
 });

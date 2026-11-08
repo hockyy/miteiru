@@ -73,7 +73,16 @@ const requestJson = async (
       const details = await readErrorBody(response);
       throw new OpenRouterHttpError(`OpenRouter ${response.status}: ${details || response.statusText}`, response.status);
     }
-    return await response.json();
+    const data = await response.json();
+    // OpenRouter can answer 200 with an error body; it is final unless its code says otherwise.
+    const failure = data?.error;
+    if (failure && typeof failure === "object") {
+      const message = typeof failure.message === "string" ? failure.message : JSON.stringify(failure).slice(0, 300);
+      const code = Number(failure.code);
+      const status = Number.isInteger(code) && code > 0 ? code : 502;
+      throw new OpenRouterHttpError(`OpenRouter ${status}: ${message}`, status);
+    }
+    return data;
   } finally {
     linked.dispose();
     timeout?.dispose();

@@ -55,6 +55,22 @@ export function parseCueTranslations(raw: string): Map<number, string> {
   return out;
 }
 
+/**
+ * Keeps the rows that number this batch's lines 1..batchLength and maps them to absolute cue numbers.
+ * Rows with any other number (a model that kept counting from another batch) are ignored, so a
+ * batch can never write over another batch's cues.
+ */
+export function batchTranslations(got: Map<number, string>, batchLength: number, startIndex: number) {
+  const translations = new Map<number, string>();
+  const missing: number[] = [];
+  for (let i = 1; i <= batchLength; i++) {
+    const english = got.get(i);
+    if (english) translations.set(startIndex + i, english);
+    else missing.push(startIndex + i);
+  }
+  return {translations, missing};
+}
+
 export async function translateSrtToEnglish(options: {
   sourceSrtPath: string;
   lang: string;
@@ -90,7 +106,8 @@ export async function translateSrtToEnglish(options: {
   // A few batches at a time; translations are keyed by cue number, so their order doesn't matter.
   await mapLimit(batches, TRANSLATE_CONCURRENCY, options.signal, async (batch, batchIndex, signal) => {
     const startIndex = batchIndex * TRANSLATE_BATCH_SIZE;
-    const numbered = batch.map((cue, offset) => `${startIndex + offset + 1}. ${cue.text}`).join("\n");
+    // Numbered 1..N within the batch, like the prompt example, so the numbers the model returns can be trusted.
+    const numbered = batch.map((cue, offset) => `${offset + 1}. ${cue.text}`).join("\n");
 
     // The best incomplete answer, used if every attempt leaves cues out (they keep their source text).
     let partial: Map<number, string> | null = null;
@@ -107,15 +124,12 @@ export async function translateSrtToEnglish(options: {
           {role: "user", content: numbered}
         ]
       });
-      const got = parseCueTranslations(content);
-      const missing = batch
-        .map((_, offset) => startIndex + offset + 1)
-        .filter((index) => !got.get(index));
-      if (missing.length) {
-        if (!partial || got.size > partial.size) partial = got;
-        throw new Error(`Missing translations for cues ${missing.slice(0, 8).join(", ")}`);
+      const mapped = batchTranslations(parseCueTranslations(content), batch.length, startIndex);
+      if (mapped.missing.length) {
+        if (!partial || mapped.translations.size > partial.size) partial = mapped.translations;
+        throw new Error(`Missing translations for cues ${mapped.missing.slice(0, 8).join(", ")}`);
       }
-      return got;
+      return mapped.translations;
     }, {signal}).catch((error) => {
       if (partial && !isJobCancelled(error)) return partial;
       throw error;

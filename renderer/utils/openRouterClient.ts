@@ -5,13 +5,14 @@
  * API key + model settings: components/VideoPlayer/OpenRouterSettings.tsx
  */
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
-import { APICallError, streamText } from 'ai';
+import { APICallError, RetryError, streamText } from 'ai';
 import { createAbortError } from './aiResultCache';
 import { createThrottledEmitter } from './aiStreaming';
 import {
   DEFAULT_OPENROUTER_THINKING,
   OPENROUTER_REQUEST_HEADERS,
   OPENROUTER_THINKING_KEY,
+  openRouterStatusMessage,
   reasoningForThinking,
   refusesAnswerWithoutThinking,
 } from './openRouterConstants';
@@ -19,19 +20,32 @@ import {
 // One wording for every AI feature (openRouterConstants.ts).
 export { openRouterMessages } from './openRouterConstants';
 
-/** What to tell the learner for OpenRouter's usual refusals; any other error keeps its own message. */
+/**
+ * What to tell the learner for OpenRouter's usual refusals; any other error keeps its own message.
+ * Also unwraps a RetryError (the SDK's report once its retries run out) and an error OpenRouter sent
+ * inside the stream, which arrives as a plain object like {code: 429, message}.
+ */
 export function describeOpenRouterError(error: unknown): Error {
-  if (APICallError.isInstance(error)) {
-    switch (error.statusCode) {
-      case 401:
-        return new Error("OpenRouter didn't accept your key. Check it under OpenRouter AI in settings (press X).");
-      case 402:
-        return new Error('Your OpenRouter account is out of credits. Add some at openrouter.ai, or choose a free model.');
-      case 429:
-        return new Error('OpenRouter is getting too many requests right now. Wait a moment and try again.');
+  const failure = RetryError.isInstance(error) ? error.lastError : error;
+  if (APICallError.isInstance(failure)) {
+    const message = failure.statusCode === undefined ? null : openRouterStatusMessage(failure.statusCode);
+    return message ? new Error(message) : failure;
+  }
+  if (failure instanceof Error) {
+    return failure;
+  }
+  if (failure && typeof failure === 'object') {
+    const { code, message } = failure as { code?: unknown; message?: unknown };
+    const friendly = typeof code === 'number' ? openRouterStatusMessage(code) : null;
+    if (friendly) return new Error(friendly);
+    if (typeof message === 'string') return new Error(message);
+    try {
+      return new Error(JSON.stringify(failure).slice(0, 300));
+    } catch {
+      return new Error('OpenRouter sent an error');
     }
   }
-  return error instanceof Error ? error : new Error(String(error));
+  return new Error(String(failure));
 }
 
 type OpenRouterMessage = {
@@ -44,15 +58,21 @@ export interface StreamOptions {
   signal?: AbortSignal;
   /** Receives the text so far while it streams (at most every ~60 ms, and once more with the final text). */
   onText?: (text: string) => void;
+  /** The thinking setting to use, instead of reading it from the store (the Study page puts it in its cache key). */
+  thinking?: unknown;
 }
 
 type Reasoning = ReturnType<typeof reasoningForThinking>;
 
 // Models that refused to answer without thinking, so later requests leave reasoning to them.
 const modelsThatMustThink = new Set<string>();
+export const modelMustThink = (model: string): boolean => modelsThatMustThink.has(model);
+export const rememberModelMustThink = (model: string): void => {
+  modelsThatMustThink.add(model);
+};
 
 /** The learner's thinking setting; off when the store can't be read (tests, a store error). */
-const readThinking = async (): Promise<unknown> => {
+export const readThinkingSetting = async (): Promise<unknown> => {
   try {
     return await window.electronStore?.get(OPENROUTER_THINKING_KEY, DEFAULT_OPENROUTER_THINKING);
   } catch {
@@ -66,14 +86,14 @@ export async function streamOpenRouterCompletion(
   messages: OpenRouterMessage[],
   options?: StreamOptions,
 ): Promise<string> {
-  const reasoning = modelsThatMustThink.has(model) ? undefined : reasoningForThinking(await readThinking());
+  const reasoning = modelMustThink(model) ? undefined : reasoningForThinking(options?.thinking ?? await readThinkingSetting());
   try {
     return await streamOnce(apiKey, model, messages, options, reasoning);
   } catch (error) {
     // Nothing has streamed yet when a request is refused, so asking again shows no doubled text.
     if (reasoning && APICallError.isInstance(error)
       && refusesAnswerWithoutThinking(error.statusCode, `${error.message} ${error.responseBody ?? ''}`)) {
-      modelsThatMustThink.add(model);
+      rememberModelMustThink(model);
       return streamOnce(apiKey, model, messages, options, undefined);
     }
     throw error;

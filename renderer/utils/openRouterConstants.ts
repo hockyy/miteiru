@@ -43,6 +43,20 @@ export const reasoningForThinking = (thinking: unknown): { effort: "none"; exclu
 export const refusesAnswerWithoutThinking = (status: number | undefined, message: string): boolean =>
   status === 400 && /reason|thinking|effort/i.test(message);
 
+/** What to tell the learner for OpenRouter's usual refusals (bad key, no credits, rate limit); null for any other status. */
+export const openRouterStatusMessage = (status: number): string | null => {
+  switch (status) {
+    case 401:
+      return "OpenRouter didn't accept your key. Check it under OpenRouter AI in settings (press X).";
+    case 402:
+      return 'Your OpenRouter account is out of credits. Add some at openrouter.ai, or choose a free model.';
+    case 429:
+      return 'OpenRouter is getting too many requests right now. Wait a moment and try again.';
+    default:
+      return null;
+  }
+};
+
 // Video settings (AI tab) and the Study page's settings both have the fields, and X opens either.
 export const openRouterMessages = {
   missingApiKey: "Add your OpenRouter key first: press X for settings and paste it under OpenRouter AI (the AI tab while watching).",
