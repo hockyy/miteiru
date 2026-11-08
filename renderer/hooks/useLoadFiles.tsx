@@ -17,8 +17,10 @@ import {
   getLanguageDisplayName,
   isMiteiruTempSubtitle,
   knownSubtitleTarget,
+  matchingSubtitleForVideo,
   normalizeDroppedPath,
   NOT_YOUTUBE_LINK_MESSAGE,
+  subtitleSuffixAfterVideo,
   type SubtitleTarget,
   unsupportedFileMessage
 } from "../utils/mediaUtils";
@@ -47,6 +49,13 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
   const mainName = mainSubtitleName(currentAppLanguage);
   // Where a video opened by "Continue watching" starts; used once, when that video's metadata loads.
   const pendingStart = useRef<{ path: string; seconds: number } | null>(null);
+
+  // Counts the videos opened. A load that began for an earlier one (a slow subtitle, a step's later subtitles)
+  // checks it and gives up rather than land on the video that replaced it.
+  const loadGeneration = useRef(0);
+  // True from the moment a next/previous step starts until its video and subtitles are all loaded, so the
+  // step buttons stay off for that whole time.
+  const stepping = useRef(false);
 
   const [lastPrimarySubPath, setLastPrimarySubPath] = useState([{path: ''}]);
   const [lastSecondarySubPath, setLastSecondarySubPath] = useState([{path: ''}]);
@@ -92,6 +101,12 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     try {
       // Keeps the message on screen for as long as the words are being read.
       toastSetter = setInterval(() => {
+        // A subtitle that was replaced or closed stops talking over the video that came after it.
+        if (!isCurrentSubtitle(tmpSub.id)) {
+          clearInterval(toastSetter);
+          toastSetter = null;
+          return;
+        }
         showToast(`Getting the ${currentAppLanguage} subtitles ready…`);
       }, TOAST_TIMEOUT / 10);
 
@@ -108,7 +123,9 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       if (current) showToast('Subtitles ready: click any word');
     } catch (error) {
       console.error('Error processing subtitle:', error);
-      showToast(`Couldn't get the ${currentAppLanguage} subtitles ready: ${error.message}`);
+      if (isCurrentSubtitle(tmpSub.id)) {
+        showToast(`Couldn't get the ${currentAppLanguage} subtitles ready: ${error.message}`);
+      }
     } finally {
       // Always clear the interval
       if (toastSetter) {
@@ -141,9 +158,12 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
 
   const loadEmbeddedSubtitle = useCallback(async (filePath: string, type: 'primary' | 'secondary', preprocessOptions: SubtitlePreprocessOptions = DEFAULT_SUBTITLE_PREPROCESS_OPTIONS) => {
     console.log(`[useLoadFiles] loadEmbeddedSubtitle called: ${type} from ${filePath}`);
+    const generation = loadGeneration.current;
 
     try {
       const {tmpSub} = await createSubtitleContainer(filePath, preprocessOptions);
+      // Another video was opened while this was being read.
+      if (generation !== loadGeneration.current) return;
       console.log(`[useLoadFiles] Direct loading ${type} subtitle:`, tmpSub);
       if (type === 'primary') {
         loadSubtitleAsPrimary(tmpSub, filePath);
@@ -192,15 +212,17 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     prevForceSimplifiedRef.current = primaryStyling.forceSimplified;
     if (!toneChanged && !simplifiedChanged) return;
 
-    const primaryPath = lastPrimarySubPath[0]?.path;
-    const secondaryPath = lastSecondarySubPath[0]?.path;
+    // A slot with no subtitle in it (removed, or the video changed) has nothing to reload.
+    const primaryPath = primarySub.path ? lastPrimarySubPath[0]?.path : '';
+    const secondaryPath = secondarySub.path ? lastSecondarySubPath[0]?.path : '';
     if (primaryPath) {
       reloadSubtitleWithoutPrompt(primaryPath, 'primary');
     }
     if (secondaryPath) {
       reloadSubtitleWithoutPrompt(secondaryPath, 'secondary');
     }
-  }, [toneType, primaryStyling.forceSimplified, lastPrimarySubPath, lastSecondarySubPath, reloadSubtitleWithoutPrompt]);
+  }, [toneType, primaryStyling.forceSimplified, lastPrimarySubPath, lastSecondarySubPath, primarySub.path,
+    secondarySub.path, reloadSubtitleWithoutPrompt]);
 
   useEffect(() => {
     Line.removeHearingImpairedFlag = primaryStyling.removeHearingImpaired
@@ -213,15 +235,21 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       pathUri,
       source
     });
+    loadGeneration.current += 1;
     setVideoSrc(source);
     resetSub(setPrimarySub);
     resetSub(setSecondarySub);
+    // The old subtitle's word analysis stops, and its files are not reloaded onto this video.
+    setGlobalSubtitleId('');
+    setFrequencyPrimary(new Map());
+    setLastPrimarySubPath([{path: ''}]);
+    setLastSecondarySubPath([{path: ''}]);
     // A "Load subtitle as…" question still open belongs to the previous video; a subtitle that
     // comes with this one (loaded after it) asks again.
     setShowSubtitleModal(false);
     setPendingSubtitle(null);
     setPendingSubtitlePath('');
-  }, [resetSub, setPrimarySub, setSecondarySub]);
+  }, [resetSub, setPrimarySub, setSecondarySub, setFrequencyPrimary]);
 
   const routeLoadedSubtitle = useCallback((tmpSub, loadedPath: string, currentPath: string, target?: SubtitleTarget) => {
     if (isYoutube(currentPath)) {
@@ -255,6 +283,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     }
 
     showToast('Loading subtitle, please wait!');
+    const generation = loadGeneration.current;
     let toastSetter = null;
 
     try {
@@ -266,6 +295,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       // A subtitle for a known slot is read the way that slot's last one was chosen to be.
       const options = (target && slotPreprocessOptions.current[target]) || DEFAULT_SUBTITLE_PREPROCESS_OPTIONS;
       const {tmpSub, subtitlePath} = await createSubtitleContainer(currentPath, options);
+      if (generation !== loadGeneration.current) return;
       routeLoadedSubtitle(tmpSub, subtitlePath, currentPath, target);
     } catch (error) {
       console.error('[useLoadFiles] Failed to load subtitle file:', error);
@@ -277,6 +307,10 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
 
   const onLoadFiles = useCallback((acceptedFiles) => runSerially(async () => {
     try {
+      // A subtitle queued for a video that has since been replaced is dropped.
+      const forGeneration = acceptedFiles[0]?.forGeneration;
+      if (forGeneration !== undefined && forGeneration !== loadGeneration.current) return;
+
       const droppedPath = await acceptedFiles[0]?.path;
       if (!droppedPath) {
         console.error('[file-load] dropped file has no filesystem path', acceptedFiles[0]);
@@ -327,26 +361,42 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       setEnableSeeker(true);
       return false;
     }
-    const nextVideo = await findPositionDeltaInFolder(videoSrc.path, delta);
-    if (nextVideo === '') {
+    stepping.current = true;
+    try {
+      const nextVideo = await findPositionDeltaInFolder(videoSrc.path, delta);
+      if (nextVideo === '') return false;
+      // Step from the file each subtitle was loaded from: the loaded one may be a sentence-case copy
+      // in the temp folder, whose neighbours are unrelated files. Files Miteiru extracted to the temp
+      // folder have no next episode beside them.
+      // The next episode's subtitles go into the same slots, without asking again.
+      const sources: [string, SubtitleTarget][] = [
+        [primarySub.path, lastPrimarySubPath[0]?.path, 'primary'] as const,
+        [secondarySub.path, lastSecondarySubPath[0]?.path, 'secondary'] as const
+      ].filter(([loaded, source]) => loaded && source && !isMiteiruTempSubtitle(source))
+        .map(([, source, target]) => [source, target]);
+      await onLoadFiles([{path: nextVideo}]);
+      const generation = loadGeneration.current;
+      const stale = () => generation !== loadGeneration.current;
+      // A subtitle named after its video (ep01.ja.srt) goes to the same part of the next one (ep02.ja.srt),
+      // or to nothing; any other name keeps stepping through the folder's subtitle files.
+      let besideNext: string[] | undefined;
+      for (const [source, target] of sources) {
+        let nextSubtitle: string;
+        if (subtitleSuffixAfterVideo(videoSrc.path, source) !== null) {
+          besideNext ??= await window.electronAPI.checkSubtitleFile(nextVideo);
+          nextSubtitle = matchingSubtitleForVideo(videoSrc.path, source, nextVideo, besideNext);
+        } else {
+          nextSubtitle = await findPositionDeltaInFolder(source, delta);
+        }
+        if (stale()) break;
+        if (nextSubtitle !== '') await onLoadFiles([{path: nextSubtitle, target, forGeneration: generation}]);
+        if (stale()) break;
+      }
+      return true;
+    } finally {
+      stepping.current = false;
       setEnableSeeker(true);
-      return false;
     }
-    // Step from the file each subtitle was loaded from: the loaded one may be a sentence-case copy
-    // in the temp folder, whose neighbours are unrelated files. Files Miteiru extracted to the temp
-    // folder have no next episode beside them.
-    // The next episode's subtitles go into the same slots, without asking again.
-    const sources: [string, SubtitleTarget][] = [
-      [primarySub.path, lastPrimarySubPath[0]?.path, 'primary'] as const,
-      [secondarySub.path, lastSecondarySubPath[0]?.path, 'secondary'] as const
-    ].filter(([loaded, source]) => loaded && source && !isMiteiruTempSubtitle(source))
-      .map(([, source, target]) => [source, target]);
-    await onLoadFiles([{path: nextVideo}]);
-    for (const [source, target] of sources) {
-      const nextSubtitle = await findPositionDeltaInFolder(source, delta);
-      if (nextSubtitle !== '') await onLoadFiles([{path: nextSubtitle, target}]);
-    }
-    return true;
   }, [videoSrc.path, primarySub.path, secondarySub.path, lastPrimarySubPath, lastSecondarySubPath, onLoadFiles,
     setEnableSeeker]);
 
@@ -364,7 +414,8 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       }
       player.on('loadedmetadata', enableSeeker)
       return () => {
-        setEnableSeeker(true);
+        // A step in progress turns the bar back on itself, once its subtitles are loaded too.
+        if (!stepping.current) setEnableSeeker(true);
         player.off('loadedmetadata', enableSeeker)
       }
     }
@@ -374,8 +425,10 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
   const continueVideo = useCallback(async (last: LastVideo) => {
     pendingStart.current = {path: last.path, seconds: last.position};
     await onLoadFiles([{path: last.path}]);
-    if (last.subtitles.primary) await onLoadFiles([{path: last.subtitles.primary, target: 'primary'}]);
-    if (last.subtitles.secondary) await onLoadFiles([{path: last.subtitles.secondary, target: 'secondary'}]);
+    // Another video opened meanwhile owns the subtitle slots now.
+    const forGeneration = loadGeneration.current;
+    if (last.subtitles.primary) await onLoadFiles([{path: last.subtitles.primary, target: 'primary', forGeneration}]);
+    if (last.subtitles.secondary) await onLoadFiles([{path: last.subtitles.secondary, target: 'secondary', forGeneration}]);
   }, [onLoadFiles]);
 
   // Reloading puts the subtitle back in its slot without asking.
