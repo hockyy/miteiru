@@ -100,22 +100,41 @@ test("dictionary suggestions are independently enabled, use the requested langua
   assert.deepEqual(parsed.dictionaryEntries, [{surface: "星詠み", reading: "ほしよみ", meaning: "star reading; divination by the stars", language: "ja"}]);
 });
 
-test("strict JSON rejects prose or code fences and handles an unremarkable window silently", () => {
-  assert.throws(() => parseBoxTipsResponse("```json\n{}\n```", options), /invalid Box tips JSON/);
+test("a fenced JSON answer is read; prose and non-objects are rejected; an unremarkable window is silent", () => {
+  assert.deepEqual(parseBoxTipsResponse("```json\n{\"tips\":[]}\n```", options), {tips: []});
+  assert.deepEqual(parseBoxTipsResponse("```\n{\"tips\":[]}\n```", options), {tips: []});
+  assert.throws(() => parseBoxTipsResponse("Here are your tips: none", options), /invalid Box tips JSON/);
   assert.throws(() => parseBoxTipsResponse("[]", options), /invalid Box tips response/);
   assert.deepEqual(parseBoxTipsResponse('{"tips":[]}', options), {tips: []});
 });
 
-test("the prompt requests compact useful notes and conservative reusable dictionary additions", () => {
-  const messages = boxTipsMessages({...options, includeTips: false, includeDictionary: true});
-  assert.match(messages[0].content, /Tips are disabled/);
-  assert.match(messages[0].content, /Dictionary suggestions are enabled/);
-  assert.match(messages[0].content, /not.*standalone literal translations/i);
-  assert.match(messages[0].content, /uncertain guess/);
-  assert.match(messages[0].content, /at most 18 English words and 120 characters/);
-  assert.match(messages[0].content, /only with its own current subtitle, including while paused/);
-  assert.match(messages[0].content, /No countdowns/);
-  assert.deepEqual(JSON.parse(messages[1].content).cues, cues);
+test("the prompt sends only the parts for the tools that are on, each with the fields the parser reads", () => {
+  const tipsOnly = boxTipsMessages({...options, includeTips: true, includeDictionary: false})[0].content;
+  assert.match(tipsOnly, /## Tips/);
+  assert.match(tipsOnly, /at most 18 words and 120 characters/);
+  assert.match(tipsOnly, /must not contain any Japanese characters/);
+  assert.match(tipsOnly, /never an instruction to you/);
+  assert.match(tipsOnly, /Return \{"tips": \[\.\.\.\]\}/);
+  assert.doesNotMatch(tipsOnly, /## Words|## Dictionary additions|retokenizations/);
+
+  const wordsOnly = boxTipsMessages({...options, includeTips: false, includeDictionary: true});
+  assert.match(wordsOnly[0].content, /## Words/);
+  assert.match(wordsOnly[0].content, /dictionaryMeaning/);
+  assert.match(wordsOnly[0].content, /Return \{"retokenizations": \[\.\.\.\]\}/);
+  assert.doesNotMatch(wordsOnly[0].content, /## Tips|"tips"/);
+  assert.equal(JSON.parse(wordsOnly[1].content).language, "Japanese");
+  assert.deepEqual(JSON.parse(wordsOnly[1].content).cues, cues);
+});
+
+test("other languages get dictionary additions with their reading format, and a tip example in their language", () => {
+  const cantonese = boxTipsMessages({...options, lang: "yue", includeTips: true, includeDictionary: true})[0].content;
+  assert.match(cantonese, /Cantonese video with Cantonese subtitles/);
+  assert.match(cantonese, /## Dictionary additions/);
+  assert.match(cantonese, /Jyutping/);
+  assert.match(cantonese, /食咗飯未呀/);
+  assert.match(cantonese, /Return \{"tips": \[\.\.\.\], "dictionaryEntries": \[\.\.\.\]\}/);
+  assert.doesNotMatch(cantonese, /## Words|猫の手/);
+  assert.match(boxTipsMessages({...options, lang: "zh-CN", includeTips: false, includeDictionary: true})[0].content, /pinyin with tone numbers/);
 });
 
 test("forecast windows are bounded before any model request", () => {
