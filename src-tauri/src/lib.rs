@@ -110,6 +110,16 @@ pub fn run() {
       sys::langpack::langpack_cancel,
       sys::langpack::langpack_remove,
     ])
+    // A reload (F5, Ctrl+R) starts a new backend worker that knows nothing of the old one's children
+    // (the live-captions helper, yt-dlp), so they are stopped as the new page starts loading. The first
+    // load has none yet.
+    .on_page_load(|webview, payload| {
+      if matches!(payload.event(), tauri::webview::PageLoadEvent::Started) {
+        if let Some(procs) = webview.try_state::<proc::Procs>() {
+          proc::kill_all(&procs);
+        }
+      }
+    })
     .setup(|app| {
       // First, so what happens while the window is made (frontend_server.rs, window.rs) is logged.
       if cfg!(debug_assertions) {

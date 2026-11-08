@@ -92,7 +92,8 @@ const getBridgePath = async () => {
   return bridgePath;
 };
 
-const handleBridgeLine = (line: string) => {
+/** `onError` runs when the line is an error the helper reported. */
+const handleBridgeLine = (line: string, onError: () => void = () => undefined) => {
   if (!line.trim()) return;
 
   let message: LiveCaptionsBridgeMessage;
@@ -125,6 +126,7 @@ const handleBridgeLine = (line: string) => {
 
   if (message.type === "error") {
     setError(message.message ?? "Live Captions helper failed.");
+    onError();
     return;
   }
 
@@ -161,13 +163,19 @@ const armStartupWatchdog = () => {
 const wireBridgeStreams = (processToWire: ChildProcessWithoutNullStreams) => {
   let stdoutBuffer = "";
   let stderrBuffer = "";
+  // An error the helper reported on stdout before exiting (it exits with code 1 after it).
+  let reportedError = false;
 
   processToWire.stdout.setEncoding("utf8");
   processToWire.stdout.on("data", (chunk: string) => {
+    // What a helper that was stopped or replaced already wrote must not touch the caption or state.
+    if (bridgeProcess !== processToWire) return;
     stdoutBuffer += chunk;
     const lines = stdoutBuffer.split(/\r?\n/);
     stdoutBuffer = lines.pop() ?? "";
-    lines.forEach(handleBridgeLine);
+    lines.forEach((line) => handleBridgeLine(line, () => {
+      reportedError = true;
+    }));
   });
 
   processToWire.stderr.setEncoding("utf8");
@@ -199,6 +207,8 @@ const wireBridgeStreams = (processToWire: ChildProcessWithoutNullStreams) => {
       return;
     }
 
+    // The helper's own error is already shown; the generic one is for a helper that said nothing.
+    if (reportedError) return;
     setError(stderrBuffer.trim() || `Live Captions helper exited with code ${code}.`);
   });
 };

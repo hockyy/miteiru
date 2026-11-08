@@ -2,6 +2,11 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { MediaInfo } from '../types/media';
 import { TrackSelection } from '../components/Utils/MediaTrackSelectionModal';
 import { getActiveNativePlayer } from '../utils/nativePlayer';
+import { isLocalPath, isYoutube } from '../utils/utils';
+
+// Only a file on this computer is read for its tracks: a YouTube link asks for captions instead, and
+// another web link is played as it is.
+const isAnalysedFile = (path: string) => isLocalPath(path) && !isYoutube(path);
 
 const deleteTempSubtitle = (filePath: string) => {
   window.electronAPI.cleanupTempSubtitle(filePath).catch(err =>
@@ -9,7 +14,8 @@ const deleteTempSubtitle = (filePath: string) => {
   );
 };
 
-const useMediaAnalysis = (videoPath: string) => {
+/** `openedVideo`: the source object of the open video, new on every open, so the same path opened again starts over. */
+const useMediaAnalysis = (videoPath: string, openedVideo?: object) => {
   const [mediaInfo, setMediaInfo] = useState<MediaInfo>({
     duration: 0,
     audioTracks: [],
@@ -76,7 +82,7 @@ const useMediaAnalysis = (videoPath: string) => {
     } finally {
       // A newer local video's own analysis turns the flag off when it ends.
       const current = activeVideoPath.current;
-      const newerRunning = current !== path && Boolean(current) && !current.startsWith('http');
+      const newerRunning = current !== path && Boolean(current) && isAnalysedFile(current);
       if (!newerRunning) setIsAnalyzing(false);
     }
   }, []);
@@ -103,18 +109,12 @@ const useMediaAnalysis = (videoPath: string) => {
     }
   }, []);
 
-  // Check if path is YouTube URL
-  const isYoutubeUrl = useCallback((path: string): boolean => {
-    return path.includes('youtube.com') || path.includes('youtu.be');
-  }, []);
-
   // Analyze media when video path changes
   useEffect(() => {
     if (videoPath && videoPath !== '') {
-      if (!videoPath.startsWith('http')) {
-        // Analyze local video files
+      if (isAnalysedFile(videoPath)) {
         analyzeMedia(videoPath);
-      } else if (isYoutubeUrl(videoPath)) {
+      } else if (isYoutube(videoPath)) {
         // For YouTube videos, show track selection modal immediately
         // Set empty media info but trigger modal
         setMediaInfo({
@@ -129,7 +129,7 @@ const useMediaAnalysis = (videoPath: string) => {
         }, 100);
       }
     }
-  }, [videoPath, analyzeMedia, isYoutubeUrl]);
+  }, [videoPath, openedVideo, analyzeMedia]);
 
   // Handle track selection from modal (now only for subtitles)
   const handleTrackSelection = useCallback(async (selection: TrackSelection, onSubtitleLoad?: (path: string, type: 'primary' | 'secondary', preprocessOptions?: TrackSelection['preprocessOptions']) => void) => {
@@ -228,7 +228,7 @@ const useMediaAnalysis = (videoPath: string) => {
       tempSubtitleFiles.current = [];
       files.forEach(deleteTempSubtitle);
     };
-  }, [videoPath]);
+  }, [videoPath, openedVideo]);
 
   return {
     mediaInfo,

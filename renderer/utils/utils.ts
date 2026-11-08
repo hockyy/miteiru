@@ -14,19 +14,40 @@ export const isArrayEndsWithMatcher = (path, arrayMatcher) => {
 export const isVideo = (path) => {
   return isArrayEndsWithMatcher(path, videoConstants.supportedVideoFormats);
 }
-export const isYoutube = (url) => {
-  // Regular expression to match YouTube URLs.
-  // It matches following formats:
-  //  - www.youtube.com/watch?v=VIDEO_ID
-  //  - m.youtube.com/watch?v=VIDEO_ID
-  //  - youtube.com/watch?v=VIDEO_ID
-  //  - www.youtube.com/v/VIDEO_ID
-  //  - http://youtu.be/VIDEO_ID
-  //  - youtube.com/embed/VIDEO_ID
-  //  - https://www.youtube.com/shorts/VIDEO_ID
-  const pattern = /^(https?:\/\/)?((www|m)\.)?(youtube\.com\/(watch\?v=|embed\/|v\/|shorts\/)?|youtu\.be\/)\S+$/;
-  return pattern.test(url);
-}
+const YOUTUBE_HOSTS = new Set(['youtube.com', 'youtube-nocookie.com']);
+const YOUTUBE_ID_PATTERN = /^[A-Za-z0-9_-]{11}$/;
+
+/**
+ * The video ID in a YouTube link, or null. One parser for every place that asks, so they agree:
+ * watch?v= (with v anywhere in the query), youtu.be/, and the /live/, /shorts/, /embed/ and /v/ paths,
+ * on youtube.com, www., m., music. and youtube-nocookie.com, with or without https://.
+ * Other parameters (si, t, list, feature, app) are ignored; channel and playlist-only links give null.
+ */
+export const parseYoutubeVideoId = (input: unknown): string | null => {
+  if (typeof input !== 'string') return null;
+  const text = input.trim();
+  if (!text || /\s/.test(text)) return null;
+  let url: URL;
+  try {
+    url = new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(text) ? text : `https://${text}`);
+  } catch {
+    return null;
+  }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
+  const host = url.hostname.toLowerCase().replace(/^(www|m|music)\./, '');
+  const segments = url.pathname.split('/').filter(Boolean);
+  let id: string | null | undefined;
+  if (host === 'youtu.be') {
+    id = segments[0];
+  } else if (YOUTUBE_HOSTS.has(host)) {
+    if (segments[0] === 'watch') id = url.searchParams.get('v');
+    else if (['live', 'shorts', 'embed', 'v'].includes(segments[0])) id = segments[1];
+  }
+  return id && YOUTUBE_ID_PATTERN.test(id) ? id : null;
+};
+
+/** A YouTube video link; a channel, a playlist alone or another site's link is not one. */
+export const isYoutube = (url) => parseYoutubeVideoId(url) !== null;
 
 export const isDomainUri = (url) => {
   try {
@@ -48,14 +69,7 @@ export const isSubtitle = (path) => {
   return isArrayEndsWithMatcher(path, videoConstants.supportedSubtitleFormats);
 }
 
-export const extractVideoId = (url) => {
-  const regex = /(?:youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\/)([^&?#\s/]+)/;
-  const results = regex.exec(url);
-  if (!results) {
-    return null;
-  }
-  return results[1];
-}
+export const extractVideoId = (url) => parseYoutubeVideoId(url);
 
 // " - <file name>" for the window title; Windows paths use backslashes.
 const getFormattedNameFromPath = (path) => path ? ` - ${path.split(/[\\/]/).pop()}` : '';

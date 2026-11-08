@@ -269,18 +269,31 @@ function Learn() {
   const lastTranslatedInput = useRef('');
   const lastTranslationTime = useRef(0);
 
+  const latestTranslationRequest = useRef(0);
+  // The text of the request still waiting for its answer: auto-translate does not send it again.
+  const pendingTranslationInput = useRef<string | null>(null);
+
   const handleTranslate = useCallback(async (forceTranslate = false) => {
     const currentTime = Date.now();
-    if (forceTranslate || (directInput !== lastTranslatedInput.current && currentTime - lastTranslationTime.current >= 1000)) {
-      try {
-        const result = await translate(directInput, lang);
-        setTranslation(result.translatedText);
-        lastTranslatedInput.current = directInput;
-        lastTranslationTime.current = currentTime;
-      } catch (error) {
-        console.error('Translation failed:', error);
-        setTranslation('Translation failed. Please try again.');
-      }
+    const due = directInput !== lastTranslatedInput.current && directInput !== pendingTranslationInput.current
+      && currentTime - lastTranslationTime.current >= 1000;
+    if (!forceTranslate && !due) return;
+    lastTranslationTime.current = currentTime;
+    pendingTranslationInput.current = directInput;
+    const request = ++latestTranslationRequest.current;
+    try {
+      const result = await translate(directInput, lang);
+      // A newer request has been sent since: its answer is the one to show.
+      if (request !== latestTranslationRequest.current) return;
+      if (!result?.success) throw new Error(result?.error || 'Translation failed');
+      setTranslation(result.translatedText);
+      lastTranslatedInput.current = directInput;
+    } catch (error) {
+      if (request !== latestTranslationRequest.current) return;
+      console.error('Translation failed:', error);
+      setTranslation('Translation failed. Please try again.');
+    } finally {
+      if (request === latestTranslationRequest.current) pendingTranslationInput.current = null;
     }
   }, [directInput, lang, translate]);
 

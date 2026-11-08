@@ -209,7 +209,7 @@ function Video() {
     openTrackSelectionModal,
     handleAudioTrackSkip,
     handleAudioTrackSelect
-  } = useMediaAnalysis(videoSrc.path);
+  } = useMediaAnalysis(videoSrc.path, videoSrc);
   const liveCaptions = useLiveCaptions();
   const visibleLiveCaption = liveCaptions.caption.trim();
   const hasVideo = Boolean(videoSrc.path && videoSrc.path !== '');
@@ -263,7 +263,7 @@ function Video() {
       [videoSrc.path, youtubeTitle]
   );
   const mediaVideoUrl = useMemo(
-      () => videoSrc.path.startsWith('http') ? videoSrc.path : undefined,
+      () => isYoutube(videoSrc.path) ? videoSrc.path : undefined,
       [videoSrc.path]
   );
   const {
@@ -583,7 +583,7 @@ function Video() {
                 enableSeeker={enableSeeker}
                 setEnableSeeker={setEnableSeeker}
                 onVideoChangeHandler={onVideoChangeHandler}
-                canStepVideos={isLocalPath(videoSrc.path)}
+                canStepVideos={isLocalPath(videoSrc.path) && !isYoutube(videoSrc.path)}
                 backToHead={backToHead}
                 primaryLines={primarySub.lines}
                 primaryShift={primaryShift}/>}
