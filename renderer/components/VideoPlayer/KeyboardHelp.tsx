@@ -1,6 +1,12 @@
-import {useMemo} from "react";
+import React, {useMemo, useSyncExternalStore} from "react";
 import {buildShortcutGroups} from "../../utils/shortcuts";
 import {keyCommandDefinitions} from "../../utils/keyCommands";
+import {isMacPlatform} from "../../utils/platform";
+
+// The platform is fixed for this window. Hydration must first reuse the exported Ctrl labels,
+// then React reads the browser snapshot and switches macOS to Command labels.
+const subscribePlatform = () => () => undefined;
+const serverIsMac = () => false;
 
 export const Key = ({
                       value,
@@ -17,9 +23,10 @@ export const Key = ({
 
 /** Home's shortcut sheet: the same generated list as the video page's, for reading before you start. */
 export const KeyboardHelp = ({languageName}: { languageName?: string }) => {
+  const mac = useSyncExternalStore(subscribePlatform, isMacPlatform, serverIsMac);
   const shortcutGroups = useMemo(
-    () => buildShortcutGroups(keyCommandDefinitions(languageName || 'main'), {languageName}),
-    [languageName]
+    () => buildShortcutGroups(keyCommandDefinitions(languageName || 'main'), {languageName, mac}),
+    [languageName, mac]
   );
   return (
     <div className="group fixed bottom-4 right-4 z-50">
