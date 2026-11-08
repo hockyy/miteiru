@@ -5,7 +5,8 @@ name: Desktop build check
 # the analyzer API, libmpv drawing under the page and a YouTube embed. The results and a screenshot
 # are uploaded, so platform code can be checked on macOS and Linux from a Windows machine.
 # With release_tag set, it also downloads that published release's Vietnamese pack through the app's
-# own downloader on each OS (see the step for why each OS needs its own run).
+# own downloader on each OS (see the step for why each OS needs its own run), and with linux among
+# the platforms, installs the release's .deb on Ubuntu 22.04, Ubuntu 24.04 and Debian 12 (the deb job).
 on:
   workflow_dispatch:
     inputs:
@@ -138,5 +139,54 @@ jobs:
           path: |
             smoke*.json
             smoke*.png
+          if-no-files-found: warn
+          retention-days: 7
+
+  # The published .deb on the distros it is meant for (#116): it installs with what it depends on
+  # (libmpv, WebKitGTK, GStreamer through Recommends), nothing it links is missing, and the app's
+  # self-test passes under Xvfb with the release's language packs. Runs with release_tag and linux.
+  deb:
+    if: github.event.inputs.release_tag != '' && contains(github.event.inputs.platforms, 'linux')
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ["ubuntu:22.04", "ubuntu:24.04", "debian:12"]
+    steps:
+      - name: Download the release's .deb and language packs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.inputs.release_tag }}
+        run: |
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern '*.deb' --dir deb
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern '*.mtrpack' --dir packs
+          ls -l deb packs
+      - name: Install it and run the self-test in ${{ matrix.image }}
+        run: |
+          mkdir -p out
+          docker run --rm -v "$PWD/deb:/deb:ro" -v "$PWD/packs:/packs:ro" -v "$PWD/out:/out" "${{ matrix.image }}" bash -euo pipefail -c '
+            export DEBIAN_FRONTEND=noninteractive
+            apt-get update -qq
+            if ! apt-get install -y -qq /deb/*.deb xvfb xauth libgl1-mesa-dri > /out/apt.log 2>&1; then tail -n 60 /out/apt.log; exit 1; fi
+            pkg=$(dpkg-deb -f /deb/*.deb Package)
+            dpkg -s "$pkg" | grep -E "^(Package|Version|Depends|Recommends):"
+            bin=$(dpkg -L "$pkg" | grep -E "^/usr/bin/" | head -n 1)
+            echo "binary: $bin"
+            if ldd "$bin" | grep "not found"; then echo "missing libraries"; exit 1; fi
+            ldconfig -p | grep -E "libmpv[.]so[.][12]" || { echo "no libmpv from the distribution"; exit 1; }
+            export MITEIRU_USER_DATA_DIR=/tmp/miteiru-profile MITEIRU_SMOKE_TEST=/out/smoke.json MITEIRU_SMOKE_LANGUAGE_PACKS=/packs MITEIRU_MUTED=1
+            code=0
+            timeout 300 xvfb-run -a -s "-screen 0 1280x800x24" "$bin" > /out/app.log 2>&1 || code=$?
+            echo "app exit code: $code"
+            if [ ! -s /out/smoke.json ]; then tail -n 60 /out/app.log; exit 1; fi
+            cat /out/smoke.json
+            if grep -q "\"ok\": false" /out/smoke.json; then echo "a self-test step failed"; exit 1; fi
+          '
+      - name: Upload the results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deb-${{ strategy.job-index }}
+          path: out/
           if-no-files-found: warn
           retention-days: 7
