@@ -22,6 +22,8 @@ interface SeekBarProps {
 
 export interface TipRange { from: number; to: number }
 
+// A drag seeks at most this often (ms); the bar and the subtitles follow the pointer on every move.
+export const DRAG_SEEK_INTERVAL = 120;
 // The buffered range changes slowly and also while paused, so it is polled rather than ticked.
 const BUFFERED_POLL_INTERVAL = 1000;
 // Longer lines are cut in the tooltip.
@@ -103,6 +105,7 @@ export const SeekBar = ({clock, durationMs, onSeek, getBufferedEnd, lines, tipRa
   const tooltipLineRef = useRef<HTMLSpanElement>(null);
   const tooltipTipRef = useRef<HTMLSpanElement>(null);
   const draggingRef = useRef(false);
+  const lastDragSeekRef = useRef(0);
   const durationRef = useRef(durationMs);
   durationRef.current = durationMs;
   const onSeekRef = useRef(onSeek);
@@ -161,16 +164,12 @@ export const SeekBar = ({clock, durationMs, onSeek, getBufferedEnd, lines, tipRa
     clock.preview(fraction * durationRef.current / 1000);
   };
 
-  const seekTo = (fraction: number) => {
-    if (disabled || durationRef.current <= 0) return;
-    const ms = fraction * durationRef.current;
-    try {
-      onSeekRef.current(ms);
-      clock.commitPreview(ms / 1000);
-    } catch (error) {
-      clock.cancelPreview();
-      throw error;
-    }
+  // Throttled while dragging so the picture scrubs without flooding the player; `force` always seeks.
+  const seekTo = (fraction: number, force: boolean) => {
+    const now = performance.now();
+    if (disabled || durationRef.current <= 0 || (!force && now - lastDragSeekRef.current < DRAG_SEEK_INTERVAL)) return;
+    lastDragSeekRef.current = now;
+    onSeekRef.current(fraction * durationRef.current);
   };
 
   // Clock ticks move the progress, except while the user drags it.
@@ -211,12 +210,12 @@ export const SeekBar = ({clock, durationMs, onSeek, getBufferedEnd, lines, tipRa
   const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     if (event.button !== 0 || disabled || durationRef.current <= 0) return;
     event.currentTarget.setPointerCapture(event.pointerId);
-    event.currentTarget.focus({preventScroll: true});
     draggingRef.current = true;
     event.currentTarget.dataset.dragging = "true";
     const fraction = fractionAt(event.clientX);
     previewTo(fraction);
     showHover(fraction);
+    seekTo(fraction, true);
   };
 
   const onPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -224,9 +223,10 @@ export const SeekBar = ({clock, durationMs, onSeek, getBufferedEnd, lines, tipRa
     showHover(fraction);
     if (!draggingRef.current) return;
     previewTo(fraction);
+    seekTo(fraction, false);
   };
 
-  // A focused slider seeks from its displayed time, without also triggering the page's arrow keys.
+  // Arrow keys already seek from anywhere on the page (useVideoKeyboardControls); Home/End jump.
   const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === "Escape" && draggingRef.current) {
       event.preventDefault();
@@ -234,14 +234,9 @@ export const SeekBar = ({clock, durationMs, onSeek, getBufferedEnd, lines, tipRa
       stopDragging();
       return;
     }
-    if (disabled || durationRef.current <= 0) return;
-    const delta = {ArrowLeft: -2000, ArrowDown: -2000, ArrowRight: 2000, ArrowUp: 2000, PageDown: -10000, PageUp: 10000}[event.key];
-    if (event.key !== "Home" && event.key !== "End" && delta === undefined) return;
+    if (event.key !== "Home" && event.key !== "End") return;
     event.preventDefault();
-    event.stopPropagation();
-    const fraction = event.key === 'Home' ? 0 : event.key === 'End' ? 1 : clamp((clock.get() * 1000 + delta) / durationRef.current, 0, 1);
-    previewTo(fraction);
-    seekTo(fraction);
+    seekTo(event.key === "Home" ? 0 : 1, true);
   };
 
   const onPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -249,10 +244,17 @@ export const SeekBar = ({clock, durationMs, onSeek, getBufferedEnd, lines, tipRa
     if (disabled || durationRef.current <= 0) { stopDragging(); return; }
     const fraction = fractionAt(event.clientX);
     previewTo(fraction);
-    // Dragging previews subtitles immediately; only release asks the player to seek.
-    seekTo(fraction);
-    draggingRef.current = false;
-    delete rootRef.current?.dataset.dragging;
+    // The final position always seeks, even right after a throttled one.
+    try {
+      seekTo(fraction, true);
+      clock.commitPreview(fraction * durationRef.current / 1000);
+    } catch (error) {
+      clock.cancelPreview();
+      throw error;
+    } finally {
+      draggingRef.current = false;
+      delete rootRef.current?.dataset.dragging;
+    }
   };
 
   return (

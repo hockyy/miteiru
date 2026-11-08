@@ -505,51 +505,15 @@ rt {
   display: none;
 }
 
-/* Subtitle words share fixed annotation tracks, including empty cells. Native/nested ruby
-   sizes itself from the annotations on each word and otherwise produces uneven base lines. */
-.subtitle-word {
-  display: inline-grid;
-  grid-template-rows: var(--subtitle-meaning-top-height, 0px) max-content var(--subtitle-meaning-bottom-height, 0px);
-  vertical-align: top;
-  align-items: center;
-  padding: 0;
-  margin: 0;
-  border: 0;
-  background: transparent;
-  font: inherit;
-  text-align: center;
-  white-space: nowrap;
-}
-.subtitle-word__parts {
-  grid-row: 2;
-  display: inline-flex;
-  align-items: start;
-  justify-content: center;
-  justify-self: center;
-  gap: var(--subtitle-part-gap, 0px);
-}
-.subtitle-word__part {
-  display: grid;
-  grid-template-rows: var(--subtitle-reading-height, 0px) 1.2em var(--subtitle-romaji-height, 0px);
-  align-items: center;
-  justify-items: center;
-}
-.subtitle-word__reading,
-.subtitle-word__romaji,
-.subtitle-word__meaning {
+/* A row that is switched on keeps its height on words with nothing to show in it. Word boxes are
+   bottom-aligned, so a missing meaning or romaji row would otherwise drop that word's text below
+   its neighbours'. */
+.ruby-over-reading > rt.ruby-row-reserved:empty,
+.ruby-under-reading > rt.ruby-row-reserved:empty {
   display: block;
-  font-size: 0.5em;
-  line-height: 1.15;
-  text-align: center;
-  white-space: nowrap;
+  min-height: 1.15em;
 }
-.subtitle-word__reading { grid-row: 1; }
-.subtitle-word__base { grid-row: 2; display: block; line-height: 1.2; }
-.subtitle-word__romaji { grid-row: 3; }
-.subtitle-word__reading,
-.subtitle-word__romaji { display: flex; align-items: center; justify-content: center; align-self: stretch; min-height: 0; overflow: hidden; }
-.subtitle-word__meaning { grid-row: 3; }
-.subtitle-word[data-meaning-position="top"] > .subtitle-word__meaning { grid-row: 1; }
+
 /* The player's bottom panel (VideoController): darkest at the bottom, fading out above the seek bar. */
 .player-panel {
   background-image: linear-gradient(to top, rgb(2 6 23 / 0.9), rgb(15 23 42 / 0.72) 55%, rgb(15 23 42 / 0));

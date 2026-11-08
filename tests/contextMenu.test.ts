@@ -4,12 +4,76 @@ import {disableDefaultContextMenu} from '../renderer/utils/contextMenu';
 import {defaultPrimarySubtitleStyling} from '../renderer/utils/CJKStyling';
 import {HookHost, loadHooks} from './helpers/reactHookHost';
 
-test('unhandled right-clicks suppress the default menu and cleanup restores ordinary events', () => {
+/** A stand-in for a DOM element: the menu rule only needs `closest`, `tagName` and attributes. */
+const fakeElement = (tagName: string, attributes: Record<string, string> = {}, ancestor?: any) => {
+  const element: any = {
+    tagName: tagName.toUpperCase(), type: attributes.type ?? '',
+    getAttribute: (name: string) => attributes[name] ?? null,
+    closest(selector: string) {
+      const wanted = selector.split(',').map((part) => part.trim());
+      for (let node: any = element; node; node = node.parent) {
+        if (wanted.some((part) => part === node.tagName.toLowerCase() || (part === '[contenteditable]' && node.getAttribute('contenteditable') !== null))) return node;
+      }
+      return null;
+    },
+    parent: ancestor
+  };
+  return element;
+};
+
+const rightClick = (target: EventTarget, on: any) => {
+  const event: any = new Event('contextmenu', {cancelable: true});
+  Object.defineProperty(event, 'target', {value: on});
+  return target.dispatchEvent(event);
+};
+
+const withSelection = (text: string, run: () => void) => {
+  const original = (globalThis as any).getSelection;
+  (globalThis as any).getSelection = () => ({toString: () => text});
+  try { run(); } finally { (globalThis as any).getSelection = original; }
+};
+
+test('right-clicks on plain elements suppress the menu and cleanup restores ordinary events', () => {
   const target = new EventTarget();
   const cleanup = disableDefaultContextMenu(target);
-  assert.equal(target.dispatchEvent(new Event('contextmenu', {cancelable: true})), false);
+  assert.equal(rightClick(target, fakeElement('div')), false);
+  assert.equal(rightClick(target, fakeElement('input', {type: 'checkbox'})), false);
+  assert.equal(rightClick(target, fakeElement('span', {contenteditable: 'false'})), false);
   cleanup();
-  assert.equal(target.dispatchEvent(new Event('contextmenu', {cancelable: true})), true);
+  assert.equal(rightClick(target, fakeElement('div')), true);
+});
+
+test('editable fields keep the browser menu for Paste and Copy', () => {
+  const target = new EventTarget();
+  const cleanup = disableDefaultContextMenu(target);
+  try {
+    for (const field of [
+      fakeElement('input'), fakeElement('input', {type: 'text'}), fakeElement('input', {type: 'password'}),
+      fakeElement('textarea'), fakeElement('select'),
+      fakeElement('span', {contenteditable: 'true'}), fakeElement('span', {contenteditable: ''}),
+      fakeElement('b', {}, fakeElement('div', {contenteditable: 'plaintext-only'}))
+    ]) assert.equal(rightClick(target, field), true, field.tagName);
+  } finally { cleanup(); }
+});
+
+test('a text selection keeps the menu so it can be copied, an empty one does not', () => {
+  const target = new EventTarget();
+  const cleanup = disableDefaultContextMenu(target);
+  try {
+    withSelection('selected words', () => assert.equal(rightClick(target, fakeElement('div')), true));
+    withSelection('', () => assert.equal(rightClick(target, fakeElement('div')), false));
+  } finally { cleanup(); }
+});
+
+test('it never stops propagation, so other right-click handlers still run', () => {
+  const target = new EventTarget();
+  const cleanup = disableDefaultContextMenu(target);
+  let reached = false;
+  target.addEventListener('contextmenu', () => { reached = true; });
+  try {
+    rightClick(target, fakeElement('div'));
+    assert.equal(reached, true);
+  } finally { cleanup(); }
 });
 
 for (const language of ['JapaneseSentence', 'ChineseSentence'] as const) {

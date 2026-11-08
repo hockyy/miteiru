@@ -63,8 +63,6 @@ pub fn create_main(app: &App) -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(target_os = "macos")]
     crate::macos_drop::install(&window)?;
     #[cfg(windows)]
-    crate::webview2::disable_default_context_menus(&window)?;
-    #[cfg(windows)]
     crate::webview2::forward_dropped_files(&window)?;
     #[cfg(windows)]
     if crate::sys::info::start_muted() {

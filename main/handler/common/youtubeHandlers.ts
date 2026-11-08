@@ -51,31 +51,29 @@ const runYtDlp =(ytDlpPath: string, args: string[]) => new Promise<string>((reso
   });
 });
 
-// Caption discovery and titles share compact metadata for 20 minutes. The embedded player does
-// its own streaming; full stream metadata is requested only by resolveYoutubeStream callers.
+/**
+ * yt-dlp's `-J` description of a video: its streams (for mpv) and its caption tracks. Opening a
+ * video asks for both, so one run serves them, kept for 20 minutes; the stream URLs it holds stay
+ * valid for hours.
+ */
 const INFO_LIFETIME_MS = 20 * 60_000;
 const youtubeInfoCache = new Map<string, { at: number; info: Promise<any> }>();
 
-const youtubeInfo = (videoID: string, forStreams = false): Promise<any> => {
+const youtubeInfo = (videoID: string): Promise<any> => {
   const now = Date.now();
-  const key = `${videoID}:${forStreams ? "streams" : "captions"}`;
-  const cached = youtubeInfoCache.get(key);
+  const cached = youtubeInfoCache.get(videoID);
   if (cached && now - cached.at < INFO_LIFETIME_MS) return cached.info;
-  // Caption maps can still be large for videos with many translations; drop expired entries.
+  // Each entry holds a few MB of formats and caption tracks: drop the expired ones.
   for (const [id, entry] of youtubeInfoCache) {
     if (now - entry.at >= INFO_LIFETIME_MS) youtubeInfoCache.delete(id);
   }
   const info = (async () => {
     const ytDlpPath = await requireMediaTool("yt-dlp");
     const output = await runYtDlp(ytDlpPath, [
+      "-J",
       "--no-playlist",
       "--no-warnings",
-      ...(forStreams ? ["-J", ...YOUTUBE_STREAM_FORMAT_ARGS] : [
-        // Keep every caption language, including manifest-only tracks, but omit the unused
-        // video formats and storyboard fragments from the JSON transferred to this worker.
-        "--print", "%(.{title,subtitles,automatic_captions,http_headers})j",
-        "--skip-download", "--ignore-no-formats-error"
-      ]),
+      ...YOUTUBE_STREAM_FORMAT_ARGS,
       `https://www.youtube.com/watch?v=${videoID}`
     ]);
     try {
@@ -84,10 +82,10 @@ const youtubeInfo = (videoID: string, forStreams = false): Promise<any> => {
       throw new Error("yt-dlp returned video data that could not be read.");
     }
   })();
-  youtubeInfoCache.set(key, {at: now, info});
+  youtubeInfoCache.set(videoID, {at: now, info});
   // A failed run is not kept, so the next try runs yt-dlp again.
   info.catch(() => {
-    if (youtubeInfoCache.get(key)?.info === info) youtubeInfoCache.delete(key);
+    if (youtubeInfoCache.get(videoID)?.info === info) youtubeInfoCache.delete(videoID);
   });
   return info;
 };
@@ -165,13 +163,14 @@ const downloadSubtitle = (videoID: string, lang: string): Promise<DownloadedSubt
 };
 
 export function registerYoutubeHandlers() {
-  // Retained for explicit native-stream callers; normal YouTube playback uses the embedded player.
+  // Where mpv plays a YouTube video from (main/helpers/youtubeStream.ts); {ok: false} sends the page
+  // to the YouTube embed instead.
   ipcMain.handle("resolveYoutubeStream", async (_event, videoID) => {
     try {
       if (!YOUTUBE_VIDEO_ID.test(String(videoID))) throw new Error(`Invalid YouTube video id: ${videoID}`);
-      return {ok: true, ...youtubeStreamSource(await youtubeInfo(String(videoID), true))};
+      return {ok: true, ...youtubeStreamSource(await youtubeInfo(String(videoID)))};
     } catch (error) {
-      console.warn(`[IPC] Could not resolve a native YouTube stream for ${videoID}:`, error.message);
+      console.warn(`[IPC] resolveYoutubeStream: ${videoID} plays in the YouTube embed:`, error.message);
       return {ok: false, error: error.message};
     }
   });
@@ -232,7 +231,7 @@ export function registerYoutubeHandlers() {
     }
   });
 
-  // From the yt-dlp run shared with the subtitle list, so naming the video costs no extra run.
+  // From the yt-dlp run the player and the subtitle list share, so naming the video costs no extra run.
   ipcMain.handle("getYoutubeVideoTitle", async (_event, videoID: string) => {
     try {
       if (!YOUTUBE_VIDEO_ID.test(String(videoID))) return null;

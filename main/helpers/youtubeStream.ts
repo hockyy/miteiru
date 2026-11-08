@@ -1,6 +1,6 @@
 /**
- * Stream resolution for explicit native-playback callers. Normal YouTube playback uses Video.js
- * with YouTube's embedded player; these helpers remain available for native stream integrations.
+ * YouTube through mpv: yt-dlp finds a video's streams, and mpv plays them like a local file.
+ * renderer/components/VideoPlayer/YouTubeVideo.tsx falls back to the YouTube embed when this fails.
  */
 
 /**

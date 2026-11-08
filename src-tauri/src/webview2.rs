@@ -81,23 +81,6 @@ pub fn mute_page(window: &WebviewWindow) -> tauri::Result<()> {
     })
 }
 
-/// Keep WebView2's browser menu off throughout the app, including embedded frames. DOM
-/// `contextmenu` events still reach subtitle words, where right-click changes their learning state.
-pub fn disable_default_context_menus(window: &WebviewWindow) -> tauri::Result<()> {
-    window.with_webview(|webview| {
-        let disabled = unsafe {
-            webview
-                .controller()
-                .CoreWebView2()
-                .and_then(|core| core.Settings())
-                .and_then(|settings| settings.SetAreDefaultContextMenusEnabled(false))
-        };
-        if let Err(e) = disabled {
-            log::warn!("could not disable the browser context menu: {e}");
-        }
-    })
-}
-
 pub fn forward_dropped_files(window: &WebviewWindow) -> tauri::Result<()> {
     let emitter = window.clone();
     window.with_webview(move |webview| {
