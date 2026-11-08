@@ -4,6 +4,8 @@ name: Desktop build check
 # release, then runs its smoke test (renderer/platform/smokeTest.ts): the backend worker, the store,
 # the analyzer API, libmpv drawing under the page and a YouTube embed. The results and a screenshot
 # are uploaded, so platform code can be checked on macOS and Linux from a Windows machine.
+# With release_tag set, it also downloads that published release's Vietnamese pack through the app's
+# own downloader on each OS (see the step for why each OS needs its own run).
 on:
   workflow_dispatch:
     inputs:
@@ -11,6 +13,10 @@ on:
         description: "Comma-separated: windows, macos, linux"
         required: false
         default: "macos,linux"
+      release_tag:
+        description: "Optional: a published release (e.g. v8.0.1) to download a language pack from on each OS"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -60,6 +66,27 @@ jobs:
       - name: Build desktop app (debug, frontend embedded)
         working-directory: src-tauri
         run: cargo build --features tauri/custom-protocol
+
+      # The app's language downloader (src-tauri/src/sys/langpack.rs) checks certificates with each
+      # OS's own trust store (rustls-platform-verifier): Security.framework on macOS, the system CA
+      # bundle on Linux, the Windows store on Windows. So a download that works on one OS proves nothing
+      # for the others. This fetches the release's Vietnamese pack the way an install does (GitHub's
+      # redirect, progress, then size and sha256) and checks it against GitHub's own sha256 for the file.
+      - name: Download a language pack from the release
+        if: github.event.inputs.release_tag != ''
+        working-directory: src-tauri
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.inputs.release_tag }}
+        run: |
+          file=Miteiru-language-vietnamese.mtrpack
+          asset=$(gh api "repos/${{ github.repository }}/releases/tags/$TAG" --jq ".assets[] | select(.name == \"$file\")")
+          if [ -z "$asset" ]; then echo "$TAG has no $file"; exit 1; fi
+          export MITEIRU_REAL_DOWNLOAD_URL="https://github.com/${{ github.repository }}/releases/download/$TAG/$file"
+          export MITEIRU_REAL_DOWNLOAD_BYTES=$(jq -r .size <<<"$asset")
+          export MITEIRU_REAL_DOWNLOAD_SHA256=$(jq -r '.digest | sub("^sha256:"; "")' <<<"$asset")
+          cargo test --lib langpack::tests::downloads_a_real_release_asset -- --ignored --nocapture
 
       - name: Smoke test
         if: matrix.key != 'windows'
