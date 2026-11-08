@@ -34,6 +34,8 @@ interface ElectronApi {
 
 declare global {
   interface Window {
+    /** Set by the desktop host for MITEIRU_MUTED test launches. */
+    __MITEIRU_START_MUTED__?: boolean;
     backend: IpcHandler;
     electronStore: any;
     electronAPI: ElectronApi;
