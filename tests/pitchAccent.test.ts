@@ -8,7 +8,7 @@ import {
   splitIntoMorae,
   toHiraganaSafe,
   type PitchAccentMap,
-} from '../renderer/utils/pitchAccent.ts';
+} from '../renderer/utils/pitchAccent';
 
 test('splitIntoMorae keeps small kana attached to the previous mora', () => {
   assert.deepEqual(splitIntoMorae('とうきょう'), ['と', 'う', 'きょ', 'う']);

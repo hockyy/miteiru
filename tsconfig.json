@@ -28,6 +28,10 @@
     "node_modules",
     "renderer/next.config.ts",
     "app",
-    "dist"
+    "dist",
+    "renderer/.next",
+    "renderer/out",
+    "src-tauri/target",
+    "src-tauri/resources"
   ]
 }

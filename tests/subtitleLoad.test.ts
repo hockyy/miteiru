@@ -6,7 +6,7 @@ import {
   findLineIndexAt,
   Line,
   SubtitleContainer,
-} from '../renderer/components/Subtitle/DataStructures.ts';
+} from '../renderer/components/Subtitle/DataStructures';
 
 const SRT_ENTRIES = {
   type: 'srt',
