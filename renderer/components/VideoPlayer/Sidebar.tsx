@@ -11,6 +11,7 @@ import {Button} from "../Utils/Button";
 import {GistManager} from "../Data/GistManager";
 import {rangeFillStyle, SubtitleMode} from "../../utils/utils";
 import {SidebarSection, SidebarSettingRow, SidebarShell} from "./SidebarShell";
+import {OpenRouterSettings} from "./OpenRouterSettings";
 import {useExportAllAnkiCards} from "../../hooks/useExportAllAnkiCards";
 import {videoConstants} from "../../utils/constants";
 import {FontPicker} from "../Utils/FontPicker";
@@ -246,12 +247,13 @@ export const StylingBox = ({subtitleStyling, setSubtitleStyling, isMain, default
   </div>;
 };
 
-type SettingsTab = "playback" | "subtitles" | "look" | "data";
+type SettingsTab = "playback" | "subtitles" | "look" | "ai" | "data";
 
 const TABS: { id: SettingsTab; label: string }[] = [
   {id: "playback", label: "Playback"},
   {id: "subtitles", label: "Subtitles"},
   {id: "look", label: "Look"},
+  {id: "ai", label: "AI"},
   {id: "data", label: "Data"},
 ];
 
@@ -423,6 +425,10 @@ export const Sidebar = ({
                                   withMeaning={false} notify={notify}/>}
         </TabPanel>
       </SidebarSection></TabPanel>}
+
+      {tab === "ai" && <TabPanel group="settings" id="ai">
+        <OpenRouterSettings/>
+      </TabPanel>}
 
       {tab === "data" && <TabPanel group="settings" id="data">
         <SidebarSection title="Learning progress">

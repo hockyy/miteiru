@@ -2,6 +2,7 @@ import React, { useCallback, useMemo } from 'react';
 import { defaultMeaningBoxStyling } from '../../../utils/CJKStyling';
 import useSpeech from '../../../hooks/useSpeech';
 import { useStoreData } from '../../../hooks/useStoreData';
+import { DEFAULT_OPENROUTER_MODEL } from '../../../utils/openRouterConstants';
 import { useUserNotes } from '../../../hooks/useUserNotes';
 import { getDictionaryDefinitions } from '../meaningEntries';
 import { UserNotesSection } from '../UserNotesSection';
@@ -56,7 +57,7 @@ const MeaningBox = ({
   const { speak, stop, speaking, supported } = useSpeech();
   const [selectedVoice] = useStoreData('tts.option.voice', '');
   const [openRouterApiKey] = useStoreData('openrouter.apiKey', '');
-  const [openRouterModel] = useStoreData('openrouter.model', 'z-ai/glm-5.2:nitro');
+  const [openRouterModel] = useStoreData('openrouter.model', DEFAULT_OPENROUTER_MODEL);
 
   const {
     meaningContent,

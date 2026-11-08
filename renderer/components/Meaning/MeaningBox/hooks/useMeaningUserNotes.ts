@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useStoreData } from '../../../../hooks/useStoreData';
+import { DEFAULT_OPENROUTER_MODEL, openRouterMessages } from '../../../../utils/openRouterConstants';
 import { generateUserNoteWithAI } from '../../../../utils/generateUserNoteWithAI';
 import {
   getUserNoteKey,
@@ -23,7 +24,7 @@ export const useMeaningUserNotes = (
   const localizedNote = getUserNote(noteKey);
   const userNote = localizedNote ?? getUserNote(meaning);
   const [openRouterApiKey] = useStoreData('openrouter.apiKey', '');
-  const [openRouterModel] = useStoreData('openrouter.model', 'z-ai/glm-5.2:nitro');
+  const [openRouterModel] = useStoreData('openrouter.model', DEFAULT_OPENROUTER_MODEL);
 
   const saveNote = useCallback(
     async (entry: MiteiruUserEntry) => {
@@ -48,7 +49,7 @@ export const useMeaningUserNotes = (
 
   const generateNoteWithAI = useCallback(async () => {
     if (!openRouterApiKey) {
-      alert('Add your OpenRouter key first: open Study a text from Home, press X (or click Settings), and paste it in.');
+      alert(openRouterMessages.missingApiKey);
       return;
     }
 
