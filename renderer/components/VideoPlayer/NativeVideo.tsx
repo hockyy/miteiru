@@ -16,7 +16,8 @@ export const NativeVideo = ({options, onReady, clock, onError}: {
    * mpv could not play the source (YouTubeVideo then switches to the YouTube embed). `seconds` is
    * how far this source had played: 0 when it failed to start.
    */
-  onError?: (seconds: number) => void;
+  /** `reason` is set when the player couldn't start at all (it says why); a file that fails to play has none. */
+  onError?: (seconds: number, reason?: string) => void;
 }) => {
   const elementRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<NativePlayer | null>(null);
@@ -41,7 +42,7 @@ export const NativeVideo = ({options, onReady, clock, onError}: {
         })
         .catch((error) => {
           console.error('[native-video] could not start the player', error);
-          if (!cancelled) onErrorRef.current?.(0);
+          if (!cancelled) onErrorRef.current?.(0, error instanceof Error ? error.message : String(error));
         });
     const resize = new ResizeObserver(() => player.updateRect());
     resize.observe(element);
