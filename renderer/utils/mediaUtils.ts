@@ -79,8 +79,49 @@ export const knownSubtitleTarget = (
   return undefined;
 };
 
-// Windows paths name the same file in any case (the drop gives `EP01.SRT`, the lookup builds `EP01.srt`).
-const samePathKey = (filePath: string) => (/^[a-z]:[\\/]|\\/i.test(filePath) ? filePath.toLowerCase() : filePath);
+const isWindowsPath = (filePath: string) => /^[a-z]:[\\/]|\\/i.test(filePath);
+
+// Windows paths name the same file in any case (the drop gives `EP01.SRT`, the lookup builds `EP01.srt`)
+// and with either slash (the drop gives `C:\v\a.srt`, `check-subtitle-file` gives `C:/v/a.srt`).
+export const samePathKey = (filePath: string) => (
+  isWindowsPath(filePath) ? filePath.replace(/\\/g, "/").toLowerCase() : filePath
+);
+
+/**
+ * What a subtitle's name adds to its video's name: ".ja.srt" for `ep01.ja.srt` beside `ep01.mkv`. Null when
+ * the subtitle is not named after the video, so its counterpart for another episode can't be found by name.
+ */
+export const subtitleSuffixAfterVideo = (videoPath: string, subtitlePath: string): string | null => {
+  const videoName = getFileNameFromPath(videoPath);
+  const dot = videoName.lastIndexOf(".");
+  const base = dot > 0 ? videoName.slice(0, dot) : videoName;
+  const subtitleName = getFileNameFromPath(subtitlePath);
+  const fold = isWindowsPath(videoPath) || isWindowsPath(subtitlePath)
+    ? (text: string) => text.toLowerCase()
+    : (text: string) => text;
+  if (!fold(subtitleName).startsWith(fold(base))) return null;
+  const suffix = subtitleName.slice(base.length);
+  return suffix.length > 1 && suffix.startsWith(".") ? suffix : null;
+};
+
+/**
+ * The subtitle beside the next video that plays the part `subtitlePath` plays for `videoPath` (the same
+ * text after the video's name). Empty when there is none.
+ */
+export const matchingSubtitleForVideo = (
+  videoPath: string,
+  subtitlePath: string,
+  nextVideoPath: string,
+  candidates: string[]
+): string => {
+  const suffix = subtitleSuffixAfterVideo(videoPath, subtitlePath);
+  if (suffix === null) return "";
+  const fold = (text: string) => (isWindowsPath(nextVideoPath) ? text.toLowerCase() : text);
+  return candidates.find((candidate) => {
+    const found = subtitleSuffixAfterVideo(nextVideoPath, candidate);
+    return found !== null && fold(found) === fold(suffix);
+  }) ?? "";
+};
 
 /**
  * Loads dropped or picked files one at a time: the first video, then the subtitles given with it, then

@@ -41,6 +41,8 @@ const useMediaAnalysis = (videoPath: string) => {
     setIsAnalyzing(true);
     try {
       const analysis = await window.electronAPI.analyzeMediaFile(path);
+      // Another video was opened while this one was being read: its tracks are not the open video's.
+      if (activeVideoPath.current !== path) return;
       setMediaInfo(analysis);
       
       // A failed analysis (FFmpeg missing, usually) is reported by the video page from `mediaInfo.error`.
@@ -52,12 +54,17 @@ const useMediaAnalysis = (videoPath: string) => {
 
         // libmpv plays every codec as-is; only a choice of audio track is left to ask.
         if (hasMultipleAudio) {
-          setTimeout(() => setShowAudioTrackModal(true), 100);
+          setTimeout(() => {
+            if (activeVideoPath.current === path) setShowAudioTrackModal(true);
+          }, 100);
         } else if (hasSingleAudio && hasSubtitles) {
-          setTimeout(() => setShowTrackSelectionModal(true), 100);
+          setTimeout(() => {
+            if (activeVideoPath.current === path) setShowTrackSelectionModal(true);
+          }, 100);
         }
       }
     } catch (error) {
+      if (activeVideoPath.current !== path) return;
       setMediaInfo({
         duration: 0,
         audioTracks: [],
@@ -67,7 +74,10 @@ const useMediaAnalysis = (videoPath: string) => {
         toolsAvailable: false
       });
     } finally {
-      setIsAnalyzing(false);
+      // A newer local video's own analysis turns the flag off when it ends.
+      const current = activeVideoPath.current;
+      const newerRunning = current !== path && Boolean(current) && !current.startsWith('http');
+      if (!newerRunning) setIsAnalyzing(false);
     }
   }, []);
 
@@ -114,7 +124,9 @@ const useMediaAnalysis = (videoPath: string) => {
           videoTracks: []
         });
         console.log('[useMediaAnalysis] YouTube video detected, showing subtitle selection modal');
-        setTimeout(() => setShowTrackSelectionModal(true), 100);
+        setTimeout(() => {
+          if (activeVideoPath.current === videoPath) setShowTrackSelectionModal(true);
+        }, 100);
       }
     }
   }, [videoPath, analyzeMedia, isYoutubeUrl]);
@@ -209,6 +221,9 @@ const useMediaAnalysis = (videoPath: string) => {
     activeVideoPath.current = videoPath;
     return () => {
       activeVideoPath.current = null;
+      // Dialogs about the old video's tracks close with it.
+      setShowAudioTrackModal(false);
+      setShowTrackSelectionModal(false);
       const files = tempSubtitleFiles.current;
       tempSubtitleFiles.current = [];
       files.forEach(deleteTempSubtitle);

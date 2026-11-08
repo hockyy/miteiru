@@ -1,4 +1,4 @@
-import {useCallback} from "react";
+import {useCallback, useRef} from "react";
 import {SubtitlePreprocessOptions} from "../types/subtitlePreprocess";
 import {getYoutubeVideoId, SubtitleTarget} from "../utils/mediaUtils";
 import {mainSubtitleName, TRANSLATION_NAME} from "../utils/subtitleLabels";
@@ -46,7 +46,12 @@ export const useMediaTrackSubtitleSelection = ({
     });
   }, [setToastInfo]);
 
+  // The video open now, read after a download to see whether the learner moved on meanwhile.
+  const openVideoPath = useRef(videoPath);
+  openVideoPath.current = videoPath;
+
   const downloadYoutubeSubtitle = useCallback(async (
+    forVideoPath: string,
     videoId: string,
     target: SubtitleTarget,
     language: string,
@@ -64,6 +69,8 @@ export const useMediaTrackSubtitleSelection = ({
       }
 
       console.log(`[Video] ${target} subtitle downloaded to: ${result.filePath}`);
+      // These captions are for the video they were chosen on, not the one opened since.
+      if (openVideoPath.current !== forVideoPath) return;
       await loadEmbeddedSubtitle(result.filePath, target, preprocessOptions);
     } catch (error) {
       console.error(`Failed to download YouTube ${target} subtitle:`, error);
@@ -83,6 +90,7 @@ export const useMediaTrackSubtitleSelection = ({
         const downloadPromises = [];
         if (selection.primarySubtitleType === 'youtube' && selection.primaryYoutubeSubtitleLanguage) {
           downloadPromises.push(downloadYoutubeSubtitle(
+            videoPath,
             videoId,
             'primary',
             selection.primaryYoutubeSubtitleLanguage,
@@ -92,6 +100,7 @@ export const useMediaTrackSubtitleSelection = ({
 
         if (selection.secondarySubtitleType === 'youtube' && selection.secondaryYoutubeSubtitleLanguage) {
           downloadPromises.push(downloadYoutubeSubtitle(
+            videoPath,
             videoId,
             'secondary',
             selection.secondaryYoutubeSubtitleLanguage,
