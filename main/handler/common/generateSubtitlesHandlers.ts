@@ -1,4 +1,4 @@
-import {app, BrowserWindow, ipcMain} from "electron";
+import {app, BrowserWindow, ipcMain, type IpcMainEvent} from "electron";
 import path from "node:path";
 import {getStore} from "./storeHandlers";
 import {DEFAULT_OPENROUTER_THINKING, OPENROUTER_THINKING_KEY, openRouterMessages} from "../../../renderer/utils/openRouterConstants";
@@ -19,7 +19,7 @@ type ActiveJob = {
 
 let activeJob: ActiveJob | null = null;
 
-const sendProgress = (sender: Electron.WebContents | undefined, progress: GenerateSubtitlesProgress) => {
+const sendProgress = (sender: IpcMainEvent["sender"] | undefined, progress: GenerateSubtitlesProgress) => {
   if (sender && !sender.isDestroyed()) {
     sender.send("generate-subtitles:progress", progress);
     return;

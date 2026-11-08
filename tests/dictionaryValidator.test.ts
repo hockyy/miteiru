@@ -5,6 +5,10 @@ import {fileURLToPath} from "node:url";
 import {describe, it} from "node:test";
 import {getLanguageFamily, validateDictionary} from "../main/dictionary/validateDictionary";
 
+// The tests break these documents on purpose (wrong types, missing fields), so they are typed loosely.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type LooseDocument = {entries: Array<Record<string, any>>} & Record<string, unknown>;
+
 const baseDocument = (overrides = {}) => ({
   version: "1.0.0",
   language: "en",
@@ -21,7 +25,7 @@ const validEntry = () => ({
   frequency: 100,
 });
 
-const validJapaneseDocument = () => ({
+const validJapaneseDocument = (): LooseDocument => ({
   version: "1.0.0",
   language: "ja",
   name: "JMdict sample",
@@ -41,7 +45,7 @@ const validJapaneseDocument = () => ({
   }],
 });
 
-const validMandarinDocument = () => ({
+const validMandarinDocument = (): LooseDocument => ({
   version: "1.0.0",
   language: "zh-CN",
   entries: [{
@@ -52,7 +56,7 @@ const validMandarinDocument = () => ({
   }],
 });
 
-const validCantoneseDocument = () => ({
+const validCantoneseDocument = (): LooseDocument => ({
   version: "1.0.0",
   language: "yue",
   entries: [{
