@@ -71,6 +71,12 @@ const useLearningState = (lang: string) => {
       // With no language yet the backend answers nothing; `in` needs an object to search.
       setLearningState(val ?? {});
       setLoadedLang(lang);
+    }, (error) => {
+      if (cancelled) return;
+      // Counted as no saved words, so pages waiting on savedWords (Flashcards) don't wait forever.
+      console.error('Could not load the saved words:', error);
+      setLearningState({});
+      setLoadedLang(lang);
     });
     return () => {
       cancelled = true;
