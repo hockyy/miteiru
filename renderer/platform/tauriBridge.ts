@@ -8,6 +8,7 @@ import {invoke} from '@tauri-apps/api/core';
 import {listen} from '@tauri-apps/api/event';
 import {getCurrentWebview} from '@tauri-apps/api/webview';
 import {getCurrentWindow} from '@tauri-apps/api/window';
+import {isMacPlatform} from '../utils/platform';
 import type {AnalyzerRequestEvent, WorkerInbound, WorkerOutbound} from './backend/protocol';
 import {SYS_KV_BATCH, SYS_WRITE_BYTES, SYS_ZSTD_DECOMPRESS} from './backend/protocol';
 import {
@@ -306,6 +307,7 @@ export const installTauriBridge = () => {
     set: (key: string, value: unknown) => host.invoke(STORE_CHANNELS.set, [key, value])
   };
   document.addEventListener('keydown', toggleFullscreenOnShortcut);
+  document.addEventListener('keydown', reloadPageOnShortcut);
   document.addEventListener('click', (event) => openLinkExternally(event, host));
   // CI's per-OS self-check (renderer/platform/smokeTest.ts), only when MITEIRU_SMOKE_TEST is set.
   invoke<{ smokeTest?: string | null; userData: string; platform: string }>('sys_info').then((info) => {
@@ -345,4 +347,12 @@ const toggleFullscreenOnShortcut = (event: KeyboardEvent) => {
   appWindow.isFullscreen()
     .then((fullscreen) => appWindow.setFullscreen(!fullscreen))
     .catch((error) => console.error('[window] could not toggle full screen:', error));
+};
+
+/** WKWebView has no default Cmd+R action in the packaged app's menu. */
+export const reloadPageOnShortcut = (event: KeyboardEvent) => {
+  if (event.defaultPrevented || !isMacPlatform() || !event.metaKey || event.ctrlKey ||
+      event.altKey || event.shiftKey || event.key.toLowerCase() !== 'r') return;
+  event.preventDefault();
+  window.location.reload();
 };
