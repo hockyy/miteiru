@@ -12,6 +12,13 @@ export type UserNotesApi = Pick<
   "getUserNote" | "setUserNote" | "deleteUserNote" | "userNotes"
 >;
 
+/** Keys to remove on delete: the localized note and the legacy term-only one, whichever exist. */
+export const getUserNoteKeysToDelete = (
+  notes: Record<string, unknown>,
+  noteKey: string,
+  term: string,
+): string[] => [noteKey, term].filter((key, index, keys) => key in notes && keys.indexOf(key) === index);
+
 /** CRUD + OpenRouter AI generation for the My Notes panel. */
 export const useMeaningUserNotes = (
   meaning: string,
@@ -19,7 +26,7 @@ export const useMeaningUserNotes = (
   notesApi: UserNotesApi,
 ) => {
   const [isGeneratingNote, setIsGeneratingNote] = useState(false);
-  const { getUserNote, setUserNote, deleteUserNote } = notesApi;
+  const { getUserNote, setUserNote, deleteUserNote, userNotes } = notesApi;
   const noteKey = getUserNoteKey(meaning, lang);
   const localizedNote = getUserNote(noteKey);
   const userNote = localizedNote ?? getUserNote(meaning);
@@ -40,12 +47,13 @@ export const useMeaningUserNotes = (
 
   const deleteNote = useCallback(async () => {
     try {
-      await deleteUserNote(localizedNote ? noteKey : meaning);
+      // A legacy note can sit beside the localized one; leave neither behind to show up again.
+      await deleteUserNote(...getUserNoteKeysToDelete(userNotes, noteKey, meaning));
     } catch (error) {
       console.error('Failed to delete user note:', error);
       alert('Failed to delete note. Please try again.');
     }
-  }, [deleteUserNote, localizedNote, meaning, noteKey]);
+  }, [deleteUserNote, meaning, noteKey, userNotes]);
 
   const generateNoteWithAI = useCallback(async () => {
     if (!openRouterApiKey) {

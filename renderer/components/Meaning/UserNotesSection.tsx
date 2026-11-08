@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, useMemo } from 'react';
+import React, { useCallback, useState, useEffect, useMemo, useRef } from 'react';
 import { FaChevronDown } from 'react-icons/fa';
 import { Button } from '../Utils/Button';
 import { MiteiruUserEntry, UserNoteExample } from '../../hooks/useUserNotes';
@@ -84,7 +84,15 @@ export const UserNotesSection: React.FC<UserNotesSectionProps> = ({
   const [open, setOpen] = useState(false);
   const [toggled, setToggled] = useState(false);
 
+  const isEditingRef = useRef(isEditing);
+  isEditingRef.current = isEditing;
+  const draftTermRef = useRef(term);
+
   useEffect(() => {
+    const termChanged = draftTermRef.current !== term;
+    draftTermRef.current = term;
+    // A note saved from elsewhere (an AI conjugation example) must not wipe what is being typed.
+    if (isEditingRef.current && !termChanged) return;
     setDraft(userNote ? cloneEntry(userNote) : emptyUserNote());
   }, [userNote, term]);
 
@@ -95,7 +103,7 @@ export const UserNotesSection: React.FC<UserNotesSectionProps> = ({
   }, [term]);
 
   const handleSave = useCallback(async () => {
-    await onSave({
+    const saved = {
       definition: draft.definition.trim(),
       usageNote: draft.usageNote.trim(),
       funFact: draft.funFact.trim(),
@@ -106,7 +114,9 @@ export const UserNotesSection: React.FC<UserNotesSectionProps> = ({
         }))
         .filter((example) => example.sentence !== ''),
       relatedTerms: draft.relatedTerms.filter((relatedTerm) => relatedTerm.trim() !== ''),
-    });
+    };
+    await onSave(saved);
+    setDraft(cloneEntry(saved));
     setIsEditing(false);
   }, [draft, onSave]);
 
@@ -191,9 +201,11 @@ export const UserNotesSection: React.FC<UserNotesSectionProps> = ({
   }, []);
 
   const handleAIGenerate = useCallback(() => {
+    // The new note replaces the whole one, including the learner's own text and conjugation examples.
+    if (hasSavedNote && !window.confirm('Replace your note with a new AI note?')) return;
     setOpen(true);
     onAIGenerate();
-  }, [onAIGenerate]);
+  }, [hasSavedNote, onAIGenerate]);
 
   const showFunFact = Boolean(draft.funFact?.trim() || isEditing);
 

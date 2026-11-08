@@ -120,7 +120,7 @@ type UserNotesContextValue = {
   isLoading: boolean;
   getUserNote: (term: string) => MiteiruUserEntry | null;
   setUserNote: (term: string, entry: MiteiruUserEntry) => Promise<void>;
-  deleteUserNote: (term: string) => Promise<void>;
+  deleteUserNote: (...terms: string[]) => Promise<void>;
   hasUserNote: (term: string) => boolean;
 };
 
@@ -198,11 +198,11 @@ const useUserNotesState = (): UserNotesContextValue => {
     }
   }, [saveUserNotes, setUserNotesRaw]);
 
-  // Delete note for a specific term
-  const deleteUserNote = useCallback(async (term: string) => {
+  // Delete the notes for these keys in one write (a second write would read stale state)
+  const deleteUserNote = useCallback(async (...terms: string[]) => {
     try {
       const newNotes = { ...userNotesRef.current };
-      delete newNotes[term];
+      terms.forEach((term) => delete newNotes[term]);
       await saveUserNotes(newNotes);
     } catch (error) {
       console.error('Failed to delete user note:', error);

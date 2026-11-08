@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { videoConstants } from '../../../../utils/constants';
-import { buildRubyHtmlFromRomajiedData } from '../../meaningEntries';
+import { buildRubyHtmlFromRomajiedData, getJapaneseHeadwordTokens } from '../../meaningEntries';
 import type { MeaningContentState, RomajiedGroup } from '../types';
 
 /**
@@ -16,15 +16,17 @@ export const useMeaningRomajied = (
   const [rubyHtmlContent, setRubyHtmlContent] = useState('');
 
   useEffect(() => {
+    // Tokenizing is async; a slow result for the previous word must not replace this one's.
+    let cancelled = false;
     const fetchRomajiedData = async () => {
       if (lang === videoConstants.japaneseLang) {
         const data = await Promise.all(
           meaningContent.single.map(async (entry, index) => ({
             key: entry.key ?? index,
-            romajied: (await tokenizeMiteiru(entry.text)) as RomajiedGroup['romajied'],
+            romajied: (await getJapaneseHeadwordTokens(entry, tokenizeMiteiru)) as RomajiedGroup['romajied'],
           })),
         );
-        setRomajiedData(data);
+        if (!cancelled) setRomajiedData(data);
         return;
       }
 
@@ -37,12 +39,8 @@ export const useMeaningRomajied = (
           meaningContent.simplified?.includes(meaning)
             ? meaningContent.simplified
             : meaningContent.content;
-        setRomajiedData([
-          {
-            key: 0,
-            romajied: (await tokenizeMiteiru(sourceText)) as RomajiedGroup['romajied'],
-          },
-        ]);
+        const romajied = (await tokenizeMiteiru(sourceText)) as RomajiedGroup['romajied'];
+        if (!cancelled) setRomajiedData([{ key: 0, romajied }]);
       }
     };
 
@@ -51,6 +49,9 @@ export const useMeaningRomajied = (
     } else {
       setRomajiedData([]);
     }
+    return () => {
+      cancelled = true;
+    };
   }, [lang, meaning, meaningContent, tokenizeMiteiru]);
 
   useEffect(() => {

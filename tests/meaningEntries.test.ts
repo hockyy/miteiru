@@ -4,7 +4,10 @@ import {
   buildRubyHtmlFromRomajiedData,
   getDictionaryDefinitions,
   getPrimaryRomajiedVariant,
-  getReadingsFromRomajiedData
+  getReadingsFromRomajiedData,
+  buildJapaneseHeadwordToken,
+  getJapaneseHeadwords,
+  pickJapaneseReading,
 } from "../renderer/components/Meaning/meaningEntries";
 import {videoConstants} from "../renderer/utils/constants";
 
@@ -109,5 +112,55 @@ describe("getDictionaryDefinitions", () => {
     assert.deepEqual(getDictionaryDefinitions({}, videoConstants.japaneseLang), []);
     assert.deepEqual(getDictionaryDefinitions(null, videoConstants.chineseLang), []);
     assert.deepEqual(getDictionaryDefinitions(undefined, videoConstants.japaneseLang), []);
+  });
+});
+
+describe("Japanese headwords", () => {
+  const kana = (text: string, appliesToKanji: string[] = ["*"]) => ({text, common: true, tags: [], appliesToKanji});
+  const kanji = (text: string) => ({text, common: true, tags: []});
+  const sense = (misc: string[] = []) => ({misc, gloss: [], partOfSpeech: []});
+
+  it("picks the first kana that applies to a spelling", () => {
+    const entry = {kana: [kana("おる", ["居る"]), kana("いる", ["*"])], kanji: [kanji("居る"), kanji("要る")]};
+    assert.equal(pickJapaneseReading(entry, "居る"), "おる");
+    assert.equal(pickJapaneseReading(entry, "要る"), "いる");
+    assert.equal(pickJapaneseReading({kana: [kana("みな", [])]}, "皆"), "みな");
+    assert.equal(pickJapaneseReading({kana: []}, "皆"), undefined);
+  });
+
+  it("shows each kanji spelling with its own kana", () => {
+    const entry = {kana: [kana("たべる")], kanji: [kanji("食べる")], sense: [sense()]};
+    assert.deepEqual(getJapaneseHeadwords(entry, "食べる"), [
+      {text: "食べる", common: true, tags: [], key: 0, reading: "たべる"},
+    ]);
+  });
+
+  it("shows the clicked kana, not the kanji, for words usually written in kana", () => {
+    const entry = {kana: [kana("ちょっと")], kanji: [kanji("一寸"), kanji("鳥渡")], sense: [sense(["uk"])]};
+    const [only, ...rest] = getJapaneseHeadwords(entry, "ちょっと");
+    assert.equal(rest.length, 0);
+    assert.equal(only.text, "ちょっと");
+    assert.equal(only.reading, "ちょっと");
+    // Clicking the kanji spelling still shows kanji, now with the right reading.
+    assert.equal(getJapaneseHeadwords(entry, "一寸")[0].reading, "ちょっと");
+  });
+
+  it("shows the matching kana of an entry that has no kanji", () => {
+    const entry = {kana: [kana("ありがとう"), kana("ありがと")], kanji: [], sense: [sense()]};
+    assert.equal(getJapaneseHeadwords(entry, "ありがと")[0].text, "ありがと");
+    assert.equal(getJapaneseHeadwords(entry, "ありが")[0].text, "ありがとう");
+  });
+
+  it("keeps the term when there is no entry data", () => {
+    assert.deepEqual(getJapaneseHeadwords({kana: [], kanji: []}, "エレン"), [{text: "エレン", key: 0}]);
+  });
+
+  it("builds a token with the okurigana split from the dictionary reading", () => {
+    const token = buildJapaneseHeadwordToken("食べる", "たべる");
+    assert.equal(token.origin, "食べる");
+    assert.equal(token.hiragana, "たべる");
+    assert.deepEqual(token.separation.map(({main, hiragana}) => [main, hiragana]), [["食", "た"], ["べる", "べる"]]);
+    assert.deepEqual(buildJapaneseHeadwordToken("一寸", "ちょっと").separation.map(({main, hiragana}) => [main, hiragana]), [["一寸", "ちょっと"]]);
+    assert.equal(buildJapaneseHeadwordToken("コーヒー", "コーヒー").hiragana, "こーひー");
   });
 });

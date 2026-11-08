@@ -191,10 +191,10 @@ export const JapaneseSentence = ({
   useEffect(() => {
     if (!getLearningStateClass) return;
     setLearningClassName(() => {
-      if (subtitleStyling.learning) return getLearningStateClass(basicForm);
+      if (subtitleStyling.learning) return getLearningStateClass(basicForm || origin);
       return '';
     })
-  }, [basicForm, getLearningStateClass, subtitleStyling]);
+  }, [basicForm, origin, getLearningStateClass, subtitleStyling]);
 
   const handleChange = useCallback((pressedString) => {
     if (!pressedString) return;
@@ -209,8 +209,9 @@ export const JapaneseSentence = ({
   const handleRightClick = useCallback((e: React.MouseEvent) => {
     // Right-click saves the word; the webview's own menu would open on top of that.
     e.preventDefault();
-    changeLearningState(basicForm);
-  }, [changeLearningState, basicForm]);
+    // Unknown words have no basic form; fall back to the surface form like left-click.
+    changeLearningState(basicForm || origin);
+  }, [changeLearningState, basicForm, origin]);
 
   useEffect(() => {
     setSeparationContent(() => {

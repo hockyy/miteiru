@@ -25,6 +25,9 @@ export const useMeaningLookup = (meaning: string, lang: string, showMeaning: boo
   const [tags, setTags] = useState<Record<string, string>>({});
 
   useEffect(() => {
+    // The worker answers lookups concurrently; a slow one for a previous word must not land on this one.
+    let cancelled = false;
+
     const fetchCharacterData = async () => {
       if (meaning.length !== 1) {
         setMeaningCharacter(INITIAL_CHARACTER_CONTENT);
@@ -34,6 +37,7 @@ export const useMeaningLookup = (meaning: string, lang: string, showMeaning: boo
       if (lang === videoConstants.japaneseLang && isKanji(meaning)) {
         const result = await window.backend.invoke('queryKanji', meaning);
         const waniResult = await window.backend.invoke('getWaniKanji', meaning);
+        if (cancelled) return;
         setMeaningCharacter({ ...result, wanikani: waniResult });
         return;
       }
@@ -41,19 +45,25 @@ export const useMeaningLookup = (meaning: string, lang: string, showMeaning: boo
       if (lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang) {
         const result = await window.backend.invoke('queryHanzi', meaning);
         const waniResult = await window.backend.invoke('getWaniKanji', meaning);
+        if (cancelled) return;
         setMeaningCharacter({
           ...result,
           literal: meaning[0],
           wanikani: waniResult,
         });
+        return;
       }
+
+      setMeaningCharacter(INITIAL_CHARACTER_CONTENT);
     };
 
     const fetchMeaningData = async () => {
       const entries = (await getMeaningEntries(meaning, lang)) as MeaningContentState[];
-      if (lang === videoConstants.japaneseLang) {
-        setTags(await window.backend.invoke('japaneseTags'));
-      }
+      const nextTags = lang === videoConstants.japaneseLang
+        ? await window.backend.invoke('japaneseTags')
+        : null;
+      if (cancelled) return;
+      if (nextTags) setTags(nextTags);
       setOtherMeanings(entries);
       setMeaningContent(entries[0] ?? INITIAL_MEANING_CONTENT);
       setMeaningIndex(0);
@@ -62,11 +72,27 @@ export const useMeaningLookup = (meaning: string, lang: string, showMeaning: boo
     if (meaning === '') {
       setMeaningContent(INITIAL_MEANING_CONTENT);
       setMeaningCharacter(INITIAL_CHARACTER_CONTENT);
-      return;
+      return () => {
+        cancelled = true;
+      };
     }
 
-    fetchCharacterData();
-    fetchMeaningData();
+    // A failed lookup must not leave the previous word's content showing.
+    fetchCharacterData().catch((error) => {
+      console.error('Character lookup failed:', error);
+      if (!cancelled) setMeaningCharacter(INITIAL_CHARACTER_CONTENT);
+    });
+    fetchMeaningData().catch((error) => {
+      console.error('Meaning lookup failed:', error);
+      if (cancelled) return;
+      setOtherMeanings([]);
+      setMeaningContent(INITIAL_MEANING_CONTENT);
+      setMeaningIndex(0);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [lang, meaning, showMeaning]);
 
   const goToPreviousMeaning = () => {
@@ -99,6 +125,7 @@ export const useMeaningLookup = (meaning: string, lang: string, showMeaning: boo
     tags,
     goToPreviousMeaning,
     goToNextMeaning,
-    isOpen: meaningContent.single.length > 0,
+    // No word means closed, whatever content is still held.
+    isOpen: meaning !== '' && meaningContent.single.length > 0,
   };
 };
