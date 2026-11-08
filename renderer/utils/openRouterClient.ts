@@ -5,13 +5,28 @@
  * API key + model settings: components/VideoPlayer/OpenRouterSettings.tsx
  */
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
-import { streamText } from 'ai';
+import { APICallError, streamText } from 'ai';
 import { createAbortError } from './aiResultCache';
 import { createThrottledEmitter } from './aiStreaming';
 import { OPENROUTER_REQUEST_HEADERS } from './openRouterConstants';
 
 // One wording for every AI feature (openRouterConstants.ts).
 export { openRouterMessages } from './openRouterConstants';
+
+/** What to tell the learner for OpenRouter's usual refusals; any other error keeps its own message. */
+export function describeOpenRouterError(error: unknown): Error {
+  if (APICallError.isInstance(error)) {
+    switch (error.statusCode) {
+      case 401:
+        return new Error("OpenRouter didn't accept your key. Check it under OpenRouter AI in settings (press X).");
+      case 402:
+        return new Error('Your OpenRouter account is out of credits. Add some at openrouter.ai, or choose a free model.');
+      case 429:
+        return new Error('OpenRouter is getting too many requests right now. Wait a moment and try again.');
+    }
+  }
+  return error instanceof Error ? error : new Error(String(error));
+}
 
 type OpenRouterMessage = {
   role: 'system' | 'user';
@@ -42,11 +57,17 @@ export async function streamOpenRouterCompletion(
     .join('\n\n');
   const userMessages = messages.filter((message) => message.role !== 'system');
 
+  // The text stream ends quietly when the request fails (a bad key, no credits, a dropped
+  // connection): keep the error, so the caller shows the reason instead of "could not parse".
+  let streamError: unknown;
   const result = await streamText({
     model: openrouter(model),
     ...(systemContent ? { system: systemContent } : {}),
     messages: userMessages,
     ...(options?.signal ? { abortSignal: options.signal } : {}),
+    onError: ({ error }) => {
+      streamError ??= error;
+    },
   });
 
   const emitter = options?.onText ? createThrottledEmitter(options.onText) : null;
@@ -58,6 +79,9 @@ export async function streamOpenRouterCompletion(
     }
     if (options?.signal?.aborted) {
       throw createAbortError(); // the SDK may just end the stream on abort
+    }
+    if (streamError !== undefined) {
+      throw describeOpenRouterError(streamError);
     }
   } catch (error) {
     emitter?.cancel(); // no late partial update after a failed or cancelled stream
