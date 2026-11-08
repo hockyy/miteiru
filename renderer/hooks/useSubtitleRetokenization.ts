@@ -17,6 +17,7 @@ export function useSubtitleRetokenization({subtitle, enabled, tokenizeMiteiru, c
   const analyses = useRef(aiRetokenizations);
   analyses.current = aiRetokenizations;
   const controller = useRef<SubtitleRetokenizer | null>(null);
+  const applyLatest = useRef<() => void>(() => undefined);
   useEffect(() => {
     const refresh = new SubtitleRetokenizer({
       subtitle,
@@ -25,17 +26,29 @@ export function useSubtitleRetokenization({subtitle, enabled, tokenizeMiteiru, c
       onChanged: () => latest.current.setFrequencyPrimary(new Map(subtitle.frequency))
     });
     controller.current = refresh;
+    // Applying analyses announces a change, and this runs on every change: never re-enter it.
+    let applying = false;
     const applyAnalyses = () => {
-      if (enabledRef.current && applyAiSubtitleRetokenizations(subtitle, analyses.current)) {
-        latest.current.setFrequencyPrimary(new Map(subtitle.frequency));
+      if (applying || !enabledRef.current) return;
+      applying = true;
+      try {
+        if (applyAiSubtitleRetokenizations(subtitle, analyses.current)) {
+          latest.current.setFrequencyPrimary(new Map(subtitle.frequency));
+        }
+      } finally {
+        applying = false;
       }
     };
+    applyLatest.current = applyAnalyses;
     const unsubscribeSubtitle = subtitle.onChange(applyAnalyses);
     applyAnalyses();
     const unsubscribe = window.backend.on('user-dictionary:changed', (change: {language?: string; surfaces?: string[]}) => {
       if (enabledRef.current && (!change.language || change.language === subtitle.language)) refresh.refresh(change.surfaces ?? []);
     });
-    return () => { refresh.dispose(); controller.current = null; unsubscribe(); unsubscribeSubtitle(); };
+    return () => {
+      refresh.dispose(); controller.current = null; unsubscribe(); unsubscribeSubtitle();
+      applyLatest.current = () => undefined;
+    };
   }, [subtitle, clock]);
 
   useEffect(() => {
@@ -59,9 +72,8 @@ export function useSubtitleRetokenization({subtitle, enabled, tokenizeMiteiru, c
     return () => { disposed = true; };
   }, [subtitle, enabled]);
 
+  // New analyses from the forecast: applied through the same guarded path as subtitle changes.
   useEffect(() => {
-    if (enabled && applyAiSubtitleRetokenizations(subtitle, aiRetokenizations)) {
-      latest.current.setFrequencyPrimary(new Map(subtitle.frequency));
-    }
+    if (enabled) applyLatest.current();
   }, [subtitle, enabled, aiRetokenizations]);
 }
