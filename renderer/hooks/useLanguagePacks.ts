@@ -13,6 +13,8 @@ import {
   downloadedBytes,
   friendlyPackError,
   hasPackUi,
+  installedMessage,
+  languageReadyMessage,
   missingPacks,
   progressFraction,
   type LanguagePack,
@@ -71,6 +73,8 @@ export const useLanguagePacks = () => {
   };
   const statusRef = useRef<LanguagePackStatus | null>(null);
   const currentPackId = useRef<string | null>(null);
+  // Set by Cancel; checked before each pack, since a cancel between two packs has no job to stop.
+  const cancelledRef = useRef(false);
   const mounted = useRef(true);
 
   useEffect(() => {
@@ -103,21 +107,58 @@ export const useLanguagePacks = () => {
     if (friendly && mounted.current) setError({...friendly, pluginId});
   }, []);
 
+  // Installs Rust is running that this hook did not start (the page was reloaded, or Home was left
+  // and came back): shown as the active download, and polled until they end.
+  const outside = !busy ? (status?.running ?? []) : [];
+  const outsideKey = outside.map((item) => item.id).join(',');
+  useEffect(() => {
+    if (!outsideKey) return;
+    const timer = setInterval(() => {
+      refresh();
+    }, 500);
+    return () => clearInterval(timer);
+  }, [outsideKey, refresh]);
+  const outsideActive = ((): PackInstallProgress | null => {
+    const job = outside[0];
+    if (!job) return null;
+    const pack = status?.packs.find((candidate) => candidate.id === job.id);
+    const packs = [{bytes: pack?.bytes ?? job.progress?.total ?? 0}];
+    return {
+      pluginId: pack?.languages[0] ?? null,
+      packIndex: 0,
+      packCount: 1,
+      progress: job.progress,
+      fraction: progressFraction(job.progress, packs, 0),
+      doneBytes: downloadedBytes(job.progress, packs, 0),
+      totalBytes: packs[0].bytes,
+      installing: Boolean(job.progress && job.progress.phase !== 'download'),
+      cancelable: true,
+    };
+  })();
+
   const begin = () => {
+    cancelledRef.current = false;
     setBusy(true);
     setError(null);
     setReadyMessage(null);
   };
 
+  // Refreshes before Download comes back, so a finished pack never shows as missing for a moment.
   const finish = async () => {
-    setBusy(false);
     currentPackId.current = null;
-    await refresh();
+    const next = await refresh();
+    setBusy(false);
     if (mounted.current) setActive(null);
+    return next;
   };
 
   /** Installs what the language is missing, one pack after another (a shared pack once). */
-  const run = useCallback(async (packs: LanguagePack[], pluginId: string | null, languageName: string) => {
+  const run = useCallback(async (
+    packs: LanguagePack[],
+    pluginId: string | null,
+    languageName: string,
+    ready: (status: LanguagePackStatus | null) => string,
+  ) => {
     if (busyRef.current || packs.length === 0) return;
     begin();
     const totalBytes = downloadBytes(packs);
@@ -138,6 +179,10 @@ export const useLanguagePacks = () => {
     let ok = true;
     try {
       for (let index = 0; index < packs.length; index++) {
+        if (cancelledRef.current) {
+          ok = false;
+          break;
+        }
         currentPackId.current = packs[index].id;
         report(index, null);
         await langpackInstall(packs[index].id, (progress) => report(index, progress));
@@ -146,12 +191,13 @@ export const useLanguagePacks = () => {
       ok = false;
       fail(raw, pluginId, languageName);
     }
-    await finish();
-    if (ok && mounted.current) setReadyMessage(`${languageName} is ready.`);
+    const next = await finish();
+    if (ok && mounted.current) setReadyMessage(ready(next));
   }, [fail]);
 
   const install = useCallback(
-    (pluginId: string) => run(missingPacks(statusRef.current, pluginId), pluginId, languageNameOf(pluginId)),
+    (pluginId: string) => run(missingPacks(statusRef.current, pluginId), pluginId, languageNameOf(pluginId),
+      (next) => languageReadyMessage(next, pluginId, languageNameOf(pluginId))),
     [run],
   );
 
@@ -159,7 +205,7 @@ export const useLanguagePacks = () => {
   const installPack = useCallback((id: string) => {
     const pack = statusRef.current?.packs.find((candidate) => candidate.id === id);
     if (!pack || pack.state === 'bundled') return Promise.resolve();
-    return run([pack], null, pack.title);
+    return run([pack], null, pack.title, (next) => installedMessage(next, pack));
   }, [run]);
 
   /** "Install from a file…": pick a .mtrpack and install it. */
@@ -200,17 +246,19 @@ export const useLanguagePacks = () => {
     } catch (raw) {
       fail(raw, null, 'that language');
     }
-    await finish();
-    if (installed && mounted.current) setReadyMessage(`${installed.title} is ready.`);
+    const next = await finish();
+    if (installed && mounted.current) setReadyMessage(installedMessage(next, installed));
   }, [fail]);
 
   const cancel = useCallback(async () => {
-    const id = currentPackId.current;
-    if (!id) return;
-    try {
-      await langpackCancel(id);
-    } catch {
-      // Nothing to cancel any more.
+    cancelledRef.current = true;
+    const ids = currentPackId.current ? [currentPackId.current] : statusRef.current?.running.map((item) => item.id) ?? [];
+    for (const id of ids) {
+      try {
+        await langpackCancel(id);
+      } catch {
+        // Nothing to cancel any more.
+      }
     }
   }, []);
 
@@ -234,8 +282,8 @@ export const useLanguagePacks = () => {
     status,
     /** False in development (no manifest): the home page shows no pack UI at all. */
     packsEnabled: hasPackUi(status),
-    busy,
-    active,
+    busy: busy || outside.length > 0,
+    active: active ?? outsideActive,
     error,
     readyMessage,
     install,

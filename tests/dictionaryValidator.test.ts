@@ -6,7 +6,6 @@ import {describe, it} from "node:test";
 import {getLanguageFamily, validateDictionary} from "../main/dictionary/validateDictionary";
 
 // The tests break these documents on purpose (wrong types, missing fields), so they are typed loosely.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LooseDocument = {entries: Array<Record<string, any>>} & Record<string, unknown>;
 
 const baseDocument = (overrides = {}) => ({

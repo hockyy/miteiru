@@ -6,7 +6,9 @@ import {
   formatProgressSize,
   formatSize,
   friendlyPackError,
+  installedMessage,
   isLanguageAvailable,
+  languageReadyMessage,
   missingPacks,
   packsForLanguage,
   packStateLabel,
@@ -23,7 +25,7 @@ const pack = (id: string, languages: string[], state: PackState, bytes = 10 * MB
 });
 
 const status = (packs: LanguagePack[], manifestFound = true): LanguagePackStatus => ({
-  manifestFound, root: "C:/packs", baseUrl: "https://example.test/", appVersion: "8.0.0", packs,
+  manifestFound, root: "C:/packs", baseUrl: "https://example.test/", appVersion: "8.0.0", packs, running: [],
 });
 
 const packs = [
@@ -183,9 +185,10 @@ describe("friendlyPackError", () => {
   });
 
   it("names the pack and the version for a pack of a different version", () => {
-    assert.equal(friendlyPackError("EVERSION: japanese", "Chinese", "8.0.1")?.message,
+    const rust = (id: string) => `EVERSION: old.mtrpack is the ${id} language pack, but not the version Miteiru 8.0.1 expects; download the matching one.`;
+    assert.equal(friendlyPackError(rust("japanese"), "Chinese", "8.0.1")?.message,
       "That file is the Japanese pack for a different version of Miteiru. Download the one for v8.0.1 from its release page.");
-    assert.equal(friendlyPackError("EVERSION: hanzi", "x", "v8.0.1")?.message,
+    assert.equal(friendlyPackError(rust("hanzi"), "x", "v8.0.1")?.message,
       "That file is the Chinese character strokes pack for a different version of Miteiru. Download the one for v8.0.1 from its release page.");
     assert.equal(friendlyPackError("EVERSION: ", "Japanese")?.message,
       "That file is the Japanese pack for a different version of Miteiru. Download the one for this version from its release page.");
@@ -219,5 +222,35 @@ describe("friendlyPackError", () => {
 
   it("says a pack that is already downloading is already downloading", () => {
     assert.equal(friendlyPackError("EBUSY: japanese", "Japanese")?.message, "Japanese is already downloading.");
+  });
+});
+
+describe("what to say after a pack is installed", () => {
+  const titled = (id: string, languages: string[], state: PackState) => ({...pack(id, languages, state), title: `${id} pack`});
+
+  it("names the languages that are now complete", () => {
+    const after = status([titled("hanzi", ["mandarin-jieba", "cantonese-jieba"], "installed"), titled("mandarin", ["mandarin-jieba"], "installed"),
+      titled("cantonese", ["cantonese-jieba"], "installed")]);
+    assert.equal(installedMessage(after, {id: "cantonese", title: "x"}), "Cantonese is ready.");
+    assert.equal(installedMessage(after, {id: "hanzi", title: "x"}), "Chinese and Cantonese are ready.");
+  });
+
+  it("says what a language still lacks", () => {
+    const after = status([titled("hanzi", ["mandarin-jieba", "cantonese-jieba"], "installed"), titled("mandarin", ["mandarin-jieba"], "installed"),
+      titled("cantonese", ["cantonese-jieba"], "missing")]);
+    assert.equal(installedMessage(after, {id: "hanzi", title: "x"}),
+      "Installed hanzi pack. Chinese is ready. Cantonese also needs cantonese pack.");
+    const none = status([titled("hanzi", ["mandarin-jieba"], "installed"), titled("mandarin", ["mandarin-jieba"], "missing")]);
+    assert.equal(installedMessage(none, {id: "hanzi", title: "x"}), "Installed hanzi pack. Chinese also needs mandarin pack.");
+  });
+
+  it("falls back to the pack title when no language uses it", () => {
+    assert.equal(installedMessage(null, {id: "x", title: "Extra"}), "Extra is ready.");
+  });
+
+  it("reports a language as ready or what it still needs", () => {
+    const after = status([titled("hanzi", ["mandarin-jieba"], "installed"), titled("mandarin", ["mandarin-jieba"], "missing")]);
+    assert.equal(languageReadyMessage(after, "mandarin-jieba", "Chinese"), "Chinese still needs mandarin pack.");
+    assert.equal(languageReadyMessage(status(packs), "vietnamese", "Vietnamese"), "Vietnamese is ready.");
   });
 });
