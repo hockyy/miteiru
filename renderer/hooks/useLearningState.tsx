@@ -3,6 +3,7 @@ import {sortAndFilterTopXPercentToJson} from "../utils/utils";
 import {videoConstants} from "../utils/constants";
 import {useStoreData} from "./useStoreData";
 import {LearningStateType} from "../components/types";
+import {LEARNING_STATE_CHANGED_EVENT} from "../utils/learningStateEvents";
 
 const useLearningState = (lang: string) => {
   const [learningState, setLearningState] = useState({});
@@ -62,6 +63,19 @@ const useLearningState = (lang: string) => {
 
   // The language the saved words in learningState were loaded for (null until the first load).
   const [loadedLang, setLoadedLang] = useState<string | null>(null);
+  // Bumped when the saved words change behind this hook's back, which loads them again.
+  const [reloadCount, setReloadCount] = useState(0);
+
+  // A progress file or Gist loaded from Settings writes the words without going through this hook.
+  useEffect(() => {
+    const onChanged = (event: Event) => {
+      if ((event as CustomEvent<{lang: string}>).detail?.lang !== lang) return;
+      setReloadCount((count) => count + 1);
+      setRefreshTrigger((count) => count + 1);
+    };
+    window.addEventListener(LEARNING_STATE_CHANGED_EVENT, onChanged);
+    return () => window.removeEventListener(LEARNING_STATE_CHANGED_EVENT, onChanged);
+  }, [lang]);
 
   useEffect(() => {
     let cancelled = false;
@@ -81,7 +95,7 @@ const useLearningState = (lang: string) => {
     return () => {
       cancelled = true;
     };
-  }, [lang]);
+  }, [lang, reloadCount]);
 
   useEffect(() => {
     setAnalysis(sortAndFilterTopXPercentToJson(frequencyPrimary, learningPercentage));

@@ -18,6 +18,8 @@ type VocabWordCardProps = {
   readingPreview: React.ReactNode;
   userNote: MiteiruUserEntry | null;
   isGeneratingNote: boolean;
+  // The time "a minute ago" is counted from; the panel updates it, as memo would freeze the text.
+  now: number;
   // The handlers take the word, so one function serves every card and memo can skip unchanged cards.
   onSelect: (word: string) => void;
   onGenerateNote: (word: string) => void;
@@ -33,6 +35,7 @@ export const VocabWordCard = memo(function VocabWordCard({
   readingPreview,
   userNote,
   isGeneratingNote,
+  now,
   onSelect,
   onGenerateNote,
   onHoverStart,
@@ -87,7 +90,7 @@ export const VocabWordCard = memo(function VocabWordCard({
         ) : null}
 
         <span className="shrink-0 whitespace-nowrap text-[10px] font-medium leading-none text-white/60">
-          {getRelativeTime(state.updTime)}
+          {getRelativeTime(state.updTime, now)}
         </span>
 
         <span

@@ -9,6 +9,7 @@ import {
 import Toggle from "./Toggle";
 import {Button} from "../Utils/Button";
 import {GistManager} from "../Data/GistManager";
+import {announceLearningStateChanged} from "../../utils/learningStateEvents";
 import {rangeFillStyle, SubtitleMode} from "../../utils/utils";
 import {SidebarSection, SidebarSettingRow, SidebarShell} from "./SidebarShell";
 import {OpenRouterSettings} from "./OpenRouterSettings";
@@ -107,6 +108,7 @@ const LearningFileButtons = ({lang, notify = alertNotify}: { lang: string; notif
         return;
       }
       const saved = await window.backend.invoke("updateContentBatch", progress.words, lang);
+      if (saved !== false) announceLearningStateChanged(lang);
       notify(saved === false ? "Couldn't save the words from that file" : progressImportedMessage(progress.count));
     }).catch((error) => {
       console.error(error);

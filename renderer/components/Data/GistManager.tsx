@@ -3,6 +3,7 @@ import React, {useState, useCallback} from 'react';
 import {Button} from "../Utils/Button";
 import {useStoreData} from "../../hooks/useStoreData";
 import {SIDEBAR_FIELD_INPUT} from "../VideoPlayer/SidebarShell";
+import {announceLearningStateChanged} from "../../utils/learningStateEvents";
 
 interface GistManagerProps {
   lang: string;
@@ -83,6 +84,7 @@ export const GistManager: React.FC<GistManagerProps> = ({lang}) => {
       const content = gistContent.gist.files[0].content;
       const parsed = JSON.parse(content);
       await window.backend.invoke("updateContentBatch", parsed, lang);
+      announceLearningStateChanged(lang);
 
       console.log('Learning state loaded successfully!');
       alert('Learning state loaded successfully!');
