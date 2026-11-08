@@ -17,6 +17,7 @@ import {
   getPronunciationLabel,
   getTranslationLoadingSubMessage,
   getTranslationTargetLang,
+  getUnsupportedLangMessage,
   normalizeTranslationDetailOptions,
   TranslationDetailOptions,
 } from '../../utils/aiTranslationPrompts';
@@ -121,7 +122,8 @@ export const LearnStudyPanel: React.FC<LearnStudyPanelProps> = ({
   const missingApiKey = !openRouterApiKey.trim();
   const missingModel = !openRouterModel.trim();
   const missingSentences = sourceSentences.length === 0;
-  const unsupportedLang = lang !== '' && !targetLang;
+  // No language chosen yet counts too: the panel says where to choose one before anyone presses Translate.
+  const unsupportedLang = !targetLang;
   const pronunciationLabel = targetLang ? getPronunciationLabel(targetLang) : 'Reading';
 
   const translateWithAI = useCallback(() => {
@@ -285,7 +287,7 @@ export const LearnStudyPanel: React.FC<LearnStudyPanelProps> = ({
             <p className="text-amber-800">{openRouterMessages.missingModel}</p>
           )}
           {unsupportedLang && (
-            <p className="text-amber-800">AI translation supports Japanese, Chinese, and Cantonese only.</p>
+            <p className="text-amber-800">{getUnsupportedLangMessage(lang)}</p>
           )}
         </div>}
       </div>
