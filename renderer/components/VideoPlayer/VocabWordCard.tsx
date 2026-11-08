@@ -1,40 +1,45 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { getRelativeTime } from '../../utils/utils';
 import type { LearningStateType } from '../types';
-import type { VocabNotePreview } from './vocabNotePreview';
+import { hasUserNoteContent, type MiteiruUserEntry } from '../../hooks/useUserNotes';
+import { getVocabNotePreview } from './vocabNotePreview';
 import {
   getLearningLevelColor,
   getLearningLevelLabel,
 } from './vocabLevels';
+
+/** The element id of a word's card button, which the panel scrolls to. */
+export const vocabCardId = (word: string) => `word-${word}`;
 
 type VocabWordCardProps = {
   word: string;
   state: LearningStateType;
   isHovered: boolean;
   readingPreview: React.ReactNode;
-  hasNotes: boolean;
-  notePreview: VocabNotePreview | null;
+  userNote: MiteiruUserEntry | null;
   isGeneratingNote: boolean;
-  onClick: () => void;
-  onGenerateNote: () => void;
-  onMouseEnter: () => void;
-  onMouseLeave: () => void;
+  // The handlers take the word, so one function serves every card and memo can skip unchanged cards.
+  onSelect: (word: string) => void;
+  onGenerateNote: (word: string) => void;
+  onHoverStart: (word: string) => void;
+  onHoverEnd: () => void;
 };
 
 /** Vocabulary row with optional AI note preview and generate shortcut. */
-export const VocabWordCard = ({
+export const VocabWordCard = memo(function VocabWordCard({
   word,
   state,
   isHovered,
   readingPreview,
-  hasNotes,
-  notePreview,
+  userNote,
   isGeneratingNote,
-  onClick,
+  onSelect,
   onGenerateNote,
-  onMouseEnter,
-  onMouseLeave,
-}: VocabWordCardProps) => {
+  onHoverStart,
+  onHoverEnd,
+}: VocabWordCardProps) {
+  const hasNotes = hasUserNoteContent(userNote);
+  const notePreview = getVocabNotePreview(userNote);
   const levelColor = getLearningLevelColor(state.level);
   const levelLabel = getLearningLevelLabel(state.level);
 
@@ -44,19 +49,19 @@ export const VocabWordCard = ({
         'overflow-hidden rounded-lg border border-white/10 transition-[background-color,border-color] duration-150',
         isHovered ? 'border-white/15 bg-white/[0.1]' : 'bg-white/[0.06]',
       ].join(' ')}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
+      onMouseEnter={() => onHoverStart(word)}
+      onMouseLeave={onHoverEnd}
     >
       <button
         type="button"
-        id={`word-${word}`}
+        id={vocabCardId(word)}
         title={typeof readingPreview === 'string' ? readingPreview : word}
         className={[
           'unselectable flex min-h-11 w-full items-center gap-2 px-2 py-2 text-left',
           'focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/30',
         ].join(' ')}
         style={{ borderLeftWidth: 4, borderLeftColor: levelColor }}
-        onClick={onClick}
+        onClick={() => onSelect(word)}
       >
         <span className="max-w-[30%] shrink-0 truncate text-base font-bold leading-none text-white">
           {word}
@@ -135,7 +140,7 @@ export const VocabWordCard = ({
           ].join(' ')}
           onClick={(event) => {
             event.stopPropagation();
-            onGenerateNote();
+            onGenerateNote(word);
           }}
         >
           {isGeneratingNote ? 'Generating…' : hasNotes ? 'Regenerate AI' : 'AI notes'}
@@ -143,4 +148,4 @@ export const VocabWordCard = ({
       </div>
     </div>
   );
-};
+});
