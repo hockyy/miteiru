@@ -1,5 +1,8 @@
 import {useEffect, useRef, useState, useSyncExternalStore} from "react";
 
+/** A seek target never below 0: for mpv a negative absolute seek counts back from the end of the file. */
+export const seekSeconds = (target: number): number => (Number.isFinite(target) ? Math.max(0, target) : 0);
+
 /**
  * The video's current time in seconds. VideoJS samples the player about 33 times a second; keeping
  * that in page state re-rendered the whole video page on every sample. Components subscribe to the

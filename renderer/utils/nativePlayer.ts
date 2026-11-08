@@ -1,3 +1,4 @@
+import {seekSeconds} from "./playbackClock";
 import {invoke} from "@tauri-apps/api/core";
 import {getCurrentWebviewWindow} from "@tauri-apps/api/webviewWindow";
 
@@ -50,6 +51,9 @@ export class NativePlayer {
   constructor(private readonly element: HTMLElement) {}
 
   async open() {
+    // A retry after a failed start must not leave the earlier listener behind.
+    this.unlisten?.();
+    this.unlisten = null;
     // Miteiru draws subtitles itself; mpv only shows the picture.
     await invoke("player_open", {options: {"sub-visibility": "no"}});
     this.unlisten = await getCurrentWebviewWindow().listen<PlayerEvent>("player://event", (e) => this.onEvent(e.payload));
@@ -157,6 +161,7 @@ export class NativePlayer {
   /** Smooth between mpv's per-frame time-pos updates, so subtitles change on time. */
   currentTime(seconds?: number): number {
     if (seconds !== undefined) {
+      seconds = seekSeconds(seconds);
       this.lastTime = seconds;
       this.lastTimeAt = performance.now();
       this.run("player_command", {args: ["seek", String(seconds), "absolute+exact"]});
