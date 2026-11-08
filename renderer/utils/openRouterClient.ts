@@ -6,6 +6,8 @@
  */
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { streamText } from 'ai';
+import { createAbortError } from './aiResultCache';
+import { createThrottledEmitter } from './aiStreaming';
 import { OPENROUTER_REQUEST_HEADERS } from './openRouterConstants';
 
 // One wording for every AI feature (openRouterConstants.ts).
@@ -16,10 +18,18 @@ type OpenRouterMessage = {
   content: string;
 };
 
+export interface StreamOptions {
+  /** Cancels the request; the returned promise then rejects. */
+  signal?: AbortSignal;
+  /** Receives the text so far while it streams (at most every ~60 ms, and once more with the final text). */
+  onText?: (text: string) => void;
+}
+
 export async function streamOpenRouterCompletion(
   apiKey: string,
   model: string,
   messages: OpenRouterMessage[],
+  options?: StreamOptions,
 ): Promise<string> {
   const openrouter = createOpenRouter({
     apiKey,
@@ -36,12 +46,23 @@ export async function streamOpenRouterCompletion(
     model: openrouter(model),
     ...(systemContent ? { system: systemContent } : {}),
     messages: userMessages,
+    ...(options?.signal ? { abortSignal: options.signal } : {}),
   });
 
-  // Collect full response before JSON parse (hooks don't stream partial UI)
+  const emitter = options?.onText ? createThrottledEmitter(options.onText) : null;
   let rawResponse = '';
-  for await (const chunk of result.textStream) {
-    rawResponse += chunk;
+  try {
+    for await (const chunk of result.textStream) {
+      rawResponse += chunk;
+      emitter?.push(rawResponse);
+    }
+    if (options?.signal?.aborted) {
+      throw createAbortError(); // the SDK may just end the stream on abort
+    }
+  } catch (error) {
+    emitter?.cancel(); // no late partial update after a failed or cancelled stream
+    throw error;
   }
+  emitter?.flush(rawResponse);
   return rawResponse;
 }
