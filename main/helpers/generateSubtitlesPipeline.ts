@@ -13,6 +13,7 @@ import {
 } from "../../renderer/utils/generateSubtitlesConfig";
 import type {GenerateSubtitlesProgress} from "../../renderer/types/generateSubtitles";
 import {transcribeOpenRouterAudio, withRetries} from "./openRouterHttp";
+import {mapLimit} from "./mapLimit";
 import {throwIfAborted} from "./runCommand";
 import {cuesFromTranscription, cuesToSrt, SrtCue} from "./srtFormat";
 import {extractAudioChunk, extractAudioForAsr} from "./subtitleAudioExtract";
@@ -20,49 +21,6 @@ import {extractAudioChunk, extractAudioForAsr} from "./subtitleAudioExtract";
 type ProgressFn = (progress: GenerateSubtitlesProgress) => void;
 
 const toHongKongTraditional = OpenCC.Converter({from: "cn", to: "hk"});
-
-/**
- * Runs `fn` over `items`, `limit` at a time, in order of results. The first failure aborts the
- * signal given to the others, so their in-flight requests stop instead of being paid for.
- */
-async function mapLimit<T, R>(
-  items: T[],
-  limit: number,
-  signal: AbortSignal,
-  fn: (item: T, index: number, signal: AbortSignal) => Promise<R>
-): Promise<R[]> {
-  const results = new Array<R>(items.length);
-  let next = 0;
-  let firstError: unknown;
-  const failed = new AbortController();
-  const workSignal = AbortSignal.any([signal, failed.signal]);
-
-  const worker = async () => {
-    while (true) {
-      throwIfAborted(signal);
-      if (firstError) {
-        throw firstError;
-      }
-      const index = next++;
-      if (index >= items.length) {
-        return;
-      }
-      try {
-        results[index] = await fn(items[index], index, workSignal);
-      } catch (error) {
-        if (!firstError) {
-          firstError = error;
-          failed.abort();
-        }
-        throw firstError;
-      }
-    }
-  };
-
-  const workerCount = Math.max(1, Math.min(limit, items.length));
-  await Promise.all(Array.from({length: workerCount}, () => worker()));
-  return results;
-}
 
 const convertAsrText = (lang: string, text: string) => {
   if (!text) {

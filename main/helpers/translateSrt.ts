@@ -1,8 +1,10 @@
 import fs from "node:fs/promises";
 import {
   TRANSLATE_BATCH_SIZE,
+  TRANSLATE_CONCURRENCY,
   TRANSLATE_REQUEST_TIMEOUT_MS
 } from "../../renderer/utils/generateSubtitlesConfig";
+import {mapLimit} from "./mapLimit";
 import type {GenerateSubtitlesProgress} from "../../renderer/types/generateSubtitles";
 import {asString, extractJsonArray} from "../../renderer/utils/parseJsonResponse";
 import {openRouterChatCompletion, withRetries} from "./openRouterHttp";
@@ -83,8 +85,8 @@ export async function translateSrtToEnglish(options: {
   });
 
   let done = 0;
-  for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
-    const batch = batches[batchIndex];
+  // A few batches at a time; translations are keyed by cue number, so their order doesn't matter.
+  await mapLimit(batches, TRANSLATE_CONCURRENCY, options.signal, async (batch, batchIndex, signal) => {
     const startIndex = batchIndex * TRANSLATE_BATCH_SIZE;
     const numbered = batch.map((cue, offset) => `${startIndex + offset + 1}. ${cue.text}`).join("\n");
 
@@ -96,7 +98,7 @@ export async function translateSrtToEnglish(options: {
         model: options.translateModel,
         temperature: 0.2,
         timeoutMs: TRANSLATE_REQUEST_TIMEOUT_MS,
-        signal: options.signal,
+        signal,
         messages: [
           {role: "system", content: translateSystemPrompt(options.lang)},
           {role: "user", content: numbered}
@@ -111,7 +113,7 @@ export async function translateSrtToEnglish(options: {
         throw new Error(`Missing translations for cues ${missing.slice(0, 8).join(", ")}`);
       }
       return got;
-    }, {signal: options.signal}).catch((error) => {
+    }, {signal}).catch((error) => {
       if (partial && !isJobCancelled(error)) return partial;
       throw error;
     });
@@ -126,7 +128,8 @@ export async function translateSrtToEnglish(options: {
       total: cues.length,
       sourceSrtPath: options.sourceSrtPath
     });
-  }
+  });
+  throwIfAborted(options.signal);
 
   const englishCues = cues.map((cue, index) => ({
     ...cue,
