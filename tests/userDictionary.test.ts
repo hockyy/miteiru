@@ -174,17 +174,17 @@ test("suppression is scoped to the removed language and legacy states remain wri
   assert.deepEqual(added.entries.map(({language}) => language), ["zh-CN"]);
 });
 
-test("a full suppression list rejects another removal without dropping an older choice", async () => {
+test("a full suppression list still removes, forgetting the word removed longest ago", async () => {
   const database = memory(true);
   const suppressions = Array.from({length: 2000}, (_, index) => ({language: "ja", surface: `removed-${index}`}));
   database.values.set(USER_DICTIONARY_KEY, {revision: 7, entries: [entry({source: "ai"})], suppressions});
   const dictionary = createUserDictionary({getStore: async () => database.store});
-  await assert.rejects(dictionary.remove("ja", "見ている"), /2000/);
-  assert.equal((await dictionary.list()).entries.length, 1);
-  assert.deepEqual((database.values.get(USER_DICTIONARY_KEY) as {suppressions: unknown[]}).suppressions, suppressions);
-  await dictionary.upsert([entry({surface: "removed-0"})]);
   await dictionary.remove("ja", "見ている");
-  assert.equal((database.values.get(USER_DICTIONARY_KEY) as {suppressions: unknown[]}).suppressions.length, 2000);
+  assert.equal((await dictionary.list()).entries.length, 0);
+  const stored = (database.values.get(USER_DICTIONARY_KEY) as {suppressions: {surface: string}[]}).suppressions;
+  assert.equal(stored.length, 2000);
+  assert.equal(stored[0].surface, "removed-1");
+  assert.equal(stored.at(-1)?.surface, "見ている");
   const oversized = createUserDictionary({getStore: async () => ({get: () => ({entries: [], suppressions: [...suppressions, {language: "ja", surface: "extra"}]}), set: () => undefined})});
   await assert.rejects(oversized.list(), /2000/);
 });

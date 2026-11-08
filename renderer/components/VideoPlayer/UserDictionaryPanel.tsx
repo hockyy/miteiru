@@ -26,7 +26,8 @@ export function UserDictionaryPanel({isOpen, onClose, dictionary, languageName}:
   isOpen: boolean; onClose: () => void; dictionary: ReturnType<typeof useUserDictionary>; languageName: string;
 }) {
   const [draft, setDraft] = useState(EMPTY_DRAFT);
-  const [editing, setEditing] = useState(false);
+  // The word being edited, so saving it under a new spelling replaces it instead of adding a second entry.
+  const [editing, setEditing] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -34,13 +35,17 @@ export function UserDictionaryPanel({isOpen, onClose, dictionary, languageName}:
   if (!isOpen) return null;
   const edit = (entry: UserDictionaryEntry) => {
     setDraft({surface: entry.surface, reading: entry.reading, meaning: entry.meaning});
-    setEditing(true);
+    setEditing(entry.surface);
     setError('');
   };
-  const clear = () => { setDraft(EMPTY_DRAFT); setEditing(false); setError(''); };
+  const clear = () => { setDraft(EMPTY_DRAFT); setEditing(null); setError(''); };
   const save = async () => {
     setSaving(true);
-    try { await dictionary.save(draft); clear(); }
+    try {
+      await dictionary.save(draft);
+      if (editing !== null && editing !== draft.surface.trim()) await dictionary.remove(editing);
+      clear();
+    }
     catch (failure) { setError(failure instanceof Error ? failure.message : String(failure)); }
     finally { setSaving(false); }
   };
@@ -50,7 +55,7 @@ export function UserDictionaryPanel({isOpen, onClose, dictionary, languageName}:
   return <ModalShell title={`Your ${languageName} dictionary`} onClose={onClose} maxWidthClassName="max-w-2xl"
     footer={<div className="flex justify-end"><Button type="primary" onPress={onClose}>Done</Button></div>}>
     <div className="space-y-5 text-sm text-white/85">
-      <section aria-label={editing ? 'Edit entry' : 'Add an entry'} className="space-y-3">
+      <section aria-label={editing !== null ? 'Edit entry' : 'Add an entry'} className="space-y-3">
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="flex flex-col gap-1">
             <label htmlFor={ids.word} className="text-xs font-bold text-white/70">Word</label>
@@ -70,7 +75,7 @@ export function UserDictionaryPanel({isOpen, onClose, dictionary, languageName}:
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <Button type="primary" size="small" disabled={saving || !draft.surface.trim() || !draft.meaning.trim()} onPress={save}>Save</Button>
-          {editing && <Button type="link" onPress={clear}>Cancel</Button>}
+          {editing !== null && <Button type="link" onPress={clear}>Cancel</Button>}
         </div>
         {shownError && <p role="alert" className="text-xs text-red-200">{shownError}</p>}
       </section>

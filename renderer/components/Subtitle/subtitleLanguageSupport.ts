@@ -308,7 +308,9 @@ export const fillSubtitleWithLearningContent = async (
     const priorityChunk = Number.isFinite(priorityLine)
       ? Math.floor(Math.max(0, Math.min(priorityLine, subtitle.lines.length - 1)) / LEARNING_CHUNK_LINES)
       : -1;
-    const chunkIndex = pending.has(priorityChunk) ? priorityChunk : pending.values().next().value!;
+    // From the playhead forward first, then whatever is left before it.
+    const ahead = [...pending].filter((index) => index >= priorityChunk);
+    const chunkIndex = Math.min(...(ahead.length ? ahead : pending));
     pending.delete(chunkIndex);
     const start = chunkIndex * LEARNING_CHUNK_LINES;
     const chunk = subtitle.lines.slice(start, start + LEARNING_CHUNK_LINES);

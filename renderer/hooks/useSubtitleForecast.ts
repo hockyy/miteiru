@@ -33,7 +33,8 @@ export function useSubtitleForecast({subtitle, lang, clock, videoPath, shiftMs =
     setError('');
     setBusy(false);
     if ((!tipsEnabled && !dictionaryEnabled) || !videoPath || !lang) return;
-    if (!apiKey.trim()) { setError('Add an OpenRouter key in video settings → AI.'); return; }
+    // Settings → AI already says a key is needed; there is nothing to retry until one is added.
+    if (!apiKey.trim()) return;
     let disposed = false;
     let active: {id: string; bucket: number; cancelled?: boolean} | null = null;
     let desired: {key: string; bucket: number; cues: {from: number; to: number; text: string}[]}[] = [];

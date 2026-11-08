@@ -95,9 +95,12 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
     return {tmpSub, subtitlePath};
   }, [lang, primaryStyling.forceSimplified]);
 
+  const playerRef = useRef(player);
+  playerRef.current = player;
   const processSubtitleForLearning = useCallback(async (tmpSub) => {
     try {
-      await tmpSub.adjustForLearning(tokenizeMiteiru, () => (player?.currentTime() ?? 0) * 1000);
+      // Read the player when asked: it may not exist yet when preparation starts.
+      await tmpSub.adjustForLearning(tokenizeMiteiru, () => (playerRef.current?.currentTime() ?? 0) * 1000);
 
       // A newer subtitle may have replaced this one while it was processing.
       if (!isCurrentSubtitle(tmpSub.id)) return;
@@ -110,7 +113,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
         showToast(`Couldn't get the ${currentAppLanguage} subtitles ready: ${error.message}`);
       }
     }
-  }, [tokenizeMiteiru, player, setFrequencyPrimary, showToast, setPrimaryTimeCache, currentAppLanguage]);
+  }, [tokenizeMiteiru, setFrequencyPrimary, showToast, setPrimaryTimeCache, currentAppLanguage]);
 
   const loadSubtitleAsPrimary = useCallback((tmpSub, sourcePath) => {
     setPrimarySub(tmpSub);

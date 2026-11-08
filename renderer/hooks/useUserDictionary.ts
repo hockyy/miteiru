@@ -17,7 +17,7 @@ export function useUserDictionary(lang: string) {
         if (!result.ok) throw new Error(result.error || 'Could not read your dictionary.');
         setEntries(result.entries);
         setError('');
-      } catch (failure) { if (!disposed) setError(String(failure)); }
+      } catch (failure) { if (!disposed) setError(failure instanceof Error ? failure.message : String(failure)); }
     };
     void refresh();
     const unsubscribe = window.backend.on('user-dictionary:changed', () => { void refresh(); });
@@ -33,7 +33,7 @@ export function useUserDictionary(lang: string) {
       const result = await window.backend.invoke('user-dictionary:delete', {language: lang, surface});
       if (!result.ok) throw new Error(result.error || 'Could not delete this entry.');
       setError('');
-    } catch (failure) { setError(String(failure)); }
+    } catch (failure) { setError(failure instanceof Error ? failure.message : String(failure)); }
   }, [lang]);
   return {entries, error, save, remove};
 }

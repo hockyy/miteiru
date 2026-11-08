@@ -132,7 +132,9 @@ export function createUserDictionary(options: {getStore: () => Promise<Dictionar
       const changed = current.entries.filter((entry) => entry.language === language && entry.surface === target);
       const suppressions = new Map(current.suppressions.map((entry) => [identity(entry), entry]));
       for (const entry of changed) suppressions.set(identity(entry), {language: entry.language, surface: entry.surface});
-      if (suppressions.size > MAX_SUPPRESSIONS) throw new Error(`The user dictionary can remember up to ${MAX_SUPPRESSIONS} removed terms. Save a removed term manually before removing another.`);
+      // Removing must always work. When the list is full, the word removed longest ago is
+      // forgotten, so AI may suggest that one again.
+      while (suppressions.size > MAX_SUPPRESSIONS) suppressions.delete(suppressions.keys().next().value!);
       return changed.length ? commit(store, current.entries.filter((entry) => !changed.includes(entry)), changed, [...suppressions.values()])
         : {revision: current.revision, entries: [...current.entries]};
     });

@@ -335,10 +335,10 @@ export const AiStudySettings = ({forecast, dictionaryCount, onOpenDictionary}: {
   const status = aiStudyStatus(forecast);
   return <>
     <SidebarSection title="While you watch">
-      <ToggleRow label="Box tips" disabled={!forecast.hasApiKey}
+      <ToggleRow label="Box tips" disabled={!forecast.hasApiKey && !forecast.tipsEnabled}
                  hint="A short note when the line on screen has grammar, wordplay or a saying worth knowing."
                  checked={forecast.tipsEnabled} onChange={forecast.setTipsEnabled}/>
-      <ToggleRow label="AI word splitting" disabled={!forecast.hasApiKey}
+      <ToggleRow label="AI word splitting" disabled={!forecast.hasApiKey && !forecast.dictionaryEnabled}
                  hint="AI checks where words begin and end and adds their meaning in this line. Words your dictionaries miss are saved to Your dictionary."
                  checked={forecast.dictionaryEnabled} onChange={forecast.setDictionaryEnabled}/>
       <div className="flex flex-col gap-2">

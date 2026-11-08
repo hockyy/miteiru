@@ -290,6 +290,17 @@ function Video() {
       () => isYoutube(videoSrc.path) ? videoSrc.path : undefined,
       [videoSrc.path]
   );
+  // A failed AI batch pauses the tools until Retry, so say so where the learner is looking.
+  const retryForecast = useRef(forecast.retry);
+  retryForecast.current = forecast.retry;
+  useEffect(() => {
+    if (!forecast.error) return;
+    setToastInfo({
+      message: `AI study tools paused: ${forecast.error}`,
+      update: String(Date.now()),
+      action: {label: 'Retry', onPress: () => retryForecast.current()}
+    });
+  }, [forecast.error, setToastInfo]);
   useEffect(() => {
     if (!mediaVideoUrl) return;
     setToastInfo({
@@ -546,7 +557,8 @@ function Video() {
           )}
 
           {hasVideo && (
-            // Local files play in libmpv; Video.js uses YouTube's embedded player for online videos.
+            // Local files play in libmpv. YouTube does too when yt-dlp finds its streams, and in the
+            // YouTube embed otherwise.
             videoSrc.type === 'video/youtube'
                 ? <YouTubeVideo options={videoOptions} onReady={readyCallback} clock={clock}/>
                 : <NativeVideo options={videoOptions} onReady={readyCallback} clock={clock}
