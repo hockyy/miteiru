@@ -98,7 +98,8 @@ function Learn() {
   const {
     tokenizerMode,
     tokenizeMiteiru,
-    lang
+    lang,
+    tokenizerModeLoaded,
   } = useMiteiruTokenizer();
   const hasApiKey = openRouterApiKey.trim() !== '';
   // The AI tools are folded away until there is a key to use; the learner can open them either way.
@@ -363,6 +364,7 @@ function Learn() {
             >
               <LearnStudyPanel
                 lang={lang}
+                languageLoaded={tokenizerModeLoaded}
                 openRouterApiKey={openRouterApiKey}
                 openRouterModel={openRouterModel}
                 onMoveToAnalyzer={handleMoveToAnalyzer}

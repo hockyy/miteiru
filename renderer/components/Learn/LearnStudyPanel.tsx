@@ -51,6 +51,8 @@ const TRANSLATION_NOTE_TOGGLES: { key: keyof TranslationDetailOptions; label: st
 
 interface LearnStudyPanelProps {
   lang: string;
+  /** Whether the page has read which language is loaded (`lang` is '' until then). */
+  languageLoaded: boolean;
   openRouterApiKey: string;
   openRouterModel: string;
   onMoveToAnalyzer: (text: string) => void;
@@ -59,6 +61,7 @@ interface LearnStudyPanelProps {
 
 export const LearnStudyPanel: React.FC<LearnStudyPanelProps> = ({
   lang,
+  languageLoaded,
   openRouterApiKey,
   openRouterModel,
   onMoveToAnalyzer,
@@ -123,7 +126,8 @@ export const LearnStudyPanel: React.FC<LearnStudyPanelProps> = ({
   const missingModel = !openRouterModel.trim();
   const missingSentences = sourceSentences.length === 0;
   // No language chosen yet counts too: the panel says where to choose one before anyone presses Translate.
-  const unsupportedLang = !targetLang;
+  // Only once the page knows which language is loaded; before that every visit would flash the message.
+  const unsupportedLang = languageLoaded && !targetLang;
   const pronunciationLabel = targetLang ? getPronunciationLabel(targetLang) : 'Reading';
 
   const translateWithAI = useCallback(() => {

@@ -35,7 +35,7 @@ interface LearningStateEntry {
 type SortedVocabEntry = [string, LearningStateEntry];
 
 const VocabFlashCards: React.FC = () => {
-  const {lang, tokenizeMiteiru} = useMiteiruTokenizer();
+  const {lang, tokenizeMiteiru, tokenizerModeLoaded} = useMiteiruTokenizer();
   const router = useRouter();
   const [loaded, setLoaded] = useState(false);
   // The card panel is an overlay; it starts below the header so Home stays reachable.
@@ -63,33 +63,29 @@ const VocabFlashCards: React.FC = () => {
     setLearningLevel,
     getLearningState,
     updateTimeWithSameLevel,
+    savedWords,
   } = useLearningState(lang);
 
-  const loadVocabulary = useCallback(async () => {
-    try {
-      if (!lang) return;
-      const loadedState = await window.backend.invoke('loadLearningState', lang);
-      // Most overdue first.
-      const sorted = Object.entries(loadedState).sort((a, b) =>
-          (a[1] as LearningStateEntry).updTime - (b[1] as LearningStateEntry).updTime
-      ) as SortedVocabEntry[];
-      const due = dueCards(sorted, Date.now());
-      setSortedVocab(sorted);
-      setDeck(due);
-      setIndex(0);
-      setReviewedCount(0);
-      setReviewAll(false);
-      setFinished(sorted.length > 0 && due.length === 0);
-      setLoaded(true);
-    } catch (error) {
-      console.error('Error loading vocabulary:', error);
-      setLoaded(true);
-    }
-  }, [lang]);
-
+  // The cards are the saved words useLearningState has loaded for this language (one load, shared;
+  // this page used to load all of them a second time). Answers are saved without reloading them,
+  // so the sitting's deck is built once.
   useEffect(() => {
-    loadVocabulary();
-  }, [lang, loadVocabulary]);
+    if (!lang || !savedWords) return;
+    // Most overdue first.
+    const sorted = (Object.entries(savedWords) as SortedVocabEntry[])
+      .sort((a, b) => a[1].updTime - b[1].updTime);
+    const due = dueCards(sorted, Date.now());
+    setSortedVocab(sorted);
+    setDeck(due);
+    setIndex(0);
+    setReviewedCount(0);
+    setReviewAll(false);
+    setFinished(sorted.length > 0 && due.length === 0);
+    setLoaded(true);
+  }, [lang, savedWords]);
+
+  // Cards are kept per language, and the language is chosen on Home.
+  const noLanguage = tokenizerModeLoaded && !lang;
 
   const reviewMore = useCallback(() => {
     setDeck(sortedVocab);
@@ -201,6 +197,20 @@ const VocabFlashCards: React.FC = () => {
                 ← Home
               </Button>
             </header>
+            {noLanguage && (
+                <div className={HOME_BODY}>
+                  <section className={HOME_SECTION}>
+                    <div className={HOME_SECTION_LABEL}>Choose a language first</div>
+                    <div className="space-y-3 bg-white px-4 py-3 text-sm text-blue-900">
+                      <p>
+                        Cards are kept for each language. On Home, pick the language you’re learning and press
+                        Flashcards.
+                      </p>
+                      <Button type="primary" onPress={() => router.push('/home')}>Choose a language</Button>
+                    </div>
+                  </section>
+                </div>
+            )}
             {loaded && sortedVocab.length === 0 && (
                 <div className={HOME_BODY}>
                   <section className={HOME_SECTION}>
