@@ -1,6 +1,6 @@
 import type {MediaTrack} from "../types/media";
 import {getLanguageDisplayName as getManifestLanguageDisplayName} from "../languages/manifest";
-import {isLocalPath, isSubtitle, isVideo, isYoutube} from "./utils";
+import {isLocalPath, isSubtitle, isVideo, isYoutube, parseYoutubeVideoId} from "./utils";
 import {NORMALIZED_SUBTITLE_PREFIX} from "./constants";
 import {playbackMimeForPath} from "./mediaMime";
 import {type RoutedSubtitle, routeSubtitlesBesideVideo} from "./subtitleTags";
@@ -22,8 +22,9 @@ export const droppedYoutubeUrl = (data: Pick<DataTransfer, "getData">): string |
 );
 
 export const normalizeDroppedPath = (rawPath: string) => {
-  let currentPath = rawPath;
-  let pathUri = rawPath;
+  // A pasted "youtu.be/<id>" gets its scheme here, so everything downstream sees a full URL.
+  let currentPath = isLocalPath(rawPath) && isYoutube(rawPath) ? `https://${rawPath.trim()}` : rawPath;
+  let pathUri = currentPath;
 
   if (isLocalPath(currentPath)) {
     currentPath = currentPath.replaceAll("\\", "/");
@@ -39,7 +40,8 @@ export const normalizeDroppedPath = (rawPath: string) => {
 /** A YouTube URL plays in the embedded YouTube player; anything else is a file mpv opens by path. */
 export const buildVideoSource = (currentPath: string, pathUri: string) => isYoutube(currentPath) ? {
   type: "video/youtube",
-  src: currentPath,
+  // The embed gets a plain watch link: it has no Shorts pattern and would follow a list= playlist.
+  src: `https://www.youtube.com/watch?v=${parseYoutubeVideoId(currentPath)}`,
   path: currentPath
 } : {
   type: playbackMimeForPath(pathUri),
@@ -165,19 +167,9 @@ export const getFileNameFromPath = (filePath: string) => (
   filePath.split(/[\\/]/).pop() || "Unknown file"
 );
 
-export const getYoutubeVideoId = (videoPath: string): string | null => {
-  const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([^&\n?#/]+)/,
-    /^([a-zA-Z0-9_-]{11})$/
-  ];
-
-  for (const pattern of patterns) {
-    const match = videoPath.match(pattern);
-    if (match) return match[1];
-  }
-
-  return null;
-};
+export const getYoutubeVideoId = (videoPath: string): string | null => (
+  parseYoutubeVideoId(videoPath) ?? videoPath.match(/^([a-zA-Z0-9_-]{11})$/)?.[1] ?? null
+);
 
 export const getLanguageDisplayName = (langCode: string) => {
   return getManifestLanguageDisplayName(langCode);

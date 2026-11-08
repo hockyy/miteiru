@@ -18,11 +18,11 @@ describe("droppedYoutubeUrl", () => {
   const drop = (values: Record<string, string>) => droppedYoutubeUrl({getData: (type) => values[type] ?? ""});
 
   it("accepts a browser URI list without plain text, ignoring comments", () => {
-    assert.equal(drop({"text/uri-list": "# YouTube\r\nhttps://www.youtube.com/watch?v=example\r\n"}), "https://www.youtube.com/watch?v=example");
+    assert.equal(drop({"text/uri-list": "# YouTube\r\nhttps://www.youtube.com/watch?v=exampleVid1\r\n"}), "https://www.youtube.com/watch?v=exampleVid1");
   });
 
   it("accepts trimmed plain text and Shorts", () => {
-    assert.equal(drop({"text/plain": " https://www.youtube.com/shorts/example \n"}), "https://www.youtube.com/shorts/example");
+    assert.equal(drop({"text/plain": " https://www.youtube.com/shorts/exampleVid1 \n"}), "https://www.youtube.com/shorts/exampleVid1");
   });
 
   it("leaves non-YouTube and file drops to their handlers", () => {
@@ -34,9 +34,9 @@ describe("droppedYoutubeUrl", () => {
 
 describe("normalizeDroppedPath", () => {
   it("leaves URLs untouched", () => {
-    const {currentPath, pathUri} = normalizeDroppedPath("https://www.youtube.com/watch?v=abc");
-    assert.equal(currentPath, "https://www.youtube.com/watch?v=abc");
-    assert.equal(pathUri, "https://www.youtube.com/watch?v=abc");
+    const {currentPath, pathUri} = normalizeDroppedPath("https://www.youtube.com/watch?v=abcdefghijk");
+    assert.equal(currentPath, "https://www.youtube.com/watch?v=abcdefghijk");
+    assert.equal(pathUri, "https://www.youtube.com/watch?v=abcdefghijk");
   });
 
   it("normalizes Windows backslashes for local paths", () => {
@@ -53,10 +53,11 @@ describe("normalizeDroppedPath", () => {
 
 describe("buildVideoSource", () => {
   it("builds a youtube source for YouTube URLs", () => {
-    assert.deepEqual(buildVideoSource("https://youtu.be/abc", "https://youtu.be/abc"), {
+    assert.deepEqual(buildVideoSource("https://youtu.be/abcdefghijk", "https://youtu.be/abcdefghijk"), {
       type: "video/youtube",
-      src: "https://youtu.be/abc",
-      path: "https://youtu.be/abc"
+      // The embed gets a plain watch link; the path stays as pasted.
+      src: "https://www.youtube.com/watch?v=abcdefghijk",
+      path: "https://youtu.be/abcdefghijk"
     });
   });
 

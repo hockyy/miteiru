@@ -41,7 +41,9 @@ const resolveStream = async (url: string): Promise<Stream | null> => {
  * fails, the YouTube embed plays the video instead.
  */
 export const YouTubeVideo = ({options, onReady, clock}: { options: any; onReady: (player: any) => void; clock: PlaybackClock }) => {
-  const url: string = options.sources[0].src;
+  // The source object is new on every open, so opening the same link again looks up its streams again.
+  const source = options.sources[0];
+  const url: string = source.src;
   const [mode, setMode] = useState<Mode>({kind: 'resolving'});
 
   useEffect(() => {
@@ -53,7 +55,7 @@ export const YouTubeVideo = ({options, onReady, clock}: { options: any; onReady:
     return () => {
       cancelled = true;
     };
-  }, [url]);
+  }, [source, url]);
 
   const modeOptions = useMemo(() => {
     if (mode.kind === 'native') {

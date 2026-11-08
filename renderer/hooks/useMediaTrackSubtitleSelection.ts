@@ -74,6 +74,8 @@ export const useMediaTrackSubtitleSelection = ({
       await loadEmbeddedSubtitle(result.filePath, target, preprocessOptions);
     } catch (error) {
       console.error(`Failed to download YouTube ${target} subtitle:`, error);
+      // A failure for the video that was open is not news for the one open now.
+      if (openVideoPath.current !== forVideoPath) return;
       showToast(`Couldn't get ${name} from YouTube: ${error.message}`);
     }
   }, [loadEmbeddedSubtitle, showToast, languageName]);

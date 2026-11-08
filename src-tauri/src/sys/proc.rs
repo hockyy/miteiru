@@ -175,6 +175,16 @@ pub fn kill(procs: &Procs, id: u32) -> Result<(), String> {
   Ok(())
 }
 
+/// Stops every running child. A page reload starts a new backend worker that knows none of them,
+/// so they would otherwise run on, with their output going nowhere.
+pub fn kill_all(procs: &Procs) {
+  let entries: Vec<Arc<Entry>> = procs.table.lock().unwrap().values().cloned().collect();
+  for e in entries {
+    e.killed.store(true, Ordering::Relaxed);
+    kill_tree(e.pid);
+  }
+}
+
 #[cfg(windows)]
 fn kill_tree(pid: u32) {
   use std::os::windows::process::CommandExt;
@@ -357,6 +367,39 @@ mod tests {
       env: None,
     };
     assert_eq!(spawn(&procs, &spec, emit).unwrap_err(), "ENOENT: spawn definitely-not-a-real-binary-xyz");
+  }
+
+  #[test]
+  fn kill_all_stops_every_running_process() {
+    let procs = Procs::default();
+    let (tx, rx) = mpsc::channel();
+    let tx = Mutex::new(tx);
+    let emit: Emit = Arc::new(move |ev| {
+      let _ = tx.lock().unwrap().send(ev);
+    });
+    let (program, args) = if cfg!(windows) { ("ping", vec!["-n", "30", "127.0.0.1"]) } else { ("sleep", vec!["30"]) };
+    for _ in 0..2 {
+      let spec = SpawnSpec {
+        program: program.into(),
+        args: args.iter().map(|a| a.to_string()).collect(),
+        cwd: None,
+        env: None,
+      };
+      spawn(&procs, &spec, emit.clone()).unwrap();
+    }
+    std::thread::sleep(Duration::from_millis(500));
+    kill_all(&procs);
+    let mut exits = 0;
+    while exits < 2 {
+      if let ProcEvent::Exit { code, signal, .. } = rx.recv_timeout(Duration::from_secs(15)).expect("no exit") {
+        assert_eq!(code, None);
+        assert!(signal.is_some());
+        exits += 1;
+      }
+    }
+    assert!(procs.table.lock().unwrap().is_empty());
+    // Nothing left to stop is fine.
+    kill_all(&procs);
   }
 
   #[test]
