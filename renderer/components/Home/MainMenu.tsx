@@ -32,6 +32,8 @@ interface MainMenuProps {
   tokenizerMode: number;
   isLoadingLanguage: boolean;
   ableToProceedToVideo: boolean;
+  /** True once the remembered language has been read; until then the selection is only a guess. */
+  languageKnown?: boolean;
   onLanguageChange: (modeId: number) => void;
   onOpenVideo: () => void;
   onOpenLearn: () => void;
@@ -61,8 +63,10 @@ const Notice = ({message, details = null, children}: { message: string; details?
   </div>
 );
 
-const LanguageCard = ({mode, selected, onSelect, extra}: {
+const LanguageCard = ({mode, selected, onSelect, extra, disabled = false}: {
   mode: LanguageMode; selected: boolean; onSelect: () => void;
+  /** While a language loads the cards keep their place and ignore clicks. */
+  disabled?: boolean;
   /** A small line under the name: what is still to download, or how far the download is. */
   extra?: string | null;
 }) => (
@@ -70,15 +74,17 @@ const LanguageCard = ({mode, selected, onSelect, extra}: {
     type="button"
     role="radio"
     aria-checked={selected}
+    aria-disabled={disabled || undefined}
     // One tab stop for the group, as for radio buttons; the arrow keys move between cards.
     tabIndex={selected ? 0 : -1}
-    onClick={onSelect}
+    onClick={disabled ? undefined : onSelect}
     className={[
-      'flex min-w-0 cursor-pointer flex-col items-center gap-1 rounded-2xl border-2 px-2 py-3 text-center transition-colors',
+      'flex min-w-0 flex-col items-center gap-1 rounded-2xl border-2 px-2 py-3 text-center transition-colors',
       'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500',
+      disabled ? 'cursor-wait' : 'cursor-pointer',
       selected
         ? 'border-blue-500 bg-blue-50 shadow-[0_3px_0_0_#93c5fd]'
-        : 'border-blue-100 bg-white hover:border-blue-300 hover:bg-yellow-50',
+        : `border-blue-100 bg-white ${disabled ? '' : 'hover:border-blue-300 hover:bg-yellow-50'}`,
     ].join(' ')}
   >
     <span className="text-3xl leading-none" aria-hidden="true">{mode.flag}</span>
@@ -102,6 +108,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
   tokenizerMode,
   isLoadingLanguage,
   ableToProceedToVideo,
+  languageKnown = true,
   onLanguageChange,
   onOpenVideo,
   onOpenLearn,
@@ -118,6 +125,8 @@ export const MainMenu: React.FC<MainMenuProps> = ({
   const needsDownload = selected !== undefined && selectedMissing.length > 0;
   const active = packs?.active ?? null;
   const packsBusy = Boolean(packs?.busy);
+  // The selection is only a guess until the remembered language is read: it could be the wrong download.
+  const downloadBlocked = packsBusy || !languageKnown;
   const downloadingSelected = Boolean(active && selected && active.pluginId === selected.pluginId);
   // Continue, Study and Flashcards wait for the data, and say why.
   const needsDownloadTitle = needsDownload && selected ? `Download ${selected.englishName} first` : undefined;
@@ -148,6 +157,10 @@ export const MainMenu: React.FC<MainMenuProps> = ({
   const onLanguageKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     const step = {ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1}[event.key];
     if (!step || languageModes.length === 0) return;
+    if (isLoadingLanguage) {
+      event.preventDefault();
+      return;
+    }
     event.preventDefault();
     const current = Math.max(0, languageModes.findIndex((mode) => mode.id === tokenizerMode));
     const next = (current + step + languageModes.length) % languageModes.length;
@@ -192,6 +205,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
                   mode={mode}
                   selected={mode.id === tokenizerMode}
                   onSelect={() => onLanguageChange(mode.id)}
+                  disabled={isLoadingLanguage}
                   extra={cardExtra(mode)}
                 />
               ))}
@@ -206,8 +220,8 @@ export const MainMenu: React.FC<MainMenuProps> = ({
               {needsDownload ? (
                 <Button
                   type="primary"
-                  className={`w-full !py-3 !text-base ${packsBusy ? 'buttonDisabled' : ''}`}
-                  disabled={packsBusy}
+                  className={`w-full !py-3 !text-base ${downloadBlocked ? 'buttonDisabled' : ''}`}
+                  disabled={downloadBlocked}
                   onPress={() => packs?.install(selected.pluginId)}
                 >
                   {downloadingSelected

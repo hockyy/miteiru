@@ -29,6 +29,7 @@ function Home() {
     isLoadingLanguage,
     languageModes,
     ableToProceedToVideo,
+    languageLoaded,
     handleLanguageButtonClick,
     handleContinueVideo,
     handleOpenLearn,
@@ -99,6 +100,7 @@ function Home() {
             tokenizerMode={tokenizerMode}
             isLoadingLanguage={isLoadingLanguage}
             ableToProceedToVideo={ableToProceedToVideo}
+            languageKnown={languageLoaded}
             onLanguageChange={setTokenizerMode}
             onOpenVideo={handleLanguageButtonClick}
             onOpenLearn={handleOpenLearn}

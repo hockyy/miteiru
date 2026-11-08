@@ -3,6 +3,7 @@
  * A language needs every pack whose `languages` lists its plugin id; `missing` is the only state
  * that blocks it (`outdated` data still reads fine).
  */
+import {languageModes} from '../languages/manifest';
 
 export type PackState = 'bundled' | 'installed' | 'outdated' | 'missing';
 
@@ -25,6 +26,14 @@ export interface LanguagePackStatus {
   baseUrl: string;
   appVersion: string;
   packs: LanguagePack[];
+  /** The installs running in Rust right now, which survive a reload of the page. */
+  running: RunningInstall[];
+}
+
+export interface RunningInstall {
+  id: string;
+  /** The latest report; null until the first one. */
+  progress: LanguagePackProgress | null;
 }
 
 export interface LanguagePackProgress {
@@ -163,7 +172,9 @@ export const friendlyPackError = (message: string, languageName: string, appVers
     case 'ESIZE':
       return {message: 'The download was damaged on the way. Try again.', details: raw};
     case 'EVERSION': {
-      const packName = PACK_NAMES[detail.toLowerCase().split(/[\s,.:;]/)[0]] ?? languageName;
+      // Rust says "<file> is the <id> language pack, but not the version …".
+      const packId = /the\s+([\w-]+)\s+language pack/i.exec(detail)?.[1] ?? '';
+      const packName = PACK_NAMES[packId.toLowerCase()] ?? languageName;
       const release = appVersion
         ? `Download the one for v${appVersion.replace(/^v/, '')} from its release page.`
         : 'Download the one for this version from its release page.';
@@ -199,4 +210,39 @@ export const formatProgressSize = (done: number, total: number): string => {
   const totalText = formatSize(total);
   if (total >= GB) return `${formatSize(soFar)} of ${totalText}`;
   return `${(soFar / MB).toFixed(1)} of ${totalText}`;
+};
+
+const languageNameOf = (pluginId: string): string =>
+  languageModes.find((mode) => mode.pluginId === pluginId)?.englishName ?? pluginId;
+
+const joinNames = (names: string[]): string =>
+  names.length <= 2 ? names.join(' and ') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+
+/**
+ * What to say after `installed` went in, from the refreshed status. A language is ready only when
+ * every pack it needs is there: Chinese and Cantonese need the shared strokes pack and their own.
+ */
+export const installedMessage = (status: LanguagePackStatus | null | undefined, installed: Pick<LanguagePack, 'id' | 'title'>): string => {
+  const pack = status?.packs.find((candidate) => candidate.id === installed.id);
+  const title = pack?.title ?? installed.title;
+  const ready: string[] = [];
+  const waiting: string[] = [];
+  for (const pluginId of pack?.languages ?? []) {
+    const missing = missingPacks(status, pluginId);
+    if (missing.length === 0) ready.push(languageNameOf(pluginId));
+    else waiting.push(`${languageNameOf(pluginId)} also needs ${joinNames(missing.map((m) => m.title))}.`);
+  }
+  if (waiting.length === 0) {
+    return ready.length > 0 ? `${joinNames(ready)} ${ready.length > 1 ? 'are' : 'is'} ready.` : `${title} is ready.`;
+  }
+  const done = ready.length > 0 ? ` ${joinNames(ready)} ${ready.length > 1 ? 'are' : 'is'} ready.` : '';
+  return `Installed ${title}.${done} ${waiting.join(' ')}`;
+};
+
+/** After a language's missing packs were installed: ready, or what it still lacks. */
+export const languageReadyMessage = (status: LanguagePackStatus | null | undefined, pluginId: string, languageName: string): string => {
+  const missing = missingPacks(status, pluginId);
+  return missing.length === 0
+    ? `${languageName} is ready.`
+    : `${languageName} still needs ${joinNames(missing.map((m) => m.title))}.`;
 };

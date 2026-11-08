@@ -77,6 +77,16 @@ pub struct LanguagePackStatus {
   pub base_url: String,
   pub app_version: String,
   pub packs: Vec<LanguagePack>,
+  /// The installs running now, so a page that was reloaded can show them again.
+  pub running: Vec<RunningInstall>,
+}
+
+#[derive(Serialize, Clone, Debug, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct RunningInstall {
+  pub id: String,
+  /// The latest report; none until the first one.
+  pub progress: Option<LanguagePackProgress>,
 }
 
 #[derive(Serialize, Clone, Debug, PartialEq)]
@@ -191,6 +201,8 @@ fn installs(root: &Path) -> Vec<Installed> {
   entries
     .flatten()
     .filter(|entry| entry.file_type().is_ok_and(|t| t.is_dir()))
+    // An unpack folder left behind by a failed rename is not an install.
+    .filter(|entry| !entry.file_name().to_string_lossy().starts_with(PARTIAL_PREFIX))
     .filter_map(|entry| {
       let dir = entry.path();
       read_install(&dir).map(|info| Installed { dir, info })
@@ -242,6 +254,7 @@ fn status_of(env: &Env, app_version: &str) -> LanguagePackStatus {
     base_url: base_url(manifest.as_ref()),
     app_version: manifest.as_ref().map_or_else(|| app_version.to_string(), |m| m.app_version.clone()),
     packs: manifest.as_ref().map_or_else(Vec::new, |m| m.packs.iter().map(|p| view(env, p)).collect()),
+    running: Vec::new(),
   }
 }
 
@@ -283,6 +296,8 @@ struct Job {
   cancel: Arc<AtomicBool>,
   /// Stops a download that is waiting on the network (the flag alone would wait for the next byte).
   abort: Mutex<Option<Box<dyn Fn() + Send + Sync>>>,
+  /// The latest progress, for a page that asks while the install runs.
+  progress: Mutex<Option<LanguagePackProgress>>,
 }
 
 /// The ids being installed. Cloning shares the list, so a blocking thread can hold its own handle.
@@ -302,7 +317,7 @@ impl Installs {
     if running.contains_key(id) {
       return Err(err("EBUSY", format!("the {id} pack is already being installed")));
     }
-    let job = Arc::new(Job { cancel: Arc::new(AtomicBool::new(false)), abort: Mutex::new(None) });
+    let job = Arc::new(Job { cancel: Arc::new(AtomicBool::new(false)), abort: Mutex::new(None), progress: Mutex::new(None) });
     running.insert(id.to_string(), job.clone());
     Ok(Slot { installs: self.clone(), id: id.to_string(), job })
   }
@@ -315,6 +330,18 @@ impl Installs {
         abort();
       }
     }
+  }
+
+  fn running(&self) -> Vec<RunningInstall> {
+    let mut list: Vec<RunningInstall> = self
+      .0
+      .lock()
+      .unwrap()
+      .iter()
+      .map(|(id, job)| RunningInstall { id: id.clone(), progress: job.progress.lock().unwrap().clone() })
+      .collect();
+    list.sort_by(|a, b| a.id.cmp(&b.id));
+    list
   }
 
   fn is_running(&self, id: &str) -> bool {
@@ -757,9 +784,11 @@ pub fn collect_garbage(root: &Path) -> Vec<String> {
 // ---- Commands ------------------------------------------------------------------------------
 
 #[tauri::command]
-pub async fn langpack_status(app: tauri::AppHandle) -> Result<LanguagePackStatus, String> {
+pub async fn langpack_status(app: tauri::AppHandle, installs: State<'_, Installs>) -> Result<LanguagePackStatus, String> {
   let env = env_of(&app)?;
-  Ok(status_of(&env, &app.package_info().version.to_string()))
+  let mut status = status_of(&env, &app.package_info().version.to_string());
+  status.running = installs.running();
+  Ok(status)
 }
 
 #[tauri::command]
@@ -769,6 +798,8 @@ pub async fn langpack_install(
   id: String,
   on_progress: Channel<LanguagePackProgress>,
 ) -> Result<LanguagePack, String> {
+  // Take the slot first, so a cancel that arrives while the manifest is read still finds the job.
+  let slot = installs.begin(&id)?;
   let env = env_of(&app)?;
   let manifest = require_manifest(&env)?;
   let pack = manifest
@@ -777,14 +808,22 @@ pub async fn langpack_install(
     .find(|p| p.id == id)
     .cloned()
     .ok_or_else(|| err("EUNKNOWN", format!("no language pack named {id:?}")))?;
-  let slot = installs.begin(&id)?;
+  if slot.job.cancel.load(Ordering::SeqCst) {
+    return Err(err("ECANCELED", "the install was cancelled"));
+  }
   let url = format!("{}{}", base_url(Some(&manifest)), pack.file);
   let task = tauri::async_runtime::spawn(download_and_install(
     env.clone(),
     pack.clone(),
     url,
     slot.job.cancel.clone(),
-    Reporter::channel(on_progress),
+    Reporter::new({
+      let job = slot.job.clone();
+      move |progress| {
+        *job.progress.lock().unwrap() = Some(progress.clone());
+        let _ = on_progress.send(progress);
+      }
+    }),
   ));
   let handle = task.inner().abort_handle();
   *slot.job.abort.lock().unwrap() = Some(Box::new(move || handle.abort()));
@@ -1113,6 +1152,17 @@ mod tests {
   }
 
   #[test]
+  fn a_leftover_unpack_folder_is_not_an_install() {
+    let temp = Temp::new("partial");
+    let root = temp.path();
+    fake_install(root, ".partial-mandarin-123", "mandarin", "a", 999, true);
+    assert!(installs(root).is_empty());
+    assert!(newest_install(root, "mandarin").is_none());
+    let whole = fake_install(root, "mandarin-bbbbbbbbbbbb-200", "mandarin", "b", 200, true);
+    assert_eq!(newest_install(root, "mandarin").unwrap().dir, whole);
+  }
+
+  #[test]
   fn cleanup_keeps_only_the_newest_whole_install_of_each_pack() {
     let temp = Temp::new("gc");
     let root = temp.path();
@@ -1171,6 +1221,19 @@ mod tests {
     assert!(slot.job.cancel.load(Ordering::SeqCst));
     drop(slot);
     assert!(installs.begin("japanese").is_ok());
+  }
+
+  #[test]
+  fn running_installs_report_their_latest_progress() {
+    let installs = Installs::default();
+    assert!(installs.running().is_empty());
+    let slot = installs.begin("hanzi").unwrap();
+    assert_eq!(installs.running(), vec![RunningInstall { id: "hanzi".into(), progress: None }]);
+    let progress = LanguagePackProgress { id: "hanzi".into(), phase: "download", done: 5, total: 10 };
+    *slot.job.progress.lock().unwrap() = Some(progress.clone());
+    assert_eq!(installs.running(), vec![RunningInstall { id: "hanzi".into(), progress: Some(progress) }]);
+    drop(slot);
+    assert!(installs.running().is_empty());
   }
 
   #[test]

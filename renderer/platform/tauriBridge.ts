@@ -234,18 +234,21 @@ const writeSession = (key: string, value: string) => {
 /**
  * A page reload (F5, Ctrl+R) starts a new backend worker, which forgets the language the user
  * loaded; Electron's main process used to keep it. The language call is remembered for this
- * session and made again after a reload, and the tokenizer mode waits for it.
+ * session and made again after a reload, and the tokenizer mode and any new language load wait for it
+ * (otherwise the old language could finish last and win over the one just picked). A failed load is
+ * not remembered.
  */
-const keepLanguageAcrossReloads = (invoke: (channel: string, args: unknown[]) => Promise<unknown>) => {
+export const keepLanguageAcrossReloads = (invoke: (channel: string, args: unknown[]) => Promise<unknown>) => {
   const languageChannels: readonly string[] = LANGUAGE_LOAD_CHANNELS;
   const remembered = readSession(LANGUAGE_KEY);
   const restored = remembered && languageChannels.includes(remembered)
     ? invoke(remembered, []).catch((error) => console.error('[backend] could not load the language again:', error))
     : Promise.resolve();
   return async (channel: string, args: unknown[]) => {
-    if (channel === 'getTokenizerMode') await restored;
+    const isLanguageLoad = languageChannels.includes(channel);
+    if (channel === 'getTokenizerMode' || isLanguageLoad) await restored;
     const result = await invoke(channel, args);
-    if (languageChannels.includes(channel)) writeSession(LANGUAGE_KEY, channel);
+    if (isLanguageLoad && (result as {ok?: unknown} | null)?.ok === 1) writeSession(LANGUAGE_KEY, channel);
     return result;
   };
 };

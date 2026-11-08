@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import useLanguageManager from './useLanguageManager';
 import { languageModes as manifestLanguageModes } from '../languages/manifest';
@@ -29,6 +29,8 @@ export const useLanguageLoader = (packStatus: LanguagePackStatus | null = null) 
   const [check, setCheck] = useState<LanguageCheckResult>(initialCheck);
   const [tokenizerMode, setTokenizerMode] = useState(0);
   const [isLoadingLanguage, setIsLoadingLanguage] = useState(false);
+  // A ref, so two quick clicks in one frame cannot both pass the check.
+  const loadingRef = useRef(false);
 
   const {
     lastLanguageMode,
@@ -59,6 +61,8 @@ export const useLanguageLoader = (packStatus: LanguagePackStatus | null = null) 
   }, [tokenizerMode]);
 
   const selectTokenizerMode = useCallback((modeId: number) => {
+    // The language that is loading will open; changing the card now would only mislabel it.
+    if (loadingRef.current) return;
     setTokenizerMode(modeId);
     setLanguage(modeId);
   }, [setLanguage]);
@@ -67,7 +71,7 @@ export const useLanguageLoader = (packStatus: LanguagePackStatus | null = null) 
     modeId: number,
     destination: '/video' | '/video?continue=1' | '/learn' | '/flash' = '/video',
   ) => {
-    if (isLoadingLanguage) {
+    if (loadingRef.current) {
       console.log('[Language Load] Language loading already in progress, ignoring request');
       return;
     }
@@ -81,6 +85,7 @@ export const useLanguageLoader = (packStatus: LanguagePackStatus | null = null) 
       return;
     }
 
+    loadingRef.current = true;
     setIsLoadingLanguage(true);
     setCheck(checkingMessage);
     
@@ -97,9 +102,10 @@ export const useLanguageLoader = (packStatus: LanguagePackStatus | null = null) 
     } catch (error) {
       setCheck({ok: 0, ...languageSetupFailure(mode.englishName, error?.message)});
     } finally {
+      loadingRef.current = false;
       setIsLoadingLanguage(false);
     }
-  }, [languageModes, setLanguage, router, isLoadingLanguage, packStatus]);
+  }, [languageModes, setLanguage, router, packStatus]);
 
   const handleLanguageButtonClick = useCallback(async () => {
     await loadLanguage(tokenizerMode, '/video');
@@ -133,6 +139,8 @@ export const useLanguageLoader = (packStatus: LanguagePackStatus | null = null) 
     isLoadingLanguage,
     languageModes,
     ableToProceedToVideo,
+    /** False until the remembered language has been read. */
+    languageLoaded,
 
     // Actions
     loadLanguage,
