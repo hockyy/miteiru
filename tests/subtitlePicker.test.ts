@@ -11,7 +11,7 @@ import {
   pickerFooterText,
   TRANSLATION_NAME
 } from "../renderer/utils/subtitleLabels";
-import {pickDefaultAudioTrack, pickDefaultSubtitleTracks, type SubtitleCandidate} from "../renderer/utils/mediaUtils";
+import {pickDefaultAudioTrack, pickDefaultSubtitleTracks, playingAudioTrack, type SubtitleCandidate} from "../renderer/utils/mediaUtils";
 
 describe("picture subtitles", () => {
   it("recognises the picture formats and not the text ones", () => {
@@ -94,5 +94,21 @@ describe("pickDefaultAudioTrack", () => {
   it("matches Chinese and Cantonese tags", () => {
     assert.equal(pickDefaultAudioTrack([{language: "eng", default: true}, {language: "chi"}], "zh-CN"), 1);
     assert.equal(pickDefaultAudioTrack([{language: "zho"}, {language: "yue"}], "yue"), 1);
+  });
+});
+
+describe("playingAudioTrack", () => {
+  const tracks = [{default: false}, {default: true}, {default: false}];
+  it("is the track the learner chose", () => {
+    assert.equal(playingAudioTrack(tracks, 2), 2);
+    assert.equal(playingAudioTrack(tracks, 0), 0);
+  });
+  it("falls back to the file's default track, then the first", () => {
+    assert.equal(playingAudioTrack(tracks, null), 1);
+    assert.equal(playingAudioTrack([{default: false}, {default: false}], undefined), 0);
+  });
+  it("ignores a choice that is not a track of this file", () => {
+    assert.equal(playingAudioTrack(tracks, 7), 1);
+    assert.equal(playingAudioTrack(tracks, -1), 1);
   });
 });

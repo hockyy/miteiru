@@ -213,6 +213,17 @@ export class NativePlayer {
     this.run("player_set", {name: "aid", value: String(id)});
   }
 
+  /** The audio track mpv plays now (its track id, counting from 1), or null when it has none or doesn't say. */
+  async audioTrack(): Promise<number | null> {
+    if (this.disposed) return null;
+    // After any switch still queued, and never waiting long on a player that doesn't answer.
+    const answer = this.queue.then(() => invoke<string | null>("player_get", {name: "aid"}));
+    const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 1500));
+    const value = await Promise.race([answer, timeout]).catch(() => null);
+    const id = Number(value);
+    return Number.isInteger(id) && id > 0 ? id : null;
+  }
+
   /** Fit the video into the element's box. */
   updateRect() {
     const r = this.element.getBoundingClientRect();

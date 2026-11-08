@@ -12,6 +12,9 @@ type VideoTopBarProps = {
   canChooseTracks: boolean;
   isYoutube: boolean;
   onChooseTracks: () => void;
+  /** The open video has several audio tracks to switch between. */
+  canChooseAudio: boolean;
+  onChooseAudio: () => void;
   /** The language being learned ("Japanese"), named where the main subtitle is. */
   languageName: string;
   hasPrimarySubtitle: boolean;
@@ -42,6 +45,8 @@ export const VideoTopBar = ({
   canChooseTracks,
   isYoutube,
   onChooseTracks,
+  canChooseAudio,
+  onChooseAudio,
   languageName,
   hasPrimarySubtitle,
   hasSecondarySubtitle,
@@ -119,6 +124,10 @@ export const VideoTopBar = ({
           {canChooseTracks && <button type="button" role="menuitem" className={MENU_ITEM}
                                       onClick={choose(onChooseTracks)}>
             {isYoutube ? "Choose YouTube captions…" : "Choose subtitles from the video…"}
+          </button>}
+          {canChooseAudio && <button type="button" role="menuitem" className={MENU_ITEM}
+                                     onClick={choose(onChooseAudio)}>
+            Audio track…
           </button>}
           <button type="button" role="menuitem" className={MENU_ITEM} onClick={choose(onOpenFiles)}>
             Open a subtitle file…

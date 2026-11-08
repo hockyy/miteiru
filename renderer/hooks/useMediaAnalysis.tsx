@@ -3,6 +3,7 @@ import { MediaInfo } from '../types/media';
 import { TrackSelection } from '../components/Utils/MediaTrackSelectionModal';
 import { getActiveNativePlayer } from '../utils/nativePlayer';
 import { isLocalPath, isYoutube } from '../utils/utils';
+import { playingAudioTrack } from '../utils/mediaUtils';
 
 // Only a file on this computer is read for its tracks: a YouTube link asks for captions instead, and
 // another web link is played as it is.
@@ -30,6 +31,10 @@ const useMediaAnalysis = (videoPath: string, openedVideo?: object) => {
   const activeVideoPath = useRef<string | null>(videoPath);
   const [showTrackSelectionModal, setShowTrackSelectionModal] = useState(false);
   const [showAudioTrackModal, setShowAudioTrackModal] = useState(false);
+  // Why the audio picker is open: the file just opened (then subtitles come next) or a switch from the menu.
+  const [audioPickerReason, setAudioPickerReason] = useState<'open' | 'switch'>('open');
+  // The audio track chosen for the open video (0-based index into audioTracks); null until one is.
+  const [chosenAudioIndex, setChosenAudioIndex] = useState<number | null>(null);
   const [selectedTracks, setSelectedTracks] = useState<TrackSelection | null>(null);
 
   const analyzeMedia = useCallback(async (path: string): Promise<void> => {
@@ -61,7 +66,10 @@ const useMediaAnalysis = (videoPath: string, openedVideo?: object) => {
         // libmpv plays every codec as-is; only a choice of audio track is left to ask.
         if (hasMultipleAudio) {
           setTimeout(() => {
-            if (activeVideoPath.current === path) setShowAudioTrackModal(true);
+            if (activeVideoPath.current === path) {
+              setAudioPickerReason('open');
+              setShowAudioTrackModal(true);
+            }
           }, 100);
         } else if (hasSingleAudio && hasSubtitles) {
           setTimeout(() => {
@@ -201,24 +209,39 @@ const useMediaAnalysis = (videoPath: string, openedVideo?: object) => {
   // libmpv switches audio tracks itself (aid counts audio tracks from 1).
   const handleAudioTrackSelect = useCallback((audioTrackIndex: number) => {
     setShowAudioTrackModal(false);
+    setChosenAudioIndex(audioTrackIndex);
     getActiveNativePlayer()?.setAudioTrack(audioTrackIndex + 1);
-    if (mediaInfo.subtitleTracks.length > 0) {
+    // Switching from the menu only switches; the subtitle picker belongs to opening the file.
+    if (audioPickerReason === 'open' && mediaInfo.subtitleTracks.length > 0) {
       setTimeout(() => setShowTrackSelectionModal(true), 100);
     }
-  }, [mediaInfo.subtitleTracks.length]);
+  }, [mediaInfo.subtitleTracks.length, audioPickerReason]);
 
   const handleAudioTrackSkip = useCallback(() => {
     setShowAudioTrackModal(false);
-    
+    if (audioPickerReason === 'switch') return;
+
     // Check if we should show subtitle selection for the default audio
     if (mediaInfo.subtitleTracks.length > 0) {
       setTimeout(() => setShowTrackSelectionModal(true), 100);
     }
-  }, [mediaInfo.subtitleTracks]);
+  }, [mediaInfo.subtitleTracks, audioPickerReason]);
+
+  // Opens the audio picker again from the video page's Subtitles… menu, on the track mpv plays now
+  // (mpv's own pick when the first picker was skipped).
+  const openAudioTrackModal = useCallback(async () => {
+    const path = activeVideoPath.current;
+    const playing = await getActiveNativePlayer()?.audioTrack();
+    if (activeVideoPath.current !== path) return;
+    if (playing) setChosenAudioIndex(playing - 1);
+    setAudioPickerReason('switch');
+    setShowAudioTrackModal(true);
+  }, []);
 
   // Delete the extracted subtitles when the video changes or the page closes.
   useEffect(() => {
     activeVideoPath.current = videoPath;
+    setChosenAudioIndex(null);
     return () => {
       activeVideoPath.current = null;
       // Dialogs about the old video's tracks close with it.
@@ -244,6 +267,9 @@ const useMediaAnalysis = (videoPath: string, openedVideo?: object) => {
     openTrackSelectionModal,
     handleAudioTrackSkip,
     handleAudioTrackSelect,
+    openAudioTrackModal,
+    audioPickerReason,
+    playingAudioIndex: playingAudioTrack(mediaInfo.audioTracks, chosenAudioIndex),
     selectedTracks
   };
 };

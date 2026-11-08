@@ -35,6 +35,11 @@ function Home() {
     handleOpenLearn,
     handleOpenFlash,
   } = useLanguageLoader(packs.packsEnabled ? packs.status : null);
+  const { setPreferredLanguage } = packs;
+  const selectedPluginId = languageModes.find((mode) => mode.id === tokenizerMode)?.pluginId ?? null;
+  useEffect(() => {
+    setPreferredLanguage(selectedPluginId);
+  }, [selectedPluginId, setPreferredLanguage]);
   const { isRemovingCache, handleRemoveCache } = useCacheManager();
   const { last: lastVideo } = useLastVideo();
 

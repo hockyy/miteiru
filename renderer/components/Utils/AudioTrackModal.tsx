@@ -11,32 +11,39 @@ import {ModalShell} from "./ModalShell";
  * a choice of track, not a conversion. The track in the language being learned is preselected when
  * the file has one, otherwise the file's default.
  */
-const AudioTrackModal = ({isOpen, onClose, onSelect, fileName, audioTracks, appLanguageCode = ''}: {
+const AudioTrackModal = ({isOpen, onClose, onSelect, fileName, audioTracks, appLanguageCode = '', mode = 'open', currentIndex}: {
   isOpen: boolean;
   onClose: () => void;
   onSelect: (audioTrackIndex: number) => void;
   fileName: string;
   audioTracks: MediaTrack[];
   appLanguageCode?: string;
+  /** 'switch' is the picker reopened during playback: it preselects the playing track and can be cancelled. */
+  mode?: 'open' | 'switch';
+  currentIndex?: number;
 }) => {
-  const defaultIndex = () => pickDefaultAudioTrack(audioTracks, appLanguageCode);
+  const switching = mode === 'switch';
+  const defaultIndex = () => (switching && currentIndex !== undefined
+      ? currentIndex
+      : pickDefaultAudioTrack(audioTracks, appLanguageCode));
   const [selected, setSelected] = useState<number>(defaultIndex);
   useEffect(() => setSelected(defaultIndex()),
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      [audioTracks, appLanguageCode]);
+      [audioTracks, appLanguageCode, switching, currentIndex, isOpen]);
 
   if (!isOpen) return null;
   return (
       <ModalShell
-          title="Choose an audio track"
+          title={switching ? "Switch audio track" : "Choose an audio track"}
           icon={<Volume2 className="w-5 h-5 text-blue-300"/>}
           onClose={onClose}
           maxWidthClassName="max-w-lg"
           minSizeClassName="min-h-0 min-w-[min(92vw,24rem)]"
           footer={(
-              <div className="flex justify-end">
+              <div className="flex justify-end gap-2">
+                {switching && <Button type="secondary" onPress={onClose}>Cancel</Button>}
                 <Button type="primary" onPress={() => onSelect(selected)}>
-                  <div className="flex items-center gap-2"><Play className="w-4 h-4"/>Play this track</div>
+                  <div className="flex items-center gap-2"><Play className="w-4 h-4"/>{switching ? "Switch to this track" : "Play this track"}</div>
                 </Button>
               </div>
           )}
