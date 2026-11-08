@@ -4,6 +4,7 @@ import {
   parseUserNoteAiResponse,
 } from './aiUserNotePrompts';
 import { MITEIRU_REPO_URL } from './constants';
+import { openRouterMessages } from './openRouterConstants';
 import type { MiteiruUserEntry } from '../hooks/useUserNotes';
 
 type GenerateUserNoteParams = {
@@ -21,7 +22,7 @@ export const generateUserNoteWithAI = async ({
   openRouterModel,
 }: GenerateUserNoteParams): Promise<MiteiruUserEntry> => {
   if (!openRouterApiKey) {
-    throw new Error('Add your OpenRouter key first: open Study a text from Home, press X (or click Settings), and paste it in.');
+    throw new Error(openRouterMessages.missingApiKey);
   }
 
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {

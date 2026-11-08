@@ -647,7 +647,11 @@ rt {
   }
 }
 
-/* The player's top bar (VideoTopBar): darkest at the top, fading out toward the video. */
+/* The player's top bar (VideoTopBar): darkest at the top, fading out toward the video. It fades with
+   the other controls (.autohide, repeated here because this rule wins), and its edges, the side panels'
+   insets, move with the panels as they slide: SidebarShell's 300 ms ease-out (Tailwind's curve), so the
+   shadow reaches the panel's edge every frame instead of jumping there first. */
 .player-topbar {
   background-image: linear-gradient(to bottom, rgb(2 6 23 / 0.85), rgb(15 23 42 / 0.55) 55%, rgb(15 23 42 / 0));
+  transition: opacity 0.3s ease, left 300ms cubic-bezier(0, 0, 0.2, 1), right 300ms cubic-bezier(0, 0, 0.2, 1);
 }

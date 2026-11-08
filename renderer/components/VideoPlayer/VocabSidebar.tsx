@@ -11,6 +11,7 @@ import {
   useUserNotes,
 } from '../../hooks/useUserNotes';
 import { useStoreData } from '../../hooks/useStoreData';
+import { DEFAULT_OPENROUTER_MODEL } from '../../utils/openRouterConstants';
 import { generateUserNoteWithAI } from '../../utils/generateUserNoteWithAI';
 import { ColorKey } from './ColorKey';
 
@@ -44,7 +45,7 @@ const VocabSidebar = ({
   const containerRef = useRef<HTMLElement>(null);
   const { userNotes, setUserNote } = useUserNotes();
   const [openRouterApiKey] = useStoreData('openrouter.apiKey', '');
-  const [openRouterModel] = useStoreData('openrouter.model', 'z-ai/glm-5.2:nitro');
+  const [openRouterModel] = useStoreData('openrouter.model', DEFAULT_OPENROUTER_MODEL);
 
   const scrollToTop = useCallback(() => {
     containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });

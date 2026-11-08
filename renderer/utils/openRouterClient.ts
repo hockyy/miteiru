@@ -2,21 +2,14 @@
  * OpenRouter streaming for Learn AI features.
  * Used by: hooks/useAiTranslation.ts, hooks/useSentenceAnalysis.ts
  * For non-streaming / fetch-based AI see MeaningBox.tsx (user notes generation).
- * API key + model settings: components/VideoPlayer/LearningSidebar.tsx
+ * API key + model settings: components/VideoPlayer/OpenRouterSettings.tsx
  */
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { streamText } from 'ai';
-import { MITEIRU_REPO_URL } from './constants';
+import { OPENROUTER_REQUEST_HEADERS } from './openRouterConstants';
 
-const MITEIRU_OPENROUTER_HEADERS = {
-  'HTTP-Referer': MITEIRU_REPO_URL,
-  'X-Title': 'Miteiru',
-};
-
-export const openRouterMessages = {
-  missingApiKey: 'Add your OpenRouter key first: open Study a text from Home, press X (or click Settings), and paste it in.',
-  missingModel: 'Choose and save an AI model first: open Study a text from Home and press X (or click Settings).',
-};
+// One wording for every AI feature (openRouterConstants.ts).
+export { openRouterMessages } from './openRouterConstants';
 
 type OpenRouterMessage = {
   role: 'system' | 'user';
@@ -30,7 +23,7 @@ export async function streamOpenRouterCompletion(
 ): Promise<string> {
   const openrouter = createOpenRouter({
     apiKey,
-    headers: MITEIRU_OPENROUTER_HEADERS,
+    headers: OPENROUTER_REQUEST_HEADERS,
   });
 
   const systemContent = messages

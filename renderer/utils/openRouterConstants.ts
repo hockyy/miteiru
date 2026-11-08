@@ -13,7 +13,14 @@ export const OPENROUTER_REQUEST_HEADERS = {
   "X-Title": "Miteiru",
 };
 
+/** The model the AI tools use until the learner saves another ('openrouter.model' in the store). */
+export const DEFAULT_OPENROUTER_MODEL = "z-ai/glm-5.2:nitro";
+
+/** Where to get a key; shown beside the key field. */
+export const OPENROUTER_KEYS_URL = "https://openrouter.ai/keys";
+
+// Video settings (AI tab) and the Study page's settings both have the fields, and X opens either.
 export const openRouterMessages = {
-  missingApiKey: "Add your OpenRouter key first: open Study a text from Home, press X (or click Settings), and paste it in.",
-  missingModel: "Choose and save an AI model first: open Study a text from Home and press X (or click Settings).",
+  missingApiKey: "Add your OpenRouter key first: press X for settings and paste it under OpenRouter AI (the AI tab while watching).",
+  missingModel: "Choose and save an AI model first: press X for settings and save one under OpenRouter AI (the AI tab while watching).",
 };
