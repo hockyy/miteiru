@@ -1,5 +1,7 @@
 import {videoConstants} from "../../utils/constants";
 import {escapeHtml} from "../../utils/html";
+import {isKana, toHiragana} from "wanakana";
+import {splitOkuriganaCompact} from "../../utils/japaneseOkurigana";
 
 const normalizeStringArray = (value) => {
   if (Array.isArray(value)) return value.flatMap(normalizeStringArray);
@@ -13,13 +15,51 @@ const uniqueNonEmpty = (values) => Array.from(new Set(
     .filter(Boolean)
 ));
 
+/** The first kana reading of a JMdict entry that applies to this kanji spelling. */
+export const pickJapaneseReading = (entry, spelling) => {
+  const kana = Array.isArray(entry?.kana) ? entry.kana : [];
+  return kana.find((item) => {
+    const applies = item?.appliesToKanji;
+    return !applies?.length || applies.includes('*') || applies.includes(spelling);
+  })?.text;
+};
+
+/**
+ * What the header shows as the word. Words usually written in kana (JMdict `uk`), or with no
+ * kanji at all, show the kana form the learner clicked; others show each kanji spelling with
+ * the kana JMdict pairs with it. `reading` is left out when the entry has none to offer.
+ */
+export const getJapaneseHeadwords = (entry, term) => {
+  const kana = Array.isArray(entry?.kana) ? entry.kana : [];
+  const kanji = Array.isArray(entry?.kanji) ? entry.kanji : [];
+  const usuallyKana = (entry?.sense || []).some((sense) => sense?.misc?.includes('uk'));
+  if (kana.length && isKana(term) && (kanji.length === 0 || usuallyKana)) {
+    const form = kana.find((item) => item.text === term) ?? kana[0];
+    return [{...form, key: 0, reading: form.text}];
+  }
+  if (kanji.length) {
+    return kanji.map((item, index) => ({...item, key: item.key ?? index, reading: pickJapaneseReading(entry, item.text)}));
+  }
+  return [{text: term, key: 0}];
+};
+
+/** A header token built from a dictionary spelling and its kana, in the shape Kuromoji tokens have. */
+export const buildJapaneseHeadwordToken = (text, reading) => {
+  const hiragana = toHiragana(reading, {convertLongVowelMark: false});
+  return {origin: text, hiragana, basicForm: text, pos: '', separation: splitOkuriganaCompact(text, hiragana)};
+};
+
+/** Ruby tokens for one headword: from its dictionary kana when it has one, else read by Kuromoji. */
+export const getJapaneseHeadwordTokens = async (item, tokenizeMiteiru) => (
+  item.reading ? [buildJapaneseHeadwordToken(item.text, item.reading)] : tokenizeMiteiru(item.text)
+);
+
 export const getMeaningEntries = async (term, lang) => {
   let entries = [];
   if (lang === videoConstants.japaneseLang) {
     entries = await window.backend.invoke('queryJapanese', term, 5);
     entries.forEach(entry => {
-      const variants = entry.kanji.length ? entry.kanji : [{text: term}];
-      entry.single = variants.map((item, index) => ({...item, key: item.key ?? index}));
+      entry.single = getJapaneseHeadwords(entry, term);
     });
   } else if (lang === videoConstants.cantoneseLang || lang === videoConstants.chineseLang) {
     entries = await window.backend.invoke('queryChinese', term, 5);
@@ -134,7 +174,7 @@ export const getRomajiedDataForMeaningContent = async (term, meaningContent, lan
     }
     return [{
       key: first.key ?? 0,
-      romajied: await tokenizeMiteiru(first.text),
+      romajied: await getJapaneseHeadwordTokens(first, tokenizeMiteiru),
     }];
   }
 

@@ -47,7 +47,8 @@ class Learning {
         // Define the range for the query
         const queryOptions = {
           gte: prefix, // Start of the range: include the prefix
-          lte: `${prefix}\uFFFF`, // End of the range: highest value that still matches the prefix
+          // U+10FFFF: keys order by UTF-8 bytes, so 4-byte first characters sort past U+FFFF.
+          lte: `${prefix}\u{10FFFF}`, // End of the range: highest value that still matches the prefix
         };
 
         const promises = []

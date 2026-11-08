@@ -33,7 +33,8 @@ export type MeaningBoxProps = {
 export type MeaningContentState = {
   id: string;
   sense: SenseEntry[];
-  single: { key: number; text: string }[];
+  /** `reading` is the dictionary's own kana for a Japanese headword. */
+  single: { key: number; text: string; reading?: string }[];
   content: string;
   simplified: string;
   meaning?: string | string[];
