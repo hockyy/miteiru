@@ -3,6 +3,7 @@ import {v4 as uuidv4} from 'uuid';
 import {SHIFT_STEP_MS, subtitleShiftToast} from "../utils/subtitleTiming";
 import {mainSubtitleName, TRANSLATION_NAME} from "../utils/subtitleLabels";
 import {isTextEntryTarget} from "../utils/keyboardTargets";
+import {hasCtrlModifier} from "../utils/platform";
 import type {PlaybackClock} from "../utils/playbackClock";
 
 
@@ -67,10 +68,12 @@ export const useVideoKeyboardControls = (togglePlay, deltaTime, setPrimaryShift,
         backToHead();
         setIsPlaying(1);
       } else if (event.code.startsWith("Bracket")) {
+        event.preventDefault();
         // `]` moves the subtitle later and `[` earlier (see utils/subtitleTiming.ts).
         const currentShiftAmount = event.code === "BracketLeft" ? -SHIFT_STEP_MS : SHIFT_STEP_MS;
-        const name = event.ctrlKey ? TRANSLATION_NAME : mainSubtitleName(languageName);
-        (event.ctrlKey ? setSecondaryShift : setPrimaryShift)(old => {
+        const translation = hasCtrlModifier(event);
+        const name = translation ? TRANSLATION_NAME : mainSubtitleName(languageName);
+        (translation ? setSecondaryShift : setPrimaryShift)(old => {
           setInfo(() => {
             return {
               message: subtitleShiftToast(name, old + currentShiftAmount),
