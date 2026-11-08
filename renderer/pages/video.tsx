@@ -519,7 +519,8 @@ function Video() {
               onGenerateAhead={isYoutube(videoSrc.path) ? generatedAhead.open : undefined}
               learningStyleEnabled={Boolean(primaryStyling.learning)}
               onLearningStyleChange={(enabled) => setPrimaryStyling({...primaryStyling, learning: enabled})}/>}
-          <BoxTipsOverlay key={videoSrc.path} tips={forecast.tips} clock={clock} enabled={forecast.tipsEnabled} shiftMs={primaryShift}/>
+          <BoxTipsOverlay key={videoSrc.path} tips={forecast.tips} clock={clock} enabled={forecast.tipsEnabled} shiftMs={primaryShift}
+                          placement={primaryStyling.positionFromTop ? "middle" : "top"}/>
           <MeaningBox meaning={meaning} setMeaning={setMeaning} tokenizeMiteiru={tokenizeMiteiru}
                       lang={lang} setLearningLevel={setLearningLevel}
                       getLearningState={getLearningState}
