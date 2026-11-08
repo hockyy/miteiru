@@ -15,7 +15,7 @@ interface LiveCaptionControlProps {
 }
 
 /** What the pill does, in the words the learner sees on hover. */
-export const LIVE_CAPTIONS_HELP = "Shows Windows Live Captions for any audio, as clickable subtitles.";
+export const LIVE_CAPTIONS_HELP = "Shows the system's live captions for any audio, as clickable subtitles.";
 
 export const LiveCaptionControl = memo(({
   supported,
