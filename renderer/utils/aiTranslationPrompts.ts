@@ -244,8 +244,12 @@ Sentences (one per line):
 ${numbered}`;
 }
 
+/** The learning language is chosen on Home (the language cards), so that is where these point. */
 export function getUnsupportedLangMessage(lang: string): string {
-  return `AI translation is available for Japanese, Chinese, and Cantonese. Current language "${lang ? getLanguageDisplayName(lang) : 'unknown'}" is not supported. Change the learning language in settings.`;
+  if (!lang) {
+    return 'Choose the language you’re learning on Home first. AI translation works for Japanese, Chinese and Cantonese.';
+  }
+  return `AI translation works for Japanese, Chinese and Cantonese, not ${getLanguageDisplayName(lang)} yet. Choose one of those on Home to use it.`;
 }
 
 export function getPronunciationLabel(lang: TranslationTargetLang): string {

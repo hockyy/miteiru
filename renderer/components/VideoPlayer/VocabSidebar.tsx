@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { LearningStateType } from '../types';
-import { LeftSidebarShell } from './SidebarShell';
+import { LeftSidebarShell, SIDEBAR_FIELD_INPUT } from './SidebarShell';
 import { VocabWordCard, vocabCardId } from './VocabWordCard';
 import { getVocabReadingPreview } from './vocabReadingPreview';
 import {
@@ -21,6 +21,13 @@ import {
   type VocabWindow,
 } from './vocabWindow';
 import { holdScrollPosition, topWithin, VOCAB_EDGE_MARGIN } from './vocabScroll';
+import {
+  filterVocab,
+  isFiltering,
+  NO_VOCAB_FILTER,
+  type VocabFilter,
+  type VocabLevelFilter,
+} from './vocabFilter';
 
 type VocabEntry = [string, LearningStateType];
 
@@ -62,6 +69,8 @@ const VocabSidebar = ({
   const [hoveredWord, setHoveredWord] = useState<string | null>(null);
   const [hoverTokens, setHoverTokens] = useState<{ word: string; tokens: unknown } | null>(null);
   const [generatingWord, setGeneratingWord] = useState<string | null>(null);
+  // The search box and the level chips (vocabFilter.ts); kept while the panel is closed.
+  const [filter, setFilter] = useState<VocabFilter>(NO_VOCAB_FILTER);
   const containerRef = useRef<HTMLElement>(null);
   const topSentinelRef = useRef<HTMLDivElement>(null);
   const bottomSentinelRef = useRef<HTMLDivElement>(null);
@@ -77,7 +86,18 @@ const VocabSidebar = ({
   const dataKey = `${lang}\n${String(refreshTrigger)}`;
   const entries = vocab?.entries ?? NO_WORDS;
   const isFresh = vocab?.key === dataKey;
-  const visibleRange = range && clampWindow(range, entries.length);
+  const filtering = isFiltering(filter);
+  // What the list shows: every saved word, or what the search and chips keep. The window is over this.
+  const shown = useMemo(
+    () => filterVocab(
+      entries,
+      filter,
+      (word) => getLocalizedUserNote(userNotes, word, lang)?.definition,
+      (word) => hasUserNoteContent(getLocalizedUserNote(userNotes, word, lang)),
+    ),
+    [entries, filter, userNotes, lang],
+  );
+  const visibleRange = range && clampWindow(range, shown.length);
 
   // Opening (or switching language) places the window afresh; closing takes the cards off the page
   // once the slide-out is over. A layout effect, so a reopened panel never paints its old window.
@@ -120,15 +140,21 @@ const VocabSidebar = ({
     };
   }, [showVocabSidebar, lang, dataKey, isFresh]);
 
-  // Each opening starts at the word whose review time is nearest, once the words are up to date.
+  // A new search or chip shows what it found from the top (the effect below places the window).
+  useLayoutEffect(() => {
+    setRange(null);
+  }, [filter]);
+
+  // Each opening starts at the word whose review time is nearest, once the words are up to date;
+  // with a search or chip on, at the top of what it found.
   useLayoutEffect(() => {
     if (!showVocabSidebar || range !== null || !isFresh) {
       return;
     }
-    const index = closestIndexByTime(entries, Date.now());
-    scrollTargetRef.current = index >= 0 ? { word: entries[index][0] } : 'top';
-    setRange(windowAround(entries.length, index));
-  }, [showVocabSidebar, range, isFresh, entries]);
+    const index = filtering ? 0 : closestIndexByTime(shown, Date.now());
+    scrollTargetRef.current = !filtering && index >= 0 ? { word: shown[index][0] } : 'top';
+    setRange(windowAround(shown.length, index));
+  }, [showVocabSidebar, range, isFresh, shown, filtering]);
 
   // After the window changes: keep the held card where it was, then make any pending scroll.
   useLayoutEffect(() => {
@@ -162,7 +188,7 @@ const VocabSidebar = ({
     if (!container || !range || !listMounted || typeof IntersectionObserver === 'undefined') {
       return undefined;
     }
-    const length = entries.length;
+    const length = shown.length;
     const observer = new IntersectionObserver((observed) => {
       const near = observed.find((entry) => entry.isIntersecting);
       if (!near) {
@@ -190,29 +216,34 @@ const VocabSidebar = ({
       observer.observe(bottomSentinelRef.current);
     }
     return () => observer.disconnect();
-  }, [range, entries.length, listMounted]);
+  }, [range, shown.length, listMounted]);
 
   // The top and bottom buttons move the window there when it doesn't reach that end yet.
   const scrollToTop = useCallback(() => {
     if (visibleRange && visibleRange.start > 0) {
       scrollTargetRef.current = 'top';
-      setRange(windowAround(entries.length, 0));
+      setRange(windowAround(shown.length, 0));
       return;
     }
     containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [entries.length, visibleRange]);
+  }, [shown.length, visibleRange]);
 
   const scrollToBottom = useCallback(() => {
-    if (visibleRange && visibleRange.end < entries.length) {
+    if (visibleRange && visibleRange.end < shown.length) {
       scrollTargetRef.current = 'bottom';
-      setRange(windowAround(entries.length, entries.length - 1));
+      setRange(windowAround(shown.length, shown.length - 1));
       return;
     }
     containerRef.current?.scrollTo({
       top: containerRef.current.scrollHeight,
       behavior: 'smooth',
     });
-  }, [entries.length, visibleRange]);
+  }, [shown.length, visibleRange]);
+
+  // A chip filters to its level; pressing the one that's on shows everything again.
+  const toggleLevel = useCallback((level: VocabLevelFilter) => {
+    setFilter((current) => ({ ...current, level: current.level === level ? null : level }));
+  }, []);
 
   const notesCount = useMemo(
     () => entries.filter(
@@ -308,10 +339,24 @@ const VocabSidebar = ({
         </div>
       );
     }
+    if (shown.length === 0) {
+      return (
+        <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.04] px-6 py-8 text-center">
+          <p className="text-sm font-semibold text-white/70">No saved words match.</p>
+          <button
+            type="button"
+            className="mt-3 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-white/80 hover:bg-white/20"
+            onClick={() => setFilter(NO_VOCAB_FILTER)}
+          >
+            Show all words
+          </button>
+        </div>
+      );
+    }
     return (
       <div className="flex flex-col gap-2 pb-6">
         {visibleRange.start > 0 && <div ref={topSentinelRef} aria-hidden className="h-px shrink-0" />}
-        {entries.slice(visibleRange.start, visibleRange.end).map(([word, state]) => (
+        {shown.slice(visibleRange.start, visibleRange.end).map(([word, state]) => (
           <VocabWordCard
             key={word}
             word={word}
@@ -326,7 +371,7 @@ const VocabSidebar = ({
             onHoverEnd={handleHoverEnd}
           />
         ))}
-        {visibleRange.end < entries.length && <div ref={bottomSentinelRef} aria-hidden className="h-px shrink-0" />}
+        {visibleRange.end < shown.length && <div ref={bottomSentinelRef} aria-hidden className="h-px shrink-0" />}
       </div>
     );
   };
@@ -344,27 +389,72 @@ const VocabSidebar = ({
       <ColorKey className="mb-3" />
 
       {entries.length > 0 && (
-        <div className="mb-4 flex flex-wrap gap-1.5">
-          {LEVEL_LABELS.map((label, level) => {
-            const count = levelSummary[level] ?? 0;
-            if (!count) {
-              return null;
-            }
-            return (
-              <span
-                key={label}
-                className="rounded-full border border-white/10 bg-white/[0.08] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/60"
+        <>
+          <input
+            type="search"
+            value={filter.query}
+            onChange={(event) => setFilter((current) => ({ ...current, query: event.target.value }))}
+            placeholder="Find a word, or a meaning from its AI notes"
+            aria-label="Find a saved word"
+            spellCheck={false}
+            autoComplete="off"
+            className={`${SIDEBAR_FIELD_INPUT} mb-2 w-full`}
+          />
+          {/* The chips count each level, and filter the list to it when pressed. */}
+          <div className="mb-2 flex flex-wrap gap-1.5">
+            {LEVEL_LABELS.map((label, level) => {
+              const count = levelSummary[level] ?? 0;
+              if (!count) {
+                return null;
+              }
+              const on = filter.level === level;
+              return (
+                <button
+                  type="button"
+                  key={label}
+                  aria-pressed={on}
+                  title={on ? 'Show every level' : `Show only ${label} words`}
+                  onClick={() => toggleLevel(level)}
+                  className={[
+                    'rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide transition-colors',
+                    on
+                      ? 'border-white/60 bg-white/85 text-slate-900'
+                      : 'border-white/10 bg-white/[0.08] text-white/60 hover:bg-white/[0.16] hover:text-white/80',
+                  ].join(' ')}
+                >
+                  {count.toLocaleString()} {label}
+                </button>
+              );
+            })}
+            {notesCount > 0 && (
+              <button
+                type="button"
+                aria-pressed={filter.level === 'notes'}
+                title={filter.level === 'notes' ? 'Show every word' : 'Show only words with AI notes'}
+                onClick={() => toggleLevel('notes')}
+                className={[
+                  'rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide transition-colors',
+                  filter.level === 'notes'
+                    ? 'border-emerald-200 bg-emerald-200 text-emerald-950'
+                    : 'border-emerald-400/30 bg-emerald-500/15 text-emerald-200 hover:bg-emerald-500/25',
+                ].join(' ')}
               >
-                {count} {label}
-              </span>
-            );
-          })}
-          {notesCount > 0 && (
-            <span className="rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-200">
-              {notesCount} AI notes
-            </span>
-          )}
-        </div>
+                {notesCount.toLocaleString()} AI notes
+              </button>
+            )}
+          </div>
+          <div className="mb-3 min-h-4 text-xs text-white/60" aria-live="polite">
+            {filtering && (
+              <>
+                {shown.length === entries.length ? 'All' : shown.length.toLocaleString()} of {entries.length.toLocaleString()} words
+                {' · '}
+                <button type="button" className="underline hover:text-white" onClick={() => setFilter(NO_VOCAB_FILTER)}>
+                  Clear
+                </button>
+              </>
+            )}
+          </div>
+        </>
       )}
 
       {listMounted && renderList()}
