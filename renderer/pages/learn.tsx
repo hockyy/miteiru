@@ -629,8 +629,9 @@ function Learn() {
                   className="h-full"
                   bodyClassName="p-2"
                 >
-                  {sentences.length > 1 ? (
-                    <SentenceList sentences={sentences} onSentenceClick={handleSentenceClick}/>
+                  {/* One line is listed too: the header already counts it, so "No sentences yet" would contradict it. */}
+                  {sentences.length > 0 ? (
+                    <SentenceList sentences={sentences} onSentenceClick={handleSentenceClick} selected={directInput}/>
                   ) : (
                     <div className="py-8 text-center text-blue-400">
                       <div className="mb-2 text-4xl">📝</div>
