@@ -30,7 +30,7 @@ async function run() {
         inputs.push({file, sha256: createHash("sha256").update(fs.readFileSync(path.join(assets, file))).digest("hex")});
       }
       tokenize = async (text) => (await parseJapaneseVerbs(Japanese.processKuromojinToSeparations(
-        tokenizer.tokenizeForSentence(text)))).map((token) => token.origin);
+        await tokenizer.tokenizeForSentence(text)))).map((token) => token.origin);
     } else {
       const file = variant === "yue" ? "cantonese/cantonese/yue.jieba.txt" : "mandarin/chinese/zh.jieba.txt";
       const bytes = await readAsset(path.join(assets, file));

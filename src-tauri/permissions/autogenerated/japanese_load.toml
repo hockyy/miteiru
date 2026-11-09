@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-japanese-load"
+description = "Enables the japanese_load command without any pre-configured scope."
+commands.allow = ["japanese_load"]
+
+[[permission]]
+identifier = "deny-japanese-load"
+description = "Denies the japanese_load command without any pre-configured scope."
+commands.deny = ["japanese_load"]

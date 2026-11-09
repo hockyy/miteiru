@@ -13,8 +13,8 @@ declare module "kuromoji" {
     conjugated_form: string;
     basic_form: string;
     /** Undefined at runtime for unknown words. */
-    reading: string;
-    pronunciation: string;
+    reading?: string;
+    pronunciation?: string;
   }
 
   export interface Tokenizer {
@@ -27,5 +27,5 @@ declare module "kuromoji" {
     build(callback: (error: Error | null, tokenizer: Tokenizer) => void): void;
   }
 
-  export function builder(options: { dicPath: string }): TokenizerBuilder;
+  export function builder(options: { dicPath: string; jmdictPath?: string }): TokenizerBuilder;
 }

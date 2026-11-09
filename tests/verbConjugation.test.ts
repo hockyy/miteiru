@@ -75,11 +75,24 @@ test("isConjugationOf keeps jp-verbs' answers across the conjugation corpus", ()
   assert.ok(cases.length > 2500);
 });
 
+test('native learner units stop before final particles and modality', async () => {
+  Japanese.kuromojiDictPath = path.join(process.cwd(), 'node_modules', 'kuromoji', 'dict');
+  const tokenizer = await Japanese.loadKuromojiTokenizer();
+  const group = async (sentence: string) => (await parseJapaneseVerbs(
+    Japanese.processKuromojinToSeparations(await tokenizer.tokenizeForSentence(sentence)), {learnerUnits: true}
+  )).map((token) => token.origin);
+  assert.deepEqual(await group('本を読んでいますよね'), ['本', 'を', '読んでいます', 'よ', 'ね']);
+  assert.deepEqual(await group('帰ったらしい'), ['帰った', 'らしい']);
+  assert.deepEqual(await group('教えてやる'), ['教えて', 'やる']);
+  assert.deepEqual(await group('読んだりする'), ['読んだり', 'する']);
+  assert.deepEqual(await group('知らんぷりしちゃだめだよ'), ['知らんぷり', 'しちゃ', 'だめ', 'だ', 'よ']);
+});
+
 test("the analyzer groups a verb with its conjugation chain", async () => {
   Japanese.kuromojiDictPath = path.join(process.cwd(), "node_modules", "kuromoji", "dict");
   const tokenizer = await Japanese.loadKuromojiTokenizer();
   const group = async (sentence: string) => (await parseJapaneseVerbs(
-    Japanese.processKuromojinToSeparations(tokenizer.tokenizeForSentence(sentence))
+    Japanese.processKuromojinToSeparations(await tokenizer.tokenizeForSentence(sentence))
   )).map((token) => token.origin);
 
   assert.deepEqual(await group("寿司を食べられなかった。"), ["寿司", "を", "食べられなかった", "。"]);
@@ -95,7 +108,7 @@ test("auxiliary verbs Kuromoji tags as suffix or dependent verbs join the verb, 
   Japanese.kuromojiDictPath = path.join(process.cwd(), "node_modules", "kuromoji", "dict");
   const tokenizer = await Japanese.loadKuromojiTokenizer();
   const group = async (sentence: string) => (await parseJapaneseVerbs(
-    Japanese.processKuromojinToSeparations(tokenizer.tokenizeForSentence(sentence))
+    Japanese.processKuromojinToSeparations(await tokenizer.tokenizeForSentence(sentence))
   )).map((token) => `${token.origin}(${token.basicForm})`);
 
   assert.deepEqual(await group("寿司を食べさせられなかった"), ["寿司(寿司)", "を(を)", "食べさせられなかった(食べる)"]);

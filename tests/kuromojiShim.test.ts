@@ -5,7 +5,7 @@ import zlib from "node:zlib";
 import {test} from "node:test";
 import BrowserDictionaryLoader from "../node_modules/kuromoji/src/loader/BrowserDictionaryLoader.js";
 import {setSys} from "../renderer/platform/backend/sys";
-import "../renderer/platform/backend/shims/kuromoji";
+import "../renderer/platform/backend/shims/kuromojiFallback";
 
 const dictionary = path.join(process.cwd(), "node_modules", "kuromoji", "dict");
 

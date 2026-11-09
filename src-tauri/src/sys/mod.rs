@@ -5,6 +5,7 @@ pub mod dict_import;
 pub mod fs;
 pub mod http;
 pub mod info;
+pub mod japanese;
 pub mod jieba;
 pub mod kv;
 pub mod langpack;

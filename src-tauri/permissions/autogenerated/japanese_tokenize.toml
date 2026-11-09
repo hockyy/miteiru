@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-japanese-tokenize"
+description = "Enables the japanese_tokenize command without any pre-configured scope."
+commands.allow = ["japanese_tokenize"]
+
+[[permission]]
+identifier = "deny-japanese-tokenize"
+description = "Denies the japanese_tokenize command without any pre-configured scope."
+commands.deny = ["japanese_tokenize"]

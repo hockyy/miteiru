@@ -39,7 +39,8 @@ const defaultDependencies: ForecastDictionaryDependencies = {
     return {basicForm: surface, reading: kana?.text ?? reading, source: 'default'};
   },
   derive: async (surface) => {
-    const words = await parseJapaneseVerbs(Japanese.processKuromojinToSeparations(await Japanese.tokenizeUsingKuromoji(surface)));
+    const words = await parseJapaneseVerbs(Japanese.processKuromojinToSeparations(await Japanese.tokenizeUsingKuromoji(surface)),
+      {learnerUnits: Boolean(Japanese.kuromojiTokenizer?.tokenizeWithUserWords)});
     const word = words.length === 1 && words[0].origin === surface ? words[0] : null;
     return word?.basicForm && word.basicForm !== '*' ? {basicForm: word.basicForm, reading: word.hiragana, pos: word.pos} : null;
   }

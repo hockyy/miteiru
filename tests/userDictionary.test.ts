@@ -272,11 +272,20 @@ test("the application's analyzer uses enabled custom entries without requiring a
   const database = memory(true);
   database.values.set(USER_DICTIONARY_KEY, {revision: 1, entries: [entry({surface: "新造固有語", reading: "しんぞうこゆうご", meaning: "a personal coined term"})]});
   setStoreFactory(async () => database.store);
-  const tokens = await analyzeText("新造固有語", {tokenizerMode: "kuromoji", toneType: "num"});
-  assert.equal(tokens.length, 1);
-  assert.equal(tokens[0].origin, "新造固有語");
-  assert.equal(tokens[0].hiragana, "しんぞうこゆうご");
-  assert.equal(tokens[0].userDictionaryMeaning, "a personal coined term");
+  const original = Japanese.tokenizeUsingKuromoji;
+  Japanese.tokenizeUsingKuromoji = async (text, entries) => {
+    assert.equal(text, '新造固有語');
+    assert.equal(entries[0].surface, text);
+    return [{word_id: -1, word_type: 'KNOWN', word_position: 1, surface_form: text, pos: '名詞', pos_detail_1: '一般',
+      pos_detail_2: '*', pos_detail_3: '*', conjugated_type: '*', conjugated_form: '*', basic_form: text, reading: '', pronunciation: ''}];
+  };
+  try {
+    const tokens = await analyzeText("新造固有語", {tokenizerMode: "kuromoji", toneType: "num"});
+    assert.equal(tokens.length, 1);
+    assert.equal(tokens[0].origin, "新造固有語");
+    assert.equal(tokens[0].hiragana, "しんぞうこゆうご");
+    assert.equal(tokens[0].userDictionaryMeaning, "a personal coined term");
+  } finally { Japanese.tokenizeUsingKuromoji = original; }
 });
 
 test("the application's analyzer retains its built-in tokenizer while the custom dictionary is disabled", async () => {
