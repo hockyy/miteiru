@@ -30,9 +30,11 @@ export interface MandarinToken {separation?: MandarinPart[]}
  * Read the original tones on each pass, so 3+3+3 becomes 2+2+3 rather than cascading backwards.
  */
 export const mandarinSpokenTones = (tokens: readonly MandarinToken[]): (MandarinTone | null)[][] => {
-  const words = tokens.map((token, word) => (token.separation ?? []).map((part) => ({
+  const words = tokens.map((token, word) => (token.separation ?? []).map((part, at, parts) => ({
     char: part.main,
     word,
+    // 一 ending a longer word (统一, 唯一, 之一) is a number, not a counter, and keeps yī.
+    endsWord: parts.length > 1 && at === parts.length - 1,
     tone: /^\p{Script=Han}$/u.test(part.main) && !part.jyutping ? pinyinTone(part.pinyin ?? '') : null,
   })));
   const syllables = words.flat();
@@ -40,7 +42,8 @@ export const mandarinSpokenTones = (tokens: readonly MandarinToken[]): (Mandarin
     const next = syllables[index + 1];
     if (!part.tone || !next?.tone) return part.tone;
     if (part.char === '不' && part.tone === 4 && next.tone === 4) return 2;
-    if (part.char === '一' && part.tone === 1) {
+    // Ordinals keep yī too: 第一次 is dì yī cì.
+    if (part.char === '一' && part.tone === 1 && !part.endsWord && syllables[index - 1]?.char !== '第') {
       if (next.tone === 4) return 2;
       if (next.tone < 4) return 4;
     }

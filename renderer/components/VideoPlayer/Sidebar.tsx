@@ -11,8 +11,8 @@ import {Button} from "../Utils/Button";
 import {GistManager} from "../Data/GistManager";
 import {announceLearningStateChanged} from "../../utils/learningStateEvents";
 import {rangeFillStyle, SubtitleMode} from "../../utils/utils";
-import {SidebarSection, SidebarSettingRow, SidebarShell, SIDEBAR_FIELD_INPUT} from "./SidebarShell";
-import {MANDARIN_TONE_PALETTES, type MandarinTone} from "../../utils/mandarinTones";
+import {SidebarSection, SidebarSettingRow, SidebarShell} from "./SidebarShell";
+import {MANDARIN_TONE_PALETTES, type MandarinTone, type TonePalette, type ToneTarget} from "../../utils/mandarinTones";
 import {HSK_COLORS, HSK_UNLISTED_COLOR, hskLabel, type HskLevel} from "../../utils/mandarinHsk";
 import {OpenRouterSettings} from "./OpenRouterSettings";
 import {AiUsageDetails} from "./AiCostIndicator";
@@ -129,6 +129,78 @@ const LearningFileButtons = ({lang, notify = alertNotify}: { lang: string; notif
   </div>;
 };
 
+const TONE_TARGETS: { id: ToneTarget; label: string }[] =
+  [{id: "hanzi", label: "Characters"}, {id: "pinyin", label: "Pinyin"}, {id: "both", label: "Both"}];
+const TONE_PALETTE_OPTIONS: { id: TonePalette; label: string }[] =
+  [{id: "default", label: "Standard"}, {id: "accessible", label: "Colour-blind safe"}];
+const TONE_SAMPLES: [MandarinTone, string, string][] =
+  [[1, "mā", "First tone"], [2, "má", "Second tone"], [3, "mǎ", "Third tone"], [4, "mà", "Fourth tone"], [5, "ma", "Neutral tone"]];
+const HSK_KEY_LEVELS: HskLevel[] = [1, 2, 3, 4, 5, 6, 7];
+
+// The slider's last stop is "all of 1–9": 7 and 8 alone would change nothing, since HSK 3.0 lists 7–9 as one band.
+const hskSliderValue = (above = 0) => above >= 9 ? 7 : Math.min(Math.max(above, 0), 6);
+const hskAboveFromSlider = (value: number) => value >= 7 ? 9 : value;
+const knownLevelsLabel = (value: number) =>
+  value === 0 ? "None" : value === 1 ? "HSK 1" : value >= 7 ? "HSK 1–9" : `HSK 1–${value}`;
+
+/** Mandarin-only study aids: tone colours (#105) and HSK level underlines (#104). Options show only while switched on. */
+const MandarinStudySettings = ({subtitleStyling, update}: {
+  subtitleStyling: CJKStyling;
+  update: (path: string, value: unknown) => void;
+}) => {
+  const target = subtitleStyling.mandarinToneTarget ?? "both";
+  const palette = MANDARIN_TONE_PALETTES[subtitleStyling.mandarinTonePalette ?? "default"] ?? MANDARIN_TONE_PALETTES.default;
+  const above = subtitleStyling.mandarinHskAbove ?? 0;
+  return <>
+    <ToggleRow label="Tone colours" hint="Each syllable takes the colour of the tone it's spoken with, so 一 and 不 change with the next word."
+               checked={subtitleStyling.mandarinToneColors}
+               onChange={(value) => update("mandarinToneColors", value)}/>
+    {subtitleStyling.mandarinToneColors && <div className="ml-4 flex flex-col gap-3 border-l border-white/15 pl-3">
+      <div className="flex flex-col gap-1.5">
+        <div className="text-sm text-white/85">Colour</div>
+        <Segmented<ToneTarget> group="tone-target" options={TONE_TARGETS} value={target}
+                               onChange={(value) => update("mandarinToneTarget", value)} label="Colour"/>
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <div className="text-sm text-white/85">Colours</div>
+        <Segmented<TonePalette> group="tone-palette" options={TONE_PALETTE_OPTIONS}
+                                value={subtitleStyling.mandarinTonePalette ?? "default"}
+                                onChange={(value) => update("mandarinTonePalette", value)} label="Colours"/>
+      </div>
+      <div className="flex gap-1" role="list" aria-label="Tone key">
+        {TONE_SAMPLES.map(([tone, sample, name]) => (
+          <span key={tone} role="listitem" aria-label={name} title={name}
+                className="flex-1 rounded-lg bg-black/40 py-1 text-center text-base font-bold"
+                style={{color: palette[tone]}}>{sample}</span>
+        ))}
+      </div>
+      {subtitleStyling.learning && target !== "pinyin" &&
+          <Hint>On the characters, tone colours take the place of learning colours.</Hint>}
+    </div>}
+    <ToggleRow label="HSK levels" hint="Underlines words by HSK 3.0 level. A dashed line means the word isn't on the list."
+               checked={subtitleStyling.mandarinHsk}
+               onChange={(value) => update("mandarinHsk", value)}/>
+    {subtitleStyling.mandarinHsk && <div className="ml-4 flex flex-col gap-3 border-l border-white/15 pl-3">
+      <SliderRow label="Levels you already know" valueLabel={knownLevelsLabel(hskSliderValue(above))}
+                 min={0} max={7} step={1} value={hskSliderValue(above)}
+                 onChange={(value) => update("mandarinHskAbove", hskAboveFromSlider(value))}/>
+      <div className="flex flex-wrap gap-1" role="list" aria-label="HSK key">
+        {HSK_KEY_LEVELS.map((level) => {
+          const hidden = (level === 7 ? 9 : level) <= above;
+          return <span key={level} role="listitem" aria-label={`${hskLabel(level)}${hidden ? ", hidden" : ""}`}
+                       className={`rounded-lg bg-black/40 px-2 py-1 text-xs font-bold tabular-nums transition-opacity ${hidden ? "opacity-30" : ""}`}
+                       style={{textDecoration: `underline 2px ${HSK_COLORS[level]}`, textUnderlineOffset: "3px"}}>
+            {level === 7 ? "7–9" : level}
+          </span>;
+        })}
+        <span role="listitem" className="rounded-lg bg-black/40 px-2 py-1 text-xs font-bold"
+              style={{textDecoration: `underline dashed 2px ${HSK_UNLISTED_COLOR}`, textUnderlineOffset: "3px"}}>Not listed</span>
+      </div>
+      <Hint>HSK 3.0 lists levels 7–9 as one advanced band. The word popup shows each word&rsquo;s level.</Hint>
+    </div>}
+  </>;
+};
+
 /** What the primary subtitle shows: readings, meanings, learning colours. */
 export const SubtitleContentSettings = ({subtitleStyling, setSubtitleStyling, lang}: {
   subtitleStyling: CJKStyling;
@@ -151,56 +223,7 @@ export const SubtitleContentSettings = ({subtitleStyling, setSubtitleStyling, la
         <ToggleRow label="Simplified characters" hint="On: simplified (简体). Off: traditional (繁體)."
                    checked={subtitleStyling.forceSimplified}
                    onChange={(value) => update("forceSimplified", value)}/>}
-    {lang === videoConstants.chineseLang && <>
-      <ToggleRow label="Mandarin tone colours" hint="Colours follow spoken tone, including 一 / 不 and third-tone pairs within a word."
-                 checked={subtitleStyling.mandarinToneColors}
-                 onChange={(value) => update("mandarinToneColors", value)}/>
-      {subtitleStyling.mandarinToneColors && <div className="flex flex-col gap-2 pl-3 text-sm text-white/85">
-        <label className="flex items-center justify-between gap-3">Colour
-          <select className={SIDEBAR_FIELD_INPUT} aria-label="Tone colour target"
-                  value={subtitleStyling.mandarinToneTarget ?? 'both'}
-                  onChange={(event) => update("mandarinToneTarget", event.target.value)}>
-            <option value="hanzi">Hanzi only</option><option value="pinyin">Pinyin only</option><option value="both">Both</option>
-          </select>
-        </label>
-        <label className="flex items-center justify-between gap-3">Palette
-          <select className={SIDEBAR_FIELD_INPUT} aria-label="Tone colour palette"
-                  value={subtitleStyling.mandarinTonePalette ?? 'default'}
-                  onChange={(event) => update("mandarinTonePalette", event.target.value)}>
-            <option value="default">Default</option><option value="accessible">Colour-blind friendly</option>
-          </select>
-        </label>
-        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs" aria-label="Tone colour key">
-          {([1, 2, 3, 4, 5] as MandarinTone[]).map((tone) => <span key={tone}
-            style={{color: MANDARIN_TONE_PALETTES[subtitleStyling.mandarinTonePalette ?? 'default'][tone]}}>
-            {tone === 5 ? 'Neutral' : `Tone ${tone}`}
-          </span>)}
-        </div>
-      </div>}
-    </>}
-    {lang === videoConstants.chineseLang && <>
-      <ToggleRow label="HSK level underlines" hint="Mark Mandarin words by HSK 3.0 level. Dashed grey means not on the list."
-                 checked={subtitleStyling.mandarinHsk}
-                 onChange={(value) => update("mandarinHsk", value)}/>
-      {subtitleStyling.mandarinHsk && <div className="flex flex-col gap-2 pl-3 text-sm text-white/85">
-        <label className="flex items-center justify-between gap-3">Highlight
-          <select className={SIDEBAR_FIELD_INPUT} aria-label="Only highlight above HSK level"
-                  value={subtitleStyling.mandarinHskAbove ?? 0}
-                  onChange={(event) => update("mandarinHskAbove", Number(event.target.value))}>
-            <option value={0}>All levels</option>
-            {Array.from({length: 9}, (_, i) => i + 1).map((level) => <option key={level} value={level}>Above HSK {level}</option>)}
-          </select>
-        </label>
-        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs" aria-label="HSK underline key">
-          {([1, 2, 3, 4, 5, 6, 7] as HskLevel[]).map((level) => <span key={level}
-            style={{textDecoration: `underline solid ${HSK_COLORS[level]}`, textUnderlineOffset: '3px'}}>
-            {hskLabel(level).replace('HSK ', '')}
-          </span>)}
-          <span style={{textDecoration: `underline dashed ${HSK_UNLISTED_COLOR}`, textUnderlineOffset: '3px'}}>Unlisted</span>
-        </div>
-        <Hint>HSK 7–9 share one advanced list; it stays highlighted below 9.</Hint>
-      </div>}
-    </>}
+    {lang === videoConstants.chineseLang && <MandarinStudySettings subtitleStyling={subtitleStyling} update={update}/>}
     <ToggleRow label="Show word meanings" checked={subtitleStyling.showMeaning}
                onChange={(value) => update("showMeaning", value)}/>
     {subtitleStyling.showMeaning && <>

@@ -28,6 +28,13 @@ test('不 and 一 see the next syllable across words in the same line', () => {
   assert.deepEqual(mandarinSpokenTones([word('不', 'bù')]), [[4]]);
 });
 
+test('一 keeps yī as an ordinal or at the end of a longer word', () => {
+  assert.deepEqual(mandarinSpokenTones([word('第一', 'di4 yi1'), word('次', 'ci4')]), [[4, 1], [4]]);
+  assert.deepEqual(mandarinSpokenTones([word('第', 'di4'), word('一', 'yi1'), word('次', 'ci4')]), [[4], [1], [4]]);
+  assert.deepEqual(mandarinSpokenTones([word('统一', 'tong3 yi1'), word('是', 'shi4')]), [[3, 1], [4]]);
+  assert.deepEqual(mandarinSpokenTones([word('一样', 'yi1 yang4')]), [[2, 4]]);
+});
+
 test('third-tone sandhi is limited to adjacent syllables inside one word', () => {
   const tokens = [word('你好', 'nǐ hǎo'), word('很好', 'hen3 hao3'), word('我', 'wo3'), word('好', 'hao3')];
   const original = JSON.stringify(tokens);
