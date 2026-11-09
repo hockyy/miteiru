@@ -1,0 +1,606 @@
+{
+  "date": "2026-11-09",
+  "implementationCommit": "40214d141412ce2719489ff2a8ffa3a9c5657d27",
+  "baseCommit": "a2bbea0",
+  "goldCommit": "165d16f284f02e1ef69b9e378173bffdb122733d",
+  "testProtocol": "Test scored once after implementation freeze; no later behavior changes",
+  "dev": {
+    "kuromoji": {
+      "f1": 0.9365760610395804,
+      "exactMatch": 0.48,
+      "exact": 72,
+      "lines": 150
+    },
+    "base": {
+      "f1": 0.9516587677725118,
+      "exactMatch": 0.6,
+      "exact": 90,
+      "lines": 150
+    },
+    "app": {
+      "f1": 0.9534662867996201,
+      "exactMatch": 0.6066666666666667,
+      "exact": 91,
+      "lines": 150
+    },
+    "suffix": {
+      "f1": 0.971953578336557,
+      "exactMatch": 0.7333333333333333,
+      "exact": 110,
+      "lines": 150
+    },
+    "suffix_app": {
+      "f1": 0.9738372093023255,
+      "exactMatch": 0.7466666666666667,
+      "exact": 112,
+      "lines": 150
+    }
+  },
+  "test": {
+    "kuromoji": {
+      "lines": 150,
+      "precision": 0.9277218664226898,
+      "recall": 0.9629629629629629,
+      "f1": 0.9450139794967382,
+      "exact": 72,
+      "exactMatch": 0.48
+    },
+    "suffix": {
+      "lines": 150,
+      "precision": 0.9674721189591078,
+      "recall": 0.9886039886039886,
+      "f1": 0.9779239079379991,
+      "exact": 113,
+      "exactMatch": 0.7533333333333333
+    }
+  },
+  "devLineComparisons": {
+    "kuromoji→base": {
+      "better": 26,
+      "worse": 0,
+      "neutral": 124
+    },
+    "base→app": {
+      "better": 4,
+      "worse": 0,
+      "neutral": 146
+    },
+    "base→suffix": {
+      "better": 29,
+      "worse": 0,
+      "neutral": 121
+    },
+    "suffix→suffix_app": {
+      "better": 4,
+      "worse": 0,
+      "neutral": 146
+    },
+    "kuromoji→suffix": {
+      "better": 52,
+      "worse": 0,
+      "neutral": 98
+    }
+  },
+  "authored": {
+    "corpus": "505 individually authored subtitles",
+    "lines": 505,
+    "baseline": {
+      "loadMs": 243.69830000000002,
+      "firstTokenMs": 1.3154000000000678,
+      "loadToFirstMs": 245.01370000000009,
+      "batchMs": 17.7702,
+      "linesPerSecond": 28418.363327368294,
+      "heapDelta": 81134912,
+      "arrayBufferDelta": 140122684
+    },
+    "native": {
+      "app_lexicon_load_ms": 135.9697,
+      "app_owned_bytes": 96974190,
+      "app_words": 75076,
+      "base_owned_bytes": 64963505,
+      "batch_ms": {
+        "app": 6.6564,
+        "base": 5.15083,
+        "suffix": 10.84358,
+        "suffix_app": 11.46087,
+        "user": 10.87542
+      },
+      "default_owned_bytes": 82952707,
+      "lemma_load_ms": 83.9061,
+      "lines": 505,
+      "load_ms": 251.63200000000003,
+      "repetitions": 10
+    },
+    "changed": {
+      "app": {
+        "lines": 42,
+        "share": 0.08316831683168317
+      },
+      "base": {
+        "lines": 85,
+        "share": 0.16831683168316833
+      },
+      "suffix": {
+        "lines": 375,
+        "share": 0.7425742574257426
+      },
+      "suffix_app": {
+        "lines": 42,
+        "share": 0.08316831683168317
+      },
+      "user": {
+        "lines": 2,
+        "share": 0.0039603960396039604
+      }
+    },
+    "learnerChanged": {
+      "app": {
+        "lines": 42,
+        "share": 0.08316831683168317
+      },
+      "base": {
+        "lines": 77,
+        "share": 0.15247524752475247
+      },
+      "suffix": {
+        "lines": 62,
+        "share": 0.12277227722772277
+      },
+      "suffix_app": {
+        "lines": 42,
+        "share": 0.08316831683168317
+      },
+      "user": {
+        "lines": 2,
+        "share": 0.0039603960396039604
+      }
+    },
+    "finalVsKuromoji": {
+      "rawLines": 385,
+      "learnerLines": 132
+    },
+    "reconstruction": "All native raw and learner outputs reconstruct every input exactly",
+    "baselineErrors": [],
+    "baseFieldDifferences": {
+      "surface_form": 163,
+      "word_id": 161,
+      "word_type": 81,
+      "word_position": 143,
+      "pos_detail_1": 142,
+      "pos_detail_2": 74,
+      "basic_form": 156,
+      "pronunciation": 156,
+      "reading": 156,
+      "pos": 124,
+      "conjugated_type": 88,
+      "conjugated_form": 88,
+      "pos_detail_3": 37
+    },
+    "jmdictCoverage": {
+      "kuromoji": {
+        "allTokens": 3630,
+        "allHits": 2720,
+        "allShare": 0.7493112947658402,
+        "japaneseTokens": 2750,
+        "japaneseHits": 2704,
+        "japaneseShare": 0.9832727272727273
+      },
+      "app": {
+        "allTokens": 3606,
+        "allHits": 2728,
+        "allShare": 0.7565169162506933,
+        "japaneseTokens": 2759,
+        "japaneseHits": 2720,
+        "japaneseShare": 0.9858644436389996
+      },
+      "base": {
+        "allTokens": 3654,
+        "allHits": 2776,
+        "allShare": 0.7597153804050356,
+        "japaneseTokens": 2807,
+        "japaneseHits": 2768,
+        "japaneseShare": 0.9861061631635197
+      },
+      "suffix": {
+        "allTokens": 3585,
+        "allHits": 2711,
+        "allShare": 0.7562064156206416,
+        "japaneseTokens": 2738,
+        "japaneseHits": 2703,
+        "japaneseShare": 0.9872169466764061
+      },
+      "suffix_app": {
+        "allTokens": 3537,
+        "allHits": 2663,
+        "allShare": 0.752897936104043,
+        "japaneseTokens": 2690,
+        "japaneseHits": 2655,
+        "japaneseShare": 0.9869888475836431
+      },
+      "user": {
+        "allTokens": 3583,
+        "allHits": 2708,
+        "allShare": 0.7557912363940832,
+        "japaneseTokens": 2736,
+        "japaneseHits": 2700,
+        "japaneseShare": 0.9868421052631579
+      }
+    }
+  },
+  "repository": {
+    "corpus": "505 authored subtitles + Japanese-script test/fixture strings, including Han-only cross-language cases (gold excluded)",
+    "lines": 4402,
+    "baseline": {
+      "loadMs": 252.3352,
+      "firstTokenMs": 1.2420000000000755,
+      "loadToFirstMs": 253.57720000000006,
+      "batchMs": 59.22206,
+      "linesPerSecond": 74330.40998573843,
+      "heapDelta": 80985792,
+      "arrayBufferDelta": 140122684
+    },
+    "native": {
+      "app_lexicon_load_ms": 127.8397,
+      "app_owned_bytes": 96974190,
+      "app_words": 75076,
+      "base_owned_bytes": 64963505,
+      "batch_ms": {
+        "app": 21.37333,
+        "base": 18.05987,
+        "suffix": 41.45775,
+        "suffix_app": 44.79958,
+        "user": 48.9693
+      },
+      "default_owned_bytes": 82952707,
+      "lemma_load_ms": 82.01899999999999,
+      "lines": 4402,
+      "load_ms": 226.8538,
+      "repetitions": 10
+    },
+    "changed": {
+      "app": {
+        "lines": 53,
+        "share": 0.012039981826442525
+      },
+      "base": {
+        "lines": 448,
+        "share": 0.10177192185370286
+      },
+      "suffix": {
+        "lines": 2468,
+        "share": 0.5606542480690595
+      },
+      "suffix_app": {
+        "lines": 53,
+        "share": 0.012039981826442525
+      },
+      "user": {
+        "lines": 3,
+        "share": 0.0006815084052703317
+      }
+    },
+    "learnerChanged": {
+      "app": {
+        "lines": 53,
+        "share": 0.012039981826442525
+      },
+      "base": {
+        "lines": 440,
+        "share": 0.09995456610631531
+      },
+      "suffix": {
+        "lines": 315,
+        "share": 0.07155838255338483
+      },
+      "suffix_app": {
+        "lines": 53,
+        "share": 0.012039981826442525
+      },
+      "user": {
+        "lines": 3,
+        "share": 0.0006815084052703317
+      }
+    },
+    "finalVsKuromoji": {
+      "rawLines": 2498,
+      "learnerLines": 733
+    },
+    "reconstruction": "All native raw and learner outputs reconstruct every input exactly",
+    "baselineErrors": [
+      {
+        "index": 4145,
+        "text": "user:ja\u0000星詠み",
+        "error": "TypeError: Cannot read properties of undefined (reading 'length')"
+      }
+    ],
+    "baseFieldDifferences": {
+      "surface_form": 516,
+      "word_id": 433,
+      "word_type": 231,
+      "word_position": 497,
+      "pos_detail_1": 409,
+      "pos_detail_2": 229,
+      "basic_form": 308,
+      "pronunciation": 211,
+      "reading": 211,
+      "pos": 328,
+      "conjugated_type": 212,
+      "conjugated_form": 212,
+      "pos_detail_3": 150
+    },
+    "jmdictCoverage": {
+      "kuromoji": {
+        "allTokens": 12194,
+        "allHits": 9815,
+        "allShare": 0.8049040511727079,
+        "japaneseTokens": 10001,
+        "japaneseHits": 9795,
+        "japaneseShare": 0.9794020597940206
+      },
+      "app": {
+        "allTokens": 12450,
+        "allHits": 10206,
+        "allShare": 0.8197590361445783,
+        "japaneseTokens": 10393,
+        "japaneseHits": 10194,
+        "japaneseShare": 0.9808524968728952
+      },
+      "base": {
+        "allTokens": 12509,
+        "allHits": 10260,
+        "allShare": 0.8202094491965785,
+        "japaneseTokens": 10452,
+        "japaneseHits": 10248,
+        "japaneseShare": 0.9804822043628014
+      },
+      "suffix": {
+        "allTokens": 12102,
+        "allHits": 9863,
+        "allShare": 0.8149892579738887,
+        "japaneseTokens": 10045,
+        "japaneseHits": 9851,
+        "japaneseShare": 0.9806869089099054
+      },
+      "suffix_app": {
+        "allTokens": 12043,
+        "allHits": 9809,
+        "allShare": 0.814498048658972,
+        "japaneseTokens": 9986,
+        "japaneseHits": 9797,
+        "japaneseShare": 0.9810735029040657
+      },
+      "user": {
+        "allTokens": 12098,
+        "allHits": 9857,
+        "allShare": 0.8147627707059018,
+        "japaneseTokens": 10041,
+        "japaneseHits": 9845,
+        "japaneseShare": 0.9804800318693357
+      }
+    }
+  },
+  "runtime": {
+    "binarySha256": "fc06f9624e5b1434557554deee459c58a9af42206e86fc2636d39135a2a0dd72",
+    "native": {
+      "cold": {
+        "loaded": {
+          "ok": 1,
+          "message": "Setup is ready"
+        },
+        "loadMs": 86.80000001192093,
+        "firstSubtitleMs": 640.1999999880791
+      },
+      "heapBefore": {
+        "usedSize": 40058868,
+        "totalSize": 41095168,
+        "embedderHeapUsedSize": 18928,
+        "backingStorageSize": 4125180
+      },
+      "heapSteady": {
+        "usedSize": 41420332,
+        "totalSize": 43192320,
+        "embedderHeapUsedSize": 18928,
+        "backingStorageSize": 4125180
+      },
+      "throughput": {
+        "lines": 505,
+        "firstBatchMs": 45.5,
+        "times": [
+          36.19999998807907,
+          38.90000003576279,
+          32.30000001192093,
+          31,
+          38.10000002384186,
+          31.69999998807907,
+          35.30000001192093
+        ]
+      },
+      "steady": {
+        "lines": 505,
+        "warmups": 5,
+        "times": [
+          29.600000023841858,
+          35.5,
+          33.30000001192093,
+          47.39999997615814,
+          39.19999998807907,
+          43.90000003576279,
+          34
+        ]
+      },
+      "privateBytes": 468647936
+    },
+    "kuromoji": {
+      "cold": {
+        "loaded": {
+          "ok": 1,
+          "message": "Setup is ready"
+        },
+        "loadMs": 127.30000001192093,
+        "firstSubtitleMs": 876.5
+      },
+      "heapBefore": {
+        "usedSize": 40058912,
+        "totalSize": 41357312,
+        "embedderHeapUsedSize": 18928,
+        "backingStorageSize": 4125180
+      },
+      "heapSteady": {
+        "usedSize": 79621012,
+        "totalSize": 80826368,
+        "embedderHeapUsedSize": 19432,
+        "backingStorageSize": 98097312
+      },
+      "throughput": {
+        "lines": 505,
+        "firstBatchMs": 124.30000001192093,
+        "times": [
+          108.09999996423721,
+          132.79999995231628,
+          134.5,
+          106,
+          76.59999996423721,
+          88.30000001192093,
+          84.69999998807907
+        ]
+      },
+      "steady": {
+        "lines": 505,
+        "warmups": 5,
+        "times": [
+          112.69999998807907,
+          95.30000001192093,
+          90.30000001192093,
+          93.69999998807907,
+          83.89999997615814,
+          80.30000001192093,
+          75
+        ]
+      },
+      "privateBytes": 497795072
+    },
+    "appOptIn": {
+      "cold": {
+        "loaded": {
+          "ok": 1,
+          "message": "Setup is ready"
+        },
+        "loadMs": 87.5,
+        "firstSubtitleMs": 804.7000000476837
+      },
+      "heapBefore": {
+        "usedSize": 40055692,
+        "totalSize": 40833024,
+        "embedderHeapUsedSize": 18928,
+        "backingStorageSize": 4125180
+      },
+      "heapSteady": {
+        "usedSize": 41414144,
+        "totalSize": 42668032,
+        "embedderHeapUsedSize": 18928,
+        "backingStorageSize": 4125180
+      },
+      "throughput": {
+        "lines": 505,
+        "firstBatchMs": 46.39999997615814,
+        "times": [
+          36.69999998807907,
+          35.5,
+          38.59999996423721,
+          32.60000002384186,
+          32.59999996423721,
+          34.19999998807907,
+          39.09999996423721
+        ]
+      },
+      "privateBytes": 481280000
+    }
+  },
+  "review": {
+    "reviewer": "implementation GPT-6.1 Sol agent, not independent human review",
+    "default": {
+      "better": 40,
+      "worse": 0,
+      "neutral": 0,
+      "ids": [
+        "corpus-5",
+        "corpus-7",
+        "corpus-12",
+        "corpus-38",
+        "corpus-67",
+        "corpus-83",
+        "corpus-97",
+        "corpus-100",
+        "corpus-102",
+        "corpus-108",
+        "corpus-110",
+        "corpus-111",
+        "corpus-112",
+        "corpus-119",
+        "corpus-123",
+        "corpus-124",
+        "corpus-126",
+        "corpus-131",
+        "corpus-135",
+        "corpus-138",
+        "corpus-141",
+        "corpus-144",
+        "corpus-163",
+        "corpus-181",
+        "corpus-182",
+        "corpus-183",
+        "corpus-184",
+        "corpus-185",
+        "corpus-188",
+        "corpus-189",
+        "corpus-190",
+        "corpus-191",
+        "corpus-192",
+        "corpus-193",
+        "corpus-195",
+        "corpus-214",
+        "corpus-215",
+        "corpus-217",
+        "corpus-224",
+        "corpus-235"
+      ]
+    },
+    "appOptIn": {
+      "better": 28,
+      "worse": 0,
+      "neutral": 2,
+      "ids": [
+        "corpus-84",
+        "corpus-119",
+        "corpus-141",
+        "corpus-142",
+        "corpus-253",
+        "corpus-254",
+        "corpus-255",
+        "corpus-256",
+        "corpus-257",
+        "corpus-260",
+        "corpus-261",
+        "corpus-262",
+        "corpus-263",
+        "corpus-266",
+        "corpus-267",
+        "corpus-268",
+        "corpus-269",
+        "corpus-272",
+        "corpus-273",
+        "corpus-274",
+        "corpus-275",
+        "corpus-276",
+        "corpus-277",
+        "corpus-279",
+        "corpus-280",
+        "corpus-281",
+        "corpus-282",
+        "corpus-288",
+        "corpus-293",
+        "corpus-464"
+      ]
+    }
+  }
+}
