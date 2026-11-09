@@ -74,6 +74,10 @@ export const analyzeText = async (
 ): Promise<AnalyzeTextResult> => {
   if (!sentence) return [];
 
+  if (tokenizerMode === "jieba" || tokenizerMode === "cantonese") {
+    return analyzeDefaultText(sentence, tokenizerMode, toneType);
+  }
+
   const language = {kuromoji: "ja", cantonese: "yue", jieba: "zh-CN", vietnamese: "vi"}[tokenizerMode];
   return analyzeWithUserDictionary(sentence, language, await enabledUserDictionaryEntries(language),
     (text) => analyzeDefaultText(text, tokenizerMode, toneType), toneType,

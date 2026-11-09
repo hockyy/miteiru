@@ -87,6 +87,7 @@ pub fn run() {
       kv::kv_close,
       jieba::jieba_load,
       jieba::jieba_cut,
+      jieba::jieba_user_words,
       http::http_request,
       shell::shell_open_external,
       shell::shell_open_path,

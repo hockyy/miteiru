@@ -42,6 +42,7 @@ permissions = [
   "allow-kv-close",
   "allow-jieba-load",
   "allow-jieba-cut",
+  "allow-jieba-user-words",
   "allow-http-request",
   "allow-shell-open-external",
   "allow-shell-open-path",

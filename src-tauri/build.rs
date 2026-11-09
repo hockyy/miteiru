@@ -39,6 +39,7 @@ const COMMANDS: &[&str] = &[
     "kv_close",
     "jieba_load",
     "jieba_cut",
+    "jieba_user_words",
     "http_request",
     "shell_open_external",
     "shell_open_path",

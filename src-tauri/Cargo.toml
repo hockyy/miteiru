@@ -35,7 +35,6 @@ base64 = "0.22"
 dirs = "6"
 rusqlite = { version = "0.37", features = ["bundled"] }
 rusty-leveldb = "3"
-jieba-rs = { version = "0.8", default-features = false }
 tiny_http = "0.12"
 raw-window-handle = "0.6"
 miteiru-mpv = { path = "../native/rust/crates/miteiru-mpv" }

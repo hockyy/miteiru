@@ -1,0 +1,275 @@
+{
+  "date": "2026-11-09",
+  "profile": "Scratch MITEIRU_USER_DATA_DIR under OS temporary directory",
+  "muted": true,
+  "cdpConfig": "Scratch Tauri config, additionalBrowserArgs port 9228",
+  "realProfileAccess": false,
+  "languagePacks": "Existing local release .mtrpack files installed with langpack_install_file; no download",
+  "firstLoadMs": {
+    "baseline": {
+      "mandarin": 195,
+      "cantonese": 38.59999996423721
+    },
+    "nativeApp": {
+      "mandarin": 318.80000001192093,
+      "cantonese": 90.80000001192093
+    }
+  },
+  "manual": {
+    "mandarin": {
+      "save": {
+        "origin": 1794220827686.2,
+        "before": [
+          "我",
+          "想",
+          "喝",
+          "冰咖啡",
+          "。"
+        ],
+        "after": [
+          "我",
+          "想",
+          "喝冰咖啡",
+          "。"
+        ],
+        "elapsedMs": 58.19999998807907,
+        "sameDocument": true,
+        "tokens": [
+          {
+            "origin": "我",
+            "pinyin": "wǒ",
+            "separation": [
+              {
+                "main": "我",
+                "pinyin": "wǒ"
+              }
+            ]
+          },
+          {
+            "origin": "想",
+            "pinyin": "xiǎng",
+            "separation": [
+              {
+                "main": "想",
+                "pinyin": "xiǎng"
+              }
+            ]
+          },
+          {
+            "origin": "喝冰咖啡",
+            "meaning": "manual iced coffee test",
+            "userDictionaryMeaning": "manual iced coffee test",
+            "userDictionaryId": "zh-CN:喝冰咖啡",
+            "userDictionarySource": "manual",
+            "pinyin": "hē bīng kā fēi",
+            "separation": [
+              {
+                "main": "喝",
+                "pinyin": "hē"
+              },
+              {
+                "main": "冰",
+                "pinyin": "bīng"
+              },
+              {
+                "main": "咖",
+                "pinyin": "kā"
+              },
+              {
+                "main": "啡",
+                "pinyin": "fēi"
+              }
+            ]
+          },
+          {
+            "origin": "。",
+            "pinyin": "",
+            "separation": [
+              {
+                "main": "。",
+                "pinyin": ""
+              }
+            ]
+          }
+        ],
+        "dictionary": {
+          "ok": true,
+          "revision": 1,
+          "entries": [
+            {
+              "surface": "喝冰咖啡",
+              "reading": "he1 bing1 ka1 fei1",
+              "meaning": "manual iced coffee test",
+              "language": "zh-CN",
+              "source": "manual",
+              "updatedAt": 1794221024801
+            }
+          ]
+        }
+      },
+      "remove": {
+        "tokens": [
+          "我",
+          "想",
+          "喝",
+          "冰咖啡",
+          "。"
+        ],
+        "sameDocument": true,
+        "elapsedMs": 51.69999998807907,
+        "dictionary": {
+          "ok": true,
+          "revision": 2,
+          "entries": []
+        }
+      }
+    },
+    "cantonese": {
+      "save": {
+        "origin": 1794220827686.2,
+        "before": [
+          "我",
+          "想",
+          "飲",
+          "凍啡",
+          "。"
+        ],
+        "after": [
+          "我",
+          "想",
+          "飲凍啡",
+          "。"
+        ],
+        "elapsedMs": 52.19999998807907,
+        "sameDocument": true,
+        "tokens": [
+          {
+            "origin": "我",
+            "jyutping": "ngo5",
+            "separation": [
+              {
+                "main": "我",
+                "jyutping": "ngo5"
+              }
+            ]
+          },
+          {
+            "origin": "想",
+            "jyutping": "soeng2",
+            "separation": [
+              {
+                "main": "想",
+                "jyutping": "soeng2"
+              }
+            ]
+          },
+          {
+            "origin": "飲凍啡",
+            "meaning": "manual iced coffee test",
+            "userDictionaryMeaning": "manual iced coffee test",
+            "userDictionaryId": "yue:飲凍啡",
+            "userDictionarySource": "manual",
+            "jyutping": "jam2 dung3 fe1",
+            "separation": [
+              {
+                "main": "飲",
+                "jyutping": "jam2"
+              },
+              {
+                "main": "凍",
+                "jyutping": "dung3"
+              },
+              {
+                "main": "啡",
+                "jyutping": "fe1"
+              }
+            ]
+          },
+          {
+            "origin": "。",
+            "jyutping": "",
+            "separation": [
+              {
+                "main": "。",
+                "jyutping": null
+              }
+            ]
+          }
+        ],
+        "dictionary": {
+          "ok": true,
+          "revision": 3,
+          "entries": [
+            {
+              "surface": "飲凍啡",
+              "reading": "jam2 dung3 fe1",
+              "meaning": "manual iced coffee test",
+              "language": "yue",
+              "source": "manual",
+              "updatedAt": 1794221089764
+            }
+          ]
+        }
+      },
+      "remove": {
+        "tokens": [
+          "我",
+          "想",
+          "飲",
+          "凍啡",
+          "。"
+        ],
+        "sameDocument": true,
+        "elapsedMs": 51.80000001192093,
+        "dictionary": {
+          "ok": true,
+          "revision": 4,
+          "entries": []
+        }
+      }
+    }
+  },
+  "popup": {
+    "mandarin": "冰咖啡: bing1 ka1 fei1, iced coffee; manual 喝冰咖啡 preserves reading and meaning",
+    "cantonese": "凍啡: dung3 fe1, iced coffee; manual 飲凍啡 preserves reading and meaning"
+  },
+  "existingUiLimitation": "The shared custom-Chinese result helper labels the Mandarin saved-reading chip Jyutping; no UI changes made.",
+  "packedLoadTiming": {
+    "mandarin": {
+      "runs": [
+        {
+          "baseMs": 186.5999999642372,
+          "appMs": 293
+        },
+        {
+          "baseMs": 182.9000000357628,
+          "appMs": 277.7999999523163
+        },
+        {
+          "baseMs": 184.80000001192093,
+          "appMs": 283.5999999642372
+        }
+      ],
+      "medianBaseMs": 184.80000001192093,
+      "medianAppMs": 283.5999999642372
+    },
+    "cantonese": {
+      "runs": [
+        {
+          "baseMs": 14.399999976158142,
+          "appMs": 59.700000047683716
+        },
+        {
+          "baseMs": 12.099999964237213,
+          "appMs": 59
+        },
+        {
+          "baseMs": 11.400000035762787,
+          "appMs": 60.299999952316284
+        }
+      ],
+      "medianBaseMs": 12.099999964237213,
+      "medianAppMs": 59.700000047683716
+    }
+  }
+}

@@ -142,6 +142,47 @@ fn load_table(path: &str, id: u32) -> Result<Table, String> {
   Ok(Table { path: path.to_string(), id, file, data_start, blocks })
 }
 
+pub fn chinese_headwords(path: &str) -> Result<Vec<String>, String> {
+  let table = load_table(path, 0)?;
+  let mut words = std::collections::BTreeSet::new();
+  for (index, reference) in table.blocks.iter().enumerate() {
+    if reference.first.as_slice() >= b"indexes0".as_slice() {
+      break;
+    }
+    if table
+      .blocks
+      .get(index + 1)
+      .is_some_and(|next| next.first.as_slice() <= b"indexes/".as_slice())
+    {
+      continue;
+    }
+    let mut compressed = vec![0; reference.length as usize];
+    read_exact_at(
+      &table.file,
+      &mut compressed,
+      table.data_start + reference.offset,
+      path,
+    )?;
+    let raw = super::zstd::decompress(&compressed, MAX_BLOCK_BYTES)
+      .map_err(|error| corrupt(path, &error))?;
+    let block = decode_block(raw, reference.count, path)?;
+    for entry in 0..block.entries.len() {
+      let Some(key) = block.key(entry).strip_prefix(b"indexes/") else {
+        continue;
+      };
+      let key = std::str::from_utf8(key).map_err(|_| corrupt(path, "a headword is not UTF-8"))?;
+      let id = std::str::from_utf8(block.value(entry))
+        .map_err(|_| corrupt(path, "a word id is not UTF-8"))?;
+      let word = key
+        .strip_suffix(id)
+        .and_then(|prefix| prefix.strip_suffix('-'))
+        .ok_or_else(|| corrupt(path, "a headword index has an invalid word id"))?;
+      words.insert(word.to_string());
+    }
+  }
+  Ok(words.into_iter().collect())
+}
+
 // ---- Blocks --------------------------------------------------------------------------------
 
 /// A decoded block: its raw bytes and where each entry's key and value sit in them.
@@ -515,6 +556,33 @@ mod tests {
     let path = tmp(name).join("t.pack");
     std::fs::write(&path, bytes).unwrap();
     path.to_string_lossy().into_owned()
+  }
+
+  #[test]
+  fn enumerates_only_headword_indexes_across_block_boundaries() {
+    let entries = [
+      ("indexchar/字-0", "0"),
+      ("indexes/冰咖啡-word-7", "word-7"),
+      ("indexes/星際薯片-2", "2"),
+      ("indexes/星際薯片-3", "3"),
+      ("indexes/香港-4", "4"),
+      ("partial/冰-7", "7"),
+      ("raw/words/7", "not decoded as JSON"),
+    ];
+    for block_bytes in [1, 90, 10000] {
+      let file = write("headwords", &table_bytes(&entries, block_bytes));
+      assert_eq!(
+        chinese_headwords(&file).unwrap(),
+        ["冰咖啡", "星際薯片", "香港"]
+      );
+    }
+    let file = write(
+      "bad-headword-id",
+      &table_bytes(&[("indexes/香港-7", "other")], 1),
+    );
+    assert!(chinese_headwords(&file)
+      .unwrap_err()
+      .contains("invalid word id"));
   }
 
   /// 300 entries, a few of which sort differently as UTF-8 bytes than as UTF-16 code units.
