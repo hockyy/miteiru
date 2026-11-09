@@ -1,4 +1,4 @@
-import {ipcMain} from "electron";
+import {ipcMain} from "../../../renderer/platform/backend/shims/desktop";
 
 /** Calls the GitHub REST API and returns the JSON body; failures throw with GitHub's message. */
 const githubJson = async (url: string, token: string, init: RequestInit = {}) => {

@@ -1,4 +1,4 @@
-import {BrowserWindow, ipcMain} from "electron";
+import {BrowserWindow, ipcMain} from "../../../renderer/platform/backend/shims/desktop";
 import {getAiUsage, recordOpenRouterUsage, subscribeAiUsage} from "../../helpers/aiUsage";
 
 export function registerAiUsageHandlers() {

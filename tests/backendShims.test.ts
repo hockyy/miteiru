@@ -3,12 +3,12 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import {test} from "node:test";
 import {
-  ELECTRON_API_INVOKE_CHANNELS,
+  PLATFORM_API_INVOKE_CHANNELS,
   LANGUAGE_LOAD_CHANNELS,
   LIVE_CAPTIONS_EVENT_CHANNELS,
   LIVE_CAPTIONS_INVOKE_CHANNELS,
   STORE_CHANNELS
-} from "../renderer/platform/electronApiChannels";
+} from "../renderer/platform/platformApiChannels";
 import {createHash} from "../renderer/platform/backend/shims/crypto";
 import * as shimFs from "../renderer/platform/backend/shims/fsImpl";
 import {ChildProcess, dispatchProcEvent, spawn} from "../renderer/platform/backend/shims/childProcess";
@@ -28,7 +28,7 @@ test("every channel in the bridge's table has a handler or event in main/", () =
   walk("main");
   const text = sources.join("\n");
   const channels = [
-    ...Object.values(ELECTRON_API_INVOKE_CHANNELS),
+    ...Object.values(PLATFORM_API_INVOKE_CHANNELS),
     ...Object.values(LIVE_CAPTIONS_INVOKE_CHANNELS),
     ...Object.values(LIVE_CAPTIONS_EVENT_CHANNELS),
     ...Object.values(STORE_CHANNELS)

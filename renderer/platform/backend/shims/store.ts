@@ -1,5 +1,5 @@
 /**
- * electron-store replacement: dot-path keys over one JSON object, persisted at
+ * Settings store: dot-path keys over one JSON object, persisted at
  * `<userData>/config.json` (the file electron-store itself uses, so settings carry over).
  * Reads are synchronous like the real store; `openStore` loads the file first. Writes are debounced.
  */

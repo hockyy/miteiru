@@ -205,7 +205,7 @@ export const HomeSystemPanel: React.FC<HomeSystemPanelProps> = ({
   onRemoveDictCaches,
   packs,
 }) => {
-  const platform = typeof window === 'undefined' ? '' : window.electronAPI?.platform ?? '';
+  const platform = typeof window === 'undefined' ? '' : window.miteiru?.platform ?? '';
   const rows = capabilityRows(toolsCheckDetails);
   const checked = Boolean(toolsCheckDetails);
   const allFound = checked && rows.every((row) => row.found);

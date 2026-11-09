@@ -1,6 +1,6 @@
 /**
- * Under Tauri there is no preload script: this installs window.backend, window.electronAPI and
- * window.electronStore with the same shapes, routed to the backend worker (main/'s handlers, see
+ * Under Tauri there is no preload script: this installs window.backend, window.miteiru and
+ * window.miteiruStore with the same shapes, routed to the backend worker (main/'s handlers, see
  * backend/worker.ts). Tauri's IPC only works on the main thread, so the worker's Rust calls come
  * here as `sys` messages and are invoked on its behalf.
  */
@@ -12,12 +12,12 @@ import {isMacPlatform} from '../utils/platform';
 import type {AnalyzerRequestEvent, WorkerInbound, WorkerOutbound} from './backend/protocol';
 import {SYS_KV_BATCH, SYS_WRITE_BYTES, SYS_ZSTD_DECOMPRESS} from './backend/protocol';
 import {
-  ELECTRON_API_INVOKE_CHANNELS,
+  PLATFORM_API_INVOKE_CHANNELS,
   LANGUAGE_LOAD_CHANNELS,
   LIVE_CAPTIONS_EVENT_CHANNELS,
   LIVE_CAPTIONS_INVOKE_CHANNELS,
   STORE_CHANNELS
-} from './electronApiChannels';
+} from './platformApiChannels';
 
 type Listener = (...args: unknown[]) => void;
 
@@ -262,7 +262,7 @@ const detectPlatform = (): NodeJS.Platform => {
   return 'linux';
 };
 
-const buildElectronApi = (host: BackendHost) => {
+const buildPlatformAPI = (host: BackendHost) => {
   const api: Record<string, unknown> = {
     platform: detectPlatform(),
     onFileDrop
@@ -275,7 +275,7 @@ const buildElectronApi = (host: BackendHost) => {
     ignoreUnhandledFileDrops();
     api.pathsForDroppedFiles = () => invoke<string[]>('drop_paths_take');
   }
-  for (const [method, channel] of Object.entries(ELECTRON_API_INVOKE_CHANNELS)) {
+  for (const [method, channel] of Object.entries(PLATFORM_API_INVOKE_CHANNELS)) {
     api[method] = (...args: unknown[]) => host.invoke(channel, args);
   }
 
@@ -304,8 +304,8 @@ export const installTauriBridge = () => {
     send: (channel: string, value: unknown) => host.send(channel, [value]),
     on: (channel: string, callback: Listener) => host.on(channel, callback)
   };
-  target.electronAPI = buildElectronApi(host);
-  target.electronStore = {
+  target.miteiru = buildPlatformAPI(host);
+  target.miteiruStore = {
     get: (key: string, defaultValue?: unknown) => host.invoke(STORE_CHANNELS.get, [key, defaultValue]),
     set: (key: string, value: unknown) => host.invoke(STORE_CHANNELS.set, [key, value])
   };
@@ -337,7 +337,7 @@ const openLinkExternally = (event: MouseEvent, host: BackendHost) => {
   }
   if (url.origin === location.origin || !['http:', 'https:'].includes(url.protocol)) return;
   event.preventDefault();
-  host.invoke(ELECTRON_API_INVOKE_CHANNELS.openExternal, [url.href])
+  host.invoke(PLATFORM_API_INVOKE_CHANNELS.openExternal, [url.href])
     .catch((error) => console.error('[links] could not open', url.href, error));
 };
 

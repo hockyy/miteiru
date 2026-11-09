@@ -49,7 +49,7 @@ const ROW = "flex items-center gap-3 p-2 rounded hover:bg-gray-700 cursor-pointe
 
 /** YouTube captions need yt-dlp: why, what to do on this OS, and the buttons to do it. */
 const YtDlpSetup = ({onCheckAgain, checking}: { onCheckAgain: () => void; checking: boolean }) => {
-  const platform = typeof window === 'undefined' ? '' : window.electronAPI?.platform ?? '';
+  const platform = typeof window === 'undefined' ? '' : window.miteiru?.platform ?? '';
   return (
     <div className="rounded-lg border border-yellow-300/30 bg-yellow-950/30 p-4 text-sm text-white/90">
       <div className="mb-2 font-semibold">{YT_DLP_NEEDED}</div>
@@ -57,7 +57,7 @@ const YtDlpSetup = ({onCheckAgain, checking}: { onCheckAgain: () => void; checki
         {ytDlpSetupSteps(platform).map((step) => <li key={step}>{step}</li>)}
       </ul>
       <div className="flex flex-wrap gap-2">
-        <Button type="secondary" size="small" onPress={() => { window.electronAPI.openToolsFolder?.(); }}>
+        <Button type="secondary" size="small" onPress={() => { window.miteiru.openToolsFolder?.(); }}>
           Open tools folder
         </Button>
         <Button type="secondary" size="small" disabled={checking} onPress={onCheckAgain}>

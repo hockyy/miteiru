@@ -1,6 +1,6 @@
 import {hanzi, setupChineseDictionary} from "../dictionary/chineseDictionaryDb";
 import {chineseLearningGloss, glossAll, queryChineseDictionary} from "./languages/learningGlosses";
-import {ipcMain} from "electron";
+import {ipcMain} from "../../renderer/platform/backend/shims/desktop";
 import path from "path";
 import {pinyin} from "pinyin-pro";
 import ToJyutping from "to-jyutping";

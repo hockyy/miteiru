@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {registerBoxTipsHandlers} from '../main/handler/common/boxTipsHandlers';
 import {setStoreFactory} from '../main/handler/common/storeHandlers';
-import {dispatchInvoke, ipcMain} from '../renderer/platform/backend/shims/electron';
+import {dispatchInvoke, ipcMain} from '../renderer/platform/backend/shims/desktop';
 
 test('forecast IPC rejects invalid request shapes and returns a safe result for malformed AI JSON', async () => {
   const originalFetch = globalThis.fetch;

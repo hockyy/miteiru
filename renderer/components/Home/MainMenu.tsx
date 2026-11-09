@@ -19,7 +19,7 @@ import {
 
 // Opens the system browser (the main process only allows http/https), never the app window.
 const openRepository = () => {
-  window.electronAPI.openExternal(MITEIRU_REPO_URL);
+  window.miteiru.openExternal(MITEIRU_REPO_URL);
 };
 
 interface MainMenuProps {

@@ -35,7 +35,7 @@ export const useStoreData = <T,>(
   useEffect(() => {
     let cancelled = false;
 
-    window.electronStore.get(key, defaultValueRef.current).then((storeData) => {
+    window.miteiruStore.get(key, defaultValueRef.current).then((storeData) => {
       if (cancelled) {
         return;
       }
@@ -59,7 +59,7 @@ export const useStoreData = <T,>(
 
   const setStoreData = useCallback(async (value: T) => {
     try {
-      await window.electronStore.set(key, value);
+      await window.miteiruStore.set(key, value);
       setData(() => value);
       publishStoreKey(key, value);
     } catch (error) {

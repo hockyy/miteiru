@@ -7,7 +7,7 @@ import {openRouterChatCompletion, transcribeOpenRouterAudio, withRetries} from "
 import {AiResultCache} from "../renderer/utils/aiResultCache";
 import {streamOpenRouterCompletion} from "../renderer/utils/openRouterClient";
 import type {AiUsageSummary} from "../renderer/types/aiUsage";
-import {dispatchInvoke, ipcMain, setEventSink} from "../renderer/platform/backend/shims/electron";
+import {dispatchInvoke, ipcMain, setEventSink} from "../renderer/platform/backend/shims/desktop";
 
 const originalFetch = globalThis.fetch;
 const originalWindow = (globalThis as Record<string, unknown>).window;

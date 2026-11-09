@@ -29,7 +29,7 @@ const installBridge = (settings: Record<string, unknown>, invoke: (channel: stri
   const calls: {channel: string; args: any[]}[] = [];
   const events = new Map<string, Set<(value: any) => void>>();
   globals.window = {
-    electronStore: {
+    miteiruStore: {
       get: async (key: string, fallback: unknown) => store.has(key) ? store.get(key) : fallback,
       set: async (key: string, value: unknown) => { store.set(key, value); }
     },

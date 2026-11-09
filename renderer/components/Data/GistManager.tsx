@@ -34,7 +34,7 @@ export const GistManager: React.FC<GistManagerProps> = ({lang}) => {
       if (result.success) {
         console.log('Gist created successfully!');
         alert(`Gist created successfully! URL: ${result.gistUrl}`);
-        await window.electronAPI.openExternal(result.gistUrl);
+        await window.miteiru.openExternal(result.gistUrl);
       } else {
         throw new Error(result.error);
       }
@@ -73,7 +73,7 @@ export const GistManager: React.FC<GistManagerProps> = ({lang}) => {
       if (!learningStateGist) {
         throw new Error('No matching learning state Gist found');
       }
-      await window.electronAPI.openExternal(learningStateGist.html_url);
+      await window.miteiru.openExternal(learningStateGist.html_url);
 
       const gistContent = await window.backend.invoke('getGitHubGistContent', learningStateGist.id, githubToken);
       console.log(gistContent)

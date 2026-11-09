@@ -17,12 +17,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
-    "paths": {
-      "electron": [
-        "./renderer/platform/backend/shims/electron.ts"
-      ]
-    }
+    "jsx": "preserve"
   },
   "exclude": [
     "node_modules",

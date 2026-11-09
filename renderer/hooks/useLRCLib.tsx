@@ -52,7 +52,7 @@ const useLRCLib = (videoSrc, isOpen = false) => {
 
     let cancelled = false;
     setIsResolvingQuery(true);
-    window.electronAPI.getYoutubeVideoTitle(videoId)
+    window.miteiru.getYoutubeVideoTitle(videoId)
       .then((title) => {
         if (cancelled || !title) {
           return;
@@ -135,20 +135,20 @@ const useLRCLib = (videoSrc, isOpen = false) => {
           return false;
         }
         filename = youtubeLyricsFileName(videoId);
-        const userDataPath = await window.electronAPI.getUserDataPath();
-        savePath = await window.electronAPI.joinPath(userDataPath, 'lyrics', filename);
+        const userDataPath = await window.miteiru.getUserDataPath();
+        savePath = await window.miteiru.joinPath(userDataPath, 'lyrics', filename);
 
-        await window.electronAPI.ensureDir(await window.electronAPI.joinPath(userDataPath, 'lyrics'));
+        await window.miteiru.ensureDir(await window.miteiru.joinPath(userDataPath, 'lyrics'));
       } else {
         const videoPath = videoSrc.path;
-        const dir = await window.electronAPI.getDirname(videoPath);
-        const basename = await window.electronAPI.getBasename(videoPath);
+        const dir = await window.miteiru.getDirname(videoPath);
+        const basename = await window.miteiru.getBasename(videoPath);
         const nameWithoutExt = basename.replace(/\.[^/.]+$/, '');
         filename = `${nameWithoutExt}.lrc`;
-        savePath = await window.electronAPI.joinPath(dir, filename);
+        savePath = await window.miteiru.joinPath(dir, filename);
       }
 
-      await window.electronAPI.writeFile(savePath, lyricsData.syncedLyrics);
+      await window.miteiru.writeFile(savePath, lyricsData.syncedLyrics);
 
       setDownloadStatus(`Lyrics saved as ${filename}`);
 
@@ -163,10 +163,10 @@ const useLRCLib = (videoSrc, isOpen = false) => {
   // Open Miteiru data directory
   const openMiteiruDataDir = useCallback(async () => {
     try {
-      const userDataPath = await window.electronAPI.getUserDataPath();
-      const lyricsPath = await window.electronAPI.joinPath(userDataPath, 'lyrics');
-      await window.electronAPI.ensureDir(lyricsPath);
-      await window.electronAPI.openPath(lyricsPath);
+      const userDataPath = await window.miteiru.getUserDataPath();
+      const lyricsPath = await window.miteiru.joinPath(userDataPath, 'lyrics');
+      await window.miteiru.ensureDir(lyricsPath);
+      await window.miteiru.openPath(lyricsPath);
     } catch (error) {
       console.error('Error opening data directory:', error);
     }

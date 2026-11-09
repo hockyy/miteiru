@@ -11,7 +11,7 @@
  * - Language Support Overview: README_LANGUAGES.md
  */
 
-import {ipcMain} from "electron";
+import {ipcMain} from "../../renderer/platform/backend/shims/desktop";
 import {glossAll, pickVietnameseGloss} from "./languages/learningGlosses";
 import path from "path";
 import {readTextAsset} from "../helpers/assetFiles";

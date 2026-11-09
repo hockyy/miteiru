@@ -125,7 +125,7 @@ test("opening a YouTube video leaves track selection closed until the learner as
   t.mock.timers.enable({apis: ["setTimeout"]});
   const host = new HookHost();
   const useMediaAnalysis: typeof import("../renderer/hooks/useMediaAnalysis").default = load("renderer/hooks/useMediaAnalysis.tsx", host).default;
-  globals.window = {electronAPI: {cleanupTempSubtitle: async () => {}}};
+  globals.window = {miteiru: {cleanupTempSubtitle: async () => {}}};
   const source = {};
   const read = () => host.render(() => useMediaAnalysis(FIRST, source));
   try {

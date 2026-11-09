@@ -1,4 +1,4 @@
-import {ipcMain} from "electron";
+import {ipcMain} from "../../../renderer/platform/backend/shims/desktop";
 import * as fsPromises from "node:fs/promises";
 import path from "node:path";
 import {decodeText} from "../../helpers/textEncoding";

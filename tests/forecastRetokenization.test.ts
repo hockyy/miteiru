@@ -5,7 +5,7 @@ import {resolveForecastDictionaryContent, type ForecastDictionaryDependencies, t
 import Japanese from '../main/handler/japanese';
 import {setStoreFactory} from '../main/handler/common/storeHandlers';
 import {analyzeText} from '../main/handler/languages/analyzer';
-import {dispatchInvoke, ipcMain} from '../renderer/platform/backend/shims/electron';
+import {dispatchInvoke, ipcMain} from '../renderer/platform/backend/shims/desktop';
 
 const cue = {from: 1000, to: 3000, text: '試験を受けた。'};
 const options = {lang: 'ja', includeDictionary: true};

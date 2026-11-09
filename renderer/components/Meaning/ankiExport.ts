@@ -334,7 +334,7 @@ export const openAnkiCards = async (cards, filename, confirmExport?) => {
   }
 
   const ankiTsv = buildAnkiImportFile(cards);
-  const result = await window.electronAPI.revealAnkiImport(ankiTsv, filename);
+  const result = await window.miteiru.revealAnkiImport(ankiTsv, filename);
 
   if (!result?.ok) {
     throw new Error(result?.error || 'Could not prepare Anki import file.');

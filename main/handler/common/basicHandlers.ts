@@ -1,4 +1,4 @@
-import {dialog, ipcMain, shell} from "electron";
+import {dialog, ipcMain, shell} from "../../../renderer/platform/backend/shims/desktop";
 import * as fsPromises from "node:fs/promises";
 import path, {dirname, join} from "path";
 import Japanese from "../japanese";

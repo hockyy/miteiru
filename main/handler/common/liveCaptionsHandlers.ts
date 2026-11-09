@@ -1,4 +1,4 @@
-import {app, BrowserWindow, ipcMain} from "electron";
+import {app, BrowserWindow, ipcMain} from "../../../renderer/platform/backend/shims/desktop";
 import {ChildProcessWithoutNullStreams, spawn} from "child_process";
 import path from "path";
 import * as fsPromises from "fs/promises";

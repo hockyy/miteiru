@@ -1,5 +1,5 @@
 /**
- * The slice of Electron's main-process API that main/ uses, backed by the Rust commands.
+ * The desktop API that main/ uses, backed by the Rust commands.
  * ipcMain is a registry the worker dispatches renderer invokes into; windows are one fake window
  * whose webContents.send posts an event back to the renderer.
  */

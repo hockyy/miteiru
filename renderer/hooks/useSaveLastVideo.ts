@@ -28,7 +28,7 @@ const saveNow = (input: SaveLastVideoInput) => {
     primarySubtitle: input.primarySubtitle,
     secondarySubtitle: input.secondarySubtitle
   });
-  saveLastVideo(window.electronStore, video).catch((error) => console.warn('[continue] could not save', error));
+  saveLastVideo(window.miteiruStore, video).catch((error) => console.warn('[continue] could not save', error));
 };
 
 /**

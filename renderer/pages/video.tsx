@@ -319,7 +319,7 @@ function Video() {
   const goHome = useCallback(() => router.push('/home'), [router]);
   const openFiles = useCallback(async () => {
     try {
-      await loadMediaPaths(await window.electronAPI.pickMediaFiles(), onLoadFiles, lang);
+      await loadMediaPaths(await window.miteiru.pickMediaFiles(), onLoadFiles, lang);
     } catch (error) {
       console.error('[video] opening files failed', error);
       setToastInfo({message: `Could not open the files: ${error.message}`, update: String(Date.now())});

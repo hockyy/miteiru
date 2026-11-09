@@ -83,7 +83,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
 
   const createSubtitleContainer = useCallback(async (filePath: string, preprocessOptions: SubtitlePreprocessOptions = DEFAULT_SUBTITLE_PREPROCESS_OPTIONS) => {
     const subtitlePath = preprocessOptions.titleCaseAllCaps
-      ? await window.electronAPI.preprocessSubtitleCapitalization(filePath)
+      ? await window.miteiru.preprocessSubtitleCapitalization(filePath)
       : filePath;
 
     const tmpSub = await SubtitleContainer.create(subtitlePath, lang, primaryStyling.forceSimplified);
@@ -158,7 +158,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
 
   const tryAutoLoadYoutubeLyrics = useCallback(async (videoPath: string) => {
     try {
-      const lyricsPath = await findCachedYoutubeLyricsPath(videoPath, window.electronAPI);
+      const lyricsPath = await findCachedYoutubeLyricsPath(videoPath, window.miteiru);
       if (!lyricsPath) {
         return;
       }
@@ -363,7 +363,7 @@ const useLoadFiles = (setToastInfo, primarySub, setPrimarySub,
       for (const [source, target] of sources) {
         let nextSubtitle: string;
         if (subtitleSuffixAfterVideo(videoSrc.path, source) !== null) {
-          besideNext ??= await window.electronAPI.checkSubtitleFile(nextVideo);
+          besideNext ??= await window.miteiru.checkSubtitleFile(nextVideo);
           nextSubtitle = matchingSubtitleForVideo(videoSrc.path, source, nextVideo, besideNext);
         } else {
           nextSubtitle = await findPositionDeltaInFolder(source, delta);

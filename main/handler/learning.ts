@@ -1,4 +1,4 @@
-import {app, ipcMain} from "electron";
+import {app, ipcMain} from "../../renderer/platform/backend/shims/desktop";
 import {Level} from 'level';
 import path from 'path';
 import * as fsPromises from 'node:fs/promises';
