@@ -1,7 +1,8 @@
 import React from 'react';
 import { Button } from '../../../Utils/Button';
 import { FaChevronLeft, FaChevronRight, FaStop, FaVolumeUp } from 'react-icons/fa';
-import { MEANING_HEADER, MEANING_READING_BUBBLE } from '../../meaningBoxTheme';
+import { MEANING_HEADER } from '../../meaningBoxTheme';
+import { HSK_COLORS, hskLabel, type HskLevel } from '../../../../utils/mandarinHsk';
 import { RomajiedContent } from './RomajiedContent';
 import { getLearningLevelColor } from '../../../VideoPlayer/vocabLevels';
 import { SAVE_LEVELS, isAutoKnown, savedLevelOf } from '../../../../utils/vocabSaveLevels';
@@ -11,7 +12,8 @@ import type { RomajiedGroup } from '../types';
 
 type MeaningBoxHeaderProps = {
   meaning: string;
-  hskLabel?: string;
+  /** The word's HSK 3.0 level; nothing is shown for unlisted words or with the HSK option off. */
+  hsk?: HskLevel;
   meaningIndex: number;
   otherMeaningsCount: number;
   romajiedData: RomajiedGroup[];
@@ -34,7 +36,7 @@ type MeaningBoxHeaderProps = {
 /** Sticky top bar: prev/next senses, TTS, headword ruby, learning star. */
 export const MeaningBoxHeader = ({
   meaning,
-  hskLabel,
+  hsk,
   meaningIndex,
   otherMeaningsCount,
   romajiedData,
@@ -123,7 +125,11 @@ export const MeaningBoxHeader = ({
       </div>
     </div>
 
-    {hskLabel && <span className={MEANING_READING_BUBBLE} title="HSK 3.0 word level">{hskLabel}</span>}
+    {hsk && <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-white px-2.5 py-0.5 text-xs font-bold text-blue-900"
+                  title="HSK 3.0 level">
+      <span aria-hidden="true" className="h-2.5 w-2.5 rounded-full ring-1 ring-black/15" style={{ background: HSK_COLORS[hsk] }} />
+      {hskLabel(hsk)}
+    </span>}
 
     {getLearningState && setLearningLevel && (() => {
       const level = getLearningState(meaning);

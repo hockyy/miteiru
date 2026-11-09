@@ -111,11 +111,11 @@ test('Mandarin subtitle controls keep sub-options hidden while off and stay abse
   })));
   try {
     const off = render(videoConstants.chineseLang, false);
-    assert.ok(off.includes('Mandarin tone colours') && off.includes('HSK level underlines'));
-    assert.ok(!off.includes('Tone colour target') && !off.includes('Only highlight above HSK level'));
+    assert.ok(off.includes('Tone colours') && off.includes('HSK levels'));
+    assert.ok(!off.includes('Tone key') && !off.includes('Levels you already know'));
     const on = render(videoConstants.chineseLang, true);
-    assert.ok(on.includes('Tone colour target') && on.includes('Only highlight above HSK level'));
+    assert.ok(on.includes('Tone key') && on.includes('Levels you already know'));
     const cantonese = render(videoConstants.cantoneseLang, true);
-    assert.ok(!cantonese.includes('Mandarin tone colours') && !cantonese.includes('HSK level underlines'));
+    assert.ok(!cantonese.includes('Tone colours') && !cantonese.includes('HSK levels'));
   } finally {host.dispose();}
 });

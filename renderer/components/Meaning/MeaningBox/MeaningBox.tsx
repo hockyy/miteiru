@@ -26,7 +26,7 @@ import { useMeaningRomajied } from './hooks/useMeaningRomajied';
 import { useMeaningUserNotes } from './hooks/useMeaningUserNotes';
 import { videoConstants } from '../../../utils/constants';
 import {useMandarinHsk} from '../../../hooks/useMandarinHsk';
-import {hskLabel, lookupHsk} from '../../../utils/mandarinHsk';
+import {lookupHsk} from '../../../utils/mandarinHsk';
 import type { InflectionRow } from '../../../../main/handler/languages/inflectionTypes';
 import type { MeaningBoxProps } from './types';
 
@@ -200,7 +200,7 @@ const MeaningBox = ({
         header={
           <MeaningBoxHeader
             meaning={meaning}
-            hskLabel={hskLevel === undefined ? undefined : hskLabel(hskLevel)}
+            hsk={hskLevel ?? undefined}
             meaningIndex={meaningIndex}
             otherMeaningsCount={otherMeanings.length}
             romajiedData={romajiedData}

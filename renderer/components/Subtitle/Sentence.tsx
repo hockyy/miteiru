@@ -5,7 +5,7 @@ import { getTextShadowFromStroke } from "../../utils/subtitleStroke";
 import React, { ReactNode, useCallback, useEffect, useState } from "react";
 import { isMixed, toRomaji } from "wanakana"
 import {mandarinToneColor, type MandarinTone} from "../../utils/mandarinTones";
-import {hskLabel, hskUnderline, type HskLevel} from "../../utils/mandarinHsk";
+import {hskUnderline, type HskLevel} from "../../utils/mandarinHsk";
 
 const writeClipboardText = (value: string) => {
   navigator.clipboard.writeText(value).catch((error) => {
@@ -419,7 +419,6 @@ export const ChineseSentence = ({
   return <StyledChineseSentence
     subtitleStyling={subtitleStyling}
     data-hsk-level={subtitleStyling.mandarinHsk && hskLevel !== undefined ? hskLevel ?? 'unlisted' : undefined}
-    title={subtitleStyling.mandarinHsk && hskLevel !== undefined ? `HSK 3.0 · ${hskLabel(hskLevel)}` : undefined}
     className={extraClass}
     onClick={handleClick}
     onContextMenu={handleRightClick}>
