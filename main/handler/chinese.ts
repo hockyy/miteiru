@@ -82,7 +82,11 @@ class Chinese {
     // The Tauri build's @node-rs/jieba shim loads the dictionary file by path (its Rust side reads it).
     const loadsByPath = Jieba as unknown as {withDictFile?: (dictPath: string, dictionaryPath?: string) => Promise<unknown>};
     this.jieba = loadsByPath.withDictFile
-      ? await loadsByPath.withDictFile(this.jiebaDictPath, this.importDict)
+      // App-dictionary headwords (CC-CEDICT / CantoDict) stay off: on the held-out gold set they changed F1 by
+      // −0.02 to +0.3 points, made 6/30 Mandarin and 11/30 Cantonese reviewed lines worse (wrong senses,
+      // phrases glued across words) and added ~100 ms / ~50 ms to the first load. Pass `this.importDict` to try
+      // them again; docs/chinese-tokenizer-evaluation.md has the numbers. Your dictionary still takes part.
+      ? await loadsByPath.withDictFile(this.jiebaDictPath)
       : Jieba.withDict(await readAsset(this.jiebaDictPath));
     this.userWords = undefined;
     try {
