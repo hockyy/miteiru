@@ -5,6 +5,8 @@ import {getLyricsWindow, Line, NO_MEANING, SubtitleContainer} from "./DataStruct
 import {buildRubyCopyHtml, getSubtitleTokenPresentation, wordSeparator} from "./subtitleLanguageSupport";
 import {adjustTimeWithShift} from "../../utils/utils";
 import type {PlaybackClock} from "../../utils/playbackClock";
+import {mandarinSpokenTones} from "../../utils/mandarinTones";
+import {videoConstants} from "../../utils/constants";
 
 interface LyricsLine {
   content: any[] | string;
@@ -165,6 +167,7 @@ export const ScrollingLyrics = ({
             // Keyed by subtitle line, so a line keeps its element (and transition) as the window scrolls.
             key={line.index}
             line={line}
+            lang={subtitle.language}
             isCurrent={index === currentLineIndex}
             isPast={index < currentLineIndex}
             isFuture={index > currentLineIndex}
@@ -182,6 +185,7 @@ export const ScrollingLyrics = ({
 
 const LyricsLine = ({
   line,
+  lang,
   isCurrent,
   isPast,
   isFuture,
@@ -192,6 +196,7 @@ const LyricsLine = ({
   setRubyCopyContent
 }: {
   line: LyricsLine;
+  lang: string;
   isCurrent: boolean;
   isPast: boolean;
   isFuture: boolean;
@@ -251,6 +256,8 @@ const LyricsLine = ({
   }
 
   // Handle separated content
+  const tones = lang === videoConstants.chineseLang && subtitleStyling.mandarinToneColors
+    ? mandarinSpokenTones(line.content) : [];
   return (
     <div style={lineStyle}>
       {line.content.map((val, index) => {
@@ -262,6 +269,7 @@ const LyricsLine = ({
           <React.Fragment key={index}>
             <SentenceComponent
               origin={val.origin}
+              spokenTones={tones[index]}
               separation={val.separation}
               setMeaning={setMeaning}
               extraClass="lyrics-word"
