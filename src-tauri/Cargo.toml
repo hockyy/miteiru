@@ -39,6 +39,7 @@ jieba-rs = { version = "0.8", default-features = false }
 tiny_http = "0.12"
 raw-window-handle = "0.6"
 miteiru-mpv = { path = "../native/rust/crates/miteiru-mpv" }
+miteiru-tokenizer = { path = "../native/rust/crates/miteiru-tokenizer" }
 
 # In-app updates (src-tauri/src/updates.rs). Desktop only; held to the 2.12 / 2.3 lines that
 # match tauri 2.12 (newer ones ask for a newer tauri).

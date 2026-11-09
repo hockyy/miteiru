@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/miteiru-mpv"]
+members = ["crates/miteiru-mpv", "crates/miteiru-tokenizer"]
 
 [workspace.package]
 version = "0.0.0"

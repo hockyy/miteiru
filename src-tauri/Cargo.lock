@@ -2601,6 +2601,7 @@ dependencies = [
  "libloading 0.9.0",
  "log",
  "miteiru-mpv",
+ "miteiru-tokenizer",
  "raw-window-handle",
  "rusqlite",
  "rusty-leveldb",
@@ -2629,6 +2630,10 @@ version = "0.0.0"
 dependencies = [
  "libloading 0.9.0",
 ]
+
+[[package]]
+name = "miteiru-tokenizer"
+version = "0.0.0"
 
 [[package]]
 name = "muda"
