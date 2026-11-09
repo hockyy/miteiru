@@ -11,7 +11,8 @@ import {Button} from "../Utils/Button";
 import {GistManager} from "../Data/GistManager";
 import {announceLearningStateChanged} from "../../utils/learningStateEvents";
 import {rangeFillStyle, SubtitleMode} from "../../utils/utils";
-import {SidebarSection, SidebarSettingRow, SidebarShell} from "./SidebarShell";
+import {SidebarSection, SidebarSettingRow, SidebarShell, SIDEBAR_FIELD_INPUT} from "./SidebarShell";
+import {MANDARIN_TONE_PALETTES, type MandarinTone} from "../../utils/mandarinTones";
 import {OpenRouterSettings} from "./OpenRouterSettings";
 import {AiUsageDetails} from "./AiCostIndicator";
 import type {useSubtitleForecast} from "../../hooks/useSubtitleForecast";
@@ -149,6 +150,33 @@ export const SubtitleContentSettings = ({subtitleStyling, setSubtitleStyling, la
         <ToggleRow label="Simplified characters" hint="On: simplified (简体). Off: traditional (繁體)."
                    checked={subtitleStyling.forceSimplified}
                    onChange={(value) => update("forceSimplified", value)}/>}
+    {lang === videoConstants.chineseLang && <>
+      <ToggleRow label="Mandarin tone colours" hint="Colours follow spoken tone, including 一 / 不 and third-tone pairs within a word."
+                 checked={subtitleStyling.mandarinToneColors}
+                 onChange={(value) => update("mandarinToneColors", value)}/>
+      {subtitleStyling.mandarinToneColors && <div className="flex flex-col gap-2 pl-3 text-sm text-white/85">
+        <label className="flex items-center justify-between gap-3">Colour
+          <select className={SIDEBAR_FIELD_INPUT} aria-label="Tone colour target"
+                  value={subtitleStyling.mandarinToneTarget ?? 'both'}
+                  onChange={(event) => update("mandarinToneTarget", event.target.value)}>
+            <option value="hanzi">Hanzi only</option><option value="pinyin">Pinyin only</option><option value="both">Both</option>
+          </select>
+        </label>
+        <label className="flex items-center justify-between gap-3">Palette
+          <select className={SIDEBAR_FIELD_INPUT} aria-label="Tone colour palette"
+                  value={subtitleStyling.mandarinTonePalette ?? 'default'}
+                  onChange={(event) => update("mandarinTonePalette", event.target.value)}>
+            <option value="default">Default</option><option value="accessible">Colour-blind friendly</option>
+          </select>
+        </label>
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs" aria-label="Tone colour key">
+          {([1, 2, 3, 4, 5] as MandarinTone[]).map((tone) => <span key={tone}
+            style={{color: MANDARIN_TONE_PALETTES[subtitleStyling.mandarinTonePalette ?? 'default'][tone]}}>
+            {tone === 5 ? 'Neutral' : `Tone ${tone}`}
+          </span>)}
+        </div>
+      </div>}
+    </>}
     <ToggleRow label="Show word meanings" checked={subtitleStyling.showMeaning}
                onChange={(value) => update("showMeaning", value)}/>
     {subtitleStyling.showMeaning && <>

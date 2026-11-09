@@ -4,6 +4,7 @@ import { CJKStyling, defaultLearningColorStyling } from "../../utils/CJKStyling"
 import { getTextShadowFromStroke } from "../../utils/subtitleStroke";
 import React, { ReactNode, useCallback, useEffect, useState } from "react";
 import { isMixed, toRomaji } from "wanakana"
+import {mandarinToneColor, type MandarinTone} from "../../utils/mandarinTones";
 
 const writeClipboardText = (value: string) => {
   navigator.clipboard.writeText(value).catch((error) => {
@@ -174,7 +175,8 @@ interface SentenceParam {
   getLearningStateClass?: any,
   changeLearningState?: any,
   pinyin?: string[],
-  reading?: string[]
+  reading?: string[],
+  spokenTones?: (MandarinTone | null)[]
 }
 
 export const JapaneseSentence = ({
@@ -340,6 +342,7 @@ export const ChineseSentence = ({
   separation,
   extraClass,
   subtitleStyling,
+  spokenTones,
   wordMeaning = '',
   changeLearningState = () => '',
   getLearningStateClass = () => ''
@@ -376,6 +379,11 @@ export const ChineseSentence = ({
       const elements = [];
 
       separation.forEach((val, index) => {
+        const tone = subtitleStyling.mandarinToneColors ? spokenTones?.[index] : null;
+        const color = mandarinToneColor(tone, subtitleStyling.mandarinTonePalette);
+        const target = subtitleStyling.mandarinToneTarget ?? 'both';
+        const hanziStyle = color && target !== 'pinyin' ? {WebkitTextFillColor: color} : undefined;
+        const pinyinStyle = color && target !== 'hanzi' ? {WebkitTextFillColor: color} : undefined;
         // Add the main ruby element
         elements.push(
           <ruby className={rubyOverReadingClass(learningClassName)}
@@ -383,8 +391,9 @@ export const ChineseSentence = ({
               rubyPosition: "over",
             }} key={`word-${index}`}>
             {/* @ts-expect-error rb wtf eslint*/}
-            <rb>{val.main}</rb>
-            <rt className={"unselectable"}>{subtitleStyling.showFurigana && learningClassName !== 'state2' && (val.jyutping ?? val.pinyin)}</rt>
+            <rb style={hanziStyle} data-mandarin-tone={hanziStyle ? tone : undefined}>{val.main}</rb>
+            <rt style={pinyinStyle} data-mandarin-tone={pinyinStyle ? tone : undefined}
+                className="unselectable">{subtitleStyling.showFurigana && learningClassName !== 'state2' && (val.jyutping ?? val.pinyin)}</rt>
           </ruby>
         );
 
@@ -401,7 +410,7 @@ export const ChineseSentence = ({
 
       return elements;
     });
-  }, [separation, subtitleStyling, learningClassName])
+  }, [separation, subtitleStyling, learningClassName, spokenTones])
 
   return <StyledChineseSentence
     subtitleStyling={subtitleStyling}

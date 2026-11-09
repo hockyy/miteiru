@@ -7,6 +7,8 @@ import useSubtitleContainerStyle from "../../hooks/useSubtitleContainerStyle";
 import {getSubtitleOutlineStyle} from "../../utils/subtitleStroke";
 import {buildRubyCopyHtml, getSubtitleTokenPresentation, wordSeparator} from "./subtitleLanguageSupport";
 import type {PlaybackClock} from "../../utils/playbackClock";
+import {mandarinSpokenTones} from "../../utils/mandarinTones";
+import {videoConstants} from "../../utils/constants";
 
 interface CurrentSubtitleLine {
   content: any[] | string;
@@ -78,6 +80,7 @@ const useCurrentSubtitleLine = ({
 
 const buildPrimaryCaption = ({
   content,
+  lang,
   wordMeaning = [],
   setMeaning,
   subtitleStyling,
@@ -85,6 +88,7 @@ const buildPrimaryCaption = ({
   changeLearningState
 }: {
   content: any[] | string,
+  lang: string,
   wordMeaning?: any[],
   setMeaning: (newMeaning: string) => void,
   subtitleStyling?: CJKStyling,
@@ -114,6 +118,8 @@ const buildPrimaryCaption = ({
     }
 
     const rubyCopyContent = buildRubyCopyHtml(content, Boolean(subtitleStyling?.showSpace));
+    const tones = lang === videoConstants.chineseLang && subtitleStyling?.mandarinToneColors
+      ? mandarinSpokenTones(content) : [];
     const caption = content.map((val, index) => {
       const validBasicForm = val.basicForm != '' && val.basicForm != '*';
       const presentation = getSubtitleTokenPresentation(val);
@@ -123,6 +129,7 @@ const buildPrimaryCaption = ({
             {presentation.sentenceKind === "chinese" ? (
                 <ChineseSentence
                     origin={val.origin}
+                    spokenTones={tones[index]}
                     separation={val.separation}
                     setMeaning={setMeaning}
                     extraClass={"subtitle"}
@@ -190,12 +197,13 @@ export const PrimarySubtitle = ({
     rubyCopyContent
   } = useMemo(() => buildPrimaryCaption({
     content: line.content,
+    lang: subtitle.language,
     wordMeaning: line.meaning,
     setMeaning,
     subtitleStyling,
     getLearningStateClass,
     changeLearningState
-  }), [changeLearningState, getLearningStateClass, line.content, line.meaning, setMeaning, subtitleStyling]);
+  }), [changeLearningState, getLearningStateClass, line.content, line.meaning, setMeaning, subtitleStyling, subtitle.language]);
 
   useEffect(() => {
     setExternalContent?.(line.content);

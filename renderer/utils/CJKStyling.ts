@@ -1,4 +1,5 @@
 import {DEFAULT_SUBTITLE_FONT} from "./fonts";
+import type {TonePalette, ToneTarget} from "./mandarinTones";
 
 /** A copy of `styling` with one (possibly nested) field set, e.g. `withStylingPath(s, "text.color", "#fff")`. */
 export const withStylingPath = <T>(styling: T, path: string, value: unknown): T => {
@@ -51,6 +52,9 @@ export interface CJKStyling {
   showSpace?: boolean;
   removeHearingImpaired: boolean;
   forceSimplified?: boolean;
+  mandarinToneColors?: boolean;
+  mandarinToneTarget?: ToneTarget;
+  mandarinTonePalette?: TonePalette;
 }
 
 
@@ -148,7 +152,10 @@ export const defaultPrimarySubtitleStyling: CJKStyling = {
   maximalMeaningLengthPerCharacter: 20,
   removeHearingImpaired: true,
   learning: true,
-  forceSimplified: true
+  forceSimplified: true,
+  mandarinToneColors: false,
+  mandarinToneTarget: 'both',
+  mandarinTonePalette: 'default',
 }
 
 
