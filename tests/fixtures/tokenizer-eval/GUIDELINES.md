@@ -41,8 +41,10 @@ copy published subtitles. Apply this policy without seeing predictions.
 `main/handler/languages/analyzer.ts`, `parseJapaneseVerbs` joins a verb and
 following auxiliaries/selected particles/dependent verbs while
 `isConjugationOf(surface, lemma)` accepts them. Popup `queryJapanese` calls
-`searchJapanese` in `learningGlosses.ts`, which searches surface and inflection
-candidates. Prefer usable conjugated clicks over unusable stem fragments.
+`searchJapanese` in `learningGlosses.ts`. Subtitle clicks use the analyzer's
+`basicForm` (`renderer/components/Subtitle/Sentence.tsx`) rather than requiring
+the conjugated surface to be a headword. Prefer usable conjugated clicks over
+unusable stem fragments; the lookup handler itself is not a deinflector.
 Coverage uses JMdict `words[].kanji[].text` and `words[].kana[].text`, not IPADIC.
 
 Current merging begins only at verbs, so adjective/derivational chains can
@@ -89,6 +91,11 @@ Use CC-CEDICT `mandarin/chinese/chinese.json`, `words[].content` and
 authored lines, not translations of one another. Never convert at scoring.
 
 - Keep lexical words (`今天`, `朋友`, `電腦`/`电脑`), not transparent phrases.
+  In this benchmark compositional copular negation and existential phrases
+  split (`不 / 是`, `还 / 有`), as do pronoun + dual-count (`咱 / 俩`) and
+  distributive + count (`每 / 次`). A dictionary phrase entry alone does not
+  override that convention. Lexical spatial nouns such as `兩邊` (both sides)
+  and `同一` (the same) stay whole; those are not numeral/measure phrases.
 - Keep full personal names (`林小雨`) whole; split titles (`林小雨 / 老师`,
   `王 / 先生`). Flag non-dictionary names.
 - Separate numerals, measure words, units and nouns: `三 / 个 / 苹果`,
@@ -124,6 +131,11 @@ Write natural Hong Kong colloquial Cantonese, not Mandarin plus final particles.
   classifier/determiner `啲`, negation `唔` from neighboring words. Indexed
   lexical `唔該` and prohibitive `唔好` override character splitting.
   A-not-A is `去 / 唔 / 去`.
+  Contextual lexical exceptions include `為咗` (for/in order to, not aspect),
+  `有啲` (slightly), `唔見` (lose), `冇用` (useless) and reassuring `冇嘢`
+  (nothing/no problem), all dictionary-indexed. Compositional `仲 / 有`,
+  `每 / 次`, and modifier + noun (`新 / 屋`) stay separate even when a phrase
+  entry exists. Check the sense, not only membership.
 - Separate each sentence-final particle from its host **and other particles**:
   `喇`, `啦`, `咩`, `囉`, `嘅`, `㗎`, `啫`, `喎`, `呀`, `吖`, `嘛`, `呢`,
   `噃`, `嗱`, `嘞`. Thus `嚟 / 㗎 / 喇`, never `嚟㗎喇` or `㗎喇`.

@@ -1,0 +1,150 @@
+{"id":"zh-Hant-001","text":"媽，妳把我的雨衣藏哪兒了？","categories":["casual-speech","colloquial-contractions","particles"],"gold":["媽","，","妳","把","我","的","雨衣","藏","哪兒","了","？"]}
+{"id":"zh-Hant-003","text":"別擱這兒吵，孩子剛睡。","categories":["casual-speech","colloquial-contractions"],"gold":["別","擱","這兒","吵","，","孩子","剛","睡","。"]}
+{"id":"zh-Hant-005","text":"龍睡醒以前，別碰那顆蛋。","categories":["anime-drama","suffix-chains"],"gold":["龍","睡醒","以前","，","別","碰","那","顆","蛋","。"]}
+{"id":"zh-Hant-007","text":"我跟你鬧著玩兒呢。","categories":["colloquial-contractions","suffix-chains","particles"],"gold":["我","跟","你","鬧","著","玩兒","呢","。"]}
+{"id":"zh-Hant-009","text":"總得有人留下來照顧那隻鹿。","categories":["anime-drama","suffix-chains"],"gold":["總","得","有人","留","下來","照顧","那","隻","鹿","。"]}
+{"id":"zh-Hant-011","text":"你來回走走，鞋才不會磨腳。","categories":["casual-speech","colloquial-contractions"],"gold":["你","來回","走","走","，","鞋","才","不會","磨腳","。"],"notes":"Dictionary exceptions: 磨腳 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-013","text":"大夥兒都等著你開飯呢。","categories":["casual-speech","colloquial-contractions","suffix-chains","particles"],"gold":["大夥兒","都","等","著","你","開飯","呢","。"],"notes":"Dictionary exceptions: 大夥兒 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-015","text":"你都沒聽完，急什麼嘛。","categories":["casual-speech","particles"],"gold":["你","都","沒","聽","完","，","急","什麼","嘛","。"]}
+{"id":"zh-Hant-017","text":"我尋思著，咱倆換個位置？","categories":["casual-speech","colloquial-contractions","suffix-chains","particles"],"gold":["我","尋思","著","，","咱","倆","換","個","位置","？"]}
+{"id":"zh-Hant-019","text":"爸，我不是不想回家吃飯，只是今天臨時多了一場會議，等我把最後一份報告寄出去，就搭車回去，你們千萬別餓著肚子等我，好嗎？","categories":["long-lines","casual-speech","suffix-chains","particles"],"gold":["爸","，","我","不","是","不","想","回家","吃飯","，","只是","今天","臨時","多","了","一","場","會議","，","等","我","把","最後","一","份","報告","寄","出去","，","就","搭車","回去","，","你們","千萬","別","餓","著","肚子","等","我","，","好","嗎","？"]}
+{"id":"zh-Hant-021","text":"哪有人拿鍋蓋當盾牌的啦。","categories":["casual-speech","particles"],"gold":["哪","有","人","拿","鍋蓋","當","盾牌","的","啦","。"]}
+{"id":"zh-Hant-023","text":"讓我聞一聞，這牛奶怪怪的。","categories":["colloquial-contractions","suffix-chains","particles"],"gold":["讓","我","聞","一","聞","，","這","牛奶","怪","怪","的","。"]}
+{"id":"zh-Hant-025","text":"這顆星星摸起來竟然是熱的。","categories":["anime-drama","suffix-chains","particles"],"gold":["這","顆","星星","摸","起來","竟然","是","熱","的","。"]}
+{"id":"zh-Hant-027","text":"那朵花一開，影子就站起來了。","categories":["anime-drama","suffix-chains","particles"],"gold":["那","朵","花","一","開","，","影子","就","站","起來","了","。"]}
+{"id":"zh-Hant-029","text":"這張梗圖我昨天才存過。","categories":["internet-slang","suffix-chains"],"gold":["這","張","梗圖","我","昨天","才","存","過","。"]}
+{"id":"zh-Hant-031","text":"咱們找個地兒躲雨吧。","categories":["casual-speech","colloquial-contractions","particles"],"gold":["咱們","找","個","地兒","躲雨","吧","。"]}
+{"id":"zh-Hant-033","text":"門開著，卻沒有任何腳步聲。","categories":["anime-drama","suffix-chains"],"gold":["門","開","著","，","卻","沒有","任何","腳步聲","。"],"notes":"Dictionary exceptions: 腳步聲 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-035","text":"先收拾收拾，客人快到了。","categories":["colloquial-contractions","suffix-chains","particles"],"gold":["先","收拾","收拾","，","客人","快","到","了","。"]}
+{"id":"zh-Hant-037","text":"你還留著她寫的便條啊。","categories":["suffix-chains","particles"],"gold":["你","還","留","著","她","寫","的","便條","啊","。"]}
+{"id":"zh-Hant-039","text":"這把劍連紙都切不開。","categories":["anime-drama","suffix-chains"],"gold":["這","把","劍","連","紙","都","切","不","開","。"]}
+{"id":"zh-Hant-041","text":"妳甭替我操心，湯我會熱。","categories":["casual-speech","colloquial-contractions"],"gold":["妳","甭","替","我","操心","，","湯","我","會","熱","。"]}
+{"id":"zh-Hant-043","text":"把錯字圈出來，再輕輕地擦掉。","categories":["suffix-chains"],"gold":["把","錯字","圈","出來","，","再","輕輕","地","擦掉","。"]}
+{"id":"zh-Hant-045","text":"我來過這裡，可是想不起路了。","categories":["suffix-chains","particles"],"gold":["我","來","過","這裡","，","可是","想","不","起","路","了","。"]}
+{"id":"zh-Hant-047","text":"你倆嘀咕什麼呢？","categories":["casual-speech","colloquial-contractions","particles"],"gold":["你","倆","嘀咕","什麼","呢","？"]}
+{"id":"zh-Hant-049","text":"這會兒哪有船肯載我們？","categories":["anime-drama","colloquial-contractions","particles"],"gold":["這會兒","哪","有","船","肯","載","我們","？"]}
+{"id":"zh-Hant-051","text":"弟弟吃著吃著就睡著了。","categories":["colloquial-contractions","suffix-chains","particles"],"gold":["弟弟","吃","著","吃","著","就","睡著","了","。"]}
+{"id":"zh-Hant-053","text":"冰箱空空的，你還問晚餐呢。","categories":["casual-speech","suffix-chains","particles"],"gold":["冰箱","空空","的","，","你","還","問","晚餐","呢","。"]}
+{"id":"zh-Hant-055","text":"別忙活了，坐下歇會兒。","categories":["casual-speech","colloquial-contractions"],"gold":["別","忙活","了","，","坐下","歇","會兒","。"],"notes":"Dictionary exceptions: 會兒 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-057","text":"我聽懂了，不代表我同意喔。","categories":["suffix-chains","particles"],"gold":["我","聽懂","了","，","不","代表","我","同意","喔","。"]}
+{"id":"zh-Hant-059","text":"老師，我知道這份作業晚交了，可是我不想把網路斷線當成藉口；我已經重新整理過資料，也把引用的地方標清楚，您願意再看一遍嗎？","categories":["long-lines","casual-speech","suffix-chains","particles"],"gold":["老師","，","我","知道","這","份","作業","晚","交","了","，","可是","我","不","想","把","網路","斷線","當成","藉口","；","我","已經","重新","整理","過","資料","，","也","把","引用","的","地方","標","清楚","，","您","願意","再","看","一","遍","嗎","？"]}
+{"id":"zh-Hant-061","text":"這門怎麼推也推不開呀。","categories":["suffix-chains","particles"],"gold":["這","門","怎麼","推","也","推","不","開","呀","。"]}
+{"id":"zh-Hant-063","text":"你慢慢說，我沒有要掛電話。","categories":["casual-speech","colloquial-contractions"],"gold":["你","慢慢","說","，","我","沒有","要","掛","電話","。"]}
+{"id":"zh-Hant-065","text":"書店離這兒不到五百公尺。","categories":["colloquial-contractions","numbers-counters"],"gold":["書店","離","這兒","不到","五百","公尺","。"],"notes":"Dictionary exceptions: 五百 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-067","text":"她把窗簾拉得緊緊的。","categories":["suffix-chains"],"gold":["她","把","窗簾","拉","得","緊緊","的","。"]}
+{"id":"zh-Hant-069","text":"還有半杯豆漿，誰要喝？","categories":["casual-speech","numbers-counters","particles"],"gold":["還","有","半","杯","豆漿","，","誰","要","喝","？"]}
+{"id":"zh-Hant-071","text":"你把話說完了再走嘛。","categories":["casual-speech","suffix-chains","particles"],"gold":["你","把","話","說","完","了","再","走","嘛","。"]}
+{"id":"zh-Hant-073","text":"我就納悶兒，鑰匙怎麼會在米缸？","categories":["casual-speech","colloquial-contractions","particles"],"gold":["我","就","納悶兒","，","鑰匙","怎麼","會","在","米缸","？"],"notes":"Dictionary exceptions: 米缸 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-075","text":"你摸一摸，這布料很扎手。","categories":["colloquial-contractions","suffix-chains"],"gold":["你","摸","一","摸","，","這","布料","很","扎手","。"],"notes":"Dictionary exceptions: 扎手 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-077","text":"別默默地忍著，我看得出來。","categories":["suffix-chains"],"gold":["別","默默","地","忍","著","，","我","看","得","出來","。"]}
+{"id":"zh-Hant-079","text":"八點前能送到兩箱礦泉水嗎？","categories":["numbers-counters","suffix-chains","particles"],"gold":["八","點","前","能","送","到","兩","箱","礦泉水","嗎","？"]}
+{"id":"zh-Hant-081","text":"這回我可沒跟你開玩笑。","categories":["casual-speech","colloquial-contractions"],"gold":["這","回","我","可","沒","跟","你","開玩笑","。"]}
+{"id":"zh-Hant-083","text":"她說話輕輕的，我聽不清。","categories":["suffix-chains"],"gold":["她","說話","輕輕","的","，","我","聽","不","清","。"]}
+{"id":"zh-Hant-085","text":"讓孩子們自個兒商量吧。","categories":["casual-speech","colloquial-contractions","suffix-chains","particles"],"gold":["讓","孩子","們","自個兒","商量","吧","。"]}
+{"id":"zh-Hant-087","text":"我找到的是空盒子，不是戒指。","categories":["suffix-chains"],"gold":["我","找到","的","是","空","盒子","，","不","是","戒指","。"]}
+{"id":"zh-Hant-089","text":"旅館每晚加收10%的清潔費。","categories":["numbers-counters"],"gold":["旅館","每","晚","加收","10%","的","清潔","費","。"],"notes":"Dictionary exceptions: 加收 (oov), 10% (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-091","text":"吃點兒酸的，胃可能舒服些。","categories":["casual-speech","colloquial-contractions","particles"],"gold":["吃","點兒","酸","的","，","胃","可能","舒服","些","。"]}
+{"id":"zh-Hant-093","text":"你得承認，這主意挺了不起。","categories":["suffix-chains"],"gold":["你","得","承認","，","這","主意","挺","了不起","。"]}
+{"id":"zh-Hant-095","text":"先抱抱，別的等會兒再說。","categories":["casual-speech","colloquial-contractions","suffix-chains"],"gold":["先","抱","抱","，","別","的","等","會兒","再","說","。"],"notes":"Dictionary exceptions: 會兒 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-097","text":"我盯著螢幕，卻什麼也沒看見。","categories":["suffix-chains"],"gold":["我","盯","著","螢幕","，","卻","什麼","也","沒","看見","。"]}
+{"id":"zh-Hant-099","text":"你不用把每一件事都做得十全十美，我今天來找你，只是想一起去河邊走走，聽你說說這陣子的煩惱，不是來檢查你的人生到底及不及格。","categories":["long-lines","casual-speech","idioms","suffix-chains"],"gold":["你","不用","把","每","一","件","事","都","做","得","十全十美","，","我","今天","來","找","你","，","只是","想","一起","去","河邊","走","走","，","聽","你","說","說","這","陣子","的","煩惱","，","不","是","來","檢查","你","的","人生","到底","及","不","及格","。"]}
+{"id":"zh-Hant-101","text":"杜明川先生，您的護照掉了。","categories":["names","particles"],"gold":["杜明川","先生","，","您","的","護照","掉","了","。"],"notes":"Dictionary exceptions: 杜明川 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-103","text":"這種反向帶貨我還是頭一次見。","categories":["internet-slang"],"gold":["這","種","反向","帶貨","我","還是","頭","一","次","見","。"]}
+{"id":"zh-Hant-105","text":"小點兒聲，牆後頭有人。","categories":["anime-drama","colloquial-contractions"],"gold":["小","點兒","聲","，","牆","後頭","有人","。"]}
+{"id":"zh-Hant-107","text":"咱仨輪著顧攤，誰也別逞強。","categories":["casual-speech","colloquial-contractions","suffix-chains"],"gold":["咱","仨","輪","著","顧","攤","，","誰","也","別","逞強","。"]}
+{"id":"zh-Hant-109","text":"請在2.8公尺外畫一道線。","categories":["numbers-counters"],"gold":["請","在","2.8","公尺","外","畫","一","道","線","。"],"notes":"Dictionary exceptions: 2.8 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-111","text":"程若溪把最後一票投給了我。","categories":["names","numbers-counters","suffix-chains"],"gold":["程若溪","把","最後","一","票","投","給","了","我","。"],"notes":"Dictionary exceptions: 程若溪 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-113","text":"他連道歉都要蹭熱度。","categories":["internet-slang"],"gold":["他","連","道歉","都","要","蹭","熱度","。"]}
+{"id":"zh-Hant-115","text":"這麼著吧，你守門，我找燈。","categories":["anime-drama","colloquial-contractions","particles"],"gold":["這麼著","吧","，","你","守門","，","我","找","燈","。"]}
+{"id":"zh-Hant-117","text":"別本末倒置，先讓病人休息。","categories":["idioms"],"gold":["別","本末倒置","，","先","讓","病人","休息","。"]}
+{"id":"zh-Hant-119","text":"兩打雞蛋怎麼只剩十一顆？","categories":["numbers-counters","particles"],"gold":["兩","打","雞蛋","怎麼","只","剩","十一","顆","？"]}
+{"id":"zh-Hant-121","text":"鄭望舒校長也搭這班公車。","categories":["names"],"gold":["鄭望舒","校長","也","搭","這","班","公車","。"],"notes":"Dictionary exceptions: 鄭望舒 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-123","text":"原來你早就把我設成特別關心。","categories":["internet-slang"],"gold":["原來","你","早就","把","我","設","成","特別","關心","。"]}
+{"id":"zh-Hant-125","text":"再熬會兒，藥香就出來了。","categories":["anime-drama","colloquial-contractions","suffix-chains","particles"],"gold":["再","熬","會兒","，","藥香","就","出來","了","。"],"notes":"Dictionary exceptions: 會兒 (oov), 藥香 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-127","text":"你這樣查資料，無異於緣木求魚。","categories":["idioms"],"gold":["你","這樣","查","資料","，","無異","於","緣木求魚","。"]}
+{"id":"zh-Hant-129","text":"七十五分鐘夠你轉機嗎？","categories":["numbers-counters","particles"],"gold":["七十五","分鐘","夠","你","轉機","嗎","？"],"notes":"Dictionary exceptions: 七十五 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-131","text":"葉清和護士認得那枚胸針。","categories":["names","suffix-chains"],"gold":["葉清和","護士","認得","那","枚","胸針","。"],"notes":"Dictionary exceptions: 葉清和 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-133","text":"這個濾鏡把爸爸變成美食博主。","categories":["internet-slang"],"gold":["這","個","濾鏡","把","爸爸","變成","美食","博主","。"]}
+{"id":"zh-Hant-135","text":"幫我把這段做成 GIF 吧。","categories":["mixed-latin","particles"],"gold":["幫","我","把","這","段","做","成"," ","GIF"," ","吧","。"],"notes":"Dictionary exceptions: GIF (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-137","text":"你的證據都對不上，別張冠李戴。","categories":["idioms","suffix-chains"],"gold":["你","的","證據","都","對","不","上","，","別","張冠李戴","。"]}
+{"id":"zh-Hant-139","text":"廚房那鍋不是給客人的，是我試了好幾次才煮出來的湯；你要是覺得太鹹就直說，別為了怕我難過，硬把整碗喝光，我真的不會生氣。","categories":["long-lines","casual-speech","suffix-chains"],"gold":["廚房","那","鍋","不","是","給","客人","的","，","是","我","試","了","好幾","次","才","煮","出來","的","湯","；","你","要是","覺得","太","鹹","就","直","說","，","別","為了","怕","我","難過","，","硬","把","整","碗","喝","光","，","我","真的","不會","生氣","。"]}
+{"id":"zh-Hant-141","text":"潘予衡警官要我保留那張收據。","categories":["names"],"gold":["潘予衡","警官","要","我","保留","那","張","收據","。"],"notes":"Dictionary exceptions: 潘予衡 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-143","text":"別刷存在感，先把水龍頭關好。","categories":["internet-slang","suffix-chains"],"gold":["別","刷","存在感","，","先","把","水龍頭","關","好","。"],"notes":"Dictionary exceptions: 存在感 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-145","text":"別把 deleted 當成已經備份。","categories":["mixed-latin","code-switching"],"gold":["別","把"," ","deleted"," ","當成","已經","備份","。"],"notes":"Dictionary exceptions: deleted (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-147","text":"再添預算也是杯水車薪。","categories":["idioms"],"gold":["再","添","預算","也","是","杯水車薪","。"]}
+{"id":"zh-Hant-149","text":"一共九十三頁，背面也要印。","categories":["numbers-counters"],"gold":["一共","九十三","頁","，","背面","也","要","印","。"],"notes":"Dictionary exceptions: 九十三 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-151","text":"溫知夏編的曲子，你聽過吧？","categories":["names","suffix-chains","particles"],"gold":["溫知夏","編","的","曲子","，","你","聽","過","吧","？"],"notes":"Dictionary exceptions: 溫知夏 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-153","text":"我只是潛水，沒有退出群組。","categories":["internet-slang"],"gold":["我","只是","潛水","，","沒有","退出","群組","。"]}
+{"id":"zh-Hant-155","text":"你說的 hotfix 到底修了哪裡？","categories":["mixed-latin","code-switching","particles"],"gold":["你","說","的"," ","hotfix"," ","到底","修","了","哪裡","？"],"notes":"Dictionary exceptions: hotfix (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-157","text":"這叫亡羊補牢，不叫假裝沒事。","categories":["idioms"],"gold":["這","叫","亡羊補牢","，","不","叫","假裝","沒事","。"]}
+{"id":"zh-Hant-159","text":"今天限量三十份，不能多買。","categories":["numbers-counters"],"gold":["今天","限量","三十","份","，","不能","多","買","。"],"notes":"Dictionary exceptions: 限量 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-161","text":"賀行遠教練在操場等你。","categories":["names"],"gold":["賀行遠","教練","在","操場","等","你","。"],"notes":"Dictionary exceptions: 賀行遠 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-163","text":"你這個標題黨連奶奶都騙不過。","categories":["internet-slang","suffix-chains"],"gold":["你","這","個","標題黨","連","奶奶","都","騙","不","過","。"]}
+{"id":"zh-Hant-165","text":"這個 server 的時區設錯了。","categories":["mixed-latin","code-switching","particles"],"gold":["這","個"," ","server"," ","的","時區","設","錯","了","。"],"notes":"Dictionary exceptions: server (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-167","text":"把敵人放進城，無疑是引狼入室。","categories":["anime-drama","idioms"],"gold":["把","敵人","放","進","城","，","無疑","是","引狼入室","。"]}
+{"id":"zh-Hant-169","text":"這條步道全長6.2公里。","categories":["numbers-counters"],"gold":["這","條","步道","全長","6.2","公里","。"],"notes":"Dictionary exceptions: 6.2 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-171","text":"宋以寧阿姨把傘留給了陌生人。","categories":["names","suffix-chains"],"gold":["宋以寧","阿姨","把","傘","留給","了","陌生人","。"],"notes":"Dictionary exceptions: 宋以寧 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-173","text":"這個連結是不是釣魚文啊？","categories":["internet-slang","particles"],"gold":["這","個","連結","是","不","是","釣魚","文","啊","？"]}
+{"id":"zh-Hant-175","text":"我們還有 plan B，別慌。","categories":["mixed-latin","code-switching"],"gold":["我們","還","有"," ","plan"," ","B","，","別","慌","。"],"notes":"Dictionary exceptions: plan (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-177","text":"別守株待兔，客人不會自己上門。","categories":["idioms"],"gold":["別","守株待兔","，","客人","不會","自己","上門","。"]}
+{"id":"zh-Hant-179","text":"我本來以為離開這座城就能忘掉以前的事，沒想到在陌生的月台聽見有人哼那段旋律，還是會停下來；所以你看，我也沒有自己說的那麼勇敢。","categories":["long-lines","casual-speech","suffix-chains"],"gold":["我","本來","以為","離開","這","座","城","就","能","忘掉","以前","的","事","，","沒想到","在","陌生","的","月台","聽見","有人","哼","那","段","旋律","，","還是","會","停","下來","；","所以","你","看","，","我","也","沒有","自己","說","的","那麼","勇敢","。"]}
+{"id":"zh-Hant-181","text":"袁靜初店長記得每個常客的口味。","categories":["names"],"gold":["袁靜初","店長","記得","每","個","常客","的","口味","。"],"notes":"Dictionary exceptions: 袁靜初 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-183","text":"這張照片根本是我的黑歷史。","categories":["internet-slang"],"gold":["這","張","照片","根本","是","我","的","黑歷史","。"]}
+{"id":"zh-Hant-185","text":"請別把 final final 當檔名。","categories":["mixed-latin","code-switching"],"gold":["請","別","把"," ","final"," ","final"," ","當","檔名","。"],"notes":"Dictionary exceptions: final (oov), 檔名 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-187","text":"兩邊都答應，小心弄巧成拙。","categories":["idioms"],"gold":["兩邊","都","答應","，","小心","弄巧成拙","。"]}
+{"id":"zh-Hant-189","text":"三分之一杯糖就夠，別倒滿。","categories":["numbers-counters"],"gold":["三分之一","杯","糖","就","夠","，","別","倒","滿","。"]}
+{"id":"zh-Hant-191","text":"蘇沐言同學，你的實驗成功了。","categories":["names","particles"],"gold":["蘇沐言","同學","，","你","的","實驗","成功","了","。"],"notes":"Dictionary exceptions: 蘇沐言 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-193","text":"別再洗版，我還沒看見地址。","categories":["internet-slang","suffix-chains"],"gold":["別","再","洗版","，","我","還","沒","看見","地址","。"],"notes":"Dictionary exceptions: 洗版 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-195","text":"我想要的不是 VIP，只是安靜。","categories":["mixed-latin","code-switching"],"gold":["我","想要","的","不","是"," ","VIP","，","只是","安靜","。"],"notes":"Dictionary exceptions: VIP (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-197","text":"眼前的安靜，恐怕只是暴風雨前的寧靜。","categories":["anime-drama","idioms"],"gold":["眼前","的","安靜","，","恐怕","只是","暴風雨","前","的","寧靜","。"]}
+{"id":"zh-Hant-199","text":"四點零五分，鐘聲準時響了。","categories":["numbers-counters","particles"],"gold":["四","點","零五","分","，","鐘聲","準時","響","了","。"],"notes":"Dictionary exceptions: 零五 (oov), 鐘聲 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-201","text":"汪聿新師兄連夜送來了藥。","categories":["anime-drama","names","suffix-chains"],"gold":["汪聿新","師兄","連夜","送","來","了","藥","。"],"notes":"Dictionary exceptions: 汪聿新 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-203","text":"我把請假理由寫成了小作文。","categories":["internet-slang","suffix-chains"],"gold":["我","把","請假","理由","寫","成","了","小作文","。"],"notes":"Dictionary exceptions: 小作文 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-205","text":"這顆按鈕按得下，卻彈不起來。","categories":["suffix-chains"],"gold":["這","顆","按鈕","按","得","下","，","卻","彈","不","起來","。"]}
+{"id":"zh-Hant-207","text":"把 check-in 的時間往後挪。","categories":["mixed-latin","code-switching"],"gold":["把"," ","check-in"," ","的","時間","往後","挪","。"],"notes":"Dictionary exceptions: check-in (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-209","text":"我只帶了五枚銅幣，夠過橋嗎？","categories":["anime-drama","numbers-counters","suffix-chains","particles"],"gold":["我","只","帶","了","五","枚","銅幣","，","夠","過","橋","嗎","？"],"notes":"Dictionary exceptions: 銅幣 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-211","text":"這麼一折騰，飯都涼了。","categories":["casual-speech","colloquial-contractions","particles"],"gold":["這麼","一","折騰","，","飯","都","涼","了","。"]}
+{"id":"zh-Hant-213","text":"先別轉傳，那是斷章取義。","categories":["idioms","internet-slang"],"gold":["先","別","轉傳","，","那","是","斷章取義","。"],"notes":"Dictionary exceptions: 轉傳 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-215","text":"你走你的，我在這兒等日出。","categories":["casual-speech","colloquial-contractions","particles"],"gold":["你","走","你","的","，","我","在","這兒","等","日出","。"]}
+{"id":"zh-Hant-217","text":"這袋米重五公斤，不是五台斤。","categories":["numbers-counters"],"gold":["這","袋","米","重","五","公斤","，","不","是","五","台斤","。"]}
+{"id":"zh-Hant-219","text":"我知道你怕我們擔心，所以連受傷都不肯說，可是家人不是只在你成功的時候才替你鼓掌；下次如果真的撐不住，就打電話回來，哪怕只是一起發呆也好。","categories":["long-lines","casual-speech","suffix-chains"],"gold":["我","知道","你","怕","我們","擔心","，","所以","連","受傷","都","不","肯","說","，","可是","家人","不","是","只","在","你","成功","的","時候","才","替","你","鼓掌","；","下次","如果","真的","撐","不","住","，","就","打電話","回來","，","哪怕","只是","一起","發呆","也好","。"]}
+{"id":"zh-Hant-221","text":"我已經把通知 mute 了。","categories":["mixed-latin","code-switching","particles"],"gold":["我","已經","把","通知"," ","mute"," ","了","。"],"notes":"Dictionary exceptions: mute (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-223","text":"你瞧，雲後頭有條銀色的魚。","categories":["anime-drama","colloquial-contractions"],"gold":["你","瞧","，","雲","後頭","有","條","銀色","的","魚","。"]}
+{"id":"zh-Hant-225","text":"鄧書衡伯伯認出了那把小提琴。","categories":["names","suffix-chains"],"gold":["鄧書衡","伯伯","認出","了","那","把","小提琴","。"],"notes":"Dictionary exceptions: 鄧書衡 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-227","text":"湯滾了，把火轉小吧。","categories":["casual-speech","suffix-chains","particles"],"gold":["湯","滾","了","，","把","火","轉","小","吧","。"]}
+{"id":"zh-Hant-229","text":"不想去就直說，何必拐彎抹角。","categories":["idioms"],"gold":["不","想","去","就","直","說","，","何必","拐彎抹角","。"]}
+{"id":"zh-Hant-231","text":"我花了整整一百二十元。","categories":["numbers-counters","suffix-chains"],"gold":["我","花","了","整整","一百二十","元","。"],"notes":"Dictionary exceptions: 一百二十 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-233","text":"這名字念起來像在打噴嚏。","categories":["suffix-chains"],"gold":["這","名字","念","起來","像","在","打噴嚏","。"]}
+{"id":"zh-Hant-235","text":"先把 version 2 留著，別覆蓋。","categories":["mixed-latin","code-switching","suffix-chains"],"gold":["先","把"," ","version"," ","2"," ","留","著","，","別","覆蓋","。"],"notes":"Dictionary exceptions: version (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-237","text":"他送茶是假，醉翁之意不在酒。","categories":["idioms"],"gold":["他","送","茶","是","假","，","醉翁之意不在酒","。"]}
+{"id":"zh-Hant-239","text":"我只剩0.5%的電，快說地址。","categories":["numbers-counters"],"gold":["我","只","剩","0.5%","的","電","，","快","說","地址","。"],"notes":"Dictionary exceptions: 0.5% (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-241","text":"這種硬核露營連帳篷都不帶。","categories":["internet-slang"],"gold":["這","種","硬核","露營","連","帳篷","都","不","帶","。"]}
+{"id":"zh-Hant-243","text":"請把 status 改成 pending。","categories":["mixed-latin","code-switching"],"gold":["請","把"," ","status"," ","改成"," ","pending","。"],"notes":"Dictionary exceptions: status (oov), pending (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-245","text":"多帶一條繩子，才能有備無患。","categories":["anime-drama","idioms","numbers-counters"],"gold":["多","帶","一","條","繩子","，","才","能","有備無患","。"]}
+{"id":"zh-Hant-247","text":"離登船還有二十五分鐘。","categories":["numbers-counters"],"gold":["離","登","船","還","有","二十五","分鐘","。"],"notes":"Dictionary exceptions: 二十五 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-249","text":"施雲庭伯母最愛坐靠窗的位置。","categories":["names"],"gold":["施雲庭","伯母","最","愛","坐","靠窗","的","位置","。"],"notes":"Dictionary exceptions: 施雲庭 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-251","text":"你連 logout 都沒按就走了？","categories":["mixed-latin","code-switching","particles"],"gold":["你","連"," ","logout"," ","都","沒","按","就","走","了","？"],"notes":"Dictionary exceptions: logout (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-253","text":"你是在裝聾作啞，還是真沒聽懂？","categories":["idioms","suffix-chains","particles"],"gold":["你","是","在","裝聾作啞","，","還是","真","沒","聽懂","？"]}
+{"id":"zh-Hant-255","text":"一人兩片，別偷拿第三片。","categories":["numbers-counters"],"gold":["一","人","兩","片","，","別","偷","拿","第","三","片","。"]}
+{"id":"zh-Hant-257","text":"我去門口透透氣，很快回來。","categories":["casual-speech","suffix-chains"],"gold":["我","去","門口","透","透","氣","，","很","快","回來","。"]}
+{"id":"zh-Hant-259","text":"如果那封信真的會改變歷史，你更不能在氣頭上拆開它；我們還不知道寫信的人是誰，也不知道他想讓誰活下來，至少先等守夜的女孩把話說完。","categories":["long-lines","anime-drama","suffix-chains"],"gold":["如果","那","封","信","真的","會","改變","歷史","，","你","更","不能","在","氣頭","上","拆開","它","；","我們","還","不","知道","寫信","的","人","是","誰","，","也","不","知道","他","想","讓","誰","活","下來","，","至少","先","等","守夜","的","女孩","把","話","說","完","。"],"notes":"Dictionary exceptions: 氣頭 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-261","text":"這個 patch 連錯字一起修了。","categories":["mixed-latin","code-switching","particles"],"gold":["這","個"," ","patch"," ","連","錯字","一起","修","了","。"],"notes":"Dictionary exceptions: patch (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-263","text":"剩下的十二顆鈕扣交給你。","categories":["numbers-counters"],"gold":["剩下","的","十二","顆","鈕扣","交給","你","。"],"notes":"Dictionary exceptions: 鈕扣 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-265","text":"這波聯動連我爺爺都認得。","categories":["internet-slang","suffix-chains"],"gold":["這","波","聯動","連","我","爺爺","都","認得","。"]}
+{"id":"zh-Hant-267","text":"你先按 pause，我有話要說。","categories":["mixed-latin","code-switching"],"gold":["你","先","按"," ","pause","，","我","有","話","要","說","。"],"notes":"Dictionary exceptions: pause (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-269","text":"別杞人憂天，隕石還遠著呢。","categories":["anime-drama","idioms","suffix-chains","particles"],"gold":["別","杞人憂天","，","隕石","還","遠","著","呢","。"]}
+{"id":"zh-Hant-271","text":"何映秋姐姐答應教我游泳。","categories":["names"],"gold":["何映秋","姐姐","答應","教","我","游泳","。"],"notes":"Dictionary exceptions: 何映秋 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-273","text":"我只是路過，不是來打卡的。","categories":["internet-slang","particles"],"gold":["我","只是","路過","，","不","是","來","打卡","的","。"]}
+{"id":"zh-Hant-275","text":"這首歌的 live 版本比較慢。","categories":["mixed-latin","code-switching"],"gold":["這","首","歌","的"," ","live"," ","版本","比較","慢","。"],"notes":"Dictionary exceptions: live (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-277","text":"妳收好就行，不用一直道謝。","categories":["casual-speech","suffix-chains"],"gold":["妳","收","好","就","行","，","不用","一直","道謝","。"]}
+{"id":"zh-Hant-279","text":"我真沒那本事，別把我神化。","categories":["casual-speech"],"gold":["我","真","沒","那","本事","，","別","把","我","神化","。"]}
+{"id":"zh-Hant-281","text":"別急著蓋樓，原文還沒貼完。","categories":["internet-slang","suffix-chains"],"gold":["別","急","著","蓋樓","，","原文","還","沒","貼","完","。"]}
+{"id":"zh-Hant-283","text":"這是誰的 QR code？掃不出來。","categories":["mixed-latin","suffix-chains","particles"],"gold":["這","是","誰","的"," ","QR"," ","code","？","掃","不","出來","。"],"notes":"Dictionary exceptions: QR (oov), code (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-285","text":"你別落井下石，他已經夠難受了。","categories":["idioms","particles"],"gold":["你","別","落井下石","，","他","已經","夠","難受","了","。"]}
+{"id":"zh-Hant-287","text":"門口那雙鞋，誰穿走的呀？","categories":["casual-speech","suffix-chains","particles"],"gold":["門口","那","雙","鞋","，","誰","穿","走","的","呀","？"]}
+{"id":"zh-Hant-289","text":"你說那位修鐘的人從來不看時間，可他每天都能在下雨前收好攤子；我懷疑他修的根本不是鐘，而是那些被人忘在抽屜裡、怎麼也捨不得丟掉的下午。","categories":["long-lines","anime-drama","suffix-chains"],"gold":["你","說","那","位","修","鐘","的","人","從來","不","看","時間","，","可","他","每天","都","能","在","下雨","前","收","好","攤子","；","我","懷疑","他","修","的","根本","不","是","鐘","，","而是","那些","被","人","忘","在","抽屜","裡","、","怎麼","也","捨不得","丟掉","的","下午","。"]}
+{"id":"zh-Hant-291","text":"這份 roadmap 沒寫負責人。","categories":["mixed-latin","code-switching"],"gold":["這","份"," ","roadmap"," ","沒","寫","負責人","。"],"notes":"Dictionary exceptions: roadmap (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-293","text":"郁思南大夫叫我少熬夜。","categories":["names"],"gold":["郁思南","大夫","叫","我","少","熬夜","。"],"notes":"Dictionary exceptions: 郁思南 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hant-295","text":"這點疼算啥，你別皺眉。","categories":["casual-speech","colloquial-contractions"],"gold":["這","點","疼","算","啥","，","你","別","皺眉","。"]}
+{"id":"zh-Hant-297","text":"我們得在天亮前把橋搭起來。","categories":["anime-drama","suffix-chains"],"gold":["我們","得","在","天亮","前","把","橋","搭","起來","。"]}
+{"id":"zh-Hant-299","text":"我把你的那份也留下了，快吃。","categories":["casual-speech","suffix-chains","particles"],"gold":["我","把","你","的","那","份","也","留下","了","，","快","吃","。"]}
