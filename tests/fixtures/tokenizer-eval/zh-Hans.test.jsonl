@@ -1,0 +1,150 @@
+{"id":"zh-Hans-002","text":"一共八十六页，你慢慢翻。","categories":["numbers-counters","particles"],"gold":["一共","八十六","页","，","你","慢慢","翻","。"],"notes":"Dictionary exceptions: 八十六 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-004","text":"咱今儿能不提加班吗？","categories":["colloquial-contractions","particles"],"gold":["咱","今儿","能","不","提","加班","吗","？"]}
+{"id":"zh-Hans-006","text":"咖啡凉了就换杯热的。","categories":["casual-speech","particles"],"gold":["咖啡","凉","了","就","换","杯","热","的","。"]}
+{"id":"zh-Hans-008","text":"闻人澄老师今天不点名。","categories":["names","casual-speech"],"gold":["闻人澄","老师","今天","不","点名","。"],"notes":"Dictionary exceptions: 闻人澄 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-010","text":"你把门推开一点儿。","categories":["suffix-chains","particles"],"gold":["你","把","门","推","开","一点儿","。"]}
+{"id":"zh-Hans-012","text":"Wi-Fi连上了，网页还是空白。","categories":["mixed-latin","suffix-chains"],"gold":["Wi-Fi","连","上","了","，","网页","还是","空白","。"],"notes":"Dictionary exceptions: Wi-Fi (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-014","text":"这儿离码头还有3.5公里。","categories":["numbers-counters","colloquial-contractions"],"gold":["这儿","离","码头","还","有","3.5","公里","。"],"notes":"Dictionary exceptions: 3.5 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-016","text":"扣掉六块运费，还剩多少？","categories":["numbers-counters","casual-speech"],"gold":["扣","掉","六","块","运费","，","还","剩","多少","？"]}
+{"id":"zh-Hans-018","text":"剩下三节课，我撑得住。","categories":["numbers-counters","suffix-chains"],"gold":["剩下","三","节","课","，","我","撑","得","住","。"]}
+{"id":"zh-Hans-020","text":"OpenAI这几个字别删。","categories":["mixed-latin","casual-speech"],"gold":["OpenAI","这","几","个","字","别","删","。"],"notes":"Dictionary exceptions: OpenAI (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-022","text":"每人四张票，别拿重了。","categories":["numbers-counters","suffix-chains"],"gold":["每","人","四","张","票","，","别","拿","重","了","。"]}
+{"id":"zh-Hans-024","text":"我只是想安安静静吃顿饭。","categories":["casual-speech","particles"],"gold":["我","只是","想","安安静静","吃","顿","饭","。"],"notes":"Dictionary exceptions: 安安静静 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-026","text":"烧了两壶水都不够。","categories":["numbers-counters","casual-speech"],"gold":["烧","了","两","壶","水","都","不","够","。"]}
+{"id":"zh-Hans-028","text":"你还在，它就不算空城。","categories":["anime-drama","particles"],"gold":["你","还","在","，","它","就","不","算","空","城","。"]}
+{"id":"zh-Hans-030","text":"瞎忙活啥，先找总开关。","categories":["colloquial-contractions","casual-speech"],"gold":["瞎","忙活","啥","，","先","找","总开关","。"]}
+{"id":"zh-Hans-032","text":"这桶水足足十升呢。","categories":["numbers-counters","particles"],"gold":["这","桶","水","足足","十","升","呢","。"]}
+{"id":"zh-Hans-034","text":"这个转场我愿称之为神。","categories":["internet-slang","casual-speech"],"gold":["这","个","转场","我","愿","称","之","为","神","。"],"notes":"Dictionary exceptions: 转场 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-036","text":"你这个语气，一听就是老粉。","categories":["internet-slang","casual-speech"],"gold":["你","这","个","语气","，","一","听","就","是","老粉","。"],"notes":"Dictionary exceptions: 老粉 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-038","text":"钥匙搁哪儿了，我咋没见？","categories":["colloquial-contractions","casual-speech"],"gold":["钥匙","搁","哪儿","了","，","我","咋","没","见","？"]}
+{"id":"zh-Hans-040","text":"顾星遥同学，话筒给你。","categories":["names","particles"],"gold":["顾星遥","同学","，","话筒","给","你","。"],"notes":"Dictionary exceptions: 顾星遥 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-042","text":"咱往里挪挪，给人让个道儿。","categories":["colloquial-contractions","casual-speech"],"gold":["咱","往","里","挪","挪","，","给","人","让","个","道儿","。"],"notes":"Dictionary exceptions: 道儿 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-044","text":"Enter键卡住了，敲轻点。","categories":["mixed-latin","suffix-chains"],"gold":["Enter","键","卡住","了","，","敲","轻","点","。"],"notes":"Dictionary exceptions: Enter (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-046","text":"他把信仔仔细细看了一遍。","categories":["suffix-chains","particles"],"gold":["他","把","信","仔仔细细","看","了","一","遍","。"],"notes":"Dictionary exceptions: 仔仔细细 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-048","text":"API返回的不是中文。","categories":["mixed-latin","casual-speech"],"gold":["API","返回","的","不","是","中文","。"],"notes":"Dictionary exceptions: API (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-050","text":"让开，雨里有毒。","categories":["anime-drama","casual-speech"],"gold":["让开","，","雨","里","有毒","。"]}
+{"id":"zh-Hans-052","text":"这层楼只有一户人家。","categories":["numbers-counters","casual-speech"],"gold":["这","层","楼","只有","一","户","人家","。"]}
+{"id":"zh-Hans-054","text":"还有八站，靠着睡吧。","categories":["numbers-counters","particles"],"gold":["还","有","八","站","，","靠","着","睡","吧","。"]}
+{"id":"zh-Hans-056","text":"两只猫抢一个纸箱。","categories":["numbers-counters","casual-speech"],"gold":["两","只","猫","抢","一","个","纸箱","。"]}
+{"id":"zh-Hans-058","text":"向晚医生让我少熬夜。","categories":["names","casual-speech"],"gold":["向晚","医生","让","我","少","熬夜","。"],"notes":"Dictionary exceptions: 向晚 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-060","text":"我不是不愿意帮你照顾小狗，只是下个月要搬去的地方不让养动物，房东连鱼缸都不答应放，你要是实在找不到人，我们再一起想个别的办法。","categories":["long-lines","casual-speech","suffix-chains","particles"],"gold":["我","不","是","不","愿意","帮","你","照顾","小狗","，","只是","下","个","月","要","搬","去","的","地方","不","让","养","动物","，","房东","连","鱼缸","都","不","答应","放","，","你","要是","实在","找","不","到","人","，","我们","再","一起","想","个","别的","办法","。"]}
+{"id":"zh-Hans-062","text":"陆闻溪先生已经签收了。","categories":["names","particles"],"gold":["陆闻溪","先生","已经","签收","了","。"],"notes":"Dictionary exceptions: 陆闻溪 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-064","text":"咋整，蛋糕上的字写错了。","categories":["colloquial-contractions","casual-speech"],"gold":["咋","整","，","蛋糕","上","的","字","写","错","了","。"]}
+{"id":"zh-Hans-066","text":"甭催，锅还没热呢。","categories":["colloquial-contractions","particles"],"gold":["甭","催","，","锅","还","没","热","呢","。"]}
+{"id":"zh-Hans-068","text":"你说这份报告明早就要，可仓库那边的数据还没核对完，我可以先把确定的部分整理出来，但不能为了赶时间，把没有依据的数字也当成结论交上去。","categories":["long-lines","suffix-chains","particles"],"gold":["你","说","这","份","报告","明早","就","要","，","可","仓库","那边","的","数据","还","没","核对","完","，","我","可以","先","把","确定","的","部分","整理","出来","，","但","不","能","为了","赶时间","，","把","没有","依据","的","数字","也","当成","结论","交","上去","。"]}
+{"id":"zh-Hans-070","text":"黎照队长，海水倒流了！","categories":["names","anime-drama"],"gold":["黎照","队长","，","海水","倒流","了","！"],"notes":"Dictionary exceptions: 黎照 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-072","text":"这不就是掩耳盗铃吗？","categories":["idioms","particles"],"gold":["这","不","就","是","掩耳盗铃","吗","？"]}
+{"id":"zh-Hans-074","text":"这行TODO是谁留下的？","categories":["mixed-latin","particles"],"gold":["这","行","TODO","是","谁","留下","的","？"],"notes":"Dictionary exceptions: TODO (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-076","text":"椅子搬得动，柜子不行。","categories":["suffix-chains","particles"],"gold":["椅子","搬","得","动","，","柜子","不行","。"]}
+{"id":"zh-Hans-078","text":"只迟了半秒，结果全变了。","categories":["numbers-counters","particles"],"gold":["只","迟","了","半","秒","，","结果","全","变","了","。"]}
+{"id":"zh-Hans-080","text":"笑归笑，账还得算清。","categories":["suffix-chains","casual-speech"],"gold":["笑","归","笑","，","账","还","得","算","清","。"]}
+{"id":"zh-Hans-082","text":"不要光说nice，哪里好？","categories":["mixed-latin","casual-speech"],"gold":["不要","光","说","nice","，","哪里","好","？"],"notes":"Dictionary exceptions: nice (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-084","text":"SSID里那个横线别漏。","categories":["mixed-latin","particles"],"gold":["SSID","里","那","个","横线","别","漏","。"],"notes":"Dictionary exceptions: SSID (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-086","text":"一次没过，不算世界末日。","categories":["numbers-counters","casual-speech"],"gold":["一","次","没","过","，","不","算","世界末日","。"]}
+{"id":"zh-Hans-088","text":"不用重装，按一下Esc。","categories":["mixed-latin","casual-speech"],"gold":["不用","重装","，","按","一","下","Esc","。"],"notes":"Dictionary exceptions: Esc (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-090","text":"第二扇窗户别开，纱窗坏了。","categories":["numbers-counters","particles"],"gold":["第","二","扇","窗户","别","开","，","纱窗","坏","了","。"]}
+{"id":"zh-Hans-092","text":"慢慢走，鞋底还湿着。","categories":["suffix-chains","particles"],"gold":["慢慢","走","，","鞋底","还","湿","着","。"]}
+{"id":"zh-Hans-094","text":"蓝牙名改成Kitchen就好。","categories":["mixed-latin","casual-speech"],"gold":["蓝牙","名","改","成","Kitchen","就","好","。"],"notes":"Dictionary exceptions: Kitchen (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-096","text":"孩子睡着了，小声点。","categories":["suffix-chains","particles"],"gold":["孩子","睡着","了","，","小声","点","。"]}
+{"id":"zh-Hans-098","text":"打上#lost，试试看。","categories":["mixed-latin","internet-slang"],"gold":["打","上","#lost","，","试","试","看","。"],"notes":"Dictionary exceptions: #lost (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-100","text":"我只会在评论区喊大佬。","categories":["internet-slang","casual-speech"],"gold":["我","只","会","在","评论","区","喊","大佬","。"]}
+{"id":"zh-Hans-102","text":"闻澈叔叔从南门进来了。","categories":["names","suffix-chains"],"gold":["闻澈","叔叔","从","南","门","进来","了","。"],"notes":"Dictionary exceptions: 闻澈 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-104","text":"你打哪儿听来的消息？","categories":["colloquial-contractions","particles"],"gold":["你","打","哪儿","听","来","的","消息","？"]}
+{"id":"zh-Hans-106","text":"别等到覆水难收才后悔。","categories":["idioms","casual-speech"],"gold":["别","等到","覆水难收","才","后悔","。"]}
+{"id":"zh-Hans-108","text":"别把简单的事弄巧成拙。","categories":["idioms","casual-speech"],"gold":["别","把","简单","的","事","弄巧成拙","。"]}
+{"id":"zh-Hans-110","text":"你说得太快，他跟不上。","categories":["suffix-chains","particles"],"gold":["你","说","得","太","快","，","他","跟","不","上","。"]}
+{"id":"zh-Hans-112","text":"弹幕比讲解还忙呢。","categories":["internet-slang","particles"],"gold":["弹幕","比","讲解","还","忙","呢","。"]}
+{"id":"zh-Hans-114","text":"传说里可没说门会咬人啊！","categories":["anime-drama","particles"],"gold":["传说","里","可","没","说","门","会","咬","人","啊","！"]}
+{"id":"zh-Hans-116","text":"光会纸上谈兵有什么用？","categories":["idioms","particles"],"gold":["光","会","纸上谈兵","有","什么","用","？"]}
+{"id":"zh-Hans-118","text":"这段剪得我直接泪目。","categories":["internet-slang","particles"],"gold":["这","段","剪","得","我","直接","泪目","。"],"notes":"Dictionary exceptions: 泪目 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-120","text":"罗雾小姐，这边请。","categories":["names","casual-speech"],"gold":["罗雾","小姐","，","这边","请","。"],"notes":"Dictionary exceptions: 罗雾 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-122","text":"你先看一看背面再签。","categories":["casual-speech","particles"],"gold":["你","先","看","一","看","背面","再","签","。"]}
+{"id":"zh-Hans-124","text":"这面旗，谁也不许碰。","categories":["anime-drama","particles"],"gold":["这","面","旗","，","谁","也","不许","碰","。"]}
+{"id":"zh-Hans-126","text":"城主早已不记得自己的名字。","categories":["anime-drama","particles"],"gold":["城主","早已","不","记得","自己","的","名字","。"],"notes":"Dictionary exceptions: 城主 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-128","text":"守株待兔可等不来快递。","categories":["idioms","casual-speech"],"gold":["守株待兔","可","等","不","来","快递","。"]}
+{"id":"zh-Hans-130","text":"赵明川教练让我歇一天。","categories":["names","numbers-counters"],"gold":["赵明川","教练","让","我","歇","一","天","。"],"notes":"Dictionary exceptions: 赵明川 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-132","text":"得嘞，您就等着吃吧。","categories":["colloquial-contractions","particles"],"gold":["得","嘞","，","您","就","等","着","吃","吧","。"]}
+{"id":"zh-Hans-134","text":"don't中间有个撇号。","categories":["mixed-latin","casual-speech"],"gold":["don't","中间","有","个","撇号","。"],"notes":"Dictionary exceptions: don't (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-136","text":"我知道你不喜欢在别人面前唱歌，所以报名的时候特意没填你的名字，可你要是真想试一试，现在过去找老师还来得及，我可以陪你一起排队。","categories":["long-lines","casual-speech","particles"],"gold":["我","知道","你","不","喜欢","在","别人","面前","唱歌","，","所以","报名","的","时候","特意","没","填","你","的","名字","，","可","你","要是","真","想","试","一","试","，","现在","过去","找","老师","还","来得及","，","我","可以","陪","你","一起","排队","。"]}
+{"id":"zh-Hans-138","text":"这结局居然还能反转，服了。","categories":["internet-slang","particles"],"gold":["这","结局","居然","还","能","反转","，","服","了","。"]}
+{"id":"zh-Hans-140","text":"姚静雯护士把灯调暗了。","categories":["names","suffix-chains"],"gold":["姚静雯","护士","把","灯","调","暗","了","。"],"notes":"Dictionary exceptions: 姚静雯 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-142","text":"先关VPN再登录试试。","categories":["mixed-latin","casual-speech"],"gold":["先","关","VPN","再","登录","试","试","。"],"notes":"Dictionary exceptions: VPN (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-144","text":"这个洞通向昨天。","categories":["anime-drama","casual-speech"],"gold":["这","个","洞","通向","昨天","。"]}
+{"id":"zh-Hans-146","text":"我这不是摆烂，是在等雨停。","categories":["internet-slang","casual-speech"],"gold":["我","这","不","是","摆烂","，","是","在","等","雨","停","。"]}
+{"id":"zh-Hans-148","text":"连不上？试试airplane mode。","categories":["mixed-latin","suffix-chains"],"gold":["连","不","上","？","试","试","airplane"," ","mode","。"],"notes":"Dictionary exceptions: airplane (oov); mode (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-150","text":"别回头，镜子会记住你的脸。","categories":["anime-drama","particles"],"gold":["别","回头","，","镜子","会","记住","你","的","脸","。"]}
+{"id":"zh-Hans-152","text":"用Python算一下，不用心算。","categories":["mixed-latin","casual-speech"],"gold":["用","Python","算","一","下","，","不用","心算","。"],"notes":"Dictionary exceptions: Python (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-154","text":"有话直说，别跟我打哑谜。","categories":["idioms","casual-speech"],"gold":["有","话","直","说","，","别","跟","我","打哑谜","。"]}
+{"id":"zh-Hans-156","text":"DNS改完反而更慢了。","categories":["mixed-latin","particles"],"gold":["DNS","改","完","反而","更","慢","了","。"],"notes":"Dictionary exceptions: DNS (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-158","text":"一言为定，周末不许反悔。","categories":["idioms","casual-speech"],"gold":["一言为定","，","周末","不许","反悔","。"]}
+{"id":"zh-Hans-160","text":"江听澜同学，你的车锁好了。","categories":["names","suffix-chains"],"gold":["江听澜","同学","，","你","的","车","锁","好","了","。"],"notes":"Dictionary exceptions: 江听澜 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-162","text":"他们的盔甲怕的不是火。","categories":["anime-drama","particles"],"gold":["他们","的","盔甲","怕","的","不","是","火","。"]}
+{"id":"zh-Hans-164","text":"这滤镜开得像换了个人。","categories":["internet-slang","particles"],"gold":["这","滤镜","开","得","像","换","了","个","人","。"]}
+{"id":"zh-Hans-166","text":"你说的出口根本不存在。","categories":["anime-drama","particles"],"gold":["你","说","的","出口","根本","不","存在","。"]}
+{"id":"zh-Hans-168","text":"我只是潜水，又没退群。","categories":["internet-slang","casual-speech"],"gold":["我","只是","潜水","，","又","没","退群","。"]}
+{"id":"zh-Hans-170","text":"白露姐不姓白，你记错了。","categories":["names","casual-speech"],"gold":["白露","姐","不","姓","白","，","你","记","错","了","。"]}
+{"id":"zh-Hans-172","text":"她可不是省油的灯。","categories":["idioms","particles"],"gold":["她","可","不","是","省油的灯","。"]}
+{"id":"zh-Hans-174","text":"甭装了，你耳朵都红了。","categories":["colloquial-contractions","particles"],"gold":["甭","装","了","，","你","耳朵","都","红","了","。"]}
+{"id":"zh-Hans-176","text":"把Logo放大，别拉长。","categories":["mixed-latin","casual-speech"],"gold":["把","Logo","放大","，","别","拉长","。"],"notes":"Dictionary exceptions: Logo (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-178","text":"这是亲测，不是广告。","categories":["internet-slang","particles"],"gold":["这","是","亲测","，","不","是","广告","。"]}
+{"id":"zh-Hans-180","text":"我问的是目的，不是过程。","categories":["casual-speech","particles"],"gold":["我","问","的","是","目的","，","不","是","过程","。"]}
+{"id":"zh-Hans-182","text":"二十分钟够换乘吗？","categories":["numbers-counters","particles"],"gold":["二十","分钟","够","换乘","吗","？"]}
+{"id":"zh-Hans-184","text":"我了解他，不代表我赞成。","categories":["casual-speech","particles"],"gold":["我","了解","他","，","不","代表","我","赞成","。"]}
+{"id":"zh-Hans-186","text":"走廊干干净净，谁打扫的？","categories":["casual-speech","particles"],"gold":["走廊","干干净净","，","谁","打扫","的","？"],"notes":"Dictionary exceptions: 干干净净 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-188","text":"这届网友真会起名。","categories":["internet-slang","casual-speech"],"gold":["这","届","网友","真","会","起名","。"]}
+{"id":"zh-Hans-190","text":"你咋连鞋都穿反了？","categories":["colloquial-contractions","casual-speech"],"gold":["你","咋","连","鞋","都","穿","反","了","？"]}
+{"id":"zh-Hans-192","text":"五个人挤不进这一顶帐篷。","categories":["numbers-counters","suffix-chains"],"gold":["五","个","人","挤","不","进","这","一","顶","帐篷","。"]}
+{"id":"zh-Hans-194","text":"苏念阿姨留下来的花。","categories":["names","suffix-chains"],"gold":["苏念","阿姨","留","下来","的","花","。"],"notes":"Dictionary exceptions: 苏念 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-196","text":"按住Shift别松手。","categories":["mixed-latin","casual-speech"],"gold":["按","住","Shift","别","松手","。"],"notes":"Dictionary exceptions: Shift (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-198","text":"一会儿少放一点儿盐。","categories":["casual-speech","particles"],"gold":["一会儿","少","放","一点儿","盐","。"]}
+{"id":"zh-Hans-200","text":"这间房每晚三百五十元。","categories":["numbers-counters","particles"],"gold":["这","间","房","每","晚","三百五十","元","。"],"notes":"Dictionary exceptions: 三百五十 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-202","text":"何秋白编辑把稿子退回来了。","categories":["names","suffix-chains"],"gold":["何秋白","编辑","把","稿子","退","回来","了","。"],"notes":"Dictionary exceptions: 何秋白 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-204","text":"你这叫明知故问。","categories":["idioms","casual-speech"],"gold":["你","这","叫","明知故问","。"]}
+{"id":"zh-Hans-206","text":"把USB-C接口擦干再试。","categories":["mixed-latin","suffix-chains"],"gold":["把","USB-C","接口","擦","干","再","试","。"],"notes":"Dictionary exceptions: USB-C (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-208","text":"空手套白狼可没那么容易。","categories":["idioms","casual-speech"],"gold":["空手套白狼","可","没","那么","容易","。"],"notes":"Dictionary exceptions: 空手套白狼 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-210","text":"Plan B总得留一份吧。","categories":["mixed-latin","particles"],"gold":["Plan"," ","B","总","得","留","一","份","吧","。"],"notes":"Dictionary exceptions: Plan (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-212","text":"闹哪样啊，电梯又坏了。","categories":["colloquial-contractions","casual-speech"],"gold":["闹","哪","样","啊","，","电梯","又","坏","了","。"]}
+{"id":"zh-Hans-214","text":"梁师傅，这车还能修吗？","categories":["names","particles"],"gold":["梁","师傅","，","这","车","还","能","修","吗","？"]}
+{"id":"zh-Hans-216","text":"停了六分钟也不报站。","categories":["numbers-counters","particles"],"gold":["停","了","六","分钟","也","不","报站","。"],"notes":"Dictionary exceptions: 报站 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-218","text":"别碰，那是封印的核心！","categories":["anime-drama","particles"],"gold":["别","碰","，","那","是","封印","的","核心","！"]}
+{"id":"zh-Hans-220","text":"这次不鸽了，我真去。","categories":["internet-slang","casual-speech"],"gold":["这","次","不","鸽","了","，","我","真","去","。"]}
+{"id":"zh-Hans-222","text":"你瞅啥，脸上有面粉？","categories":["colloquial-contractions","casual-speech"],"gold":["你","瞅","啥","，","脸","上","有","面粉","？"]}
+{"id":"zh-Hans-224","text":"别再拖了，夜长梦多。","categories":["idioms","casual-speech"],"gold":["别","再","拖","了","，","夜长梦多","。"],"notes":"Dictionary exceptions: 夜长梦多 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-226","text":"面包烤得外脆里软。","categories":["suffix-chains","particles"],"gold":["面包","烤","得","外","脆","里","软","。"]}
+{"id":"zh-Hans-228","text":"你先说完，我不插嘴。","categories":["suffix-chains","casual-speech"],"gold":["你","先","说","完","，","我","不","插嘴","。"]}
+{"id":"zh-Hans-230","text":"五百米外有个加油站。","categories":["numbers-counters","casual-speech"],"gold":["五百","米","外","有","个","加油站","。"],"notes":"Dictionary exceptions: 五百 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-232","text":"这点小伤，算啥呀。","categories":["colloquial-contractions","particles"],"gold":["这","点","小","伤","，","算","啥","呀","。"]}
+{"id":"zh-Hans-234","text":"剩下10%的路最难走。","categories":["numbers-counters","particles"],"gold":["剩下","10%","的","路","最","难","走","。"],"notes":"Dictionary exceptions: 10% (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-236","text":"顾叔，茶还烫着呢。","categories":["names","particles"],"gold":["顾","叔","，","茶","还","烫","着","呢","。"]}
+{"id":"zh-Hans-238","text":"别一厢情愿，问过她了吗？","categories":["idioms","particles"],"gold":["别","一厢情愿","，","问","过","她","了","吗","？"]}
+{"id":"zh-Hans-240","text":"你一直说这条龙很危险，可它到现在只烧坏了一只水壶，反倒是追着它跑的那些骑士，把半条街的窗户都砸了，我觉得咱们至少应该先听它解释。","categories":["long-lines","anime-drama","colloquial-contractions","particles"],"gold":["你","一直","说","这","条","龙","很","危险","，","可","它","到","现在","只","烧","坏","了","一","只","水壶","，","反倒","是","追","着","它","跑","的","那些","骑士","，","把","半","条","街","的","窗户","都","砸","了","，","我","觉得","咱们","至少","应该","先","听","它","解释","。"]}
+{"id":"zh-Hans-242","text":"这段必须循环，太上头了。","categories":["internet-slang","casual-speech"],"gold":["这","段","必须","循环","，","太","上头","了","。"]}
+{"id":"zh-Hans-244","text":"你留下的火种还没有灭。","categories":["anime-drama","particles"],"gold":["你","留下","的","火种","还","没有","灭","。"]}
+{"id":"zh-Hans-246","text":"甭逞能，手都抖成啥样了。","categories":["colloquial-contractions","casual-speech"],"gold":["甭","逞能","，","手","都","抖","成","啥","样","了","。"]}
+{"id":"zh-Hans-248","text":"愿你醒来时，雪已经停了。","categories":["anime-drama","particles"],"gold":["愿","你","醒来","时","，","雪","已经","停","了","。"]}
+{"id":"zh-Hans-250","text":"别把debug信息发给客户。","categories":["mixed-latin","casual-speech"],"gold":["别","把","debug","信息","发","给","客户","。"],"notes":"Dictionary exceptions: debug (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-252","text":"别只盯着眼前，鼠目寸光。","categories":["idioms","casual-speech"],"gold":["别","只","盯","着","眼前","，","鼠目寸光","。"]}
+{"id":"zh-Hans-254","text":"他哭得喘不过气来。","categories":["suffix-chains","particles"],"gold":["他","哭","得","喘","不","过","气","来","。"]}
+{"id":"zh-Hans-256","text":"我觉得今天的汤有点酸。","categories":["casual-speech","particles"],"gold":["我","觉得","今天","的","汤","有点","酸","。"]}
+{"id":"zh-Hans-258","text":"周棠姐说她想再试一次。","categories":["names","numbers-counters"],"gold":["周棠","姐","说","她","想","再","试","一","次","。"],"notes":"Dictionary exceptions: 周棠 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-260","text":"别打马虎眼，到底借了多少？","categories":["idioms","casual-speech"],"gold":["别","打马虎眼","，","到底","借","了","多少","？"]}
+{"id":"zh-Hans-262","text":"那会儿哪懂这些呀。","categories":["colloquial-contractions","particles"],"gold":["那会儿","哪","懂","这些","呀","。"]}
+{"id":"zh-Hans-264","text":"展览的门票虽然不用钱，但那个修复师每周只来一次，如果你真想问清楚画上为什么少了一只手，我们最好先打电话，免得赶过去又只能隔着玻璃猜。","categories":["long-lines","casual-speech","suffix-chains","particles"],"gold":["展览","的","门票","虽然","不用","钱","，","但","那","个","修复","师","每","周","只","来","一","次","，","如果","你","真","想","问","清楚","画","上","为什么","少","了","一","只","手","，","我们","最好","先","打电话","，","免得","赶","过去","又","只","能","隔","着","玻璃","猜","。"]}
+{"id":"zh-Hans-266","text":"我不是故意躲着你的。","categories":["casual-speech","particles"],"gold":["我","不","是","故意","躲","着","你","的","。"]}
+{"id":"zh-Hans-268","text":"那张纸被风吹出去了。","categories":["suffix-chains","particles"],"gold":["那","张","纸","被","风","吹","出去","了","。"]}
+{"id":"zh-Hans-270","text":"这张表情包我存三年了。","categories":["internet-slang","numbers-counters"],"gold":["这","张","表情包","我","存","三","年","了","。"]}
+{"id":"zh-Hans-272","text":"管理员说这间储藏室几十年都没打开过，可门后的灰尘上分明有一串刚留下的脚印，而且一直走到墙边就不见了，你现在还觉得那阵敲门声是风吹的吗？","categories":["long-lines","anime-drama","suffix-chains","particles"],"gold":["管理员","说","这","间","储藏室","几十","年","都","没","打开","过","，","可","门","后","的","灰尘","上","分明","有","一","串","刚","留下","的","脚印","，","而且","一直","走","到","墙","边","就","不见","了","，","你","现在","还","觉得","那","阵","敲门","声","是","风","吹","的","吗","？"],"notes":"Dictionary exceptions: 几十 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-274","text":"这留言区简直人才济济。","categories":["internet-slang","idioms"],"gold":["这","留言","区","简直","人才济济","。"]}
+{"id":"zh-Hans-276","text":"许知远师兄也会紧张啊。","categories":["names","particles"],"gold":["许知远","师兄","也","会","紧张","啊","。"],"notes":"Dictionary exceptions: 许知远 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-278","text":"别用力拉，线缠在一起了。","categories":["casual-speech","particles"],"gold":["别","用力","拉","，","线","缠","在","一起","了","。"]}
+{"id":"zh-Hans-280","text":"在这儿等会儿，我拿伞。","categories":["colloquial-contractions","casual-speech"],"gold":["在","这儿","等","会儿","，","我","拿","伞","。"],"notes":"Dictionary exceptions: 会儿 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-282","text":"每隔四小时浇水会太勤吗？","categories":["numbers-counters","particles"],"gold":["每","隔","四","小时","浇水","会","太","勤","吗","？"]}
+{"id":"zh-Hans-284","text":"我没有怪你没来，只是那天把做好的菜热了好几遍，每次听见楼道里有脚步声都以为是你，后来才明白，你随口说的改天，对我来说已经等了很久。","categories":["long-lines","casual-speech","suffix-chains","particles"],"gold":["我","没有","怪","你","没","来","，","只是","那天","把","做","好","的","菜","热","了","好几","遍","，","每","次","听见","楼道","里","有","脚步声","都","以为","是","你","，","后来","才","明白","，","你","随口","说","的","改天","，","对","我","来","说","已经","等","了","很","久","。"],"notes":"Dictionary exceptions: 脚步声 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-286","text":"Bluetooth配对要开着屏幕。","categories":["mixed-latin","particles"],"gold":["Bluetooth","配对","要","开","着","屏幕","。"],"notes":"Dictionary exceptions: Bluetooth (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-288","text":"先别得意，鹿死谁手还不一定。","categories":["idioms","anime-drama"],"gold":["先","别","得意","，","鹿死谁手","还","不","一定","。"]}
+{"id":"zh-Hans-290","text":"……你刚才是不是笑了？","categories":["casual-speech","particles"],"gold":["…","…","你","刚才","是","不","是","笑","了","？"]}
+{"id":"zh-Hans-292","text":"切到guest账号再看看。","categories":["mixed-latin","casual-speech"],"gold":["切","到","guest","账号","再","看看","。"],"notes":"Dictionary exceptions: guest (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"zh-Hans-294","text":"别内耗了，先去晒晒太阳。","categories":["internet-slang","casual-speech"],"gold":["别","内耗","了","，","先","去","晒","晒","太阳","。"]}
+{"id":"zh-Hans-296","text":"这事儿你可别瞎掺和。","categories":["colloquial-contractions","particles"],"gold":["这","事儿","你","可","别","瞎","掺和","。"]}
+{"id":"zh-Hans-298","text":"茶叶泡久了有点儿苦。","categories":["colloquial-contractions","particles"],"gold":["茶叶","泡","久","了","有点儿","苦","。"]}
+{"id":"zh-Hans-300","text":"我们可以承认这次合作没有做好，也可以把损失算清楚，但别把一起熬过的那些夜晚都说成浪费，至少在最难的时候，你递过来的那杯热水是真的。","categories":["long-lines","casual-speech","suffix-chains","particles"],"gold":["我们","可以","承认","这","次","合作","没有","做","好","，","也","可以","把","损失","算","清楚","，","但","别","把","一起","熬","过","的","那些","夜晚","都","说","成","浪费","，","至少","在","最","难","的","时候","，","你","递","过来","的","那","杯","热水","是","真","的","。"]}

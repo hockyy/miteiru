@@ -1,0 +1,708 @@
+{"id":"ja-002","token":"承ります","kind":"oov","reason":"Inflected/derived surface of 承る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-004","token":"Wi-Fi","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-004","token":"切れてる","kind":"oov","reason":"Inflected/derived surface of 切れる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-005","token":"置いてきちゃった","kind":"oov","reason":"Inflected/derived surface of 置く with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-006","token":"寒くなかった","kind":"oov","reason":"Inflected/derived surface of 寒い with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-007","token":"佐藤","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-007","token":"美月","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-008","token":"お知らせください","kind":"oov","reason":"Inflected/derived surface of 知らせる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-009","token":"BGM","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-009","token":"なった","kind":"oov","reason":"Inflected/derived surface of なる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-010","token":"忘れない","kind":"oov","reason":"Inflected/derived surface of 忘れる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-010","token":"終わって","kind":"oov","reason":"Inflected/derived surface of 終わる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-010","token":"間に合わなかった","kind":"oov","reason":"Inflected/derived surface of 間に合う with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-010","token":"飲んだ","kind":"oov","reason":"Inflected/derived surface of 飲む with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-011","token":"破って","kind":"oov","reason":"Inflected/derived surface of 破る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-012","token":"ルネ","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-012","token":"開きました","kind":"oov","reason":"Inflected/derived surface of 開く with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-013","token":"守れなかった","kind":"oov","reason":"Inflected/derived surface of 守る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-013","token":"覚えてる","kind":"oov","reason":"Inflected/derived surface of 覚える with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-014","token":"伺って","kind":"oov","reason":"Inflected/derived surface of 伺う with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-015","token":"戻しましょう","kind":"oov","reason":"Inflected/derived surface of 戻す with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-016","token":"お越しいただけて","kind":"oov","reason":"Inflected/derived surface of 来る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-017","token":"@sora","kind":"name","reason":"Invented account handle; keep its uninterrupted written name intact."}
+{"id":"ja-017","token":"聞いた","kind":"oov","reason":"Inflected/derived surface of 聞く with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-018","token":"見なかった","kind":"oov","reason":"Inflected/derived surface of 見る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-019","token":"言いたくて","kind":"oov","reason":"Inflected/derived surface of 言う with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-021","token":"しておいてほしい","kind":"oov","reason":"Inflected/derived surface of する with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-021","token":"見たい","kind":"oov","reason":"Inflected/derived surface of 見る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-022","token":"いただけます","kind":"oov","reason":"Inflected/derived surface of いただく with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-022","token":"お送りした","kind":"oov","reason":"Inflected/derived surface of 送る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-022","token":"違っております","kind":"oov","reason":"Inflected/derived surface of 違う with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-023","token":"いてくれて","kind":"oov","reason":"Inflected/derived surface of いる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-023","token":"なった","kind":"oov","reason":"Inflected/derived surface of なる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-023","token":"よかった","kind":"oov","reason":"Inflected/derived surface of よい with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-023","token":"会えたら","kind":"oov","reason":"Inflected/derived surface of 会う with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-023","token":"伝えたく","kind":"oov","reason":"Inflected/derived surface of 伝える with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-023","token":"考えていた","kind":"oov","reason":"Inflected/derived surface of 考える with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-023","token":"聞かせてくれなくて","kind":"oov","reason":"Inflected/derived surface of 聞く with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-024","token":"割って","kind":"oov","reason":"Inflected/derived surface of 割る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-024","token":"話そう","kind":"oov","reason":"Inflected/derived surface of 話す with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-026","token":"泣きそう","kind":"oov","reason":"Inflected/derived surface of 泣く with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-026","token":"笑ってみせた","kind":"oov","reason":"Inflected/derived surface of 笑う with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-028","token":"3.5","kind":"oov","reason":"Intact numeral/decimal/percentage or time label; separate counters and units remain outside this surface."}
+{"id":"ja-029","token":"お呼びください","kind":"oov","reason":"Inflected/derived surface of 呼ぶ with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-029","token":"中川","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-029","token":"結衣","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-032","token":"操られたくなかった","kind":"oov","reason":"Inflected/derived surface of 操る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-033","token":"なさらないでください","kind":"oov","reason":"Inflected/derived surface of なさる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-034","token":"DM","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-034","token":"送って","kind":"oov","reason":"Inflected/derived surface of 送る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-035","token":"見られた","kind":"oov","reason":"Inflected/derived surface of 見る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-036","token":"座れそう","kind":"oov","reason":"Inflected/derived surface of 座る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-037","token":"話してた","kind":"oov","reason":"Inflected/derived surface of 話す with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-039","token":"動いたら","kind":"oov","reason":"Inflected/derived surface of 動く with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-040","token":"戻らない","kind":"oov","reason":"Inflected/derived surface of 戻る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-041","token":"HTML5","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-042","token":"12:30","kind":"oov","reason":"Intact numeral/decimal/percentage or time label; separate counters and units remain outside this surface."}
+{"id":"ja-043","token":"でいらっしゃいます","kind":"oov","reason":"Inflected/derived surface of である with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-044","token":"忘れ","kind":"oov","reason":"Inflected/derived surface of 忘れる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-044","token":"鳴海","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-046","token":"やってみよう","kind":"oov","reason":"Inflected/derived surface of やる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-047","token":"斎藤","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-048","token":"山田","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-049","token":"解釈一致すぎる","kind":"oov","reason":"Fandom expression 解釈一致 with attached productive excess すぎる; the whole surface is explicitly OOV."}
+{"id":"ja-050","token":"伺います","kind":"oov","reason":"Inflected/derived surface of 伺う with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-051","token":"美緒","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-055","token":"楽しそう","kind":"oov","reason":"Inflected/derived surface of 楽しい with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-055","token":"決められていない","kind":"oov","reason":"Inflected/derived surface of 決める with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-055","token":"笑って","kind":"oov","reason":"Inflected/derived surface of 笑う with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-055","token":"置いていかれる","kind":"oov","reason":"Inflected/derived surface of 置く with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-057","token":"持ってた","kind":"oov","reason":"Inflected/derived surface of 持つ with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-058","token":"守れ","kind":"oov","reason":"Inflected/derived surface of 守る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-060","token":"いたします","kind":"oov","reason":"Inflected/derived surface of いたす with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-061","token":"止まりません","kind":"oov","reason":"Inflected/derived surface of 止まる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-062","token":"いかない","kind":"oov","reason":"Inflected/derived surface of いく with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-062","token":"待っている","kind":"oov","reason":"Inflected/derived surface of 待つ with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-062","token":"戻れない","kind":"oov","reason":"Inflected/derived surface of 戻る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-062","token":"知っていて","kind":"oov","reason":"Inflected/derived surface of 知る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-062","token":"聞いた","kind":"oov","reason":"Inflected/derived surface of 聞く with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-062","token":"開けたら","kind":"oov","reason":"Inflected/derived surface of 開ける with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-063","token":"エルナ","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-063","token":"お逃げください","kind":"oov","reason":"Inflected/derived surface of 逃げる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-064","token":"待たせられません","kind":"oov","reason":"Inflected/derived surface of 待つ with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-066","token":"沸かしといた","kind":"oov","reason":"Inflected/derived surface of 沸かす with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-067","token":"20%","kind":"oov","reason":"Intact numeral/decimal/percentage or time label; separate counters and units remain outside this surface."}
+{"id":"ja-069","token":"入れた","kind":"oov","reason":"Inflected/derived surface of 入れる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-070","token":"呼んでまいります","kind":"oov","reason":"Inflected/derived surface of 呼ぶ with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-071","token":"座れ","kind":"oov","reason":"Inflected/derived surface of 座る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-071","token":"教えて","kind":"oov","reason":"Inflected/derived surface of 教える with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-073","token":"寝返った","kind":"oov","reason":"Inflected/derived surface of 寝返る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-073","token":"石田","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-074","token":"見られたくない","kind":"oov","reason":"Inflected/derived surface of 見る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-075","token":"CPU","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-076","token":"できます","kind":"oov","reason":"Inflected/derived surface of できる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-077","token":"待ってくんない","kind":"oov","reason":"Inflected/derived surface of 待つ with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-078","token":"暖かそう","kind":"oov","reason":"Inflected/derived surface of 暖かい with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-079","token":"don't","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-081","token":"戻られる","kind":"oov","reason":"Inflected/derived surface of 戻る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-081","token":"探してみましょう","kind":"oov","reason":"Inflected/derived surface of 探す with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-081","token":"離れます","kind":"oov","reason":"Inflected/derived surface of 離れる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-082","token":"小野寺","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-083","token":"盛りすぎ","kind":"oov","reason":"Inflected/derived surface of 盛る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-084","token":"分けよう","kind":"oov","reason":"Inflected/derived surface of 分ける with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-085","token":"#朝活","kind":"oov","reason":"Uninterrupted hashtag label; retain the marker and label as one lookup unit."}
+{"id":"ja-086","token":"HTML","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-086","token":"触らないで","kind":"oov","reason":"Inflected/derived surface of 触る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-087","token":"読みたくなかった","kind":"oov","reason":"Inflected/derived surface of 読む with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-088","token":"立てた","kind":"oov","reason":"Inflected/derived surface of 立てる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-089","token":"しちゃ","kind":"oov","reason":"Inflected/derived surface of する with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-091","token":"鈴木","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-092","token":"API","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-092","token":"しないで","kind":"oov","reason":"Inflected/derived surface of する with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-093","token":"消えちゃう","kind":"oov","reason":"Inflected/derived surface of 消える with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-094","token":"青く","kind":"oov","reason":"Inflected/derived surface of 青い with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-095","token":"着替えときな","kind":"oov","reason":"Inflected/derived surface of 着替える with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-096","token":"ならねえ","kind":"oov","reason":"Inflected/derived surface of なる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-098","token":"できない","kind":"oov","reason":"Inflected/derived surface of できる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-099","token":"いたしましょう","kind":"oov","reason":"Inflected/derived surface of いたす with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-100","token":"帰った","kind":"oov","reason":"Inflected/derived surface of 帰る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-101","token":"させて","kind":"oov","reason":"Inflected/derived surface of する with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-103","token":"いたしました","kind":"oov","reason":"Inflected/derived surface of いたす with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-103","token":"添えず","kind":"oov","reason":"Inflected/derived surface of 添う with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-104","token":"呼んでた","kind":"oov","reason":"Inflected/derived surface of 呼ぶ with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-104","token":"真琴","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-105","token":"PDF","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-105","token":"直せない","kind":"oov","reason":"Inflected/derived surface of 直す with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-107","token":"してる","kind":"oov","reason":"Inflected/derived surface of する with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-107","token":"リピ","kind":"oov","reason":"Colloquial clipped loanword for repeat/replay; keep the spoken lexical clipping, absent from JMdict."}
+{"id":"ja-108","token":"謝らせてほしかった","kind":"oov","reason":"Inflected/derived surface of 謝る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-109","token":"借りたい","kind":"oov","reason":"Inflected/derived surface of 借りる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-110","token":"500","kind":"oov","reason":"Intact numeral/decimal/percentage or time label; separate counters and units remain outside this surface."}
+{"id":"ja-110","token":"ml","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-112","token":"食べてほしい","kind":"oov","reason":"Inflected/derived surface of 食べる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-113","token":"じゃなくて","kind":"oov","reason":"Inflected/derived surface of である with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-114","token":"OK","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-117","token":"なって","kind":"oov","reason":"Inflected/derived surface of なる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-120","token":"治してみせる","kind":"oov","reason":"Inflected/derived surface of 治す with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-121","token":"上がらない","kind":"oov","reason":"Inflected/derived surface of 上がる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-122","token":"RGB","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-123","token":"滑った","kind":"oov","reason":"Inflected/derived surface of 滑る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-126","token":"SSD","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-126","token":"移しておこう","kind":"oov","reason":"Inflected/derived surface of 移す with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-127","token":"黒田","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-128","token":"GB","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-128","token":"入らない","kind":"oov","reason":"Inflected/derived surface of 入る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-130","token":"西村","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-131","token":"整えて","kind":"oov","reason":"Inflected/derived surface of 整える with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-133","token":"30%","kind":"oov","reason":"Intact numeral/decimal/percentage or time label; separate counters and units remain outside this surface."}
+{"id":"ja-133","token":"戻して","kind":"oov","reason":"Inflected/derived surface of 戻す with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-134","token":"Ctrl","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-134","token":"押した","kind":"oov","reason":"Inflected/derived surface of 押す with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-135","token":"見てみたかった","kind":"oov","reason":"Inflected/derived surface of 見る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-137","token":"戻ってきた","kind":"oov","reason":"Inflected/derived surface of 戻る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-137","token":"負けたくない","kind":"oov","reason":"Inflected/derived surface of 負ける with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-138","token":"多すぎ","kind":"oov","reason":"Inflected/derived surface of 多い with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-139","token":"藤井","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-140","token":"思って","kind":"oov","reason":"Inflected/derived surface of 思う with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-141","token":"じゃなくて","kind":"oov","reason":"Inflected/derived surface of である with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-142","token":"配れば","kind":"oov","reason":"Inflected/derived surface of 配る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-143","token":"しなきゃ","kind":"oov","reason":"Inflected/derived surface of する with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-144","token":"作り直してもらう","kind":"oov","reason":"Inflected/derived surface of 作り直す with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-144","token":"間違えた","kind":"oov","reason":"Inflected/derived surface of 間違える with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-144","token":"頼んで","kind":"oov","reason":"Inflected/derived surface of 頼む with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-147","token":"GPS","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-147","token":"迷ってる","kind":"oov","reason":"Inflected/derived surface of 迷う with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-148","token":"黙ってて","kind":"oov","reason":"Inflected/derived surface of 黙る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-149","token":"戻れ","kind":"oov","reason":"Inflected/derived surface of 戻る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-149","token":"生きて","kind":"oov","reason":"Inflected/derived surface of 生きる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-150","token":"行こう","kind":"oov","reason":"Inflected/derived surface of 行く with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-151","token":"ほどけてる","kind":"oov","reason":"Inflected/derived surface of ほどける with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-152","token":"注いで","kind":"oov","reason":"Inflected/derived surface of 注ぐ with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-153","token":"QR","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-154","token":"思った","kind":"oov","reason":"Inflected/derived surface of 思う with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-154","token":"眠っている","kind":"oov","reason":"Inflected/derived surface of 眠る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-154","token":"言い争ったら","kind":"oov","reason":"Inflected/derived surface of 言い争う with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-154","token":"言い返さなかった","kind":"oov","reason":"Inflected/derived surface of 言い返す with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-154","token":"起こしてしまう","kind":"oov","reason":"Inflected/derived surface of 起こす with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-155","token":"小泉","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-155","token":"届いてる","kind":"oov","reason":"Inflected/derived surface of 届く with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-156","token":"多くない","kind":"oov","reason":"Inflected/derived surface of 多い with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-157","token":"久保田","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-157","token":"借りて","kind":"oov","reason":"Inflected/derived surface of 借りる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-158","token":"貸せる","kind":"oov","reason":"Inflected/derived surface of 貸す with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-159","token":"伝わんない","kind":"oov","reason":"Inflected/derived surface of 伝わる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-159","token":"言わなくちゃ","kind":"oov","reason":"Inflected/derived surface of 言う with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-160","token":"いたします","kind":"oov","reason":"Inflected/derived surface of いたす with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-161","token":"じゃなくて","kind":"oov","reason":"Inflected/derived surface of である with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-163","token":"降ろしてください","kind":"oov","reason":"Inflected/derived surface of 降ろす with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-164","token":"お預かりします","kind":"oov","reason":"Inflected/derived surface of 預かる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-165","token":"出ている","kind":"oov","reason":"Inflected/derived surface of 出る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-165","token":"直った","kind":"oov","reason":"Inflected/derived surface of 直る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-165","token":"確かめさせてください","kind":"oov","reason":"Inflected/derived surface of 確かめる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-167","token":"教えていただいた","kind":"oov","reason":"Inflected/derived surface of 教える with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-167","token":"歩いてみません","kind":"oov","reason":"Inflected/derived surface of 歩く with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-167","token":"買って","kind":"oov","reason":"Inflected/derived surface of 買う with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-168","token":"怯えていた","kind":"oov","reason":"Inflected/derived surface of 怯える with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-169","token":"教えてもらった","kind":"oov","reason":"Inflected/derived surface of 教える with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-170","token":"お忘れになりません","kind":"oov","reason":"Inflected/derived surface of 忘れる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-172","token":"くじかれた","kind":"oov","reason":"Inflected/derived surface of くじく with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-173","token":"A4","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-173","token":"してください","kind":"oov","reason":"Inflected/derived surface of する with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-174","token":"お父さんっぽい","kind":"oov","reason":"Inflected/derived surface of お父さん with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-174","token":"笑い方","kind":"oov","reason":"Productive way-of-laughing noun derived from 笑う plus 方; retain the nominalized lexical surface."}
+{"id":"ja-175","token":"よかった","kind":"oov","reason":"Inflected/derived surface of よい with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-175","token":"届けてくれた","kind":"oov","reason":"Inflected/derived surface of 届ける with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-175","token":"慌てた","kind":"oov","reason":"Inflected/derived surface of 慌てる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-175","token":"気づいて","kind":"oov","reason":"Inflected/derived surface of 気づく with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-175","token":"言えて","kind":"oov","reason":"Inflected/derived surface of 言う with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-175","token":"譲ってくれた","kind":"oov","reason":"Inflected/derived surface of 譲る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-175","token":"追いかけてきて","kind":"oov","reason":"Inflected/derived surface of 追いかける with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-177","token":"いらない","kind":"oov","reason":"Inflected/derived surface of いる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-178","token":"聞いちゃって","kind":"oov","reason":"Inflected/derived surface of 聞く with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-180","token":"噛み合わない","kind":"oov","reason":"Inflected/derived surface of 噛み合う with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-182","token":"Bluetooth","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-182","token":"切った","kind":"oov","reason":"Inflected/derived surface of 切る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-183","token":"いなく","kind":"oov","reason":"Inflected/derived surface of いる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-183","token":"かけたい","kind":"oov","reason":"Inflected/derived surface of かける with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-183","token":"なった","kind":"oov","reason":"Inflected/derived surface of なる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-183","token":"残っていたら","kind":"oov","reason":"Inflected/derived surface of 残る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-183","token":"黙って","kind":"oov","reason":"Inflected/derived surface of 黙る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-183","token":"運んでくれて","kind":"oov","reason":"Inflected/derived surface of 運ぶ with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-184","token":"寝てん","kind":"oov","reason":"Inflected/derived surface of 寝る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-184","token":"起きなきゃ","kind":"oov","reason":"Inflected/derived surface of 起きる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-186","token":"見よう","kind":"oov","reason":"Inflected/derived surface of 見る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-187","token":"来てほしかった","kind":"oov","reason":"Inflected/derived surface of 来る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-188","token":"最適解","kind":"oov","reason":"Lexical optimal-solution technical noun; exact compound is unindexed."}
+{"id":"ja-189","token":"USB-C","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-190","token":"FAQ","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-190","token":"載っていませんでした","kind":"oov","reason":"Inflected/derived surface of 載る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-191","token":"でした","kind":"oov","reason":"Inflected/derived surface of です with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-191","token":"山岸","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-192","token":"聞いた","kind":"oov","reason":"Inflected/derived surface of 聞く with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-194","token":"走った","kind":"oov","reason":"Inflected/derived surface of 走る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-194","token":"閉めて","kind":"oov","reason":"Inflected/derived surface of 閉める with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-195","token":"残しといて","kind":"oov","reason":"Inflected/derived surface of 残す with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-196","token":"流せない","kind":"oov","reason":"Inflected/derived surface of 流す with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-197","token":"叩きすぎ","kind":"oov","reason":"Inflected/derived surface of 叩く with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-199","token":"甘やかしすぎた","kind":"oov","reason":"Inflected/derived surface of 甘やかす with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-200","token":"怖がってる","kind":"oov","reason":"Inflected/derived surface of 怖い with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-202","token":"延ばせる","kind":"oov","reason":"Inflected/derived surface of 延ばす with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-203","token":"黙った","kind":"oov","reason":"Inflected/derived surface of 黙る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-205","token":"聞かれそう","kind":"oov","reason":"Inflected/derived surface of 聞く with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-206","token":"こぼしちゃう","kind":"oov","reason":"Inflected/derived surface of こぼす with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-206","token":"持ってて","kind":"oov","reason":"Inflected/derived surface of 持つ with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-208","token":"残ってない","kind":"oov","reason":"Inflected/derived surface of 残る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-209","token":"しゃべらない","kind":"oov","reason":"Inflected/derived surface of しゃべる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-209","token":"食べながら","kind":"oov","reason":"Inflected/derived surface of 食べる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-210","token":"ばれてん","kind":"oov","reason":"Inflected/derived surface of ばれる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-210","token":"寝た","kind":"oov","reason":"Inflected/derived surface of 寝る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-211","token":"消えました","kind":"oov","reason":"Inflected/derived surface of 消える with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-214","token":"USB","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-214","token":"お待ちください","kind":"oov","reason":"Inflected/derived surface of 待つ with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-214","token":"抜かず","kind":"oov","reason":"Inflected/derived surface of 抜く with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-215","token":"残してほしい","kind":"oov","reason":"Inflected/derived surface of 残す with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-219","token":"明るすぎて","kind":"oov","reason":"Inflected/derived surface of 明るい with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-219","token":"眠れない","kind":"oov","reason":"Inflected/derived surface of 眠る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-220","token":"忘れた","kind":"oov","reason":"Inflected/derived surface of 忘れる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-221","token":"召し上がっていただけます","kind":"oov","reason":"Inflected/derived surface of 召し上がる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-222","token":"思っていた","kind":"oov","reason":"Inflected/derived surface of 思う with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-222","token":"感じられる","kind":"oov","reason":"Inflected/derived surface of 感じる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-222","token":"捨てられる","kind":"oov","reason":"Inflected/derived surface of 捨てる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-222","token":"握っていた","kind":"oov","reason":"Inflected/derived surface of 握る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-222","token":"見つけた","kind":"oov","reason":"Inflected/derived surface of 見つける with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-222","token":"重く","kind":"oov","reason":"Inflected/derived surface of 重い with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-224","token":"ミナト","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-224","token":"切れてます","kind":"oov","reason":"Inflected/derived surface of 切れる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-225","token":"飲んじゃおう","kind":"oov","reason":"Inflected/derived surface of 飲む with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-226","token":"濡れてる","kind":"oov","reason":"Inflected/derived surface of 濡れる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-227","token":"ID","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-228","token":"しとけば","kind":"oov","reason":"Inflected/derived surface of する with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-228","token":"よかった","kind":"oov","reason":"Inflected/derived surface of よい with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-229","token":"会ってなかった","kind":"oov","reason":"Inflected/derived surface of 会う with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-230","token":"0.8","kind":"oov","reason":"Intact numeral/decimal/percentage or time label; separate counters and units remain outside this surface."}
+{"id":"ja-231","token":"結城","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-232","token":"送らないで","kind":"oov","reason":"Inflected/derived surface of 送る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-234","token":"白井","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-234","token":"褒められちゃった","kind":"oov","reason":"Inflected/derived surface of 褒める with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-235","token":"持っていってあげる","kind":"oov","reason":"Inflected/derived surface of 持つ with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-236","token":"なっております","kind":"oov","reason":"Inflected/derived surface of なる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-237","token":"見てる","kind":"oov","reason":"Inflected/derived surface of 見る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-238","token":"分けてくれ","kind":"oov","reason":"Inflected/derived surface of 分ける with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-239","token":"いらない","kind":"oov","reason":"Inflected/derived surface of いる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-240","token":"読んだり","kind":"oov","reason":"Inflected/derived surface of 読む with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-243","token":"されちゃった","kind":"oov","reason":"Inflected/derived surface of する with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-244","token":"v2","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-245","token":"止めて","kind":"oov","reason":"Inflected/derived surface of 止める with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-246","token":"売ってる","kind":"oov","reason":"Inflected/derived surface of 売る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-247","token":"お申し付けください","kind":"oov","reason":"Inflected/derived surface of 申し付ける with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-249","token":"お帰りください","kind":"oov","reason":"Inflected/derived surface of 帰る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-249","token":"つけて","kind":"oov","reason":"Inflected/derived surface of つける with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-250","token":"帰んなきゃ","kind":"oov","reason":"Inflected/derived surface of 帰る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-251","token":"安藤","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-252","token":"リオ","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-253","token":"RT","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-254","token":"じゃなくて","kind":"oov","reason":"Inflected/derived surface of である with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-254","token":"なかった","kind":"oov","reason":"Inflected/derived surface of ない with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-254","token":"作った","kind":"oov","reason":"Inflected/derived surface of 作る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-254","token":"壊れた","kind":"oov","reason":"Inflected/derived surface of 壊れる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-254","token":"怒られる","kind":"oov","reason":"Inflected/derived surface of 怒る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-254","token":"怖くて","kind":"oov","reason":"Inflected/derived surface of 怖い with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-254","token":"黙っていた","kind":"oov","reason":"Inflected/derived surface of 黙る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-254","token":"知ったら","kind":"oov","reason":"Inflected/derived surface of 知る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-256","token":"伊藤","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-257","token":"食べさせられなかった","kind":"oov","reason":"Inflected/derived surface of 食べる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-258","token":"縛れない","kind":"oov","reason":"Inflected/derived surface of 縛る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-259","token":"できなかった","kind":"oov","reason":"Inflected/derived surface of できる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-261","token":"お掛けになってください","kind":"oov","reason":"Inflected/derived surface of 掛ける with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-262","token":"お預かりした","kind":"oov","reason":"Inflected/derived surface of 預かる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-262","token":"わかりません","kind":"oov","reason":"Inflected/derived surface of わかる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-262","token":"伺っております","kind":"oov","reason":"Inflected/derived surface of 伺う with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-262","token":"調べさせていただきます","kind":"oov","reason":"Inflected/derived surface of 調べる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-263","token":"押してほしかった","kind":"oov","reason":"Inflected/derived surface of 押す with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-264","token":"勝った","kind":"oov","reason":"Inflected/derived surface of 勝つ with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-264","token":"見えない","kind":"oov","reason":"Inflected/derived surface of 見える with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-265","token":"VR","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-265","token":"酔いやすい","kind":"oov","reason":"Inflected/derived surface of 酔う with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-266","token":"付けた","kind":"oov","reason":"Inflected/derived surface of 付ける with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-267","token":"回線落ち","kind":"oov","reason":"Lexical disconnected/dropped-connection internet noun; exact compound is unindexed."}
+{"id":"ja-268","token":"くくって","kind":"oov","reason":"Inflected/derived surface of くくる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-268","token":"来た","kind":"oov","reason":"Inflected/derived surface of 来る with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-269","token":"下りた","kind":"oov","reason":"Inflected/derived surface of 下りる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-270","token":"ありません","kind":"oov","reason":"Inflected/derived surface of ある with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-271","token":"挟まった","kind":"oov","reason":"Inflected/derived surface of 挟まる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-272","token":"食った","kind":"oov","reason":"Inflected/derived surface of 食う with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-273","token":"PIN","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-273","token":"教えないで","kind":"oov","reason":"Inflected/derived surface of 教える with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-274","token":"ヴァル","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-275","token":"聞こえた","kind":"oov","reason":"Inflected/derived surface of 聞こえる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-277","token":"11","kind":"oov","reason":"Intact numeral/decimal/percentage or time label; separate counters and units remain outside this surface."}
+{"id":"ja-277","token":"2026","kind":"oov","reason":"Intact numeral/decimal/percentage or time label; separate counters and units remain outside this surface."}
+{"id":"ja-278","token":"欲しがってた","kind":"oov","reason":"Inflected/derived surface of 欲しい with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-278","token":"見つけた","kind":"oov","reason":"Inflected/derived surface of 見つける with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-281","token":"なで下ろす","kind":"oov","reason":"Orthographic variant of the lexical verb 撫で下ろす; preserve the exact kana/kanji surface."}
+{"id":"ja-282","token":"ナユタ","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"ja-283","token":"踏んづけてる","kind":"oov","reason":"Inflected/derived surface of 踏んづける with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-284","token":"ぶれてた","kind":"oov","reason":"Inflected/derived surface of ぶれる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-287","token":"溶けてない","kind":"oov","reason":"Inflected/derived surface of 溶ける with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-290","token":"嫌がらなくて","kind":"oov","reason":"Inflected/derived surface of 嫌がる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-291","token":"お待たせして","kind":"oov","reason":"Inflected/derived surface of 待つ with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-291","token":"ございません","kind":"oov","reason":"Inflected/derived surface of ございます with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-292","token":"熱すぎる","kind":"oov","reason":"Inflected/derived surface of 熱い with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-293","token":"お選びくださいませ","kind":"oov","reason":"Inflected/derived surface of 選ぶ with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-295","token":"楽しそう","kind":"oov","reason":"Inflected/derived surface of 楽しい with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-295","token":"混ざりたい","kind":"oov","reason":"Inflected/derived surface of 混ざる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"ja-297","token":"AI","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"ja-300","token":"捨てちゃった","kind":"oov","reason":"Inflected/derived surface of 捨てる with its attached morphology/auxiliaries; JMdict surface headword is absent, not a claim that the lemma is missing."}
+{"id":"yue-006","token":"screenshots","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-006","token":"upload","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-006","token":"十幾","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"yue-007","token":"潘芷澄","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-012","token":"陸啟彤","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-017","token":"approve","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-019","token":"畫簿","kind":"oov","reason":"Lexical sketchbook noun; unindexed CantoDict surface."}
+{"id":"yue-023","token":"download","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-026","token":"表情包","kind":"oov","reason":"Internet meme/sticker-pack noun; absent from this CantoDict version."}
+{"id":"yue-028","token":"printer","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-028","token":"syncing","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-031","token":"咁樣","kind":"oov","reason":"Colloquial deictic manner word like this; retain the lexical word."}
+{"id":"yue-032","token":"莫頌恩","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-037","token":"開箱","kind":"oov","reason":"Internet unboxing verb used to modify a video, not literal verb-object open box."}
+{"id":"yue-039","token":"booking","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-039","token":"cancelled","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-045","token":"余卓嵐","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-050","token":"check-in","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-056","token":"邵詠晴","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-060","token":"結印","kind":"oov","reason":"Fantasy hand-seal-forming technique word; unindexed genre term."}
+{"id":"yue-062","token":"關悅岑","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-067","token":"馮曉堯","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-070","token":"folder","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-070","token":"spaces","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-072","token":"meme","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-073","token":"廿三","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"yue-078","token":"廖靖嵐","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-079","token":"draft","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-079","token":"print","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-080","token":"小誌","kind":"oov","reason":"Lexical zine noun; unindexed surface."}
+{"id":"yue-082","token":"後巷","kind":"oov","reason":"Lexical back-alley noun; unindexed surface."}
+{"id":"yue-083","token":"post","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-084","token":"1.5","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"yue-088","token":"meetings","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-089","token":"伍樂澄","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-092","token":"password","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-094","token":"應援色","kind":"oov","reason":"Fandom support-colour term; unindexed lexical culture term."}
+{"id":"yue-096","token":"收費閘","kind":"oov","reason":"Conventional fare-gate noun; unindexed lexical transport term."}
+{"id":"yue-099","token":"嗰邊","kind":"oov","reason":"Colloquial deictic locative over there; unindexed surface."}
+{"id":"yue-100","token":"游心悅","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-101","token":"碌卡","kind":"oov","reason":"Conventional swipe-card verb in 卡 orthography; dictionary indexes 碌咭 instead."}
+{"id":"yue-103","token":"follow-up","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-106","token":"凍檸茶","kind":"oov","reason":"Conventional iced-lemon-tea beverage name; unindexed CantoDict surface."}
+{"id":"yue-108","token":"倒打一耙","kind":"oov","reason":"Conventional four-character turn-the-blame-back idiom; absent from this CantoDict version."}
+{"id":"yue-111","token":"易朗謙","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-114","token":"earbuds","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-114","token":"pairing","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-116","token":"有戲","kind":"oov","reason":"Figurative expressive/dramatic slang word in the photograph context; unindexed."}
+{"id":"yue-118","token":"3.6","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"yue-122","token":"麥頌琳","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-125","token":"client","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-125","token":"options","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-127","token":"group","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-128","token":"細力","kind":"oov","reason":"Lexical softly/gently manner word in the doorbell context; unindexed surface."}
+{"id":"yue-131","token":"冇謂","kind":"oov","reason":"Lexical pointless/not-worth-it discouraging expression; unindexed negative lexical item, explicitly OOV."}
+{"id":"yue-132","token":"乞嚏","kind":"oov","reason":"Colloquial sneeze noun in this written orthography; unindexed surface."}
+{"id":"yue-133","token":"成樂陶","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-136","token":"past","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-136","token":"report","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-136","token":"tense","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-144","token":"蔡以晞","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-147","token":"app","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-147","token":"exporting","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-151","token":"150","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"yue-155","token":"戴卓言","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-158","token":"deadlines","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-162","token":"貼圖","kind":"oov","reason":"Lexical sticker-image noun; unindexed surface."}
+{"id":"yue-166","token":"石映彤","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-169","token":"checked","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-169","token":"link","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-173","token":"假膠","kind":"oov","reason":"Cantonese internet trolling/pretend-fool slang word; unindexed surface."}
+{"id":"yue-175","token":"Wi-Fi","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-177","token":"田芷洛","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-178","token":"貓妖","kind":"oov","reason":"Fantasy cat-spirit noun; unindexed genre compound."}
+{"id":"yue-180","token":"double-click","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-184","token":"cap","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-184","token":"神回覆","kind":"oov","reason":"Internet slang for a brilliant reply; unindexed lexical slang term."}
+{"id":"yue-188","token":"嚴朗澄","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-191","token":"backing","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-191","token":"files","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-191","token":"up","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-195","token":"少女心","kind":"oov","reason":"Lexical girlish-sensibility culture term; unindexed surface."}
+{"id":"yue-197","token":"2.4","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"yue-198","token":"紙鶴","kind":"oov","reason":"Conventional origami-crane noun; unindexed surface."}
+{"id":"yue-199","token":"江悅榆","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-201","token":"don't","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-201","token":"worry","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-202","token":"黎芮晴","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-212","token":"@leaf","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-212","token":"channel","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-212","token":"tag","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-213","token":"歐頌庭","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-215","token":"燙手","kind":"oov","reason":"Lexical hot-to-handle adjective; unindexed surface."}
+{"id":"yue-218","token":"懶人包","kind":"oov","reason":"Lexical digest/cheat-sheet internet term; unindexed surface."}
+{"id":"yue-223","token":"USB-C","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-224","token":"柯映藍","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-231","token":"0.7","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"yue-234","token":"98%","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"yue-234","token":"CPU","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-235","token":"卓樂悠","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-244","token":"二百六十","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"yue-245","token":"OK","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-245","token":"save","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-246","token":"司徒芷寧","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-249","token":"盲人摸象","kind":"oov","reason":"Conventional four-character blind-men-and-elephant idiom; absent from this CantoDict version."}
+{"id":"yue-254","token":"咁樣","kind":"oov","reason":"Colloquial deictic manner word like this; retain the lexical word."}
+{"id":"yue-256","token":"LOL","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-257","token":"馬悅琛","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-261","token":"合腳","kind":"oov","reason":"Lexical fit-the-foot adjective for shoes; unindexed surface."}
+{"id":"yue-264","token":"綜藝感","kind":"oov","reason":"Lexical variety-show sensibility entertainment term; unindexed surface."}
+{"id":"yue-266","token":"三千二百","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"yue-267","token":"#later","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-267","token":"bot","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-268","token":"錢映希","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-277","token":"42","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"yue-278","token":"1.8","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"yue-279","token":"文卓霖","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-288","token":"7:45","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"yue-290","token":"甘芷盈","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-291","token":"refund","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-297","token":"loop","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"yue-299","token":"蕭朗瑜","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"yue-299","token":"雨聲","kind":"oov","reason":"Conventional rain-sound nature noun; unindexed exact surface."}
+{"id":"zh-Hans-001","token":"Retry","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-002","token":"八十六","kind":"oov","reason":"Intact numeral/decimal/percentage or time label; separate counters and units remain outside this surface."}
+{"id":"zh-Hans-003","token":"bug","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-005","token":"沈知夏","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-008","token":"闻人澄","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-011","token":"江序","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-012","token":"Wi-Fi","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-014","token":"3.5","kind":"oov","reason":"Intact numeral/decimal/percentage or time label; separate counters and units remain outside this surface."}
+{"id":"zh-Hans-020","token":"OpenAI","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-021","token":"林屿宁","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-024","token":"安安静静","kind":"oov","reason":"Productive AABB reduplication of 安静; retain the adjective as one morphological surface OOV."}
+{"id":"zh-Hans-033","token":"17","kind":"oov","reason":"Intact numeral/decimal/percentage or time label; separate counters and units remain outside this surface."}
+{"id":"zh-Hans-033","token":"2026","kind":"oov","reason":"Intact numeral/decimal/percentage or time label; separate counters and units remain outside this surface."}
+{"id":"zh-Hans-034","token":"转场","kind":"oov","reason":"Lexical scene-transition editing term; this film/editing sense is unindexed."}
+{"id":"zh-Hans-036","token":"老粉","kind":"oov","reason":"Internet/fandom noun for a long-time fan; retain the lexical slang unit."}
+{"id":"zh-Hans-037","token":"PDF","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-039","token":"0.6","kind":"oov","reason":"Intact numeral/decimal/percentage or time label; separate counters and units remain outside this surface."}
+{"id":"zh-Hans-040","token":"顾星遥","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-042","token":"道儿","kind":"oov","reason":"Colloquial erhua noun for a way/path; preserve its written morphology."}
+{"id":"zh-Hans-044","token":"Enter","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-046","token":"仔仔细细","kind":"oov","reason":"Productive AABB reduplication of 仔细; retain the adjective as one morphological surface OOV."}
+{"id":"zh-Hans-048","token":"API","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-058","token":"向晚","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-059","token":"叶闻音","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-061","token":"Hello","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-062","token":"陆闻溪","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-063","token":"蒋知微","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-067","token":"HDMI","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-070","token":"黎照","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-073","token":"v2","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-074","token":"TODO","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-077","token":"final","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-077","token":"文件名","kind":"oov","reason":"Lexical filename technical noun; exact compound is unindexed."}
+{"id":"zh-Hans-079","token":"周予安","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-082","token":"nice","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-084","token":"SSID","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-087","token":"宋以宁","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-088","token":"Esc","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-093","token":"简行之","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-094","token":"Kitchen","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-095","token":"温屿","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-098","token":"#lost","kind":"oov","reason":"Uninterrupted hashtag label; retain the marker and label as one lookup unit."}
+{"id":"zh-Hans-099","token":"绝绝子","kind":"oov","reason":"Conventional internet praise slang; preserve the lexical expression rather than character fragments."}
+{"id":"zh-Hans-101","token":"安安静静","kind":"oov","reason":"Productive AABB reduplication of 安静; retain the adjective as one morphological surface OOV."}
+{"id":"zh-Hans-102","token":"闻澈","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-103","token":"9.9","kind":"oov","reason":"Intact numeral/decimal/percentage or time label; separate counters and units remain outside this surface."}
+{"id":"zh-Hans-109","token":"程砚","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-111","token":"A4","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-113","token":"小曲儿","kind":"oov","reason":"Colloquial erhua form of indexed 小曲, a tune; retain the written lexical morphology."}
+{"id":"zh-Hans-115","token":"Chrome","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-118","token":"泪目","kind":"oov","reason":"Internet emotional-response slang for becoming teary-eyed; unindexed lexical expression."}
+{"id":"zh-Hans-120","token":"罗雾","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-126","token":"城主","kind":"oov","reason":"Conventional fantasy city-lord title noun; exact genre compound is unindexed."}
+{"id":"zh-Hans-127","token":"Re","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-130","token":"赵明川","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-133","token":"三百","kind":"oov","reason":"Intact numeral/decimal/percentage or time label; separate counters and units remain outside this surface."}
+{"id":"zh-Hans-134","token":"don't","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-140","token":"姚静雯","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-142","token":"VPN","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-145","token":"90%","kind":"oov","reason":"Intact numeral/decimal/percentage or time label; separate counters and units remain outside this surface."}
+{"id":"zh-Hans-145","token":"CPU","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-148","token":"airplane","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-148","token":"mode","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-152","token":"Python","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-155","token":"冰墙","kind":"oov","reason":"Conventional ice-wall fantasy noun; exact genre compound is unindexed."}
+{"id":"zh-Hans-156","token":"DNS","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-159","token":"5%","kind":"oov","reason":"Intact numeral/decimal/percentage or time label; separate counters and units remain outside this surface."}
+{"id":"zh-Hans-160","token":"江听澜","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-175","token":"Excel","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-176","token":"Logo","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-177","token":"二十三","kind":"oov","reason":"Intact numeral/decimal/percentage or time label; separate counters and units remain outside this surface."}
+{"id":"zh-Hans-179","token":"SMS","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-186","token":"干干净净","kind":"oov","reason":"Productive AABB reduplication of 干净; retain the adjective as one morphological surface OOV."}
+{"id":"zh-Hans-191","token":"贺舟","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-193","token":"谢临川","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-194","token":"苏念","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-195","token":"@lin","kind":"name","reason":"Invented account handle; keep its uninterrupted written name intact."}
+{"id":"zh-Hans-196","token":"Shift","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-197","token":"CSV","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-199","token":"18","kind":"oov","reason":"Intact numeral/decimal/percentage or time label; separate counters and units remain outside this surface."}
+{"id":"zh-Hans-200","token":"三百五十","kind":"oov","reason":"Intact numeral/decimal/percentage or time label; separate counters and units remain outside this surface."}
+{"id":"zh-Hans-202","token":"何秋白","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-206","token":"USB-C","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-208","token":"空手套白狼","kind":"oov","reason":"Conventional idiom for gaining something for nothing; absent from this dictionary version."}
+{"id":"zh-Hans-210","token":"Plan","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-216","token":"报站","kind":"oov","reason":"Lexical announce-stops transport verb; exact compound is unindexed."}
+{"id":"zh-Hans-224","token":"夜长梦多","kind":"oov","reason":"Conventional four-character idiom warning that delay brings trouble; absent from this dictionary version."}
+{"id":"zh-Hans-225","token":"JPEG","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-230","token":"五百","kind":"oov","reason":"Intact numeral/decimal/percentage or time label; separate counters and units remain outside this surface."}
+{"id":"zh-Hans-231","token":"backup","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-234","token":"10%","kind":"oov","reason":"Intact numeral/decimal/percentage or time label; separate counters and units remain outside this surface."}
+{"id":"zh-Hans-237","token":"裴照","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-239","token":"唐可欣","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-243","token":"check-in","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-247","token":"email","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-250","token":"debug","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-255","token":"声儿","kind":"oov","reason":"Colloquial erhua noun for a sound/voice; preserve its written morphology."}
+{"id":"zh-Hans-257","token":"GPS","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-258","token":"周棠","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-267","token":"一千零五十","kind":"oov","reason":"Intact numeral/decimal/percentage or time label; separate counters and units remain outside this surface."}
+{"id":"zh-Hans-269","token":"OK","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-272","token":"几十","kind":"oov","reason":"Intact numeral/decimal/percentage or time label; separate counters and units remain outside this surface."}
+{"id":"zh-Hans-273","token":"许青禾","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-276","token":"许知远","kind":"name","reason":"Personal/character name used in original dialogue; exact surface is not indexed in the matching dictionary."}
+{"id":"zh-Hans-279","token":"内味儿","kind":"oov","reason":"Internet slang variant of 那味儿 meaning that familiar vibe; preserve the lexical meme expression."}
+{"id":"zh-Hans-280","token":"会儿","kind":"oov","reason":"Colloquial erhua duration noun for a while; preserve its written lexical surface."}
+{"id":"zh-Hans-284","token":"脚步声","kind":"oov","reason":"Conventional footsteps noun; preserve the same lexical unit as traditional 腳步聲, explicitly OOV."}
+{"id":"zh-Hans-285","token":"12:30","kind":"oov","reason":"Intact numeral/decimal/percentage or time label; separate counters and units remain outside this surface."}
+{"id":"zh-Hans-286","token":"Bluetooth","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-287","token":"磨脚","kind":"oov","reason":"Lexical chafing/rubbing verb; preserve the same lexical unit as traditional 磨腳, explicitly OOV."}
+{"id":"zh-Hans-292","token":"guest","kind":"oov","reason":"Code-switched Latin lexical word, acronym or technical label; preserve its spelling as one unit, absent from the matching dictionary."}
+{"id":"zh-Hans-293","token":"枝头","kind":"oov","reason":"Conventional branch-tip locative noun; exact written compound is unindexed."}
+{"id":"zh-Hant-004","token":"梁以安","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-010","token":"bug","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-011","token":"磨腳","kind":"oov","reason":"Lexical chafing/rubbing verb; exact written surface is not indexed in CC-CEDICT."}
+{"id":"zh-Hant-012","token":"符紙","kind":"oov","reason":"Conventional fantasy ritual-paper noun; unindexed lexical compound."}
+{"id":"zh-Hant-013","token":"大夥兒","kind":"oov","reason":"Colloquial rhotic collective pronoun; exact orthography is unindexed."}
+{"id":"zh-Hant-014","token":"周念禾","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-016","token":"神操作","kind":"oov","reason":"Internet slang for an extraordinary or absurd move; retain the lexical slang term."}
+{"id":"zh-Hant-018","token":"12:30","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"zh-Hant-020","token":"Enter","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-022","token":"陳序白","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-028","token":"Wi-Fi","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-030","token":"3.5","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"zh-Hant-032","token":"沈青嵐","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-033","token":"腳步聲","kind":"oov","reason":"Conventional footsteps noun; exact compound is unindexed."}
+{"id":"zh-Hant-038","token":"demo","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-042","token":"許知澄","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-048","token":"backup","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-052","token":"顧星橋","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-054","token":"甜椒","kind":"oov","reason":"Lexical vegetable name sweet pepper; preserve the noun rather than split the species label."}
+{"id":"zh-Hant-055","token":"會兒","kind":"oov","reason":"Colloquial rhotic duration noun; retain its written lexical surface."}
+{"id":"zh-Hant-056","token":"箭在弦上","kind":"oov","reason":"Conventional four-character idiom, arrow on the string; absent from this dictionary version."}
+{"id":"zh-Hant-058","token":"11","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"zh-Hant-058","token":"PDF","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-062","token":"羅予晴","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-065","token":"五百","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"zh-Hant-068","token":"invite","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-070","token":"USB-C","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-072","token":"方語舟","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-073","token":"米缸","kind":"oov","reason":"Lexical rice-container noun; unindexed surface."}
+{"id":"zh-Hant-075","token":"扎手","kind":"oov","reason":"Lexical prickly-to-touch adjective; unindexed surface."}
+{"id":"zh-Hant-078","token":"API","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-078","token":"key","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-082","token":"唐未央","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-088","token":"OK","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-089","token":"10%","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"zh-Hant-089","token":"加收","kind":"oov","reason":"Lexical surcharge/charge-extra verb; unindexed surface."}
+{"id":"zh-Hant-092","token":"江映竹","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-094","token":"內捲","kind":"oov","reason":"Internet slang involution in this traditional orthography; unindexed surface."}
+{"id":"zh-Hant-095","token":"會兒","kind":"oov","reason":"Colloquial rhotic duration noun; retain its written lexical surface."}
+{"id":"zh-Hant-098","token":"offline","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-101","token":"杜明川","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-109","token":"2.8","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"zh-Hant-111","token":"程若溪","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-112","token":"安安靜靜","kind":"oov","reason":"Productive AABB adjective reduplication kept whole as an explicit morphological surface OOV."}
+{"id":"zh-Hant-114","token":"語速","kind":"oov","reason":"Lexical speech-rate technical noun; unindexed surface."}
+{"id":"zh-Hant-120","token":"木箱","kind":"oov","reason":"Conventional wooden-box container noun; exact compound is unindexed."}
+{"id":"zh-Hant-121","token":"鄭望舒","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-125","token":"會兒","kind":"oov","reason":"Colloquial rhotic duration noun; retain its written lexical surface."}
+{"id":"zh-Hant-125","token":"藥香","kind":"oov","reason":"Lexical medicinal-aroma noun; unindexed surface."}
+{"id":"zh-Hant-129","token":"七十五","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"zh-Hant-131","token":"葉清和","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-135","token":"GIF","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-136","token":"design","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-136","token":"review","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-141","token":"潘予衡","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-143","token":"存在感","kind":"oov","reason":"Lexical sense-of-presence term; unindexed surface."}
+{"id":"zh-Hant-145","token":"deleted","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-146","token":"彎兒","kind":"oov","reason":"Colloquial rhotic noun in the take-a-walk expression; preserve written morphology."}
+{"id":"zh-Hant-149","token":"九十三","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"zh-Hant-151","token":"溫知夏","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-155","token":"hotfix","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-156","token":"會兒","kind":"oov","reason":"Colloquial rhotic duration noun; retain its written lexical surface."}
+{"id":"zh-Hant-159","token":"限量","kind":"oov","reason":"Lexical limit-quantity verb; unindexed surface."}
+{"id":"zh-Hant-161","token":"賀行遠","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-165","token":"server","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-169","token":"6.2","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"zh-Hant-171","token":"宋以寧","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-175","token":"plan","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-178","token":"飯粒","kind":"oov","reason":"Lexical rice-grain noun; unindexed surface."}
+{"id":"zh-Hant-180","token":"0.8","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"zh-Hant-181","token":"袁靜初","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-185","token":"final","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-185","token":"檔名","kind":"oov","reason":"Lexical filename technical noun; unindexed surface."}
+{"id":"zh-Hant-186","token":"回頭兒","kind":"oov","reason":"Colloquial rhotic later/another-time adverb; preserve written morphology."}
+{"id":"zh-Hant-190","token":"dark","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-190","token":"mode","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-191","token":"蘇沐言","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-193","token":"洗版","kind":"oov","reason":"Internet slang for flooding a feed/forum; unindexed slang word."}
+{"id":"zh-Hant-195","token":"VIP","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-196","token":"打小兒","kind":"oov","reason":"Colloquial rhotic since-childhood adverb; unindexed written surface."}
+{"id":"zh-Hant-199","token":"鐘聲","kind":"oov","reason":"Conventional bell-sound noun; unindexed surface."}
+{"id":"zh-Hant-199","token":"零五","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"zh-Hant-200","token":"王印","kind":"oov","reason":"Fantasy royal-seal noun; unindexed genre compound."}
+{"id":"zh-Hant-201","token":"汪聿新","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-203","token":"小作文","kind":"oov","reason":"Internet slang for a long personal essay/message; unindexed lexical slang term."}
+{"id":"zh-Hant-204","token":"魏念慈","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-207","token":"check-in","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-209","token":"銅幣","kind":"oov","reason":"Lexical copper-coin noun; unindexed surface."}
+{"id":"zh-Hant-212","token":"高允棠","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-213","token":"轉傳","kind":"oov","reason":"Lexical digital-forwarding verb; unindexed surface."}
+{"id":"zh-Hant-214","token":"loading","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-218","token":"本帳","kind":"oov","reason":"Social-media shorthand for the main account; unindexed lexical slang term."}
+{"id":"zh-Hant-221","token":"mute","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-225","token":"鄧書衡","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-228","token":"feedback","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-230","token":"二十七","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"zh-Hant-231","token":"一百二十","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"zh-Hant-232","token":"討論串","kind":"oov","reason":"Lexical forum-thread noun; unindexed surface."}
+{"id":"zh-Hant-234","token":"會兒","kind":"oov","reason":"Colloquial rhotic duration noun; retain its written lexical surface."}
+{"id":"zh-Hant-235","token":"version","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-236","token":"白芮安","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-239","token":"0.5%","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"zh-Hant-243","token":"pending","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-243","token":"status","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-247","token":"二十五","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"zh-Hant-248","token":"推坑","kind":"oov","reason":"Internet slang for enticing someone into a hobby/purchase; unindexed lexical verb."}
+{"id":"zh-Hant-249","token":"施雲庭","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-250","token":"順道兒","kind":"oov","reason":"Colloquial rhotic on-the-way adverb; preserve written morphology."}
+{"id":"zh-Hant-251","token":"logout","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-259","token":"氣頭","kind":"oov","reason":"Lexical anger-peak noun in 氣頭上; splitting destroys the idiomatic nominal meaning."}
+{"id":"zh-Hant-260","token":"孔照野","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-261","token":"patch","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-263","token":"鈕扣","kind":"oov","reason":"Conventional button noun in this exact orthography; dictionary spelling differs or is absent."}
+{"id":"zh-Hant-267","token":"pause","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-271","token":"何映秋","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-274","token":"那邊兒","kind":"oov","reason":"Colloquial rhotic deictic locative; preserve its lexical written surface."}
+{"id":"zh-Hant-275","token":"live","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-282","token":"莫知遙","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-283","token":"code","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-283","token":"QR","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-284","token":"username","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-286","token":"二百五十","kind":"oov","reason":"Uninterrupted written numeral or numeric label, kept intact before its separate unit/counter."}
+{"id":"zh-Hant-291","token":"roadmap","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}
+{"id":"zh-Hant-293","token":"郁思南","kind":"name","reason":"Invented personal name in this original dialogue; preserve the complete unspaced name."}
+{"id":"zh-Hant-294","token":"刻鐘","kind":"oov","reason":"Quarter-hour duration unit after a separate numeral; unindexed unit surface."}
+{"id":"zh-Hant-296","token":"搶鏡","kind":"oov","reason":"Lexical steal-the-scene verb; unindexed surface."}
+{"id":"zh-Hant-298","token":"typing","kind":"oov","reason":"Code-switched English word, handle or technical label; preserve its internal spelling and morphology."}

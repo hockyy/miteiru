@@ -1,0 +1,4658 @@
+{
+  "schemaVersion": 1,
+  "boundaryUnit": "unicode-code-point",
+  "groups": [
+    {
+      "variant": "ja",
+      "split": "dev",
+      "correct": 982,
+      "predicted": 1076,
+      "expected": 1021,
+      "exact": 72,
+      "lines": 150,
+      "precision": 0.912639405204461,
+      "recall": 0.9618021547502449,
+      "f1": 0.9365760610395804,
+      "exactMatch": 0.48,
+      "categories": {
+        "anime-drama": {
+          "correct": 102,
+          "predicted": 108,
+          "expected": 107,
+          "exact": 10,
+          "lines": 19,
+          "precision": 0.9444444444444444,
+          "recall": 0.9532710280373832,
+          "f1": 0.9488372093023256,
+          "exactMatch": 0.5263157894736842
+        },
+        "casual-speech": {
+          "correct": 331,
+          "predicted": 352,
+          "expected": 338,
+          "exact": 23,
+          "lines": 39,
+          "precision": 0.9403409090909091,
+          "recall": 0.9792899408284024,
+          "f1": 0.9594202898550724,
+          "exactMatch": 0.5897435897435898
+        },
+        "colloquial-contractions": {
+          "correct": 87,
+          "predicted": 93,
+          "expected": 92,
+          "exact": 14,
+          "lines": 21,
+          "precision": 0.9354838709677419,
+          "recall": 0.9456521739130435,
+          "f1": 0.9405405405405406,
+          "exactMatch": 0.6666666666666666
+        },
+        "idioms": {
+          "correct": 100,
+          "predicted": 105,
+          "expected": 102,
+          "exact": 14,
+          "lines": 17,
+          "precision": 0.9523809523809523,
+          "recall": 0.9803921568627451,
+          "f1": 0.966183574879227,
+          "exactMatch": 0.8235294117647058
+        },
+        "internet-slang": {
+          "correct": 84,
+          "predicted": 99,
+          "expected": 85,
+          "exact": 7,
+          "lines": 16,
+          "precision": 0.8484848484848485,
+          "recall": 0.9882352941176471,
+          "f1": 0.9130434782608695,
+          "exactMatch": 0.4375
+        },
+        "katakana-loanwords": {
+          "correct": 167,
+          "predicted": 178,
+          "expected": 173,
+          "exact": 11,
+          "lines": 24,
+          "precision": 0.9382022471910112,
+          "recall": 0.9653179190751445,
+          "f1": 0.9515669515669516,
+          "exactMatch": 0.4583333333333333
+        },
+        "keigo": {
+          "correct": 190,
+          "predicted": 222,
+          "expected": 202,
+          "exact": 4,
+          "lines": 23,
+          "precision": 0.8558558558558559,
+          "recall": 0.9405940594059405,
+          "f1": 0.8962264150943396,
+          "exactMatch": 0.17391304347826086
+        },
+        "long-lines": {
+          "correct": 257,
+          "predicted": 265,
+          "expected": 268,
+          "exact": 0,
+          "lines": 8,
+          "precision": 0.969811320754717,
+          "recall": 0.9589552238805971,
+          "f1": 0.9643527204502814,
+          "exactMatch": 0
+        },
+        "mixed-latin": {
+          "correct": 96,
+          "predicted": 106,
+          "expected": 98,
+          "exact": 9,
+          "lines": 16,
+          "precision": 0.9056603773584906,
+          "recall": 0.9795918367346939,
+          "f1": 0.9411764705882353,
+          "exactMatch": 0.5625
+        },
+        "names": {
+          "correct": 101,
+          "predicted": 108,
+          "expected": 105,
+          "exact": 8,
+          "lines": 17,
+          "precision": 0.9351851851851852,
+          "recall": 0.9619047619047619,
+          "f1": 0.9483568075117371,
+          "exactMatch": 0.47058823529411764
+        },
+        "numbers-counters": {
+          "correct": 90,
+          "predicted": 97,
+          "expected": 96,
+          "exact": 6,
+          "lines": 16,
+          "precision": 0.9278350515463918,
+          "recall": 0.9375,
+          "f1": 0.9326424870466321,
+          "exactMatch": 0.375
+        },
+        "particles": {
+          "correct": 515,
+          "predicted": 543,
+          "expected": 536,
+          "exact": 27,
+          "lines": 56,
+          "precision": 0.9484346224677717,
+          "recall": 0.960820895522388,
+          "f1": 0.9545875810936052,
+          "exactMatch": 0.48214285714285715
+        },
+        "suffix-chains": {
+          "correct": 431,
+          "predicted": 486,
+          "expected": 451,
+          "exact": 20,
+          "lines": 58,
+          "precision": 0.8868312757201646,
+          "recall": 0.9556541019955654,
+          "f1": 0.919957310565635,
+          "exactMatch": 0.3448275862068966
+        }
+      },
+      "worst": [
+        {
+          "id": "ja-077",
+          "text": "もうちょい待ってくんない？",
+          "categories": [
+            "colloquial-contractions",
+            "suffix-chains"
+          ],
+          "gold": [
+            "もう",
+            "ちょい",
+            "待ってくんない",
+            "？"
+          ],
+          "tokens": [
+            "もうちょい",
+            "待って",
+            "くん",
+            "ない",
+            "？"
+          ],
+          "correct": 2,
+          "predicted": 4,
+          "expected": 3,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.5,
+          "recall": 0.6666666666666666,
+          "f1": 0.5714285714285714,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            8,
+            10
+          ],
+          "missingBoundaries": [
+            2
+          ]
+        },
+        {
+          "id": "ja-247",
+          "text": "遠慮なくお申し付けください。",
+          "categories": [
+            "keigo",
+            "suffix-chains"
+          ],
+          "gold": [
+            "遠慮",
+            "なく",
+            "お申し付けください",
+            "。"
+          ],
+          "tokens": [
+            "遠慮なく",
+            "お",
+            "申し付け",
+            "ください",
+            "。"
+          ],
+          "correct": 2,
+          "predicted": 4,
+          "expected": 3,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.5,
+          "recall": 0.6666666666666666,
+          "f1": 0.5714285714285714,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            5,
+            9
+          ],
+          "missingBoundaries": [
+            2
+          ]
+        },
+        {
+          "id": "ja-293",
+          "text": "ごゆっくりお選びくださいませ。",
+          "categories": [
+            "keigo",
+            "suffix-chains"
+          ],
+          "gold": [
+            "ごゆっくり",
+            "お選びくださいませ",
+            "。"
+          ],
+          "tokens": [
+            "ご",
+            "ゆっくり",
+            "お",
+            "選び",
+            "くださいませ",
+            "。"
+          ],
+          "correct": 2,
+          "predicted": 5,
+          "expected": 2,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.4,
+          "recall": 1,
+          "f1": 0.5714285714285714,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            1,
+            6,
+            8
+          ],
+          "missingBoundaries": []
+        },
+        {
+          "id": "ja-033",
+          "text": "ご無理なさらないでください。",
+          "categories": [
+            "keigo",
+            "suffix-chains"
+          ],
+          "gold": [
+            "ご",
+            "無理",
+            "なさらないでください",
+            "。"
+          ],
+          "tokens": [
+            "ご",
+            "無理",
+            "な",
+            "さら",
+            "ない",
+            "で",
+            "ください",
+            "。"
+          ],
+          "correct": 3,
+          "predicted": 7,
+          "expected": 3,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.42857142857142855,
+          "recall": 1,
+          "f1": 0.6,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            4,
+            6,
+            8,
+            9
+          ],
+          "missingBoundaries": []
+        },
+        {
+          "id": "ja-291",
+          "text": "お待たせして申し訳ございません。",
+          "categories": [
+            "keigo",
+            "suffix-chains"
+          ],
+          "gold": [
+            "お待たせして",
+            "申し訳",
+            "ございません",
+            "。"
+          ],
+          "tokens": [
+            "お",
+            "待たせ",
+            "して",
+            "申し訳",
+            "ござい",
+            "ませ",
+            "ん",
+            "。"
+          ],
+          "correct": 3,
+          "predicted": 7,
+          "expected": 3,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.42857142857142855,
+          "recall": 1,
+          "f1": 0.6,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            1,
+            4,
+            12,
+            14
+          ],
+          "missingBoundaries": []
+        },
+        {
+          "id": "ja-145",
+          "text": "青天の霹靂だったよ。",
+          "categories": [
+            "idioms",
+            "casual-speech"
+          ],
+          "gold": [
+            "青天",
+            "の",
+            "霹靂",
+            "だった",
+            "よ",
+            "。"
+          ],
+          "tokens": [
+            "青天の霹靂",
+            "だっ",
+            "た",
+            "よ",
+            "。"
+          ],
+          "correct": 3,
+          "predicted": 4,
+          "expected": 5,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.75,
+          "recall": 0.6,
+          "f1": 0.6666666666666666,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            7
+          ],
+          "missingBoundaries": [
+            2,
+            3
+          ]
+        },
+        {
+          "id": "ja-261",
+          "text": "こちらにお掛けになってください。",
+          "categories": [
+            "keigo",
+            "suffix-chains"
+          ],
+          "gold": [
+            "こちら",
+            "に",
+            "お掛けになってください",
+            "。"
+          ],
+          "tokens": [
+            "こちら",
+            "に",
+            "お",
+            "掛け",
+            "に",
+            "なってください",
+            "。"
+          ],
+          "correct": 3,
+          "predicted": 6,
+          "expected": 3,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.5,
+          "recall": 1,
+          "f1": 0.6666666666666666,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            5,
+            7,
+            8
+          ],
+          "missingBoundaries": []
+        },
+        {
+          "id": "ja-199",
+          "text": "甘やかしすぎたかもしれない。",
+          "categories": [
+            "suffix-chains",
+            "casual-speech"
+          ],
+          "gold": [
+            "甘やかしすぎた",
+            "かもしれない",
+            "。"
+          ],
+          "tokens": [
+            "甘やかし",
+            "すぎた",
+            "かも",
+            "しれない",
+            "。"
+          ],
+          "correct": 2,
+          "predicted": 4,
+          "expected": 2,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.5,
+          "recall": 1,
+          "f1": 0.6666666666666666,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            4,
+            9
+          ],
+          "missingBoundaries": []
+        },
+        {
+          "id": "ja-249",
+          "text": "お気をつけてお帰りください。",
+          "categories": [
+            "keigo",
+            "suffix-chains"
+          ],
+          "gold": [
+            "お",
+            "気",
+            "を",
+            "つけて",
+            "お帰りください",
+            "。"
+          ],
+          "tokens": [
+            "お気",
+            "を",
+            "つけて",
+            "お",
+            "帰り",
+            "ください",
+            "。"
+          ],
+          "correct": 4,
+          "predicted": 6,
+          "expected": 5,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.6666666666666666,
+          "recall": 0.8,
+          "f1": 0.7272727272727273,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            7,
+            9
+          ],
+          "missingBoundaries": [
+            1
+          ]
+        },
+        {
+          "id": "ja-285",
+          "text": "お手洗いは突き当たりでございます。",
+          "categories": [
+            "keigo",
+            "particles"
+          ],
+          "gold": [
+            "お手洗い",
+            "は",
+            "突き当たり",
+            "でございます",
+            "。"
+          ],
+          "tokens": [
+            "お",
+            "手洗い",
+            "は",
+            "突き当たり",
+            "で",
+            "ござい",
+            "ます",
+            "。"
+          ],
+          "correct": 4,
+          "predicted": 7,
+          "expected": 4,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.5714285714285714,
+          "recall": 1,
+          "f1": 0.7272727272727273,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            1,
+            11,
+            14
+          ],
+          "missingBoundaries": []
+        }
+      ]
+    },
+    {
+      "variant": "ja",
+      "split": "test",
+      "correct": 1014,
+      "predicted": 1093,
+      "expected": 1053,
+      "exact": 72,
+      "lines": 150,
+      "precision": 0.9277218664226898,
+      "recall": 0.9629629629629629,
+      "f1": 0.9450139794967382,
+      "exactMatch": 0.48,
+      "categories": {
+        "anime-drama": {
+          "correct": 174,
+          "predicted": 178,
+          "expected": 181,
+          "exact": 11,
+          "lines": 19,
+          "precision": 0.9775280898876404,
+          "recall": 0.9613259668508287,
+          "f1": 0.9693593314763231,
+          "exactMatch": 0.5789473684210527
+        },
+        "casual-speech": {
+          "correct": 307,
+          "predicted": 329,
+          "expected": 321,
+          "exact": 15,
+          "lines": 40,
+          "precision": 0.9331306990881459,
+          "recall": 0.956386292834891,
+          "f1": 0.9446153846153846,
+          "exactMatch": 0.375
+        },
+        "colloquial-contractions": {
+          "correct": 97,
+          "predicted": 106,
+          "expected": 102,
+          "exact": 10,
+          "lines": 21,
+          "precision": 0.9150943396226415,
+          "recall": 0.9509803921568627,
+          "f1": 0.9326923076923077,
+          "exactMatch": 0.47619047619047616
+        },
+        "idioms": {
+          "correct": 89,
+          "predicted": 93,
+          "expected": 94,
+          "exact": 8,
+          "lines": 16,
+          "precision": 0.956989247311828,
+          "recall": 0.9468085106382979,
+          "f1": 0.9518716577540107,
+          "exactMatch": 0.5
+        },
+        "internet-slang": {
+          "correct": 87,
+          "predicted": 96,
+          "expected": 88,
+          "exact": 7,
+          "lines": 15,
+          "precision": 0.90625,
+          "recall": 0.9886363636363636,
+          "f1": 0.9456521739130435,
+          "exactMatch": 0.4666666666666667
+        },
+        "katakana-loanwords": {
+          "correct": 142,
+          "predicted": 152,
+          "expected": 146,
+          "exact": 15,
+          "lines": 24,
+          "precision": 0.9342105263157895,
+          "recall": 0.9726027397260274,
+          "f1": 0.9530201342281879,
+          "exactMatch": 0.625
+        },
+        "keigo": {
+          "correct": 193,
+          "predicted": 217,
+          "expected": 197,
+          "exact": 8,
+          "lines": 24,
+          "precision": 0.8894009216589862,
+          "recall": 0.9796954314720813,
+          "f1": 0.9323671497584541,
+          "exactMatch": 0.3333333333333333
+        },
+        "long-lines": {
+          "correct": 250,
+          "predicted": 263,
+          "expected": 259,
+          "exact": 0,
+          "lines": 8,
+          "precision": 0.9505703422053232,
+          "recall": 0.9652509652509652,
+          "f1": 0.9578544061302682,
+          "exactMatch": 0
+        },
+        "mixed-latin": {
+          "correct": 78,
+          "predicted": 83,
+          "expected": 79,
+          "exact": 11,
+          "lines": 15,
+          "precision": 0.9397590361445783,
+          "recall": 0.9873417721518988,
+          "f1": 0.9629629629629629,
+          "exactMatch": 0.7333333333333333
+        },
+        "names": {
+          "correct": 106,
+          "predicted": 106,
+          "expected": 107,
+          "exact": 15,
+          "lines": 16,
+          "precision": 1,
+          "recall": 0.9906542056074766,
+          "f1": 0.9953051643192489,
+          "exactMatch": 0.9375
+        },
+        "numbers-counters": {
+          "correct": 86,
+          "predicted": 97,
+          "expected": 89,
+          "exact": 7,
+          "lines": 15,
+          "precision": 0.8865979381443299,
+          "recall": 0.9662921348314607,
+          "f1": 0.9247311827956989,
+          "exactMatch": 0.4666666666666667
+        },
+        "particles": {
+          "correct": 512,
+          "predicted": 542,
+          "expected": 533,
+          "exact": 25,
+          "lines": 56,
+          "precision": 0.9446494464944649,
+          "recall": 0.9606003752345216,
+          "f1": 0.9525581395348838,
+          "exactMatch": 0.44642857142857145
+        },
+        "suffix-chains": {
+          "correct": 466,
+          "predicted": 514,
+          "expected": 489,
+          "exact": 17,
+          "lines": 58,
+          "precision": 0.9066147859922179,
+          "recall": 0.9529652351738241,
+          "f1": 0.9292123629112662,
+          "exactMatch": 0.29310344827586204
+        }
+      },
+      "worst": [
+        {
+          "id": "ja-026",
+          "text": "泣きそうでも笑ってみせた。",
+          "categories": [
+            "suffix-chains",
+            "anime-drama"
+          ],
+          "gold": [
+            "泣きそう",
+            "で",
+            "も",
+            "笑ってみせた",
+            "。"
+          ],
+          "tokens": [
+            "泣き",
+            "そう",
+            "でも",
+            "笑って",
+            "みせた",
+            "。"
+          ],
+          "correct": 3,
+          "predicted": 5,
+          "expected": 4,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.6,
+          "recall": 0.75,
+          "f1": 0.6666666666666666,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            2,
+            9
+          ],
+          "missingBoundaries": [
+            5
+          ]
+        },
+        {
+          "id": "ja-170",
+          "text": "お忘れになりませんように。",
+          "categories": [
+            "keigo",
+            "suffix-chains"
+          ],
+          "gold": [
+            "お忘れになりません",
+            "よう",
+            "に",
+            "。"
+          ],
+          "tokens": [
+            "お",
+            "忘れ",
+            "に",
+            "なりません",
+            "よう",
+            "に",
+            "。"
+          ],
+          "correct": 3,
+          "predicted": 6,
+          "expected": 3,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.5,
+          "recall": 1,
+          "f1": 0.6666666666666666,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            1,
+            3,
+            4
+          ],
+          "missingBoundaries": []
+        },
+        {
+          "id": "ja-108",
+          "text": "せめて謝らせてほしかった。",
+          "categories": [
+            "suffix-chains",
+            "casual-speech"
+          ],
+          "gold": [
+            "せめて",
+            "謝らせてほしかった",
+            "。"
+          ],
+          "tokens": [
+            "せめて",
+            "謝らせて",
+            "ほしかっ",
+            "た",
+            "。"
+          ],
+          "correct": 2,
+          "predicted": 4,
+          "expected": 2,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.5,
+          "recall": 1,
+          "f1": 0.6666666666666666,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            7,
+            11
+          ],
+          "missingBoundaries": []
+        },
+        {
+          "id": "ja-004",
+          "text": "Wi-Fiだけ切れてる。",
+          "categories": [
+            "mixed-latin",
+            "colloquial-contractions",
+            "suffix-chains"
+          ],
+          "gold": [
+            "Wi-Fi",
+            "だけ",
+            "切れてる",
+            "。"
+          ],
+          "tokens": [
+            "Wi",
+            "-",
+            "Fi",
+            "だけ",
+            "切れてる",
+            "。"
+          ],
+          "correct": 3,
+          "predicted": 5,
+          "expected": 3,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.6,
+          "recall": 1,
+          "f1": 0.75,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            2,
+            3
+          ],
+          "missingBoundaries": []
+        },
+        {
+          "id": "ja-036",
+          "text": "フードコートなら座れそう。",
+          "categories": [
+            "katakana-loanwords",
+            "suffix-chains"
+          ],
+          "gold": [
+            "フードコート",
+            "なら",
+            "座れそう",
+            "。"
+          ],
+          "tokens": [
+            "フード",
+            "コート",
+            "なら",
+            "座れ",
+            "そう",
+            "。"
+          ],
+          "correct": 3,
+          "predicted": 5,
+          "expected": 3,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.6,
+          "recall": 1,
+          "f1": 0.75,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            3,
+            10
+          ],
+          "missingBoundaries": []
+        },
+        {
+          "id": "ja-174",
+          "text": "お父さんっぽい笑い方だ。",
+          "categories": [
+            "suffix-chains",
+            "casual-speech"
+          ],
+          "gold": [
+            "お父さんっぽい",
+            "笑い方",
+            "だ",
+            "。"
+          ],
+          "tokens": [
+            "お父さん",
+            "っぽい",
+            "笑い",
+            "方",
+            "だ",
+            "。"
+          ],
+          "correct": 3,
+          "predicted": 5,
+          "expected": 3,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.6,
+          "recall": 1,
+          "f1": 0.75,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            4,
+            9
+          ],
+          "missingBoundaries": []
+        },
+        {
+          "id": "ja-228",
+          "text": "おかわりしとけばよかった。",
+          "categories": [
+            "colloquial-contractions",
+            "suffix-chains"
+          ],
+          "gold": [
+            "おかわり",
+            "しとけば",
+            "よかった",
+            "。"
+          ],
+          "tokens": [
+            "お",
+            "かわり",
+            "しとけば",
+            "よかっ",
+            "た",
+            "。"
+          ],
+          "correct": 3,
+          "predicted": 5,
+          "expected": 3,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.6,
+          "recall": 1,
+          "f1": 0.75,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            1,
+            11
+          ],
+          "missingBoundaries": []
+        },
+        {
+          "id": "ja-006",
+          "text": "昨日ほど寒くなかったね。",
+          "categories": [
+            "suffix-chains",
+            "particles"
+          ],
+          "gold": [
+            "昨日",
+            "ほど",
+            "寒くなかった",
+            "ね",
+            "。"
+          ],
+          "tokens": [
+            "昨日",
+            "ほど",
+            "寒く",
+            "なかっ",
+            "た",
+            "ね",
+            "。"
+          ],
+          "correct": 4,
+          "predicted": 6,
+          "expected": 4,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.6666666666666666,
+          "recall": 1,
+          "f1": 0.8,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            6,
+            9
+          ],
+          "missingBoundaries": []
+        },
+        {
+          "id": "ja-070",
+          "text": "ただいま担当者を呼んでまいります。",
+          "categories": [
+            "keigo",
+            "suffix-chains"
+          ],
+          "gold": [
+            "ただいま",
+            "担当者",
+            "を",
+            "呼んでまいります",
+            "。"
+          ],
+          "tokens": [
+            "ただ",
+            "いま",
+            "担当",
+            "者",
+            "を",
+            "呼んでまいります",
+            "。"
+          ],
+          "correct": 4,
+          "predicted": 6,
+          "expected": 4,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.6666666666666666,
+          "recall": 1,
+          "f1": 0.8,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            2,
+            6
+          ],
+          "missingBoundaries": []
+        },
+        {
+          "id": "ja-156",
+          "text": "五百グラムは多くない？",
+          "categories": [
+            "numbers-counters",
+            "katakana-loanwords"
+          ],
+          "gold": [
+            "五百",
+            "グラム",
+            "は",
+            "多くない",
+            "？"
+          ],
+          "tokens": [
+            "五",
+            "百",
+            "グラム",
+            "は",
+            "多く",
+            "ない",
+            "？"
+          ],
+          "correct": 4,
+          "predicted": 6,
+          "expected": 4,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.6666666666666666,
+          "recall": 1,
+          "f1": 0.8,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            1,
+            8
+          ],
+          "missingBoundaries": []
+        }
+      ]
+    },
+    {
+      "variant": "zh-Hans",
+      "split": "dev",
+      "correct": 1316,
+      "predicted": 1377,
+      "expected": 1450,
+      "exact": 44,
+      "lines": 150,
+      "precision": 0.9557007988380537,
+      "recall": 0.9075862068965517,
+      "f1": 0.9310222851078882,
+      "exactMatch": 0.29333333333333333,
+      "categories": {
+        "anime-drama": {
+          "correct": 144,
+          "predicted": 146,
+          "expected": 160,
+          "exact": 5,
+          "lines": 15,
+          "precision": 0.9863013698630136,
+          "recall": 0.9,
+          "f1": 0.9411764705882353,
+          "exactMatch": 0.3333333333333333
+        },
+        "casual-speech": {
+          "correct": 731,
+          "predicted": 754,
+          "expected": 809,
+          "exact": 21,
+          "lines": 70,
+          "precision": 0.9694960212201591,
+          "recall": 0.9035846724351051,
+          "f1": 0.9353806781829814,
+          "exactMatch": 0.3
+        },
+        "colloquial-contractions": {
+          "correct": 172,
+          "predicted": 175,
+          "expected": 185,
+          "exact": 8,
+          "lines": 19,
+          "precision": 0.9828571428571429,
+          "recall": 0.9297297297297298,
+          "f1": 0.9555555555555556,
+          "exactMatch": 0.42105263157894735
+        },
+        "idioms": {
+          "correct": 100,
+          "predicted": 103,
+          "expected": 111,
+          "exact": 7,
+          "lines": 17,
+          "precision": 0.970873786407767,
+          "recall": 0.9009009009009009,
+          "f1": 0.9345794392523364,
+          "exactMatch": 0.4117647058823529
+        },
+        "internet-slang": {
+          "correct": 123,
+          "predicted": 136,
+          "expected": 132,
+          "exact": 3,
+          "lines": 17,
+          "precision": 0.9044117647058824,
+          "recall": 0.9318181818181818,
+          "f1": 0.917910447761194,
+          "exactMatch": 0.17647058823529413
+        },
+        "long-lines": {
+          "correct": 361,
+          "predicted": 363,
+          "expected": 400,
+          "exact": 0,
+          "lines": 8,
+          "precision": 0.9944903581267218,
+          "recall": 0.9025,
+          "f1": 0.9462647444298821,
+          "exactMatch": 0
+        },
+        "mixed-latin": {
+          "correct": 148,
+          "predicted": 154,
+          "expected": 158,
+          "exact": 10,
+          "lines": 22,
+          "precision": 0.961038961038961,
+          "recall": 0.9367088607594937,
+          "f1": 0.9487179487179487,
+          "exactMatch": 0.45454545454545453
+        },
+        "names": {
+          "correct": 99,
+          "predicted": 123,
+          "expected": 104,
+          "exact": 0,
+          "lines": 16,
+          "precision": 0.8048780487804879,
+          "recall": 0.9519230769230769,
+          "f1": 0.8722466960352423,
+          "exactMatch": 0
+        },
+        "numbers-counters": {
+          "correct": 152,
+          "predicted": 161,
+          "expected": 179,
+          "exact": 3,
+          "lines": 24,
+          "precision": 0.9440993788819876,
+          "recall": 0.8491620111731844,
+          "f1": 0.8941176470588236,
+          "exactMatch": 0.125
+        },
+        "particles": {
+          "correct": 839,
+          "predicted": 870,
+          "expected": 917,
+          "exact": 24,
+          "lines": 77,
+          "precision": 0.964367816091954,
+          "recall": 0.9149400218102508,
+          "f1": 0.9390039171796307,
+          "exactMatch": 0.3116883116883117
+        },
+        "suffix-chains": {
+          "correct": 394,
+          "predicted": 403,
+          "expected": 441,
+          "exact": 7,
+          "lines": 29,
+          "precision": 0.9776674937965261,
+          "recall": 0.8934240362811792,
+          "f1": 0.933649289099526,
+          "exactMatch": 0.2413793103448276
+        }
+      },
+      "worst": [
+        {
+          "id": "zh-Hans-183",
+          "text": "我们坐下来聊聊吧。",
+          "categories": [
+            "suffix-chains",
+            "particles"
+          ],
+          "gold": [
+            "我们",
+            "坐",
+            "下来",
+            "聊",
+            "聊",
+            "吧",
+            "。"
+          ],
+          "tokens": [
+            "我们",
+            "坐下",
+            "来",
+            "聊聊吧",
+            "。"
+          ],
+          "correct": 3,
+          "predicted": 4,
+          "expected": 6,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.75,
+          "recall": 0.5,
+          "f1": 0.6,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            4
+          ],
+          "missingBoundaries": [
+            3,
+            6,
+            7
+          ]
+        },
+        {
+          "id": "zh-Hans-267",
+          "text": "一千零五十元，没算错。",
+          "categories": [
+            "numbers-counters",
+            "suffix-chains"
+          ],
+          "gold": [
+            "一千零五十",
+            "元",
+            "，",
+            "没",
+            "算",
+            "错",
+            "。"
+          ],
+          "tokens": [
+            "一千零五",
+            "十元",
+            "，",
+            "没",
+            "算错",
+            "。"
+          ],
+          "correct": 4,
+          "predicted": 5,
+          "expected": 6,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.8,
+          "recall": 0.6666666666666666,
+          "f1": 0.7272727272727273,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            4
+          ],
+          "missingBoundaries": [
+            5,
+            9
+          ]
+        },
+        {
+          "id": "zh-Hans-103",
+          "text": "折后只要9.9元。",
+          "categories": [
+            "numbers-counters",
+            "casual-speech"
+          ],
+          "gold": [
+            "折",
+            "后",
+            "只",
+            "要",
+            "9.9",
+            "元",
+            "。"
+          ],
+          "tokens": [
+            "折",
+            "后",
+            "只要",
+            "9",
+            ".",
+            "9",
+            "元",
+            "。"
+          ],
+          "correct": 5,
+          "predicted": 7,
+          "expected": 6,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.7142857142857143,
+          "recall": 0.8333333333333334,
+          "f1": 0.7692307692307693,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            5,
+            6
+          ],
+          "missingBoundaries": [
+            3
+          ]
+        },
+        {
+          "id": "zh-Hans-109",
+          "text": "程砚队长，桥下有人！",
+          "categories": [
+            "names",
+            "anime-drama"
+          ],
+          "gold": [
+            "程砚",
+            "队长",
+            "，",
+            "桥",
+            "下",
+            "有",
+            "人",
+            "！"
+          ],
+          "tokens": [
+            "程",
+            "砚",
+            "队长",
+            "，",
+            "桥下",
+            "有人",
+            "！"
+          ],
+          "correct": 5,
+          "predicted": 6,
+          "expected": 7,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.8333333333333334,
+          "recall": 0.7142857142857143,
+          "f1": 0.7692307692307693,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            1
+          ],
+          "missingBoundaries": [
+            6,
+            8
+          ]
+        },
+        {
+          "id": "zh-Hans-187",
+          "text": "得，今儿算白跑一趟。",
+          "categories": [
+            "colloquial-contractions",
+            "numbers-counters"
+          ],
+          "gold": [
+            "得",
+            "，",
+            "今儿",
+            "算",
+            "白",
+            "跑",
+            "一",
+            "趟",
+            "。"
+          ],
+          "tokens": [
+            "得",
+            "，",
+            "今儿",
+            "算",
+            "白跑一趟",
+            "。"
+          ],
+          "correct": 5,
+          "predicted": 5,
+          "expected": 8,
+          "exact": 0,
+          "lines": 1,
+          "precision": 1,
+          "recall": 0.625,
+          "f1": 0.7692307692307693,
+          "exactMatch": 0,
+          "extraBoundaries": [],
+          "missingBoundaries": [
+            6,
+            7,
+            8
+          ]
+        },
+        {
+          "id": "zh-Hans-285",
+          "text": "12:30开船，过时不等。",
+          "categories": [
+            "numbers-counters",
+            "casual-speech"
+          ],
+          "gold": [
+            "12:30",
+            "开船",
+            "，",
+            "过时",
+            "不",
+            "等",
+            "。"
+          ],
+          "tokens": [
+            "12",
+            ":",
+            "30",
+            "开船",
+            "，",
+            "过时",
+            "不等",
+            "。"
+          ],
+          "correct": 5,
+          "predicted": 7,
+          "expected": 6,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.7142857142857143,
+          "recall": 0.8333333333333334,
+          "f1": 0.7692307692307693,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            2,
+            3
+          ],
+          "missingBoundaries": [
+            11
+          ]
+        },
+        {
+          "id": "zh-Hans-057",
+          "text": "哈哈，这回真是社死现场。",
+          "categories": [
+            "internet-slang",
+            "casual-speech"
+          ],
+          "gold": [
+            "哈哈",
+            "，",
+            "这",
+            "回",
+            "真",
+            "是",
+            "社死",
+            "现场",
+            "。"
+          ],
+          "tokens": [
+            "哈哈",
+            "，",
+            "这回",
+            "真是",
+            "社",
+            "死",
+            "现场",
+            "。"
+          ],
+          "correct": 6,
+          "predicted": 7,
+          "expected": 8,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.8571428571428571,
+          "recall": 0.75,
+          "f1": 0.8,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            8
+          ],
+          "missingBoundaries": [
+            4,
+            6
+          ]
+        },
+        {
+          "id": "zh-Hans-165",
+          "text": "两米长的桌子进不了门。",
+          "categories": [
+            "numbers-counters",
+            "suffix-chains"
+          ],
+          "gold": [
+            "两",
+            "米",
+            "长",
+            "的",
+            "桌子",
+            "进",
+            "不",
+            "了",
+            "门",
+            "。"
+          ],
+          "tokens": [
+            "两米",
+            "长",
+            "的",
+            "桌子",
+            "进不了",
+            "门",
+            "。"
+          ],
+          "correct": 6,
+          "predicted": 6,
+          "expected": 9,
+          "exact": 0,
+          "lines": 1,
+          "precision": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
+          "exactMatch": 0,
+          "extraBoundaries": [],
+          "missingBoundaries": [
+            1,
+            7,
+            8
+          ]
+        },
+        {
+          "id": "zh-Hans-117",
+          "text": "你到底答不答应嘛？",
+          "categories": [
+            "casual-speech",
+            "particles"
+          ],
+          "gold": [
+            "你",
+            "到底",
+            "答",
+            "不",
+            "答应",
+            "嘛",
+            "？"
+          ],
+          "tokens": [
+            "你",
+            "到底",
+            "答不答应",
+            "嘛",
+            "？"
+          ],
+          "correct": 4,
+          "predicted": 4,
+          "expected": 6,
+          "exact": 0,
+          "lines": 1,
+          "precision": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
+          "exactMatch": 0,
+          "extraBoundaries": [],
+          "missingBoundaries": [
+            4,
+            5
+          ]
+        },
+        {
+          "id": "zh-Hans-209",
+          "text": "这下可真是进退两难。",
+          "categories": [
+            "idioms",
+            "casual-speech"
+          ],
+          "gold": [
+            "这下",
+            "可",
+            "真",
+            "是",
+            "进退两难",
+            "。"
+          ],
+          "tokens": [
+            "这",
+            "下",
+            "可",
+            "真是",
+            "进退两难",
+            "。"
+          ],
+          "correct": 4,
+          "predicted": 5,
+          "expected": 5,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.8,
+          "recall": 0.8,
+          "f1": 0.8,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            1
+          ],
+          "missingBoundaries": [
+            4
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "zh-Hans",
+      "split": "test",
+      "correct": 1292,
+      "predicted": 1337,
+      "expected": 1440,
+      "exact": 51,
+      "lines": 150,
+      "precision": 0.9663425579655947,
+      "recall": 0.8972222222222223,
+      "f1": 0.9305005401512424,
+      "exactMatch": 0.34,
+      "categories": {
+        "anime-drama": {
+          "correct": 193,
+          "predicted": 195,
+          "expected": 207,
+          "exact": 7,
+          "lines": 16,
+          "precision": 0.9897435897435898,
+          "recall": 0.9323671497584541,
+          "f1": 0.9601990049751243,
+          "exactMatch": 0.4375
+        },
+        "casual-speech": {
+          "correct": 638,
+          "predicted": 652,
+          "expected": 714,
+          "exact": 25,
+          "lines": 70,
+          "precision": 0.9785276073619632,
+          "recall": 0.8935574229691877,
+          "f1": 0.9341142020497804,
+          "exactMatch": 0.35714285714285715
+        },
+        "colloquial-contractions": {
+          "correct": 191,
+          "predicted": 194,
+          "expected": 203,
+          "exact": 11,
+          "lines": 20,
+          "precision": 0.9845360824742269,
+          "recall": 0.9408866995073891,
+          "f1": 0.9622166246851386,
+          "exactMatch": 0.55
+        },
+        "idioms": {
+          "correct": 90,
+          "predicted": 93,
+          "expected": 98,
+          "exact": 12,
+          "lines": 16,
+          "precision": 0.967741935483871,
+          "recall": 0.9183673469387755,
+          "f1": 0.9424083769633508,
+          "exactMatch": 0.75
+        },
+        "internet-slang": {
+          "correct": 122,
+          "predicted": 129,
+          "expected": 135,
+          "exact": 6,
+          "lines": 17,
+          "precision": 0.9457364341085271,
+          "recall": 0.9037037037037037,
+          "f1": 0.9242424242424242,
+          "exactMatch": 0.35294117647058826
+        },
+        "long-lines": {
+          "correct": 344,
+          "predicted": 345,
+          "expected": 382,
+          "exact": 0,
+          "lines": 8,
+          "precision": 0.9971014492753624,
+          "recall": 0.900523560209424,
+          "f1": 0.9463548830811555,
+          "exactMatch": 0
+        },
+        "mixed-latin": {
+          "correct": 134,
+          "predicted": 142,
+          "expected": 153,
+          "exact": 5,
+          "lines": 22,
+          "precision": 0.9436619718309859,
+          "recall": 0.8758169934640523,
+          "f1": 0.9084745762711864,
+          "exactMatch": 0.22727272727272727
+        },
+        "names": {
+          "correct": 108,
+          "predicted": 129,
+          "expected": 118,
+          "exact": 2,
+          "lines": 17,
+          "precision": 0.8372093023255814,
+          "recall": 0.9152542372881356,
+          "f1": 0.8744939271255061,
+          "exactMatch": 0.11764705882352941
+        },
+        "numbers-counters": {
+          "correct": 148,
+          "predicted": 156,
+          "expected": 183,
+          "exact": 1,
+          "lines": 23,
+          "precision": 0.9487179487179487,
+          "recall": 0.8087431693989071,
+          "f1": 0.8731563421828908,
+          "exactMatch": 0.043478260869565216
+        },
+        "particles": {
+          "correct": 813,
+          "predicted": 825,
+          "expected": 893,
+          "exact": 30,
+          "lines": 76,
+          "precision": 0.9854545454545455,
+          "recall": 0.910414333706607,
+          "f1": 0.9464493597206054,
+          "exactMatch": 0.39473684210526316
+        },
+        "suffix-chains": {
+          "correct": 411,
+          "predicted": 424,
+          "expected": 470,
+          "exact": 3,
+          "lines": 29,
+          "precision": 0.9693396226415094,
+          "recall": 0.874468085106383,
+          "f1": 0.9194630872483222,
+          "exactMatch": 0.10344827586206896
+        }
+      },
+      "worst": [
+        {
+          "id": "zh-Hans-154",
+          "text": "有话直说，别跟我打哑谜。",
+          "categories": [
+            "idioms",
+            "casual-speech"
+          ],
+          "gold": [
+            "有",
+            "话",
+            "直",
+            "说",
+            "，",
+            "别",
+            "跟",
+            "我",
+            "打哑谜",
+            "。"
+          ],
+          "tokens": [
+            "有话直说",
+            "，",
+            "别跟我",
+            "打哑谜",
+            "。"
+          ],
+          "correct": 4,
+          "predicted": 4,
+          "expected": 9,
+          "exact": 0,
+          "lines": 1,
+          "precision": 1,
+          "recall": 0.4444444444444444,
+          "f1": 0.6153846153846154,
+          "exactMatch": 0,
+          "extraBoundaries": [],
+          "missingBoundaries": [
+            1,
+            2,
+            3,
+            6,
+            7
+          ]
+        },
+        {
+          "id": "zh-Hans-018",
+          "text": "剩下三节课，我撑得住。",
+          "categories": [
+            "numbers-counters",
+            "suffix-chains"
+          ],
+          "gold": [
+            "剩下",
+            "三",
+            "节",
+            "课",
+            "，",
+            "我",
+            "撑",
+            "得",
+            "住",
+            "。"
+          ],
+          "tokens": [
+            "剩下",
+            "三节课",
+            "，",
+            "我",
+            "撑得住",
+            "。"
+          ],
+          "correct": 5,
+          "predicted": 5,
+          "expected": 9,
+          "exact": 0,
+          "lines": 1,
+          "precision": 1,
+          "recall": 0.5555555555555556,
+          "f1": 0.7142857142857143,
+          "exactMatch": 0,
+          "extraBoundaries": [],
+          "missingBoundaries": [
+            3,
+            4,
+            8,
+            9
+          ]
+        },
+        {
+          "id": "zh-Hans-258",
+          "text": "周棠姐说她想再试一次。",
+          "categories": [
+            "names",
+            "numbers-counters"
+          ],
+          "gold": [
+            "周棠",
+            "姐",
+            "说",
+            "她",
+            "想",
+            "再",
+            "试",
+            "一",
+            "次",
+            "。"
+          ],
+          "tokens": [
+            "周",
+            "棠",
+            "姐",
+            "说",
+            "她",
+            "想",
+            "再试一次",
+            "。"
+          ],
+          "correct": 6,
+          "predicted": 7,
+          "expected": 9,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.8571428571428571,
+          "recall": 0.6666666666666666,
+          "f1": 0.75,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            1
+          ],
+          "missingBoundaries": [
+            7,
+            8,
+            9
+          ]
+        },
+        {
+          "id": "zh-Hans-172",
+          "text": "她可不是省油的灯。",
+          "categories": [
+            "idioms",
+            "particles"
+          ],
+          "gold": [
+            "她",
+            "可",
+            "不",
+            "是",
+            "省油的灯",
+            "。"
+          ],
+          "tokens": [
+            "她",
+            "可不是",
+            "省油的灯",
+            "。"
+          ],
+          "correct": 3,
+          "predicted": 3,
+          "expected": 5,
+          "exact": 0,
+          "lines": 1,
+          "precision": 1,
+          "recall": 0.6,
+          "f1": 0.75,
+          "exactMatch": 0,
+          "extraBoundaries": [],
+          "missingBoundaries": [
+            2,
+            3
+          ]
+        },
+        {
+          "id": "zh-Hans-098",
+          "text": "打上#lost，试试看。",
+          "categories": [
+            "mixed-latin",
+            "internet-slang"
+          ],
+          "gold": [
+            "打",
+            "上",
+            "#lost",
+            "，",
+            "试",
+            "试",
+            "看",
+            "。"
+          ],
+          "tokens": [
+            "打",
+            "上",
+            "#",
+            "lost",
+            "，",
+            "试试看",
+            "。"
+          ],
+          "correct": 5,
+          "predicted": 6,
+          "expected": 7,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.8333333333333334,
+          "recall": 0.7142857142857143,
+          "f1": 0.7692307692307693,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            3
+          ],
+          "missingBoundaries": [
+            9,
+            10
+          ]
+        },
+        {
+          "id": "zh-Hans-134",
+          "text": "don't中间有个撇号。",
+          "categories": [
+            "mixed-latin",
+            "casual-speech"
+          ],
+          "gold": [
+            "don't",
+            "中间",
+            "有",
+            "个",
+            "撇号",
+            "。"
+          ],
+          "tokens": [
+            "don",
+            "'",
+            "t",
+            "中间",
+            "有",
+            "个",
+            "撇",
+            "号",
+            "。"
+          ],
+          "correct": 5,
+          "predicted": 8,
+          "expected": 5,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.625,
+          "recall": 1,
+          "f1": 0.7692307692307693,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            3,
+            4,
+            10
+          ],
+          "missingBoundaries": []
+        },
+        {
+          "id": "zh-Hans-208",
+          "text": "空手套白狼可没那么容易。",
+          "categories": [
+            "idioms",
+            "casual-speech"
+          ],
+          "gold": [
+            "空手套白狼",
+            "可",
+            "没",
+            "那么",
+            "容易",
+            "。"
+          ],
+          "tokens": [
+            "空",
+            "手套",
+            "白",
+            "狼",
+            "可",
+            "没",
+            "那么",
+            "容易",
+            "。"
+          ],
+          "correct": 5,
+          "predicted": 8,
+          "expected": 5,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.625,
+          "recall": 1,
+          "f1": 0.7692307692307693,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            1,
+            3,
+            4
+          ],
+          "missingBoundaries": []
+        },
+        {
+          "id": "zh-Hans-014",
+          "text": "这儿离码头还有3.5公里。",
+          "categories": [
+            "numbers-counters",
+            "colloquial-contractions"
+          ],
+          "gold": [
+            "这儿",
+            "离",
+            "码头",
+            "还",
+            "有",
+            "3.5",
+            "公里",
+            "。"
+          ],
+          "tokens": [
+            "这儿",
+            "离",
+            "码头",
+            "还有",
+            "3",
+            ".",
+            "5",
+            "公里",
+            "。"
+          ],
+          "correct": 6,
+          "predicted": 8,
+          "expected": 7,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.75,
+          "recall": 0.8571428571428571,
+          "f1": 0.8,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            8,
+            9
+          ],
+          "missingBoundaries": [
+            6
+          ]
+        },
+        {
+          "id": "zh-Hans-034",
+          "text": "这个转场我愿称之为神。",
+          "categories": [
+            "internet-slang",
+            "casual-speech"
+          ],
+          "gold": [
+            "这",
+            "个",
+            "转场",
+            "我",
+            "愿",
+            "称",
+            "之",
+            "为",
+            "神",
+            "。"
+          ],
+          "tokens": [
+            "这个",
+            "转场",
+            "我",
+            "愿",
+            "称之为",
+            "神",
+            "。"
+          ],
+          "correct": 6,
+          "predicted": 6,
+          "expected": 9,
+          "exact": 0,
+          "lines": 1,
+          "precision": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
+          "exactMatch": 0,
+          "extraBoundaries": [],
+          "missingBoundaries": [
+            1,
+            7,
+            8
+          ]
+        },
+        {
+          "id": "zh-Hans-054",
+          "text": "还有八站，靠着睡吧。",
+          "categories": [
+            "numbers-counters",
+            "particles"
+          ],
+          "gold": [
+            "还",
+            "有",
+            "八",
+            "站",
+            "，",
+            "靠",
+            "着",
+            "睡",
+            "吧",
+            "。"
+          ],
+          "tokens": [
+            "还有",
+            "八站",
+            "，",
+            "靠着",
+            "睡",
+            "吧",
+            "。"
+          ],
+          "correct": 6,
+          "predicted": 6,
+          "expected": 9,
+          "exact": 0,
+          "lines": 1,
+          "precision": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
+          "exactMatch": 0,
+          "extraBoundaries": [],
+          "missingBoundaries": [
+            1,
+            3,
+            6
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "zh-Hant",
+      "split": "dev",
+      "correct": 1449,
+      "predicted": 1511,
+      "expected": 1594,
+      "exact": 52,
+      "lines": 150,
+      "precision": 0.9589675711449371,
+      "recall": 0.9090338770388958,
+      "f1": 0.9333333333333333,
+      "exactMatch": 0.3466666666666667,
+      "categories": {
+        "anime-drama": {
+          "correct": 238,
+          "predicted": 242,
+          "expected": 258,
+          "exact": 6,
+          "lines": 20,
+          "precision": 0.9834710743801653,
+          "recall": 0.9224806201550387,
+          "f1": 0.952,
+          "exactMatch": 0.3
+        },
+        "casual-speech": {
+          "correct": 484,
+          "predicted": 489,
+          "expected": 534,
+          "exact": 15,
+          "lines": 36,
+          "precision": 0.9897750511247444,
+          "recall": 0.9063670411985019,
+          "f1": 0.946236559139785,
+          "exactMatch": 0.4166666666666667
+        },
+        "code-switching": {
+          "correct": 133,
+          "predicted": 136,
+          "expected": 144,
+          "exact": 6,
+          "lines": 15,
+          "precision": 0.9779411764705882,
+          "recall": 0.9236111111111112,
+          "f1": 0.95,
+          "exactMatch": 0.4
+        },
+        "colloquial-contractions": {
+          "correct": 231,
+          "predicted": 236,
+          "expected": 250,
+          "exact": 15,
+          "lines": 30,
+          "precision": 0.9788135593220338,
+          "recall": 0.924,
+          "f1": 0.9506172839506173,
+          "exactMatch": 0.5
+        },
+        "idioms": {
+          "correct": 159,
+          "predicted": 160,
+          "expected": 175,
+          "exact": 10,
+          "lines": 17,
+          "precision": 0.99375,
+          "recall": 0.9085714285714286,
+          "f1": 0.9492537313432836,
+          "exactMatch": 0.5882352941176471
+        },
+        "internet-slang": {
+          "correct": 131,
+          "predicted": 140,
+          "expected": 145,
+          "exact": 4,
+          "lines": 17,
+          "precision": 0.9357142857142857,
+          "recall": 0.903448275862069,
+          "f1": 0.9192982456140351,
+          "exactMatch": 0.23529411764705882
+        },
+        "long-lines": {
+          "correct": 333,
+          "predicted": 336,
+          "expected": 367,
+          "exact": 0,
+          "lines": 8,
+          "precision": 0.9910714285714286,
+          "recall": 0.9073569482288828,
+          "f1": 0.9473684210526315,
+          "exactMatch": 0
+        },
+        "mixed-latin": {
+          "correct": 154,
+          "predicted": 157,
+          "expected": 167,
+          "exact": 7,
+          "lines": 17,
+          "precision": 0.9808917197452229,
+          "recall": 0.9221556886227545,
+          "f1": 0.9506172839506173,
+          "exactMatch": 0.4117647058823529
+        },
+        "names": {
+          "correct": 106,
+          "predicted": 135,
+          "expected": 110,
+          "exact": 0,
+          "lines": 15,
+          "precision": 0.7851851851851852,
+          "recall": 0.9636363636363636,
+          "f1": 0.8653061224489796,
+          "exactMatch": 0
+        },
+        "numbers-counters": {
+          "correct": 149,
+          "predicted": 163,
+          "expected": 178,
+          "exact": 3,
+          "lines": 21,
+          "precision": 0.9141104294478528,
+          "recall": 0.8370786516853933,
+          "f1": 0.873900293255132,
+          "exactMatch": 0.14285714285714285
+        },
+        "particles": {
+          "correct": 495,
+          "predicted": 509,
+          "expected": 544,
+          "exact": 21,
+          "lines": 53,
+          "precision": 0.9724950884086444,
+          "recall": 0.9099264705882353,
+          "f1": 0.9401709401709402,
+          "exactMatch": 0.39622641509433965
+        },
+        "suffix-chains": {
+          "correct": 814,
+          "predicted": 837,
+          "expected": 898,
+          "exact": 24,
+          "lines": 67,
+          "precision": 0.972520908004779,
+          "recall": 0.9064587973273942,
+          "f1": 0.938328530259366,
+          "exactMatch": 0.3582089552238806
+        }
+      },
+      "worst": [
+        {
+          "id": "zh-Hant-095",
+          "text": "先抱抱，別的等會兒再說。",
+          "categories": [
+            "casual-speech",
+            "colloquial-contractions",
+            "suffix-chains"
+          ],
+          "gold": [
+            "先",
+            "抱",
+            "抱",
+            "，",
+            "別",
+            "的",
+            "等",
+            "會兒",
+            "再",
+            "說",
+            "。"
+          ],
+          "tokens": [
+            "先",
+            "抱抱",
+            "，",
+            "別的",
+            "等會兒",
+            "再說",
+            "。"
+          ],
+          "correct": 6,
+          "predicted": 6,
+          "expected": 10,
+          "exact": 0,
+          "lines": 1,
+          "precision": 1,
+          "recall": 0.6,
+          "f1": 0.75,
+          "exactMatch": 0,
+          "extraBoundaries": [],
+          "missingBoundaries": [
+            2,
+            5,
+            7,
+            10
+          ]
+        },
+        {
+          "id": "zh-Hant-169",
+          "text": "這條步道全長6.2公里。",
+          "categories": [
+            "numbers-counters"
+          ],
+          "gold": [
+            "這",
+            "條",
+            "步道",
+            "全長",
+            "6.2",
+            "公里",
+            "。"
+          ],
+          "tokens": [
+            "這條",
+            "步道",
+            "全長",
+            "6",
+            ".",
+            "2",
+            "公里",
+            "。"
+          ],
+          "correct": 5,
+          "predicted": 7,
+          "expected": 6,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.7142857142857143,
+          "recall": 0.8333333333333334,
+          "f1": 0.7692307692307693,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            7,
+            8
+          ],
+          "missingBoundaries": [
+            1
+          ]
+        },
+        {
+          "id": "zh-Hant-023",
+          "text": "讓我聞一聞，這牛奶怪怪的。",
+          "categories": [
+            "colloquial-contractions",
+            "suffix-chains",
+            "particles"
+          ],
+          "gold": [
+            "讓",
+            "我",
+            "聞",
+            "一",
+            "聞",
+            "，",
+            "這",
+            "牛奶",
+            "怪",
+            "怪",
+            "的",
+            "。"
+          ],
+          "tokens": [
+            "讓",
+            "我",
+            "聞一聞",
+            "，",
+            "這",
+            "牛奶",
+            "怪怪的",
+            "。"
+          ],
+          "correct": 7,
+          "predicted": 7,
+          "expected": 11,
+          "exact": 0,
+          "lines": 1,
+          "precision": 1,
+          "recall": 0.6363636363636364,
+          "f1": 0.7777777777777778,
+          "exactMatch": 0,
+          "extraBoundaries": [],
+          "missingBoundaries": [
+            3,
+            4,
+            10,
+            11
+          ]
+        },
+        {
+          "id": "zh-Hant-217",
+          "text": "這袋米重五公斤，不是五台斤。",
+          "categories": [
+            "numbers-counters"
+          ],
+          "gold": [
+            "這",
+            "袋",
+            "米",
+            "重",
+            "五",
+            "公斤",
+            "，",
+            "不",
+            "是",
+            "五",
+            "台斤",
+            "。"
+          ],
+          "tokens": [
+            "這",
+            "袋",
+            "米",
+            "重",
+            "五公斤",
+            "，",
+            "不是",
+            "五台",
+            "斤",
+            "。"
+          ],
+          "correct": 8,
+          "predicted": 9,
+          "expected": 11,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.8888888888888888,
+          "recall": 0.7272727272727273,
+          "f1": 0.8,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            12
+          ],
+          "missingBoundaries": [
+            5,
+            9,
+            11
+          ]
+        },
+        {
+          "id": "zh-Hant-089",
+          "text": "旅館每晚加收10%的清潔費。",
+          "categories": [
+            "numbers-counters"
+          ],
+          "gold": [
+            "旅館",
+            "每",
+            "晚",
+            "加收",
+            "10%",
+            "的",
+            "清潔",
+            "費",
+            "。"
+          ],
+          "tokens": [
+            "旅館",
+            "每晚",
+            "加收",
+            "10",
+            "%",
+            "的",
+            "清潔費",
+            "。"
+          ],
+          "correct": 6,
+          "predicted": 7,
+          "expected": 8,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.8571428571428571,
+          "recall": 0.75,
+          "f1": 0.8,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            8
+          ],
+          "missingBoundaries": [
+            3,
+            12
+          ]
+        },
+        {
+          "id": "zh-Hant-173",
+          "text": "這個連結是不是釣魚文啊？",
+          "categories": [
+            "internet-slang",
+            "particles"
+          ],
+          "gold": [
+            "這",
+            "個",
+            "連結",
+            "是",
+            "不",
+            "是",
+            "釣魚",
+            "文",
+            "啊",
+            "？"
+          ],
+          "tokens": [
+            "這個",
+            "連結",
+            "是不是",
+            "釣魚",
+            "文",
+            "啊",
+            "？"
+          ],
+          "correct": 6,
+          "predicted": 6,
+          "expected": 9,
+          "exact": 0,
+          "lines": 1,
+          "precision": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
+          "exactMatch": 0,
+          "extraBoundaries": [],
+          "missingBoundaries": [
+            1,
+            5,
+            6
+          ]
+        },
+        {
+          "id": "zh-Hant-201",
+          "text": "汪聿新師兄連夜送來了藥。",
+          "categories": [
+            "anime-drama",
+            "names",
+            "suffix-chains"
+          ],
+          "gold": [
+            "汪聿新",
+            "師兄",
+            "連夜",
+            "送",
+            "來",
+            "了",
+            "藥",
+            "。"
+          ],
+          "tokens": [
+            "汪",
+            "聿",
+            "新",
+            "師兄",
+            "連夜",
+            "送來",
+            "了",
+            "藥",
+            "。"
+          ],
+          "correct": 6,
+          "predicted": 8,
+          "expected": 7,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.75,
+          "recall": 0.8571428571428571,
+          "f1": 0.8,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            1,
+            2
+          ],
+          "missingBoundaries": [
+            8
+          ]
+        },
+        {
+          "id": "zh-Hant-017",
+          "text": "我尋思著，咱倆換個位置？",
+          "categories": [
+            "casual-speech",
+            "colloquial-contractions",
+            "suffix-chains",
+            "particles"
+          ],
+          "gold": [
+            "我",
+            "尋思",
+            "著",
+            "，",
+            "咱",
+            "倆",
+            "換",
+            "個",
+            "位置",
+            "？"
+          ],
+          "tokens": [
+            "我",
+            "尋思",
+            "著",
+            "，",
+            "咱倆",
+            "換",
+            "個位",
+            "置",
+            "？"
+          ],
+          "correct": 7,
+          "predicted": 8,
+          "expected": 9,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.875,
+          "recall": 0.7777777777777778,
+          "f1": 0.8235294117647058,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            10
+          ],
+          "missingBoundaries": [
+            6,
+            9
+          ]
+        },
+        {
+          "id": "zh-Hant-077",
+          "text": "別默默地忍著，我看得出來。",
+          "categories": [
+            "suffix-chains"
+          ],
+          "gold": [
+            "別",
+            "默默",
+            "地",
+            "忍",
+            "著",
+            "，",
+            "我",
+            "看",
+            "得",
+            "出來",
+            "。"
+          ],
+          "tokens": [
+            "別",
+            "默默地",
+            "忍",
+            "著",
+            "，",
+            "我",
+            "看得出來",
+            "。"
+          ],
+          "correct": 7,
+          "predicted": 7,
+          "expected": 10,
+          "exact": 0,
+          "lines": 1,
+          "precision": 1,
+          "recall": 0.7,
+          "f1": 0.8235294117647058,
+          "exactMatch": 0,
+          "extraBoundaries": [],
+          "missingBoundaries": [
+            3,
+            9,
+            10
+          ]
+        },
+        {
+          "id": "zh-Hant-079",
+          "text": "八點前能送到兩箱礦泉水嗎？",
+          "categories": [
+            "numbers-counters",
+            "suffix-chains",
+            "particles"
+          ],
+          "gold": [
+            "八",
+            "點",
+            "前",
+            "能",
+            "送",
+            "到",
+            "兩",
+            "箱",
+            "礦泉水",
+            "嗎",
+            "？"
+          ],
+          "tokens": [
+            "八點",
+            "前",
+            "能",
+            "送到",
+            "兩箱",
+            "礦泉水",
+            "嗎",
+            "？"
+          ],
+          "correct": 7,
+          "predicted": 7,
+          "expected": 10,
+          "exact": 0,
+          "lines": 1,
+          "precision": 1,
+          "recall": 0.7,
+          "f1": 0.8235294117647058,
+          "exactMatch": 0,
+          "extraBoundaries": [],
+          "missingBoundaries": [
+            1,
+            5,
+            7
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "zh-Hant",
+      "split": "test",
+      "correct": 1464,
+      "predicted": 1537,
+      "expected": 1623,
+      "exact": 38,
+      "lines": 150,
+      "precision": 0.9525048796356539,
+      "recall": 0.9020332717190388,
+      "f1": 0.9265822784810127,
+      "exactMatch": 0.25333333333333335,
+      "categories": {
+        "anime-drama": {
+          "correct": 281,
+          "predicted": 290,
+          "expected": 317,
+          "exact": 6,
+          "lines": 20,
+          "precision": 0.9689655172413794,
+          "recall": 0.886435331230284,
+          "f1": 0.9258649093904449,
+          "exactMatch": 0.3
+        },
+        "casual-speech": {
+          "correct": 437,
+          "predicted": 447,
+          "expected": 480,
+          "exact": 12,
+          "lines": 36,
+          "precision": 0.9776286353467561,
+          "recall": 0.9104166666666667,
+          "f1": 0.9428263214670982,
+          "exactMatch": 0.3333333333333333
+        },
+        "code-switching": {
+          "correct": 133,
+          "predicted": 136,
+          "expected": 148,
+          "exact": 4,
+          "lines": 15,
+          "precision": 0.9779411764705882,
+          "recall": 0.8986486486486487,
+          "f1": 0.9366197183098591,
+          "exactMatch": 0.26666666666666666
+        },
+        "colloquial-contractions": {
+          "correct": 255,
+          "predicted": 262,
+          "expected": 275,
+          "exact": 10,
+          "lines": 31,
+          "precision": 0.9732824427480916,
+          "recall": 0.9272727272727272,
+          "f1": 0.9497206703910615,
+          "exactMatch": 0.3225806451612903
+        },
+        "idioms": {
+          "correct": 117,
+          "predicted": 120,
+          "expected": 127,
+          "exact": 6,
+          "lines": 16,
+          "precision": 0.975,
+          "recall": 0.9212598425196851,
+          "f1": 0.9473684210526315,
+          "exactMatch": 0.375
+        },
+        "internet-slang": {
+          "correct": 135,
+          "predicted": 146,
+          "expected": 149,
+          "exact": 3,
+          "lines": 17,
+          "precision": 0.9246575342465754,
+          "recall": 0.9060402684563759,
+          "f1": 0.9152542372881356,
+          "exactMatch": 0.17647058823529413
+        },
+        "long-lines": {
+          "correct": 335,
+          "predicted": 344,
+          "expected": 376,
+          "exact": 0,
+          "lines": 8,
+          "precision": 0.9738372093023255,
+          "recall": 0.8909574468085106,
+          "f1": 0.9305555555555556,
+          "exactMatch": 0
+        },
+        "mixed-latin": {
+          "correct": 154,
+          "predicted": 159,
+          "expected": 169,
+          "exact": 5,
+          "lines": 17,
+          "precision": 0.9685534591194969,
+          "recall": 0.9112426035502958,
+          "f1": 0.9390243902439024,
+          "exactMatch": 0.29411764705882354
+        },
+        "names": {
+          "correct": 95,
+          "predicted": 124,
+          "expected": 101,
+          "exact": 0,
+          "lines": 15,
+          "precision": 0.7661290322580645,
+          "recall": 0.9405940594059405,
+          "f1": 0.8444444444444444,
+          "exactMatch": 0
+        },
+        "numbers-counters": {
+          "correct": 148,
+          "predicted": 160,
+          "expected": 172,
+          "exact": 2,
+          "lines": 20,
+          "precision": 0.925,
+          "recall": 0.8604651162790697,
+          "f1": 0.891566265060241,
+          "exactMatch": 0.1
+        },
+        "particles": {
+          "correct": 491,
+          "predicted": 511,
+          "expected": 534,
+          "exact": 14,
+          "lines": 52,
+          "precision": 0.9608610567514677,
+          "recall": 0.9194756554307116,
+          "f1": 0.939712918660287,
+          "exactMatch": 0.2692307692307692
+        },
+        "suffix-chains": {
+          "correct": 826,
+          "predicted": 856,
+          "expected": 931,
+          "exact": 16,
+          "lines": 67,
+          "precision": 0.9649532710280374,
+          "recall": 0.8872180451127819,
+          "f1": 0.9244543928371572,
+          "exactMatch": 0.23880597014925373
+        }
+      },
+      "worst": [
+        {
+          "id": "zh-Hant-092",
+          "text": "江映竹導演要大家再走一遍。",
+          "categories": [
+            "names",
+            "numbers-counters"
+          ],
+          "gold": [
+            "江映竹",
+            "導演",
+            "要",
+            "大家",
+            "再",
+            "走",
+            "一",
+            "遍",
+            "。"
+          ],
+          "tokens": [
+            "江",
+            "映",
+            "竹",
+            "導演",
+            "要",
+            "大家",
+            "再",
+            "走一遍",
+            "。"
+          ],
+          "correct": 6,
+          "predicted": 8,
+          "expected": 8,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.75,
+          "recall": 0.75,
+          "f1": 0.75,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            1,
+            2
+          ],
+          "missingBoundaries": [
+            10,
+            11
+          ]
+        },
+        {
+          "id": "zh-Hant-100",
+          "text": "第七層樓只有一盞燈亮著。",
+          "categories": [
+            "numbers-counters",
+            "suffix-chains"
+          ],
+          "gold": [
+            "第",
+            "七",
+            "層",
+            "樓",
+            "只有",
+            "一",
+            "盞",
+            "燈",
+            "亮",
+            "著",
+            "。"
+          ],
+          "tokens": [
+            "第七層",
+            "樓",
+            "只有",
+            "一盞燈",
+            "亮",
+            "著",
+            "。"
+          ],
+          "correct": 6,
+          "predicted": 6,
+          "expected": 10,
+          "exact": 0,
+          "lines": 1,
+          "precision": 1,
+          "recall": 0.6,
+          "f1": 0.75,
+          "exactMatch": 0,
+          "extraBoundaries": [],
+          "missingBoundaries": [
+            1,
+            2,
+            7,
+            8
+          ]
+        },
+        {
+          "id": "zh-Hant-158",
+          "text": "把法杖拿穩，別晃來晃去。",
+          "categories": [
+            "anime-drama",
+            "suffix-chains"
+          ],
+          "gold": [
+            "把",
+            "法杖",
+            "拿",
+            "穩",
+            "，",
+            "別",
+            "晃",
+            "來",
+            "晃",
+            "去",
+            "。"
+          ],
+          "tokens": [
+            "把",
+            "法杖",
+            "拿穩",
+            "，",
+            "別",
+            "晃來晃去",
+            "。"
+          ],
+          "correct": 6,
+          "predicted": 6,
+          "expected": 10,
+          "exact": 0,
+          "lines": 1,
+          "precision": 1,
+          "recall": 0.6,
+          "f1": 0.75,
+          "exactMatch": 0,
+          "extraBoundaries": [],
+          "missingBoundaries": [
+            4,
+            8,
+            9,
+            10
+          ]
+        },
+        {
+          "id": "zh-Hant-288",
+          "text": "這次眾籌可別又只寄來貼紙。",
+          "categories": [
+            "internet-slang",
+            "suffix-chains"
+          ],
+          "gold": [
+            "這",
+            "次",
+            "眾籌",
+            "可",
+            "別",
+            "又",
+            "只",
+            "寄",
+            "來",
+            "貼紙",
+            "。"
+          ],
+          "tokens": [
+            "這次",
+            "眾",
+            "籌",
+            "可別",
+            "又",
+            "只",
+            "寄來",
+            "貼紙",
+            "。"
+          ],
+          "correct": 7,
+          "predicted": 8,
+          "expected": 10,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.875,
+          "recall": 0.7,
+          "f1": 0.7777777777777778,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            3
+          ],
+          "missingBoundaries": [
+            1,
+            5,
+            9
+          ]
+        },
+        {
+          "id": "zh-Hant-022",
+          "text": "陳序白同學借了四本書。",
+          "categories": [
+            "names",
+            "numbers-counters",
+            "suffix-chains"
+          ],
+          "gold": [
+            "陳序白",
+            "同學",
+            "借",
+            "了",
+            "四",
+            "本",
+            "書",
+            "。"
+          ],
+          "tokens": [
+            "陳",
+            "序",
+            "白",
+            "同學",
+            "借",
+            "了",
+            "四",
+            "本書",
+            "。"
+          ],
+          "correct": 6,
+          "predicted": 8,
+          "expected": 7,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.75,
+          "recall": 0.8571428571428571,
+          "f1": 0.8,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            1,
+            2
+          ],
+          "missingBoundaries": [
+            9
+          ]
+        },
+        {
+          "id": "zh-Hant-032",
+          "text": "沈青嵐隊長不接受這個命令。",
+          "categories": [
+            "anime-drama",
+            "names"
+          ],
+          "gold": [
+            "沈青嵐",
+            "隊長",
+            "不",
+            "接受",
+            "這",
+            "個",
+            "命令",
+            "。"
+          ],
+          "tokens": [
+            "沈",
+            "青",
+            "嵐",
+            "隊長",
+            "不",
+            "接受",
+            "這個",
+            "命令",
+            "。"
+          ],
+          "correct": 6,
+          "predicted": 8,
+          "expected": 7,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.75,
+          "recall": 0.8571428571428571,
+          "f1": 0.8,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            1,
+            2
+          ],
+          "missingBoundaries": [
+            9
+          ]
+        },
+        {
+          "id": "zh-Hant-062",
+          "text": "羅予晴學姐說別跟丟了。",
+          "categories": [
+            "names",
+            "suffix-chains",
+            "particles"
+          ],
+          "gold": [
+            "羅予晴",
+            "學姐",
+            "說",
+            "別",
+            "跟",
+            "丟",
+            "了",
+            "。"
+          ],
+          "tokens": [
+            "羅",
+            "予",
+            "晴",
+            "學姐",
+            "說",
+            "別",
+            "跟",
+            "丟了",
+            "。"
+          ],
+          "correct": 6,
+          "predicted": 8,
+          "expected": 7,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.75,
+          "recall": 0.8571428571428571,
+          "f1": 0.8,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            1,
+            2
+          ],
+          "missingBoundaries": [
+            9
+          ]
+        },
+        {
+          "id": "zh-Hant-286",
+          "text": "結帳少收了二百五十元。",
+          "categories": [
+            "numbers-counters",
+            "suffix-chains"
+          ],
+          "gold": [
+            "結帳",
+            "少",
+            "收",
+            "了",
+            "二百五十",
+            "元",
+            "。"
+          ],
+          "tokens": [
+            "結帳",
+            "少收",
+            "了",
+            "二百五十元",
+            "。"
+          ],
+          "correct": 4,
+          "predicted": 4,
+          "expected": 6,
+          "exact": 0,
+          "lines": 1,
+          "precision": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
+          "exactMatch": 0,
+          "extraBoundaries": [],
+          "missingBoundaries": [
+            3,
+            9
+          ]
+        },
+        {
+          "id": "zh-Hant-074",
+          "text": "這次不是社死，是全村都知道了。",
+          "categories": [
+            "internet-slang",
+            "particles"
+          ],
+          "gold": [
+            "這",
+            "次",
+            "不",
+            "是",
+            "社死",
+            "，",
+            "是",
+            "全",
+            "村",
+            "都",
+            "知道",
+            "了",
+            "。"
+          ],
+          "tokens": [
+            "這次",
+            "不是",
+            "社",
+            "死",
+            "，",
+            "是",
+            "全村",
+            "都",
+            "知道",
+            "了",
+            "。"
+          ],
+          "correct": 9,
+          "predicted": 10,
+          "expected": 12,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.9,
+          "recall": 0.75,
+          "f1": 0.8181818181818182,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            5
+          ],
+          "missingBoundaries": [
+            1,
+            3,
+            9
+          ]
+        },
+        {
+          "id": "zh-Hant-184",
+          "text": "我靠得夠近，卻摸不到那面牆。",
+          "categories": [
+            "anime-drama",
+            "suffix-chains"
+          ],
+          "gold": [
+            "我",
+            "靠",
+            "得",
+            "夠",
+            "近",
+            "，",
+            "卻",
+            "摸",
+            "不",
+            "到",
+            "那",
+            "面",
+            "牆",
+            "。"
+          ],
+          "tokens": [
+            "我",
+            "靠",
+            "得",
+            "夠近",
+            "，",
+            "卻",
+            "摸不到",
+            "那",
+            "面牆",
+            "。"
+          ],
+          "correct": 9,
+          "predicted": 9,
+          "expected": 13,
+          "exact": 0,
+          "lines": 1,
+          "precision": 1,
+          "recall": 0.6923076923076923,
+          "f1": 0.8181818181818182,
+          "exactMatch": 0,
+          "extraBoundaries": [],
+          "missingBoundaries": [
+            4,
+            8,
+            9,
+            12
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "yue",
+      "split": "dev",
+      "correct": 1496,
+      "predicted": 1579,
+      "expected": 1582,
+      "exact": 67,
+      "lines": 150,
+      "precision": 0.94743508549715,
+      "recall": 0.9456384323640961,
+      "f1": 0.9465359063587472,
+      "exactMatch": 0.44666666666666666,
+      "categories": {
+        "anime-drama": {
+          "correct": 226,
+          "predicted": 234,
+          "expected": 239,
+          "exact": 11,
+          "lines": 23,
+          "precision": 0.9658119658119658,
+          "recall": 0.9456066945606695,
+          "f1": 0.9556025369978859,
+          "exactMatch": 0.4782608695652174
+        },
+        "cantonese-particles": {
+          "correct": 763,
+          "predicted": 793,
+          "expected": 806,
+          "exact": 28,
+          "lines": 61,
+          "precision": 0.9621689785624212,
+          "recall": 0.9466501240694789,
+          "f1": 0.9543464665415885,
+          "exactMatch": 0.45901639344262296
+        },
+        "casual-speech": {
+          "correct": 706,
+          "predicted": 722,
+          "expected": 756,
+          "exact": 25,
+          "lines": 53,
+          "precision": 0.9778393351800554,
+          "recall": 0.9338624338624338,
+          "f1": 0.9553450608930988,
+          "exactMatch": 0.4716981132075472
+        },
+        "code-switching": {
+          "correct": 117,
+          "predicted": 123,
+          "expected": 118,
+          "exact": 10,
+          "lines": 15,
+          "precision": 0.9512195121951219,
+          "recall": 0.9915254237288136,
+          "f1": 0.970954356846473,
+          "exactMatch": 0.6666666666666666
+        },
+        "colloquial-contractions": {
+          "correct": 326,
+          "predicted": 344,
+          "expected": 348,
+          "exact": 11,
+          "lines": 27,
+          "precision": 0.9476744186046512,
+          "recall": 0.9367816091954023,
+          "f1": 0.9421965317919075,
+          "exactMatch": 0.4074074074074074
+        },
+        "idioms": {
+          "correct": 96,
+          "predicted": 108,
+          "expected": 99,
+          "exact": 7,
+          "lines": 14,
+          "precision": 0.8888888888888888,
+          "recall": 0.9696969696969697,
+          "f1": 0.927536231884058,
+          "exactMatch": 0.5
+        },
+        "internet-slang": {
+          "correct": 119,
+          "predicted": 123,
+          "expected": 126,
+          "exact": 7,
+          "lines": 14,
+          "precision": 0.967479674796748,
+          "recall": 0.9444444444444444,
+          "f1": 0.9558232931726908,
+          "exactMatch": 0.5
+        },
+        "long-lines": {
+          "correct": 363,
+          "predicted": 371,
+          "expected": 393,
+          "exact": 0,
+          "lines": 8,
+          "precision": 0.9784366576819407,
+          "recall": 0.9236641221374046,
+          "f1": 0.9502617801047121,
+          "exactMatch": 0
+        },
+        "mixed-latin": {
+          "correct": 142,
+          "predicted": 152,
+          "expected": 144,
+          "exact": 11,
+          "lines": 18,
+          "precision": 0.9342105263157895,
+          "recall": 0.9861111111111112,
+          "f1": 0.9594594594594594,
+          "exactMatch": 0.6111111111111112
+        },
+        "names": {
+          "correct": 99,
+          "predicted": 128,
+          "expected": 101,
+          "exact": 0,
+          "lines": 14,
+          "precision": 0.7734375,
+          "recall": 0.9801980198019802,
+          "f1": 0.8646288209606987,
+          "exactMatch": 0
+        },
+        "numbers-counters": {
+          "correct": 228,
+          "predicted": 241,
+          "expected": 238,
+          "exact": 13,
+          "lines": 23,
+          "precision": 0.946058091286307,
+          "recall": 0.957983193277311,
+          "f1": 0.9519832985386222,
+          "exactMatch": 0.5652173913043478
+        },
+        "particles": {
+          "correct": 845,
+          "predicted": 881,
+          "expected": 889,
+          "exact": 35,
+          "lines": 71,
+          "precision": 0.9591373439273553,
+          "recall": 0.9505061867266592,
+          "f1": 0.9548022598870056,
+          "exactMatch": 0.49295774647887325
+        },
+        "suffix-chains": {
+          "correct": 935,
+          "predicted": 966,
+          "expected": 987,
+          "exact": 38,
+          "lines": 77,
+          "precision": 0.9679089026915114,
+          "recall": 0.9473150962512664,
+          "f1": 0.9575012800819253,
+          "exactMatch": 0.4935064935064935
+        }
+      },
+      "worst": [
+        {
+          "id": "yue-227",
+          "text": "你做乜此地無銀三百兩呀？",
+          "categories": [
+            "idioms",
+            "colloquial-contractions",
+            "cantonese-particles",
+            "particles"
+          ],
+          "gold": [
+            "你",
+            "做乜",
+            "此地無銀三百兩",
+            "呀",
+            "？"
+          ],
+          "tokens": [
+            "你",
+            "做乜",
+            "此地無銀",
+            "三",
+            "百",
+            "兩",
+            "呀",
+            "？"
+          ],
+          "correct": 4,
+          "predicted": 7,
+          "expected": 4,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.5714285714285714,
+          "recall": 1,
+          "f1": 0.7272727272727273,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            7,
+            8,
+            9
+          ],
+          "missingBoundaries": []
+        },
+        {
+          "id": "yue-211",
+          "text": "你唔舒服就講，唔使死頂。",
+          "categories": [
+            "casual-speech"
+          ],
+          "gold": [
+            "你",
+            "唔",
+            "舒服",
+            "就",
+            "講",
+            "，",
+            "唔",
+            "使",
+            "死頂",
+            "。"
+          ],
+          "tokens": [
+            "你",
+            "唔舒服",
+            "就",
+            "講",
+            "，",
+            "唔使死",
+            "頂",
+            "。"
+          ],
+          "correct": 6,
+          "predicted": 7,
+          "expected": 9,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.8571428571428571,
+          "recall": 0.6666666666666666,
+          "f1": 0.75,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            10
+          ],
+          "missingBoundaries": [
+            2,
+            8,
+            9
+          ]
+        },
+        {
+          "id": "yue-279",
+          "text": "文卓霖主任想同你傾兩句。",
+          "categories": [
+            "names",
+            "numbers-counters"
+          ],
+          "gold": [
+            "文卓霖",
+            "主任",
+            "想",
+            "同",
+            "你",
+            "傾",
+            "兩",
+            "句",
+            "。"
+          ],
+          "tokens": [
+            "文",
+            "卓",
+            "霖",
+            "主任",
+            "想",
+            "同",
+            "你",
+            "傾兩句",
+            "。"
+          ],
+          "correct": 6,
+          "predicted": 8,
+          "expected": 8,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.75,
+          "recall": 0.75,
+          "f1": 0.75,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            1,
+            2
+          ],
+          "missingBoundaries": [
+            9,
+            10
+          ]
+        },
+        {
+          "id": "yue-197",
+          "text": "呢度離營地仲有2.4公里。",
+          "categories": [
+            "numbers-counters"
+          ],
+          "gold": [
+            "呢度",
+            "離",
+            "營地",
+            "仲",
+            "有",
+            "2.4",
+            "公里",
+            "。"
+          ],
+          "tokens": [
+            "呢度",
+            "離",
+            "營地",
+            "仲有",
+            "2",
+            ".",
+            "4",
+            "公里",
+            "。"
+          ],
+          "correct": 6,
+          "predicted": 8,
+          "expected": 7,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.75,
+          "recall": 0.8571428571428571,
+          "f1": 0.8,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            8,
+            9
+          ],
+          "missingBoundaries": [
+            6
+          ]
+        },
+        {
+          "id": "yue-175",
+          "text": "你個Wi-Fi名係咩嚟㗎？",
+          "categories": [
+            "mixed-latin",
+            "colloquial-contractions",
+            "cantonese-particles",
+            "particles"
+          ],
+          "gold": [
+            "你",
+            "個",
+            "Wi-Fi",
+            "名",
+            "係",
+            "咩",
+            "嚟",
+            "㗎",
+            "？"
+          ],
+          "tokens": [
+            "你",
+            "個",
+            "Wi",
+            "-",
+            "Fi",
+            "名",
+            "係咩",
+            "嚟",
+            "㗎",
+            "？"
+          ],
+          "correct": 7,
+          "predicted": 9,
+          "expected": 8,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.7777777777777778,
+          "recall": 0.875,
+          "f1": 0.8235294117647058,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            4,
+            5
+          ],
+          "missingBoundaries": [
+            9
+          ]
+        },
+        {
+          "id": "yue-293",
+          "text": "你哋各執一詞，叫我信邊個？",
+          "categories": [
+            "idioms",
+            "particles"
+          ],
+          "gold": [
+            "你哋",
+            "各執一詞",
+            "，",
+            "叫",
+            "我",
+            "信",
+            "邊個",
+            "？"
+          ],
+          "tokens": [
+            "你哋",
+            "各",
+            "執",
+            "一",
+            "詞",
+            "，",
+            "叫",
+            "我",
+            "信",
+            "邊個",
+            "？"
+          ],
+          "correct": 7,
+          "predicted": 10,
+          "expected": 7,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.7,
+          "recall": 1,
+          "f1": 0.8235294117647058,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            3,
+            4,
+            5
+          ],
+          "missingBoundaries": []
+        },
+        {
+          "id": "yue-073",
+          "text": "前面仲有廿三張籌。",
+          "categories": [
+            "numbers-counters",
+            "colloquial-contractions"
+          ],
+          "gold": [
+            "前面",
+            "仲",
+            "有",
+            "廿三",
+            "張",
+            "籌",
+            "。"
+          ],
+          "tokens": [
+            "前面",
+            "仲有",
+            "廿",
+            "三",
+            "張",
+            "籌",
+            "。"
+          ],
+          "correct": 5,
+          "predicted": 6,
+          "expected": 6,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.8333333333333334,
+          "recall": 0.8333333333333334,
+          "f1": 0.8333333333333334,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            5
+          ],
+          "missingBoundaries": [
+            3
+          ]
+        },
+        {
+          "id": "yue-199",
+          "text": "江悅榆導遊話聽日落雨。",
+          "categories": [
+            "names"
+          ],
+          "gold": [
+            "江悅榆",
+            "導遊",
+            "話",
+            "聽日",
+            "落雨",
+            "。"
+          ],
+          "tokens": [
+            "江",
+            "悅",
+            "榆",
+            "導遊",
+            "話",
+            "聽日",
+            "落雨",
+            "。"
+          ],
+          "correct": 5,
+          "predicted": 7,
+          "expected": 5,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.7142857142857143,
+          "recall": 1,
+          "f1": 0.8333333333333334,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            1,
+            2
+          ],
+          "missingBoundaries": []
+        },
+        {
+          "id": "yue-049",
+          "text": "唔係冇嘢食，係冇嘢想食。",
+          "categories": [
+            "casual-speech"
+          ],
+          "gold": [
+            "唔",
+            "係",
+            "冇",
+            "嘢",
+            "食",
+            "，",
+            "係",
+            "冇",
+            "嘢",
+            "想",
+            "食",
+            "。"
+          ],
+          "tokens": [
+            "唔係",
+            "冇",
+            "嘢食",
+            "，",
+            "係",
+            "冇嘢",
+            "想",
+            "食",
+            "。"
+          ],
+          "correct": 8,
+          "predicted": 8,
+          "expected": 11,
+          "exact": 0,
+          "lines": 1,
+          "precision": 1,
+          "recall": 0.7272727272727273,
+          "f1": 0.8421052631578947,
+          "exactMatch": 0,
+          "extraBoundaries": [],
+          "missingBoundaries": [
+            1,
+            4,
+            8
+          ]
+        },
+        {
+          "id": "yue-141",
+          "text": "咁快話放棄，你係咪打退堂鼓？",
+          "categories": [
+            "idioms",
+            "colloquial-contractions",
+            "particles"
+          ],
+          "gold": [
+            "咁",
+            "快",
+            "話",
+            "放棄",
+            "，",
+            "你",
+            "係咪",
+            "打退堂鼓",
+            "？"
+          ],
+          "tokens": [
+            "咁",
+            "快",
+            "話",
+            "放棄",
+            "，",
+            "你",
+            "係咪",
+            "打",
+            "退",
+            "堂",
+            "鼓",
+            "？"
+          ],
+          "correct": 8,
+          "predicted": 11,
+          "expected": 8,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.7272727272727273,
+          "recall": 1,
+          "f1": 0.8421052631578947,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            10,
+            11,
+            12
+          ],
+          "missingBoundaries": []
+        }
+      ]
+    },
+    {
+      "variant": "yue",
+      "split": "test",
+      "correct": 1497,
+      "predicted": 1603,
+      "expected": 1577,
+      "exact": 52,
+      "lines": 150,
+      "precision": 0.933873986275733,
+      "recall": 0.9492707672796449,
+      "f1": 0.9415094339622642,
+      "exactMatch": 0.3466666666666667,
+      "categories": {
+        "anime-drama": {
+          "correct": 257,
+          "predicted": 267,
+          "expected": 269,
+          "exact": 9,
+          "lines": 22,
+          "precision": 0.9625468164794008,
+          "recall": 0.9553903345724907,
+          "f1": 0.9589552238805971,
+          "exactMatch": 0.4090909090909091
+        },
+        "cantonese-particles": {
+          "correct": 629,
+          "predicted": 662,
+          "expected": 661,
+          "exact": 25,
+          "lines": 61,
+          "precision": 0.9501510574018127,
+          "recall": 0.9515885022692889,
+          "f1": 0.9508692365835223,
+          "exactMatch": 0.4098360655737705
+        },
+        "casual-speech": {
+          "correct": 705,
+          "predicted": 716,
+          "expected": 741,
+          "exact": 24,
+          "lines": 53,
+          "precision": 0.9846368715083799,
+          "recall": 0.951417004048583,
+          "f1": 0.967741935483871,
+          "exactMatch": 0.4528301886792453
+        },
+        "code-switching": {
+          "correct": 101,
+          "predicted": 109,
+          "expected": 108,
+          "exact": 6,
+          "lines": 15,
+          "precision": 0.926605504587156,
+          "recall": 0.9351851851851852,
+          "f1": 0.9308755760368663,
+          "exactMatch": 0.4
+        },
+        "colloquial-contractions": {
+          "correct": 227,
+          "predicted": 238,
+          "expected": 241,
+          "exact": 11,
+          "lines": 27,
+          "precision": 0.9537815126050421,
+          "recall": 0.941908713692946,
+          "f1": 0.9478079331941545,
+          "exactMatch": 0.4074074074074074
+        },
+        "idioms": {
+          "correct": 99,
+          "predicted": 114,
+          "expected": 104,
+          "exact": 6,
+          "lines": 13,
+          "precision": 0.868421052631579,
+          "recall": 0.9519230769230769,
+          "f1": 0.908256880733945,
+          "exactMatch": 0.46153846153846156
+        },
+        "internet-slang": {
+          "correct": 100,
+          "predicted": 108,
+          "expected": 108,
+          "exact": 4,
+          "lines": 14,
+          "precision": 0.9259259259259259,
+          "recall": 0.9259259259259259,
+          "f1": 0.9259259259259259,
+          "exactMatch": 0.2857142857142857
+        },
+        "long-lines": {
+          "correct": 388,
+          "predicted": 394,
+          "expected": 406,
+          "exact": 0,
+          "lines": 8,
+          "precision": 0.9847715736040609,
+          "recall": 0.9556650246305419,
+          "f1": 0.97,
+          "exactMatch": 0
+        },
+        "mixed-latin": {
+          "correct": 115,
+          "predicted": 125,
+          "expected": 123,
+          "exact": 6,
+          "lines": 17,
+          "precision": 0.92,
+          "recall": 0.9349593495934959,
+          "f1": 0.9274193548387096,
+          "exactMatch": 0.35294117647058826
+        },
+        "names": {
+          "correct": 94,
+          "predicted": 125,
+          "expected": 97,
+          "exact": 0,
+          "lines": 15,
+          "precision": 0.752,
+          "recall": 0.9690721649484536,
+          "f1": 0.8468468468468469,
+          "exactMatch": 0
+        },
+        "numbers-counters": {
+          "correct": 166,
+          "predicted": 193,
+          "expected": 179,
+          "exact": 4,
+          "lines": 22,
+          "precision": 0.8601036269430051,
+          "recall": 0.9273743016759777,
+          "f1": 0.8924731182795699,
+          "exactMatch": 0.18181818181818182
+        },
+        "particles": {
+          "correct": 747,
+          "predicted": 786,
+          "expected": 788,
+          "exact": 28,
+          "lines": 71,
+          "precision": 0.950381679389313,
+          "recall": 0.9479695431472082,
+          "f1": 0.9491740787801779,
+          "exactMatch": 0.39436619718309857
+        },
+        "suffix-chains": {
+          "correct": 949,
+          "predicted": 1001,
+          "expected": 995,
+          "exact": 27,
+          "lines": 78,
+          "precision": 0.948051948051948,
+          "recall": 0.9537688442211055,
+          "f1": 0.9509018036072144,
+          "exactMatch": 0.34615384615384615
+        }
+      },
+      "worst": [
+        {
+          "id": "yue-064",
+          "text": "包住張單據，免得節外生枝。",
+          "categories": [
+            "idioms"
+          ],
+          "gold": [
+            "包",
+            "住",
+            "張",
+            "單據",
+            "，",
+            "免得",
+            "節外生枝",
+            "。"
+          ],
+          "tokens": [
+            "包住",
+            "張",
+            "單",
+            "據",
+            "，",
+            "免得",
+            "節",
+            "外",
+            "生",
+            "枝",
+            "。"
+          ],
+          "correct": 6,
+          "predicted": 10,
+          "expected": 7,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.6,
+          "recall": 0.8571428571428571,
+          "f1": 0.7058823529411765,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            4,
+            9,
+            10,
+            11
+          ],
+          "missingBoundaries": [
+            1
+          ]
+        },
+        {
+          "id": "yue-268",
+          "text": "錢映希阿姨唔食花生。",
+          "categories": [
+            "names"
+          ],
+          "gold": [
+            "錢映希",
+            "阿姨",
+            "唔",
+            "食",
+            "花生",
+            "。"
+          ],
+          "tokens": [
+            "錢",
+            "映",
+            "希",
+            "阿姨",
+            "唔",
+            "食花生",
+            "。"
+          ],
+          "correct": 4,
+          "predicted": 6,
+          "expected": 5,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.6666666666666666,
+          "recall": 0.8,
+          "f1": 0.7272727272727273,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            1,
+            2
+          ],
+          "missingBoundaries": [
+            7
+          ]
+        },
+        {
+          "id": "yue-222",
+          "text": "呢個好唔好味，你講真話喎。",
+          "categories": [
+            "casual-speech",
+            "suffix-chains",
+            "cantonese-particles",
+            "particles"
+          ],
+          "gold": [
+            "呢",
+            "個",
+            "好",
+            "唔",
+            "好味",
+            "，",
+            "你",
+            "講",
+            "真話",
+            "喎",
+            "。"
+          ],
+          "tokens": [
+            "呢個",
+            "好",
+            "唔好",
+            "味",
+            "，",
+            "你",
+            "講真",
+            "話",
+            "喎",
+            "。"
+          ],
+          "correct": 7,
+          "predicted": 9,
+          "expected": 10,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.7777777777777778,
+          "recall": 0.7,
+          "f1": 0.7368421052631579,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            5,
+            10
+          ],
+          "missingBoundaries": [
+            1,
+            4,
+            9
+          ]
+        },
+        {
+          "id": "yue-164",
+          "text": "仲有四十五秒，快啲揀。",
+          "categories": [
+            "numbers-counters"
+          ],
+          "gold": [
+            "仲",
+            "有",
+            "四十五",
+            "秒",
+            "，",
+            "快",
+            "啲",
+            "揀",
+            "。"
+          ],
+          "tokens": [
+            "仲有",
+            "四",
+            "十",
+            "五",
+            "秒",
+            "，",
+            "快啲",
+            "揀",
+            "。"
+          ],
+          "correct": 6,
+          "predicted": 8,
+          "expected": 8,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.75,
+          "recall": 0.75,
+          "f1": 0.75,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            3,
+            4
+          ],
+          "missingBoundaries": [
+            1,
+            8
+          ]
+        },
+        {
+          "id": "yue-050",
+          "text": "我啱啱先check-in咗咋。",
+          "categories": [
+            "mixed-latin",
+            "code-switching",
+            "suffix-chains",
+            "cantonese-particles",
+            "particles"
+          ],
+          "gold": [
+            "我",
+            "啱啱",
+            "先",
+            "check-in",
+            "咗",
+            "咋",
+            "。"
+          ],
+          "tokens": [
+            "我",
+            "啱啱先",
+            "check",
+            "-",
+            "in",
+            "咗",
+            "咋",
+            "。"
+          ],
+          "correct": 5,
+          "predicted": 7,
+          "expected": 6,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.7142857142857143,
+          "recall": 0.8333333333333334,
+          "f1": 0.7692307692307693,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            9,
+            10
+          ],
+          "missingBoundaries": [
+            3
+          ]
+        },
+        {
+          "id": "yue-090",
+          "text": "件雨褸賣八十五蚊。",
+          "categories": [
+            "numbers-counters"
+          ],
+          "gold": [
+            "件",
+            "雨褸",
+            "賣",
+            "八十五",
+            "蚊",
+            "。"
+          ],
+          "tokens": [
+            "件",
+            "雨",
+            "褸",
+            "賣",
+            "八",
+            "十",
+            "五",
+            "蚊",
+            "。"
+          ],
+          "correct": 5,
+          "predicted": 8,
+          "expected": 5,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.625,
+          "recall": 1,
+          "f1": 0.7692307692307693,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            2,
+            5,
+            6
+          ],
+          "missingBoundaries": []
+        },
+        {
+          "id": "yue-094",
+          "text": "呢個應援色真係好難襯。",
+          "categories": [
+            "internet-slang"
+          ],
+          "gold": [
+            "呢",
+            "個",
+            "應援色",
+            "真係",
+            "好",
+            "難",
+            "襯",
+            "。"
+          ],
+          "tokens": [
+            "呢個",
+            "應",
+            "援",
+            "色",
+            "真係",
+            "好",
+            "難",
+            "襯",
+            "。"
+          ],
+          "correct": 6,
+          "predicted": 8,
+          "expected": 7,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.75,
+          "recall": 0.8571428571428571,
+          "f1": 0.8,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            3,
+            4
+          ],
+          "missingBoundaries": [
+            1
+          ]
+        },
+        {
+          "id": "yue-216",
+          "text": "明明唔關你事，咪對號入座啦。",
+          "categories": [
+            "idioms",
+            "colloquial-contractions",
+            "cantonese-particles",
+            "particles"
+          ],
+          "gold": [
+            "明明",
+            "唔",
+            "關",
+            "你",
+            "事",
+            "，",
+            "咪",
+            "對號入座",
+            "啦",
+            "。"
+          ],
+          "tokens": [
+            "明明",
+            "唔關你事",
+            "，",
+            "咪",
+            "對號入座",
+            "啦",
+            "。"
+          ],
+          "correct": 6,
+          "predicted": 6,
+          "expected": 9,
+          "exact": 0,
+          "lines": 1,
+          "precision": 1,
+          "recall": 0.6666666666666666,
+          "f1": 0.8,
+          "exactMatch": 0,
+          "extraBoundaries": [],
+          "missingBoundaries": [
+            3,
+            4,
+            5
+          ]
+        },
+        {
+          "id": "yue-244",
+          "text": "呢程的士要二百六十蚊？",
+          "categories": [
+            "numbers-counters",
+            "particles"
+          ],
+          "gold": [
+            "呢",
+            "程",
+            "的士",
+            "要",
+            "二百六十",
+            "蚊",
+            "？"
+          ],
+          "tokens": [
+            "呢",
+            "程",
+            "的士",
+            "要",
+            "二",
+            "百",
+            "六",
+            "十",
+            "蚊",
+            "？"
+          ],
+          "correct": 6,
+          "predicted": 9,
+          "expected": 6,
+          "exact": 0,
+          "lines": 1,
+          "precision": 0.6666666666666666,
+          "recall": 1,
+          "f1": 0.8,
+          "exactMatch": 0,
+          "extraBoundaries": [
+            6,
+            7,
+            8
+          ],
+          "missingBoundaries": []
+        },
+        {
+          "id": "yue-052",
+          "text": "呢個位真係坐得落三個人？",
+          "categories": [
+            "numbers-counters",
+            "suffix-chains",
+            "particles"
+          ],
+          "gold": [
+            "呢",
+            "個",
+            "位",
+            "真係",
+            "坐",
+            "得",
+            "落",
+            "三",
+            "個",
+            "人",
+            "？"
+          ],
+          "tokens": [
+            "呢個",
+            "位",
+            "真係",
+            "坐",
+            "得落",
+            "三",
+            "個人",
+            "？"
+          ],
+          "correct": 7,
+          "predicted": 7,
+          "expected": 10,
+          "exact": 0,
+          "lines": 1,
+          "precision": 1,
+          "recall": 0.7,
+          "f1": 0.8235294117647058,
+          "exactMatch": 0,
+          "extraBoundaries": [],
+          "missingBoundaries": [
+            1,
+            7,
+            10
+          ]
+        }
+      ]
+    }
+  ]
+}
