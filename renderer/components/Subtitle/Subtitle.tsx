@@ -9,6 +9,8 @@ import {buildRubyCopyHtml, getSubtitleTokenPresentation, wordSeparator} from "./
 import type {PlaybackClock} from "../../utils/playbackClock";
 import {mandarinSpokenTones} from "../../utils/mandarinTones";
 import {videoConstants} from "../../utils/constants";
+import {useMandarinHsk} from "../../hooks/useMandarinHsk";
+import {lookupHsk, type HskWords} from "../../utils/mandarinHsk";
 
 interface CurrentSubtitleLine {
   content: any[] | string;
@@ -81,6 +83,7 @@ const useCurrentSubtitleLine = ({
 const buildPrimaryCaption = ({
   content,
   lang,
+  hskWords,
   wordMeaning = [],
   setMeaning,
   subtitleStyling,
@@ -89,6 +92,7 @@ const buildPrimaryCaption = ({
 }: {
   content: any[] | string,
   lang: string,
+  hskWords: HskWords | null,
   wordMeaning?: any[],
   setMeaning: (newMeaning: string) => void,
   subtitleStyling?: CJKStyling,
@@ -130,6 +134,7 @@ const buildPrimaryCaption = ({
                 <ChineseSentence
                     origin={val.origin}
                     spokenTones={tones[index]}
+                    hskLevel={lookupHsk(hskWords, val.origin)}
                     separation={val.separation}
                     setMeaning={setMeaning}
                     extraClass={"subtitle"}
@@ -192,18 +197,20 @@ export const PrimarySubtitle = ({
                                 }
 ) => {
   const line = useCurrentSubtitleLine({clock, currentTime, subtitle, shift, timeCache, setTimeCache});
+  const hskWords = useMandarinHsk(subtitle.language, Boolean(subtitleStyling?.mandarinHsk));
   const {
     caption,
     rubyCopyContent
   } = useMemo(() => buildPrimaryCaption({
     content: line.content,
     lang: subtitle.language,
+    hskWords,
     wordMeaning: line.meaning,
     setMeaning,
     subtitleStyling,
     getLearningStateClass,
     changeLearningState
-  }), [changeLearningState, getLearningStateClass, line.content, line.meaning, setMeaning, subtitleStyling, subtitle.language]);
+  }), [changeLearningState, getLearningStateClass, line.content, line.meaning, setMeaning, subtitleStyling, subtitle.language, hskWords]);
 
   useEffect(() => {
     setExternalContent?.(line.content);

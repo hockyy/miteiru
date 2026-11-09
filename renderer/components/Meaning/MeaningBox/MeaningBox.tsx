@@ -25,6 +25,8 @@ import { useMeaningLookup } from './hooks/useMeaningLookup';
 import { useMeaningRomajied } from './hooks/useMeaningRomajied';
 import { useMeaningUserNotes } from './hooks/useMeaningUserNotes';
 import { videoConstants } from '../../../utils/constants';
+import {useMandarinHsk} from '../../../hooks/useMandarinHsk';
+import {hskLabel, lookupHsk} from '../../../utils/mandarinHsk';
 import type { InflectionRow } from '../../../../main/handler/languages/inflectionTypes';
 import type { MeaningBoxProps } from './types';
 
@@ -49,6 +51,7 @@ const MeaningBox = ({
   setLearningLevel = null,
   getLearningState = null,
   showMeaning = true,
+  hskEnabled = false,
   sidebarInsets = {},
   onBack = null,
   showCloseButton = false,
@@ -69,6 +72,8 @@ const MeaningBox = ({
     goToNextMeaning,
     isOpen,
   } = useMeaningLookup(meaning, lang, showMeaning);
+  const hskWords = useMandarinHsk(lang, hskEnabled && isOpen);
+  const hskLevel = lookupHsk(hskWords, meaning);
 
   const { romajiedData, rubyHtmlContent } = useMeaningRomajied(
     meaning,
@@ -195,6 +200,7 @@ const MeaningBox = ({
         header={
           <MeaningBoxHeader
             meaning={meaning}
+            hskLabel={hskLevel === undefined ? undefined : hskLabel(hskLevel)}
             meaningIndex={meaningIndex}
             otherMeaningsCount={otherMeanings.length}
             romajiedData={romajiedData}

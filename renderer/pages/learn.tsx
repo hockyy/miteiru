@@ -354,6 +354,7 @@ function Learn() {
         <div
             className={"flex flex-col justify-center items-center bg-white min-h-screen w-[100vw]"}>
           <MeaningBox 
+                      hskEnabled={Boolean(primaryStyling.mandarinHsk)}
                       lang={lang} 
                       meaning={meaning} 
                       setMeaning={setMeaning}

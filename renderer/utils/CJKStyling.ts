@@ -55,6 +55,8 @@ export interface CJKStyling {
   mandarinToneColors?: boolean;
   mandarinToneTarget?: ToneTarget;
   mandarinTonePalette?: TonePalette;
+  mandarinHsk?: boolean;
+  mandarinHskAbove?: number;
 }
 
 
@@ -156,6 +158,8 @@ export const defaultPrimarySubtitleStyling: CJKStyling = {
   mandarinToneColors: false,
   mandarinToneTarget: 'both',
   mandarinTonePalette: 'default',
+  mandarinHsk: false,
+  mandarinHskAbove: 0,
 }
 
 
