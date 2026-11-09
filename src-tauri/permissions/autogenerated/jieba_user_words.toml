@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-jieba-user-words"
+description = "Enables the jieba_user_words command without any pre-configured scope."
+commands.allow = ["jieba_user_words"]
+
+[[permission]]
+identifier = "deny-jieba-user-words"
+description = "Denies the jieba_user_words command without any pre-configured scope."
+commands.deny = ["jieba_user_words"]

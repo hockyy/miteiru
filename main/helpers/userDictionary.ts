@@ -84,7 +84,10 @@ export function createUserDictionary(options: {getStore: () => Promise<Dictionar
     const store = await options.getStore();
     if (store.get(USER_DICTIONARY_ENABLED_KEY, false) !== true) return [];
     const data = read(store);
-    if (!groups.has(language)) groups.set(language, data.entries.filter((entry) => entry.language === language));
+    if (!groups.has(language)) {
+      const suppressed = new Set(data.suppressions.filter((entry) => entry.language === language).map((entry) => entry.surface));
+      groups.set(language, data.entries.filter((entry) => entry.language === language && !suppressed.has(entry.surface)));
+    }
     return groups.get(language);
   };
   const commit = (store: DictionaryStore, entries: UserDictionaryEntry[], changed: UserDictionaryEntry[], suppressions: DictionarySuppression[]) => {

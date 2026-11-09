@@ -8,7 +8,7 @@ import {Jieba} from '@node-rs/jieba'
 import {formatPinyinReading} from "./pinyinTones";
 import {readStrokeSvg} from "../helpers/strokeSvg";
 import {readAsset} from "../helpers/assetFiles";
-import {lookupUserDictionaryEntry, userChineseDictionaryResult} from "../helpers/userDictionary";
+import {enabledUserDictionaryEntries, lookupUserDictionaryEntry, userChineseDictionaryResult, userDictionaryToken, UserDictionaryEntry} from "../helpers/userDictionary";
 
 
 interface JyutpingResult {
@@ -16,6 +16,9 @@ interface JyutpingResult {
   jyutping: string;
   separation: { main: string; jyutping: string | null }[];
 }
+
+const NO_USER_WORDS: UserDictionaryEntry[] = [];
+const userWordMaps = new WeakMap<UserDictionaryEntry[], Map<string, UserDictionaryEntry>>();
 
 class Chinese {
 
@@ -26,6 +29,8 @@ class Chinese {
   static jiebaDictPath: string;
   static jieba;
   static languageCode = "zh-CN";
+  static userWords: UserDictionaryEntry[] | undefined;
+  static userWordsUpdating: Promise<void> = Promise.resolve();
 
   static queryHanziChinese = async (query: string) => {
     try {
@@ -75,10 +80,11 @@ class Chinese {
     // Initialize nodejieba
 
     // The Tauri build's @node-rs/jieba shim loads the dictionary file by path (its Rust side reads it).
-    const loadsByPath = Jieba as unknown as {withDictFile?: (dictPath: string) => Promise<unknown>};
+    const loadsByPath = Jieba as unknown as {withDictFile?: (dictPath: string, dictionaryPath?: string) => Promise<unknown>};
     this.jieba = loadsByPath.withDictFile
-      ? await loadsByPath.withDictFile(this.jiebaDictPath)
+      ? await loadsByPath.withDictFile(this.jiebaDictPath, this.importDict)
       : Jieba.withDict(await readAsset(this.jiebaDictPath));
+    this.userWords = undefined;
     try {
       await this.Dict.db?.close();
       const dictSetup = await setupChineseDictionary(this.dictPath, this.importDict);
@@ -93,9 +99,12 @@ class Chinese {
   }
 
   static async tokenizeUsingJieba(sentence: string, toneType: string) {
+    const entries = await this.updateUserWords();
     const tokens = await this.jieba.cut(sentence);
 
     return tokens.map(word => {
+      const custom = entries.get(word);
+      if (custom) return userDictionaryToken(custom, toneType);
       const pinyinInfo = pinyin(word, {
         toneType: 'num',
         type: 'all'
@@ -113,8 +122,23 @@ class Chinese {
   }
 
 
+  static async updateUserWords() {
+    const enabled = await enabledUserDictionaryEntries(this.languageCode);
+    const entries = enabled.length ? enabled : NO_USER_WORDS;
+    const work = this.userWordsUpdating.catch(() => undefined).then(async () => {
+      if (this.userWords === entries) return;
+      await this.jieba.setUserWords?.(entries.map(({surface, source}) => ({surface, source})));
+      this.userWords = entries;
+    });
+    this.userWordsUpdating = work;
+    await work;
+    if (!userWordMaps.has(entries)) userWordMaps.set(entries, new Map(entries.map((entry) => [entry.surface, entry])));
+    return userWordMaps.get(entries)!;
+  }
+
   static getJyutpingForSentence(sentence: string, toneType: string): Promise<JyutpingResult[]> {
     return Promise.resolve().then(async () => {
+      const entries = await this.updateUserWords();
       const segments = await this.jieba.cut(sentence);
       const result: JyutpingResult[] = [];
 
@@ -139,6 +163,11 @@ class Chinese {
       }
 
       for (const segment of segments) {
+        const custom = entries.get(segment);
+        if (custom) {
+          result.push(userDictionaryToken(custom, toneType) as unknown as JyutpingResult);
+          continue;
+        }
         const jyutpingList = ToJyutping.getJyutpingList(segment);
 
         // num: contour marks (ˉ¹); symbol: numbered jyutping (sik6)
