@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-11-09T09:36:29.846Z",
+  "goldFrozenAt": "2026-11-09T09:33:54.606Z",
+  "traditionalAndCantoneseGoldFrozenAt": "2026-11-09T09:12:28.604Z",
+  "originalText": true,
+  "externalCorpora": "none",
+  "dictionarySource": "Existing locally installed language packs; no downloads.",
+  "annotationProtocol": "Two independent model judgments per line before dictionary checks or predictions. Authors may annotate their own raw dialogue; the second annotator sees only guidelines and sources. Parent model adjudicates every boundary disagreement and audits dictionary coverage before any actual-corpus baseline run.",
+  "annotators": [
+    {
+      "id": "A",
+      "model": "GPT-6.1 Sol",
+      "reasoning": "max",
+      "variants": [
+        "ja",
+        "zh-Hans"
+      ],
+      "authoredSources": true,
+      "file": "annotations/a.jsonl"
+    },
+    {
+      "id": "B",
+      "model": "GPT-6.1 Sol",
+      "reasoning": "max",
+      "variants": [
+        "ja",
+        "zh-Hans"
+      ],
+      "authoredSources": false,
+      "file": "annotations/b.jsonl"
+    },
+    {
+      "id": "C",
+      "model": "GPT-6.1 Sol",
+      "reasoning": "max",
+      "variants": [
+        "zh-Hant",
+        "yue"
+      ],
+      "authoredSources": true,
+      "file": "annotations/c.jsonl"
+    },
+    {
+      "id": "D",
+      "model": "GPT-6.1 Sol",
+      "reasoning": "max",
+      "variants": [
+        "zh-Hant",
+        "yue"
+      ],
+      "authoredSources": false,
+      "file": "annotations/d.jsonl"
+    }
+  ],
+  "adjudicator": {
+    "model": "GPT-6.1 Sol",
+    "reasoning": "max",
+    "scope": "Every annotator disagreement and dictionary-informed consensus review; no tokenizer predictions used."
+  },
+  "guidelinesHistory": {
+    "initialCommit": "571eec9",
+    "clarifications": "Adjudication clarified contextual dictionary senses, lexical negatives/adverbs, honorific morphology and productive compounds; original annotator arrays remain untouched and agreement uses their original judgments."
+  },
+  "splits": {
+    "rule": "Odd numeric IDs are dev; even numeric IDs are test. Authors balanced category incidence by parity before annotation.",
+    "linesPerVariant": 300,
+    "linesPerSplit": 150,
+    "heldOutDefinition": "Test is not used for tokenizer tuning. Published test is reproducible, not secret; test baseline is final descriptive reporting only."
+  },
+  "earlyPushes": [
+    {
+      "scope": "Guidelines",
+      "commit": "571eec9",
+      "pushedAt": "2026-11-09T08:36:00Z",
+      "precision": "minute"
+    },
+    {
+      "scope": "zh-Hant/yue dev and scorer",
+      "commit": "15d2962",
+      "pushedAt": "2026-11-09T09:13:00Z",
+      "precision": "minute"
+    },
+    {
+      "scope": "ja/zh-Hans dev",
+      "commit": "dbfd7f0",
+      "pushedAt": "2026-11-09T09:34:18Z",
+      "precision": "second"
+    }
+  ],
+  "limitations": [
+    "All linguistic grading is by LLM agents, not independent human/native-speaker validation.",
+    "Purposively difficult 1,200-line sample is not a representative corpus.",
+    "Same-family model annotators may share biases; boundary agreement is not accuracy.",
+    "Exact dictionary surface coverage does not prove the contextual sense is correct. Japanese inflections require explicit surface exceptions."
+  ],
+  "files": [
+    {
+      "file": "GUIDELINES.md",
+      "sha256": "2e9c3323929b77f00f11715a6fd70f10e4c10eb56177763504169014c2d16705"
+    },
+    {
+      "file": "adjudications.jsonl",
+      "sha256": "511fd32e8989472550c873a319b1acebbd237e8b950a7805fd26e5b927fe04d4"
+    },
+    {
+      "file": "dictionary-exceptions.jsonl",
+      "sha256": "10ca0b84058a6a7555dc707e926124b144be434602554673039620390f68d878"
+    },
+    {
+      "file": "source/ja.jsonl",
+      "sha256": "3b6234cb4313ae061c60073bbc26f30e6aca15b44ab8ef1f50c4593143a50650"
+    },
+    {
+      "file": "source/zh-Hans.jsonl",
+      "sha256": "f229e6d3346f7d40c21f4c1ae829b7c0d1984fceaee08bb2a1229794fe8767b1"
+    },
+    {
+      "file": "source/zh-Hant.jsonl",
+      "sha256": "adf52b462381deb2a24a80c8670597a3d666784775566e13b282af66c7c82aba"
+    },
+    {
+      "file": "source/yue.jsonl",
+      "sha256": "25dbf570c41d489e19a96fd936245946486715169283748a9b59455a897461e1"
+    },
+    {
+      "file": "annotations/a.jsonl",
+      "sha256": "18b9875adc161d61de9b02ffd518cdfc0fa5d0a7a616768c7f91d567575e2aa2"
+    },
+    {
+      "file": "annotations/b.jsonl",
+      "sha256": "29ba1deaafab457d24338c1dcb395651bf8029bfd0c79a39437dde39881aebab"
+    },
+    {
+      "file": "annotations/c.jsonl",
+      "sha256": "06ac919eb6290579733fbf0bf43fe3c0dd28f153b6750b499988827534bd9b76"
+    },
+    {
+      "file": "annotations/d.jsonl",
+      "sha256": "fb4adb94c90650912949eb559baf882666a5da0b01d862ae963756242ecf393d"
+    },
+    {
+      "file": "ja.dev.jsonl",
+      "sha256": "0af9e87d85a8cd22bf9b24fa5d0b017a465fb31b3a20cd71e0ee56f077dd42ed"
+    },
+    {
+      "file": "ja.test.jsonl",
+      "sha256": "837f2732502c0b6ff6238b3d982008b255b44b400accad1e6141f32a1c293027"
+    },
+    {
+      "file": "zh-Hans.dev.jsonl",
+      "sha256": "40cd96604ad8b749640a2364e8f72e21c93d4491b6171a4f3bc6b9e25304d1ec"
+    },
+    {
+      "file": "zh-Hans.test.jsonl",
+      "sha256": "2b75349660f229b2f6f3c71155689d67c8723afc710cc3e0f1887ea6d2089fd7"
+    },
+    {
+      "file": "zh-Hant.dev.jsonl",
+      "sha256": "9bc7d77f5cf393c5267073231d1569cbf7d122111f6cdbc5b84171018fb8b174"
+    },
+    {
+      "file": "zh-Hant.test.jsonl",
+      "sha256": "f97b8b932f60c0413dbcf1787ae7797af300f6528826b0332b3b7bcbdacb60cd"
+    },
+    {
+      "file": "yue.dev.jsonl",
+      "sha256": "c2dde6d77b4f73b47aadc395629f035d44350b8526eec434a0720aa74319715a"
+    },
+    {
+      "file": "yue.test.jsonl",
+      "sha256": "be9c3bf77d326f59fc4284dba763ab6d055fe5a41cdbde4bd77ef974ad5a503f"
+    }
+  ]
+}

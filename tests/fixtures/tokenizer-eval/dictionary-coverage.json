@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "groups": [
+    {
+      "variant": "ja",
+      "occurrences": 1107,
+      "uniqueSurfaces": 804,
+      "supported": 761,
+      "names": 29,
+      "oov": 317
+    },
+    {
+      "variant": "zh-Hans",
+      "occurrences": 804,
+      "uniqueSurfaces": 647,
+      "supported": 692,
+      "names": 30,
+      "oov": 82
+    },
+    {
+      "variant": "zh-Hant",
+      "occurrences": 947,
+      "uniqueSurfaces": 722,
+      "supported": 819,
+      "names": 30,
+      "oov": 98
+    },
+    {
+      "variant": "yue",
+      "occurrences": 733,
+      "uniqueSurfaces": 526,
+      "supported": 610,
+      "names": 29,
+      "oov": 94
+    }
+  ],
+  "exceptionRecords": 708,
+  "uncovered": [],
+  "dictionaries": [
+    {
+      "file": "japanese/dict/jmdict.json",
+      "sha256": "4f193ac275e11d42c035a790ee512d9848b5265ae708275cb97211a66259f57b",
+      "version": "3.5.0",
+      "headwords": 427855
+    },
+    {
+      "file": "mandarin/chinese/chinese.json",
+      "sha256": "8fb3bce86d5f9f527156a019b17bae30e5d2f740e07116062eeaa7811e590e1b",
+      "version": "2023-08-24",
+      "headwords": 194064
+    },
+    {
+      "file": "cantonese/cantonese/cantodict.json",
+      "sha256": "e23e076df20515d80d5fc12b0ebc21126a6e9c28c8a539c0fddea07ca716d46d",
+      "version": "2023-08-24",
+      "headwords": 73469
+    }
+  ]
+}
