@@ -28,8 +28,8 @@ export interface KuromojinWord {
   conjugated_type: string;
   conjugated_form: string;
   basic_form: string;
-  reading: string;
-  pronunciation: string;
+  reading?: string;
+  pronunciation?: string;
 }
 
 

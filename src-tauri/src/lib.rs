@@ -36,6 +36,7 @@ pub fn run() {
     .manage(kv::Kv::default())
     .manage(sys::table::Tables::default())
     .manage(jieba::JiebaStore::default())
+    .manage(sys::japanese::JapaneseStore::default())
     .manage(player::Players::default())
     .manage(analyzer::Analyzer::default())
     .manage(sys::langpack::Installs::default())
@@ -88,6 +89,10 @@ pub fn run() {
       jieba::jieba_load,
       jieba::jieba_cut,
       jieba::jieba_user_words,
+      sys::japanese::japanese_load,
+      sys::japanese::japanese_set_words,
+      sys::japanese::japanese_tokenize,
+      sys::japanese::japanese_tokenize_batch,
       http::http_request,
       shell::shell_open_external,
       shell::shell_open_path,

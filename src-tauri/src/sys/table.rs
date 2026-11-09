@@ -454,6 +454,28 @@ impl Tables {
     Ok(out)
   }
 
+  pub fn visit_values(
+    &self,
+    handle: u32,
+    prefix: &str,
+    mut visit: impl FnMut(&str) -> Result<(), String>,
+  ) -> Result<(), String> {
+    let table = self.table(handle)?;
+    let first = block_for(&table.blocks, prefix.as_bytes()).unwrap_or(0);
+    for index in first..table.blocks.len() {
+      let block = self.block(&table, index)?;
+      for position in block.lower_bound(prefix.as_bytes())..block.entries.len() {
+        if !block.key(position).starts_with(prefix.as_bytes()) {
+          return Ok(());
+        }
+        let value = std::str::from_utf8(block.value(position))
+          .map_err(|_| corrupt(&table.path, "value is not UTF-8"))?;
+        visit(value)?;
+      }
+    }
+    Ok(())
+  }
+
   #[cfg(test)]
   fn open_count(&self) -> usize {
     self.registry.lock().unwrap().slots.len()
@@ -668,6 +690,37 @@ mod tests {
     // The prefix form the dictionaries use: [prefix, prefix + U+10FFFF).
     let prefixed = tables.values(handle, Some("k00"), Some("k00\u{10ffff}"), -1).unwrap();
     assert_eq!(prefixed.len(), 100);
+  }
+
+  #[test]
+  fn visits_only_one_prefix_and_propagates_visitor_errors() {
+    let bytes = table_bytes(
+      &[
+        ("indexes/kana/猫-1", "1"),
+        ("raw/words/1", "first"),
+        ("raw/words/2", "second"),
+        ("raw/z", "stop"),
+      ],
+      32,
+    );
+    let path = write("visit-prefix", &bytes);
+    let tables = Tables::with_budget(256);
+    let handle = tables.open(&path).unwrap();
+    let mut seen = Vec::new();
+    tables
+      .visit_values(handle, "raw/words/", |value| {
+        seen.push(value.to_string());
+        Ok(())
+      })
+      .unwrap();
+    assert_eq!(seen, ["first", "second"]);
+    assert_eq!(
+      tables.visit_values(handle, "raw/words/", |_| Err("stop scan".into())),
+      Err("stop scan".into())
+    );
+    tables
+      .visit_values(handle, "missing/", |_| panic!("no matching key"))
+      .unwrap();
   }
 
   #[test]

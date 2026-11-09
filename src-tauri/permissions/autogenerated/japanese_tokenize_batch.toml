@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-japanese-tokenize-batch"
+description = "Enables the japanese_tokenize_batch command without any pre-configured scope."
+commands.allow = ["japanese_tokenize_batch"]
+
+[[permission]]
+identifier = "deny-japanese-tokenize-batch"
+description = "Denies the japanese_tokenize_batch command without any pre-configured scope."
+commands.deny = ["japanese_tokenize_batch"]

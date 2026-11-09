@@ -4,6 +4,7 @@ import Chinese from "../chinese";
 import Vietnamese from "../vietnamese";
 import {MiteiruJapaneseWordWithSeparations} from "./japaneseAnalysis";
 import {analyzeWithUserDictionary, enabledUserDictionaryEntries} from "../../helpers/userDictionary";
+import {japaneseTokenizerEntries, japaneseUserDictionaryToken} from '../../helpers/japaneseTokenizerWords';
 import {hasExactJapaneseDefault} from '../../helpers/japaneseDictionaryPriority';
 
 export type AnalyzeTextOptions = {
@@ -21,8 +22,12 @@ const NOT_AUXILIARY_VERBS = ["やる", "する"];
 const ALWAYS_AUXILIARY_VERBS = ["いる", "ある", "おる", "られる", "れる", "せる", "させる"];
 
 /** Whether a token can continue the verb before it: auxiliaries, particles, and suffix or dependent verbs. */
-const continuesVerb = (token: MiteiruJapaneseWordWithSeparations) => {
+const continuesVerb = (token: MiteiruJapaneseWordWithSeparations, learnerUnits: boolean, previous?: MiteiruJapaneseWordWithSeparations) => {
   const [pos, detail] = token.pos.split("-");
+  if (learnerUnits && pos === '助詞' && !['て', 'で', 'ちゃ', 'じゃ', 'たら', 'だら', 'たり', 'だり', 'ながら', 'ば'].includes(token.origin)) return false;
+  if (learnerUnits && ['ちゃ', 'じゃ'].includes(token.origin) && previous?.origin === previous?.basicForm) return false;
+  if (learnerUnits && (['らしい', 'よう', 'みたい', 'っす'].includes(token.basicForm)
+    || /^(だろ|でしょ)/.test(token.origin))) return false;
   if (ALWAYS_AUXILIARY_VERBS.includes(token.basicForm)) return true;
   if (pos === "助動詞") return true;
   if (pos === "助詞") return !CHAIN_BREAKING_PARTICLES.includes(token.origin);
@@ -36,7 +41,8 @@ const continuesVerb = (token: MiteiruJapaneseWordWithSeparations) => {
  * conjugation of the verb.
  */
 export const parseJapaneseVerbs = async (
-  res: MiteiruJapaneseWordWithSeparations[]
+  res: MiteiruJapaneseWordWithSeparations[],
+  {learnerUnits = false}: {learnerUnits?: boolean} = {}
 ): Promise<MiteiruJapaneseWordWithSeparations[]> => {
   const newRes: MiteiruJapaneseWordWithSeparations[] = [];
   for (let i = 0; i < res.length; i++) {
@@ -45,7 +51,7 @@ export const parseJapaneseVerbs = async (
       continue;
     }
     let last = i;
-    while (last + 1 < res.length && continuesVerb(res[last + 1])) last++;
+    while (last + 1 < res.length && continuesVerb(res[last + 1], learnerUnits, res[last])) last++;
     const basicForm = res[i].basicForm;
     // surfaces[k]: the chain's first k + 1 tokens.
     const surfaces: string[] = [];
@@ -76,6 +82,17 @@ export const analyzeText = async (
 
   if (tokenizerMode === "jieba" || tokenizerMode === "cantonese") {
     return analyzeDefaultText(sentence, tokenizerMode, toneType);
+  }
+
+  if (tokenizerMode === 'kuromoji') {
+    const entries = await japaneseTokenizerEntries(await enabledUserDictionaryEntries('ja'), Japanese.Dict.db);
+    const tokens = await Japanese.tokenizeUsingKuromoji(sentence, entries);
+    const bySurface = new Map(entries.map((entry) => [entry.surface, entry]));
+    const separated = Japanese.processKuromojinToSeparations(tokens).map((token) => {
+      const entry = bySurface.get(token.origin);
+      return entry ? japaneseUserDictionaryToken(entry, toneType) : token;
+    });
+    return parseJapaneseVerbs(separated, {learnerUnits: Boolean(Japanese.kuromojiTokenizer?.tokenizeWithUserWords)});
   }
 
   const language = {kuromoji: "ja", cantonese: "yue", jieba: "zh-CN", vietnamese: "vi"}[tokenizerMode];

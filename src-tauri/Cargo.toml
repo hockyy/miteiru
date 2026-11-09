@@ -64,3 +64,10 @@ lto = true
 codegen-units = 1
 opt-level = "s"
 strip = true
+
+[profile.release.package.miteiru-tokenizer]
+opt-level = 3
+
+# JMdict parsing and native token-batch serialization are on the subtitle hot path.
+[profile.release.package.serde_json]
+opt-level = 3

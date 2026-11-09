@@ -1,0 +1,13 @@
+{
+  "raw": [
+    [{"word_id": 10, "word_type": "KNOWN", "word_position": 1, "surface_form": "食べ", "pos": "動詞", "pos_detail_1": "自立", "pos_detail_2": "*", "pos_detail_3": "*", "conjugated_type": "一段", "conjugated_form": "連用形", "basic_form": "食べる", "reading": "タベ", "pronunciation": "タベ"}],
+    [
+      {"word_id": 20, "word_type": "UNKNOWN", "word_position": 1, "surface_form": "😊", "pos": "名詞", "pos_detail_1": "一般", "pos_detail_2": "*", "pos_detail_3": "*", "conjugated_type": "*", "conjugated_form": "*", "basic_form": "*"},
+      {"word_id": -1, "word_type": "KNOWN", "word_position": 2, "surface_form": "星詠み", "pos": "名詞", "pos_detail_1": "一般", "pos_detail_2": "*", "pos_detail_3": "*", "conjugated_type": "*", "conjugated_form": "*", "basic_form": "星詠み", "reading": "ほしよみ", "pronunciation": "ほしよみ"}
+    ]
+  ],
+  "wire": {
+    "features": [["動詞", "自立", "*", "*", "一段", "連用形"], ["名詞", "一般", "*", "*", "*", "*"]],
+    "tokens": [[[10, "KNOWN", 1, "食べ", 0, "食べる", "タベ", "タベ"]], [[20, "UNKNOWN", 1, "😊", 1, "*", null, null], [-1, "KNOWN", 2, "星詠み", 1, "星詠み", "ほしよみ", "ほしよみ"]]]
+  }
+}

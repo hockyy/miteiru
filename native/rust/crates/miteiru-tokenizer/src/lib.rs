@@ -6,7 +6,8 @@
 //!   `yue.jieba.txt`), with dictionary headwords and user words as extra entries.
 //! - [`lexicon`]: the extra words both take, and where they come from.
 //!
-//! Japanese targets kuromoji compatibility. Chinese compares against jieba-rs, but optimizes for
+//! Japanese preserves kuromoji token fields, with normalization and typed suffix chains.
+//! Chinese compares against jieba-rs, but optimizes for
 //! dictionary-look-up-able learning units rather than exact output parity.
 
 pub mod chinese;
