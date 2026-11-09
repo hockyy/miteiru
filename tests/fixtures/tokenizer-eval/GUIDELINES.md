@@ -65,6 +65,17 @@ names/loanwords. These are diagnostic shortcomings, not gold conventions.
   `待ってください`, `来てほしい`, `行かなきゃ`, `やらなくちゃ`.
 - Independent second actions are separate. Follow today's explicit breakers:
   `教えて / やる`, `読んだり / する`; do not absorb coordinated clauses.
+- Honorific verbal `お + stem + する/ください/いただく/になる` constructions
+  stay whole (`お送りした`, `お待ちください`, `お忘れになりません`).
+  A verbal noun remains separate from its following predicate, including
+  `ご / 確認 / いただけます`. In nominal uses, separate productive `お/ご`
+  unless the prefixed noun is indexed in the contextual sense (`お名前`,
+  `ご注文`); indexed `お手元` means chopsticks, not the generic at-hand use.
+- Separate independent change-of-state `なる` (`伝えたく / なった`,
+  `いなく / なった`) and evaluative/permissive `いい` (`思って / いい`).
+  These are not auxiliary inflections. Indexed adverbs (`そんなに`, `二度と`,
+  `本当に`, `すぐに`) and modal `かもしれない` stay lexical units; productive
+  na-adjective adverbials such as `妙 / に` retain a separate particle.
 - Inflected i-adjectives stay whole (`寒くなかった`, `おいしくて`). Separate
   copulas after nouns/na-adjectives: `静か / です`, `学生 / だった`.
   Separate modality after a complete predicate: `降る / だろう`,
