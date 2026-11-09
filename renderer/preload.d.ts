@@ -5,7 +5,7 @@ interface IpcHandler {
 }
 import type {LiveCaptionsApiState} from "./types/liveCaptions";
 
-interface ElectronApi {
+interface PlatformAPI {
   /** The OS Miteiru runs on; `process.platform` is not available in the renderer. */
   platform: NodeJS.Platform;
   liveCaptions: {
@@ -37,8 +37,8 @@ declare global {
     /** Set by the desktop host for MITEIRU_MUTED test launches. */
     __MITEIRU_START_MUTED__?: boolean;
     backend: IpcHandler;
-    electronStore: any;
-    electronAPI: ElectronApi;
+    miteiruStore: any;
+    miteiru: PlatformAPI;
   }
 }
 

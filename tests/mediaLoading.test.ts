@@ -10,7 +10,7 @@ afterEach(() => {
 
 // Stands in for the preload API: the subtitles beside each video that share its name.
 const withSubtitlesBeside = (beside: Record<string, string[]>) => {
-  globalWithWindow.window = {electronAPI: {checkSubtitleFile: async (video: string) => beside[video] ?? []}};
+  globalWithWindow.window = {miteiru: {checkSubtitleFile: async (video: string) => beside[video] ?? []}};
 };
 
 const loaded = async (paths: string[]) => {

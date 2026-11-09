@@ -56,7 +56,7 @@ describe("unsupported files and links", () => {
   });
 
   it("a drop of a video with an unrelated file ignores the extra; a drop of only unknown files reaches the loader", async () => {
-    globalWithWindow.window = {electronAPI: {checkSubtitleFile: async () => []}};
+    globalWithWindow.window = {miteiru: {checkSubtitleFile: async () => []}};
     const calls: unknown[] = [];
     await loadMediaPaths(["C:\\v\\ep.mkv", "C:\\v\\ep.nfo"], (files) => calls.push(files));
     assert.deepEqual(calls, [[{path: "C:\\v\\ep.mkv"}]]);
@@ -67,7 +67,7 @@ describe("unsupported files and links", () => {
 
   it("routes subtitles beside a video by their language tag when the language is known", async () => {
     globalWithWindow.window = {
-      electronAPI: {
+      miteiru: {
         checkSubtitleFile: async () => ["C:\\v\\ep.en.srt", "C:\\v\\ep.fr.srt", "C:\\v\\ep.ja.ass", "C:\\v\\ep.srt"]
       }
     };

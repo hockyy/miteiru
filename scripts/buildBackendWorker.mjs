@@ -1,4 +1,4 @@
-// Bundles the Tauri backend worker (renderer/platform/backend/worker.ts, which runs main/'s Electron
+// Bundles the Tauri backend worker (renderer/platform/backend/worker.ts, which runs main/'s
 // handlers) into renderer/public/backend-worker.js.
 //
 //   node scripts/buildBackendWorker.mjs            one build
@@ -12,9 +12,8 @@ const shim = (name) => path.join(root, 'renderer/platform/backend/shims', `${nam
 const watch = process.argv.includes('--watch');
 const production = !watch && process.env.NODE_ENV !== 'development';
 
-// Node and Electron modules main/ imports -> what the worker uses instead.
+// Node modules main/ imports -> what the worker uses instead.
 const alias = {
-  electron: shim('electron'),
   fs: shim('fs'),
   'node:fs': shim('fs'),
   'fs/promises': shim('fsPromises'),
@@ -27,7 +26,7 @@ const alias = {
   'node:child_process': shim('childProcess'),
   level: shim('level'),
   '@node-rs/jieba': shim('jieba'),
-  'electron-store': shim('electronStore'),
+  'electron-store': shim('store'),
   kuromoji: shim('kuromoji'),
   zlib: shim('zlib'),
   'node:zlib': shim('zlib'),

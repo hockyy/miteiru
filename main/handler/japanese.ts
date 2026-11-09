@@ -1,4 +1,4 @@
-import {ipcMain} from "electron";
+import {ipcMain} from "../../renderer/platform/backend/shims/desktop";
 import {getJmdictTags, setupJmdict} from "../dictionary/jmdictDb";
 import {searchKanji, setupKanjidic} from "../dictionary/kanjidicDb";
 import path from "path";

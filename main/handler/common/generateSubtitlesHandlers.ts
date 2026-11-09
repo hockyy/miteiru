@@ -1,4 +1,4 @@
-import {app, BrowserWindow, ipcMain, type IpcMainEvent} from "electron";
+import {app, BrowserWindow, ipcMain, type IpcMainEvent} from "../../../renderer/platform/backend/shims/desktop";
 import path from "node:path";
 import {getStore} from "./storeHandlers";
 import {DEFAULT_OPENROUTER_THINKING, OPENROUTER_THINKING_KEY, openRouterMessages} from "../../../renderer/utils/openRouterConstants";

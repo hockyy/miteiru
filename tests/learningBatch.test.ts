@@ -47,7 +47,7 @@ test("updateContentBatch replaces entries still stored in the old numeric format
 });
 
 test("loadLearningState returns words whose first character is outside the BMP", async () => {
-  const {dispatchInvoke} = await import("../renderer/platform/backend/shims/electron");
+  const {dispatchInvoke} = await import("../renderer/platform/backend/shims/desktop");
   Learning.registerHandler();
   await Learning.db.put("yue/𨋢", JSON.stringify({level: 2, updTime: 1}));
   await Learning.db.put("yue/𠺢嘛", JSON.stringify({level: 1, updTime: 2}));

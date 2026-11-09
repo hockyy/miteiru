@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import * as fsPromises from "node:fs/promises";
 import { homedir } from "node:os";
 import path from "node:path";
-import { shell } from "electron";
+import { shell } from "../../renderer/platform/backend/shims/desktop";
 
 type AnkiInstall =
   | { type: "open-path"; path: string }

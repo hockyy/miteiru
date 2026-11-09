@@ -10,7 +10,7 @@ import { playingAudioTrack } from '../utils/mediaUtils';
 const isAnalysedFile = (path: string) => isLocalPath(path) && !isYoutube(path);
 
 const deleteTempSubtitle = (filePath: string) => {
-  window.electronAPI.cleanupTempSubtitle(filePath).catch(err =>
+  window.miteiru.cleanupTempSubtitle(filePath).catch(err =>
     console.warn('Failed to cleanup temp subtitle:', err)
   );
 };
@@ -51,7 +51,7 @@ const useMediaAnalysis = (videoPath: string, openedVideo?: object) => {
 
     setIsAnalyzing(true);
     try {
-      const analysis = await window.electronAPI.analyzeMediaFile(path);
+      const analysis = await window.miteiru.analyzeMediaFile(path);
       // Another video was opened while this one was being read: its tracks are not the open video's.
       if (activeVideoPath.current !== path) return;
       setMediaInfo(analysis);
@@ -147,7 +147,7 @@ const useMediaAnalysis = (videoPath: string, openedVideo?: object) => {
       if (selection.primarySubtitleType === 'embedded' && selection.primarySubtitleTrackIndex !== null && mediaInfo.subtitleTracks[selection.primarySubtitleTrackIndex]) {
         const track = mediaInfo.subtitleTracks[selection.primarySubtitleTrackIndex];
         promises.push(
-          window.electronAPI.extractEmbeddedSubtitle(
+          window.miteiru.extractEmbeddedSubtitle(
             videoPath, 
             track.index, 
             track.codec === 'ass' ? 'ass' : 'srt'
@@ -158,7 +158,7 @@ const useMediaAnalysis = (videoPath: string, openedVideo?: object) => {
       if (selection.secondarySubtitleType === 'embedded' && selection.secondarySubtitleTrackIndex !== null && mediaInfo.subtitleTracks[selection.secondarySubtitleTrackIndex]) {
         const track = mediaInfo.subtitleTracks[selection.secondarySubtitleTrackIndex];
         promises.push(
-          window.electronAPI.extractEmbeddedSubtitle(
+          window.miteiru.extractEmbeddedSubtitle(
             videoPath, 
             track.index, 
             track.codec === 'ass' ? 'ass' : 'srt'

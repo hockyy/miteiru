@@ -54,7 +54,7 @@ function Home() {
 
       await checkMediaTools();
 
-      window.electronAPI.liveCaptions.isSupported()
+      window.miteiru.liveCaptions.isSupported()
         .then((supported) => {
           if (!mounted) return;
           setLiveCaptionsSupported(supported);
@@ -123,7 +123,7 @@ function Home() {
             toolsCheckDetails={toolsCheck.details}
             isDownloading={isDownloading}
             onRefreshTools={() => checkMediaTools(true)}
-            onOpenToolsFolder={() => { window.electronAPI.openToolsFolder?.(); }}
+            onOpenToolsFolder={() => { window.miteiru.openToolsFolder?.(); }}
             onDownloadTool={downloadTool}
             isRemovingCache={isRemovingCache}
             cacheCheckOk={cacheCheck.ok}

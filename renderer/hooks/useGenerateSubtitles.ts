@@ -55,8 +55,8 @@ export function useGenerateSubtitles({
 
   useEffect(() => {
     // Not exposed until the feature is wired into the preload.
-    if (!window.electronAPI.generateSubtitles) return undefined;
-    return window.electronAPI.generateSubtitles.onProgress((next) => {
+    if (!window.miteiru.generateSubtitles) return undefined;
+    return window.miteiru.generateSubtitles.onProgress((next) => {
       setProgress(next);
       if (next.sourceSrtPath) {
         setSourceSrtPath(next.sourceSrtPath);
@@ -72,7 +72,7 @@ export function useGenerateSubtitles({
   }, []);
 
   const cancel = useCallback(async () => {
-    await window.electronAPI.generateSubtitles.cancel();
+    await window.miteiru.generateSubtitles.cancel();
   }, []);
 
   const close = useCallback(async () => {
@@ -122,7 +122,7 @@ export function useGenerateSubtitles({
     }
     setEnglishSrtPath("");
     setProgress({stage: "converting", message: "Starting…", percent: 0});
-    const result = await window.electronAPI.generateSubtitles.start({
+    const result = await window.miteiru.generateSubtitles.start({
       videoPath,
       lang,
       asrModel: resolvedAsrModel
@@ -145,7 +145,7 @@ export function useGenerateSubtitles({
       percent: 0,
       sourceSrtPath
     });
-    const result = await window.electronAPI.generateSubtitles.translate({
+    const result = await window.miteiru.generateSubtitles.translate({
       sourceSrtPath,
       lang,
       translateModel: resolvedTranslateModel
@@ -155,7 +155,7 @@ export function useGenerateSubtitles({
 
   const showInFolder = useCallback((filePath: string) => {
     if (filePath) {
-      window.electronAPI.showItemInFolder(filePath);
+      window.miteiru.showItemInFolder(filePath);
     }
   }, []);
 

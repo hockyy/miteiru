@@ -19,7 +19,7 @@ export const WaniKaniRadicalChip = ({ slug }: WaniKaniRadicalChipProps) => {
 
   const handleClick = (event: React.MouseEvent) => {
     event.preventDefault();
-    window.electronAPI.openExternal(`https://www.wanikani.com/radicals/${slug}`);
+    window.miteiru.openExternal(`https://www.wanikani.com/radicals/${slug}`);
   };
 
   return (

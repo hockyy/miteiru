@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import {test} from "node:test";
-import {Store} from "../renderer/platform/backend/shims/electronStore";
+import {Store} from "../renderer/platform/backend/shims/store";
 import {createFakeFs} from "./helpers/fakeSys";
 
 const FILE = "C:/Users/test/AppData/Roaming/miteiru/config.json";

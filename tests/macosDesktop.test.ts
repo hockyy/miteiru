@@ -29,7 +29,7 @@ test("Home shortcut HTML stays the same when the macOS preload is present", () =
     const server = renderToString(React.createElement(KeyboardHelp, {languageName: "Japanese"}));
     Object.defineProperty(globalThis, "window", {
       configurable: true,
-      value: {electronAPI: {platform: "darwin"}}
+      value: {miteiru: {platform: "darwin"}}
     });
     const withPreload = renderToString(React.createElement(KeyboardHelp, {languageName: "Japanese"}));
     assert.match(server, /Ctrl \+ O/);
@@ -43,7 +43,7 @@ test("Home shortcut HTML stays the same when the macOS preload is present", () =
 test("plain Cmd+R reloads once and consumes the macOS shortcut", () => {
   let reloads = 0;
   const event = reloadEvent();
-  withWindow({electronAPI: {platform: "darwin"}, location: {reload: () => reloads++}}, () => {
+  withWindow({miteiru: {platform: "darwin"}, location: {reload: () => reloads++}}, () => {
     reloadPageOnShortcut(event);
   });
   assert.equal(reloads, 1);
@@ -59,7 +59,7 @@ test("reload leaves typing, other commands and modified Cmd+R alone", () => {
     reloadEvent({shiftKey: true}),
     reloadEvent({key: "h"})
   ];
-  withWindow({electronAPI: {platform: "darwin"}, location: {reload: () => assert.fail("unexpected reload")}}, () => {
+  withWindow({miteiru: {platform: "darwin"}, location: {reload: () => assert.fail("unexpected reload")}}, () => {
     ignored.forEach((event) => {
       reloadPageOnShortcut(event);
       assert.equal(event.defaultPrevented, false);
@@ -72,7 +72,7 @@ test("reload leaves typing, other commands and modified Cmd+R alone", () => {
 
 test("the macOS reload binding does not override Windows or Linux", () => {
   for (const platform of ["win32", "linux"]) {
-    withWindow({electronAPI: {platform}, location: {reload: () => assert.fail("unexpected reload")}}, () => {
+    withWindow({miteiru: {platform}, location: {reload: () => assert.fail("unexpected reload")}}, () => {
       for (const event of [reloadEvent(), reloadEvent({metaKey: false, ctrlKey: true})]) {
         reloadPageOnShortcut(event);
         assert.equal(event.defaultPrevented, false);

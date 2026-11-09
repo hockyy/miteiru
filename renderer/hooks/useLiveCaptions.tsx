@@ -97,7 +97,7 @@ const useLiveCaptions = () => {
     let mounted = true;
 
     addDebugMessage("Loading Live Captions state from main process...");
-    window.electronAPI.liveCaptions.getState()
+    window.miteiru.liveCaptions.getState()
     .then((state) => {
       if (!mounted) return;
       applyApiState(state, {flushCaption: true});
@@ -110,17 +110,17 @@ const useLiveCaptions = () => {
       addDebugMessage(`Failed to read state: ${message}`);
     });
 
-    const removeCaptionListener = window.electronAPI.liveCaptions.onCaption((nextCaption) => {
+    const removeCaptionListener = window.miteiru.liveCaptions.onCaption((nextCaption) => {
       queueCaptionUpdate(nextCaption);
     });
-    const removeStateListener = window.electronAPI.liveCaptions.onState((state) => {
+    const removeStateListener = window.miteiru.liveCaptions.onState((state) => {
       applyApiState(state);
     });
-    const removeErrorListener = window.electronAPI.liveCaptions.onError((nextError) => {
+    const removeErrorListener = window.miteiru.liveCaptions.onError((nextError) => {
       setError(nextError);
       addDebugMessage(`Error event: ${nextError}`);
     });
-    const removeDebugListener = window.electronAPI.liveCaptions.onDebug((message) => {
+    const removeDebugListener = window.miteiru.liveCaptions.onDebug((message) => {
       setDebugMessages((current) => trimDebugMessages([...current, message]));
     });
 
@@ -137,7 +137,7 @@ const useLiveCaptions = () => {
   const start = useCallback(async () => {
     addDebugMessage("Start requested from video page.");
     try {
-      const state = await window.electronAPI.liveCaptions.start();
+      const state = await window.miteiru.liveCaptions.start();
       applyApiState(state);
       addDebugMessage(`Start returned state: ${state.state}`);
     } catch (err) {
@@ -150,7 +150,7 @@ const useLiveCaptions = () => {
   const stop = useCallback(async () => {
     addDebugMessage("Stop requested from video page.");
     try {
-      const state = await window.electronAPI.liveCaptions.stop();
+      const state = await window.miteiru.liveCaptions.stop();
       applyApiState({...state, latestCaption: ""}, {flushCaption: true});
       addDebugMessage(`Stop returned state: ${state.state}`);
     } catch (err) {

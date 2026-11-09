@@ -20,7 +20,7 @@ const SRT_ENTRIES = {
 
 const mockParseSubtitle = (impl: (filename: string) => Promise<unknown>) => {
   (globalThis as Record<string, unknown>).window = {
-    electronAPI: {parseSubtitle: impl},
+    miteiru: {parseSubtitle: impl},
   };
 };
 

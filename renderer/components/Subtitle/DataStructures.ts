@@ -226,7 +226,7 @@ export class SubtitleContainer {
     subtitleContainer.path = filename;
 
     try {
-      const parsedSubtitle = await window.electronAPI.parseSubtitle(filename);
+      const parsedSubtitle = await window.miteiru.parseSubtitle(filename);
       let entries = []
 
       if (parsedSubtitle.type === 'ass') {

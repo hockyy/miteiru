@@ -143,7 +143,7 @@ export const loadMediaPaths = async (
   const usable = paths.filter((filePath) => isVideo(filePath) || isSubtitle(filePath));
   paths = usable.length > 0 ? usable : paths;
   const video = paths.find((filePath) => isVideo(filePath));
-  const besideVideo = video ? await window.electronAPI.checkSubtitleFile(video) : [];
+  const besideVideo = video ? await window.miteiru.checkSubtitleFile(video) : [];
   const routed: RoutedSubtitle[] = !video ? [] : appLang
     ? routeSubtitlesBesideVideo(video, besideVideo, appLang)
     : besideVideo.map((path) => ({path}));

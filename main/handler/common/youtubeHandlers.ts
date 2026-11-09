@@ -1,4 +1,4 @@
-import {ipcMain} from "electron";
+import {ipcMain} from "../../../renderer/platform/backend/shims/desktop";
 import {spawn} from "child_process";
 import os from "os";
 import path from "path";

@@ -55,7 +55,7 @@ export const MiteiruDropzone = ({
       return;
     }
     // Windows and macOS deliver DOM drops and preserve file paths through their native hooks.
-    const pathsForDroppedFiles = window.electronAPI?.pathsForDroppedFiles;
+    const pathsForDroppedFiles = window.miteiru?.pathsForDroppedFiles;
     if (pathsForDroppedFiles && dt.files.length > 0) {
       pathsForDroppedFiles(dt.files).then((paths) => loadMediaPaths(paths, onDrop, lang));
     }
@@ -63,7 +63,7 @@ export const MiteiruDropzone = ({
 
   // Linux: files dropped on the window arrive as paths from the native drag-drop event.
   useEffect(() => {
-    const onFileDrop = window.electronAPI?.onFileDrop;
+    const onFileDrop = window.miteiru?.onFileDrop;
     if (!onFileDrop) return;
     return onFileDrop((paths: string[]) => loadMediaPaths(paths, onDrop, lang), setDraggingFiles);
   }, [onDrop, lang]);

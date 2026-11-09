@@ -12,7 +12,7 @@ export const PlaybackFailedPanel = ({fileName, reason, onTryAnother}: {
   reason?: string;
   onTryAnother: () => void;
 }) => {
-  const failure = describePlaybackFailure(reason, typeof window === "undefined" ? undefined : window.electronAPI?.platform);
+  const failure = describePlaybackFailure(reason, typeof window === "undefined" ? undefined : window.miteiru?.platform);
   return (
     <div className="pointer-events-none fixed inset-0 z-[10] flex items-center justify-center p-6">
       <div

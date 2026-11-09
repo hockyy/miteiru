@@ -19,7 +19,7 @@ export type LastVideo = {
   savedAt: number;
 };
 
-/** The two store calls this module needs (window.electronStore). */
+/** The two store calls this module needs (window.miteiruStore). */
 export type VideoStore = {
   get: (key: string, defaultValue?: unknown) => Promise<unknown>;
   set: (key: string, value: unknown) => Promise<unknown>;

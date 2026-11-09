@@ -55,7 +55,7 @@ export const useMeaningAnkiExport = ({
         message: ankiSavedMessage(result.filePath),
         update: String(Date.now()),
         duration: 15000,
-        action: {label: 'Show in folder', onPress: () => window.electronAPI.showItemInFolder(result.filePath)},
+        action: {label: 'Show in folder', onPress: () => window.miteiru.showItemInFolder(result.filePath)},
       });
     } catch (error) {
       console.error('Failed to open Anki card:', error);

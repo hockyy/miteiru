@@ -11,7 +11,7 @@ export const useYoutubeTitle = (url: string): string | null => {
     const videoId = url && isYoutube(url) ? extractVideoId(url) : null;
     if (!videoId) return;
     let cancelled = false;
-    Promise.resolve(window.electronAPI?.getYoutubeVideoTitle?.(videoId))
+    Promise.resolve(window.miteiru?.getYoutubeVideoTitle?.(videoId))
         .then((title) => {
           if (!cancelled) setFound({url, title: typeof title === 'string' && title.trim() ? title.trim() : null});
         })

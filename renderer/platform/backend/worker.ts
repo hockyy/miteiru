@@ -1,16 +1,16 @@
 /**
- * The backend: main/'s handlers running in a Web Worker. main/ talks to the shims in ./shims (aliased
- * in by scripts/buildBackendWorker.mjs), which call Rust through the main thread.
+ * The backend: main/'s handlers running in a Web Worker. main/ talks to the shims in ./shims (directly
+ * or via scripts/buildBackendWorker.mjs aliases for Node modules), which call Rust through the main thread.
  */
 import {setSys, sys} from './sys';
 import type {AnalyzerRequestEvent, WorkerInbound, WorkerOutbound} from './protocol';
 import type {AnalyzerRequest, AnalyzerResponse} from '../../../main/handler/languages/analyzerServer';
 import {SYS_KV_BATCH, SYS_WRITE_BYTES, SYS_ZSTD_DECOMPRESS} from './protocol';
 import {appRoot, initRuntime, type SysInfo} from './shims/runtime';
-import {dispatchInvoke, dispatchSend, setEventSink} from './shims/electron';
+import {dispatchInvoke, dispatchSend, setEventSink} from './shims/desktop';
 import {dispatchProcEvent} from './shims/childProcess';
 import {installFetch} from './shims/httpFetch';
-import {openStore} from './shims/electronStore';
+import {openStore} from './shims/store';
 import fsImpl from './shims/fsPromises';
 import pathe from 'pathe';
 

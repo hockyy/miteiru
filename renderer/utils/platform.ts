@@ -1,6 +1,6 @@
 /** Whether Miteiru runs on macOS, where shortcuts are shown with ⌘ instead of Ctrl. */
 export const isMacPlatform = (): boolean =>
-  typeof window !== 'undefined' && window.electronAPI?.platform === 'darwin';
+  typeof window !== 'undefined' && window.miteiru?.platform === 'darwin';
 
 /** "Ctrl + Shift + H" as the user's keyboard calls it: ⌘ instead of Ctrl on macOS. */
 export const formatKeys = (parts: string[], mac: boolean = isMacPlatform()): string =>

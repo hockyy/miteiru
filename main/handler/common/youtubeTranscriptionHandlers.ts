@@ -1,4 +1,4 @@
-import {ipcMain} from "electron";
+import {ipcMain} from "../../../renderer/platform/backend/shims/desktop";
 import path from "node:path";
 import type {YoutubeTranscriptionSegmentRequest, YoutubeTranscriptionSegmentResult} from "../../../renderer/types/youtubeTranscription";
 import {createYoutubeSegmentTranscriber, validateYoutubeSegmentRequest} from "../../helpers/youtubeSegmentTranscription";

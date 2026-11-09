@@ -1,9 +1,9 @@
 /**
- * Every window.electronAPI method and the backend channel it invokes. The Tauri bridge builds
- * window.electronAPI from this table, so it is the single list of the renderer's backend API
+ * Every window.miteiru method and the backend channel it invokes. The Tauri bridge builds
+ * window.miteiru from this table, so it is the single list of the renderer's backend API
  * (tests/backendShims.test.ts checks each channel has a handler in main/).
  */
-export const ELECTRON_API_INVOKE_CHANNELS = {
+export const PLATFORM_API_INVOKE_CHANNELS = {
   googleTranslate: 'gtrans',
   openExternal: 'open-external',
   checkSubtitleFile: 'check-subtitle-file',

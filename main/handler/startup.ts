@@ -1,4 +1,4 @@
-import {ipcMain} from "electron";
+import {ipcMain} from "../../renderer/platform/backend/shims/desktop";
 import {loadLanguagePlugin, startupChannelPluginIds} from "./languages/registry";
 
 export const registerStartupHandlers = (setTokenizer, appDataDirectory) => {

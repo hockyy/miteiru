@@ -1,19 +1,19 @@
-import {ipcMain} from "electron";
+import {ipcMain} from "../../../renderer/platform/backend/shims/desktop";
 
-type ElectronStore = {
+type PlatformStore = {
   get: (key: string, defaultValue?: unknown) => unknown;
   set: (key: string, value: unknown) => void;
 };
-let storePromise: Promise<ElectronStore> | undefined;
+let storePromise: Promise<PlatformStore> | undefined;
 
-/** Replaces how the store is opened; the Tauri backend worker has its own electron-store. */
-export const setStoreFactory = (factory: () => Promise<ElectronStore>) => {
+/** Replaces how the store is opened; the Tauri backend worker has its own settings store. */
+export const setStoreFactory = (factory: () => Promise<PlatformStore>) => {
   storePromise = factory();
 };
 
 export const getStore = async () => {
   storePromise ??= Function("specifier", "return import(specifier)")("electron-store")
-    .then(({default: Store}) => new Store()) as Promise<ElectronStore>;
+    .then(({default: Store}) => new Store()) as Promise<PlatformStore>;
   return storePromise;
 };
 

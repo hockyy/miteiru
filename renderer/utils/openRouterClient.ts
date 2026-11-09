@@ -74,7 +74,7 @@ export const rememberModelMustThink = (model: string): void => {
 /** The learner's thinking setting; off when the store can't be read (tests, a store error). */
 export const readThinkingSetting = async (): Promise<unknown> => {
   try {
-    return await window.electronStore?.get(OPENROUTER_THINKING_KEY, DEFAULT_OPENROUTER_THINKING);
+    return await window.miteiruStore?.get(OPENROUTER_THINKING_KEY, DEFAULT_OPENROUTER_THINKING);
   } catch {
     return DEFAULT_OPENROUTER_THINKING;
   }

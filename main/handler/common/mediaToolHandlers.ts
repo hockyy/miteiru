@@ -1,4 +1,4 @@
-import {ipcMain, shell} from "electron";
+import {ipcMain, shell} from "../../../renderer/platform/backend/shims/desktop";
 import * as fsPromises from "node:fs/promises";
 import {MEDIA_TOOLS_CONFIG, checkMediaTools, getMiteiruToolsPath} from "./mediaTools";
 

@@ -8,7 +8,7 @@ type ExternalLinkProps = {
   className?: string;
 };
 
-/** Opens an external dictionary URL via the Electron shell. */
+/** Opens an external dictionary URL via the desktop shell. */
 export const ExternalLink = ({
   urlBase,
   displayText,
@@ -20,7 +20,7 @@ export const ExternalLink = ({
 
   const handleClick = (event: React.MouseEvent) => {
     event.preventDefault();
-    window.electronAPI.openExternal(url);
+    window.miteiru.openExternal(url);
   };
 
   return (

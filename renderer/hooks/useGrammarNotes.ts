@@ -9,7 +9,7 @@ const GRAMMAR_NOTES_STORE_KEY = 'user.grammarNotes';
 
 export const loadGrammarNotesFromStore = async (): Promise<GrammarNotesDatabase> => {
   try {
-    const notes = await window.electronStore.get(GRAMMAR_NOTES_STORE_KEY, {});
+    const notes = await window.miteiruStore.get(GRAMMAR_NOTES_STORE_KEY, {});
     if (typeof notes !== 'object' || notes === null) {
       return {};
     }
@@ -47,7 +47,7 @@ export const useGrammarNotes = () => {
   }, []);
 
   const saveGrammarNotes = useCallback(async (notes: GrammarNotesDatabase) => {
-    await window.electronStore.set(GRAMMAR_NOTES_STORE_KEY, notes);
+    await window.miteiruStore.set(GRAMMAR_NOTES_STORE_KEY, notes);
     setGrammarNotes(notes);
   }, []);
 

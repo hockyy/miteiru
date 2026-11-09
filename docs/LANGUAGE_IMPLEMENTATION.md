@@ -147,7 +147,7 @@ Current asset ownership:
 Create `main/handler/[language].ts`:
 
 ```typescript
-import {ipcMain} from "electron";
+import {ipcMain} from "../../renderer/platform/backend/shims/desktop";
 import path from "path";
 import fs from "node:fs";
 

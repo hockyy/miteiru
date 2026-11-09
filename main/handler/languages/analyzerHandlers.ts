@@ -1,4 +1,4 @@
-import {ipcMain} from "electron";
+import {ipcMain} from "../../../renderer/platform/backend/shims/desktop";
 import {analyzeText} from "./analyzer";
 
 export type RegisterAnalyzerHandlersArgs = {

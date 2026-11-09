@@ -7,7 +7,7 @@ export const useLastVideo = () => {
   const [loaded, setLoaded] = useState(false);
   useEffect(() => {
     let cancelled = false;
-    loadLastVideo(window.electronStore, (path) => window.electronAPI.checkFile(path)).then((video) => {
+    loadLastVideo(window.miteiruStore, (path) => window.miteiru.checkFile(path)).then((video) => {
       if (cancelled) return;
       setLast(video);
       setLoaded(true);

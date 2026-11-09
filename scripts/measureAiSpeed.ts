@@ -58,10 +58,10 @@ const targetLang = getTranslationTargetLang(lang) ?? fail(`--lang must be ja, zh
 const runs = Number(values.runs);
 if (!Number.isInteger(runs) || runs < 1) fail(`--runs must be a whole number of at least 1, not "${values.runs}".`);
 
-// The client reads the thinking setting from the app's store (window.electronStore). This stands in.
+// The client reads the thinking setting from the app's store (window.miteiruStore). This stands in.
 let thinking: OpenRouterThinking = 'off';
 (globalThis as unknown as {window: unknown}).window = {
-  electronStore: {
+  miteiruStore: {
     get: async (key: string, fallback: unknown) => (key === OPENROUTER_THINKING_KEY ? thinking : fallback),
   },
 };

@@ -2,7 +2,7 @@ import {spawn} from "child_process";
 import os from "node:os";
 import path from "path";
 import * as fsPromises from "node:fs/promises";
-import {app} from "electron";
+import {app} from "../../../renderer/platform/backend/shims/desktop";
 import {systemMediaToolPaths, ytDlpDownloadLink} from "../../helpers/mediaToolPaths";
 
 export type ToolName = "yt-dlp" | "ffmpeg" | "ffprobe";

@@ -483,8 +483,8 @@ export const runSmokeTest = async (outPath: string, userData: string, platform: 
   }, 1000);
   await step('backend', () => window.backend.invoke('getAppVersion'), 60000);
   await step('store', async () => {
-    await window.electronStore.set('smokeTest.value', 42);
-    const value = await window.electronStore.get('smokeTest.value', 0);
+    await window.miteiruStore.set('smokeTest.value', 42);
+    const value = await window.miteiruStore.get('smokeTest.value', 0);
     if (value !== 42) throw new Error(`read back ${JSON.stringify(value)}`);
     return value;
   }, 10000);
