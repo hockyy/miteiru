@@ -13,6 +13,7 @@ import {announceLearningStateChanged} from "../../utils/learningStateEvents";
 import {rangeFillStyle, SubtitleMode} from "../../utils/utils";
 import {SidebarSection, SidebarSettingRow, SidebarShell, SIDEBAR_FIELD_INPUT} from "./SidebarShell";
 import {MANDARIN_TONE_PALETTES, type MandarinTone} from "../../utils/mandarinTones";
+import {HSK_COLORS, HSK_UNLISTED_COLOR, hskLabel, type HskLevel} from "../../utils/mandarinHsk";
 import {OpenRouterSettings} from "./OpenRouterSettings";
 import {AiUsageDetails} from "./AiCostIndicator";
 import type {useSubtitleForecast} from "../../hooks/useSubtitleForecast";
@@ -175,6 +176,29 @@ export const SubtitleContentSettings = ({subtitleStyling, setSubtitleStyling, la
             {tone === 5 ? 'Neutral' : `Tone ${tone}`}
           </span>)}
         </div>
+      </div>}
+    </>}
+    {lang === videoConstants.chineseLang && <>
+      <ToggleRow label="HSK level underlines" hint="Mark Mandarin words by HSK 3.0 level. Dashed grey means not on the list."
+                 checked={subtitleStyling.mandarinHsk}
+                 onChange={(value) => update("mandarinHsk", value)}/>
+      {subtitleStyling.mandarinHsk && <div className="flex flex-col gap-2 pl-3 text-sm text-white/85">
+        <label className="flex items-center justify-between gap-3">Highlight
+          <select className={SIDEBAR_FIELD_INPUT} aria-label="Only highlight above HSK level"
+                  value={subtitleStyling.mandarinHskAbove ?? 0}
+                  onChange={(event) => update("mandarinHskAbove", Number(event.target.value))}>
+            <option value={0}>All levels</option>
+            {Array.from({length: 9}, (_, i) => i + 1).map((level) => <option key={level} value={level}>Above HSK {level}</option>)}
+          </select>
+        </label>
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs" aria-label="HSK underline key">
+          {([1, 2, 3, 4, 5, 6, 7] as HskLevel[]).map((level) => <span key={level}
+            style={{textDecoration: `underline solid ${HSK_COLORS[level]}`, textUnderlineOffset: '3px'}}>
+            {hskLabel(level).replace('HSK ', '')}
+          </span>)}
+          <span style={{textDecoration: `underline dashed ${HSK_UNLISTED_COLOR}`, textUnderlineOffset: '3px'}}>Unlisted</span>
+        </div>
+        <Hint>HSK 7–9 share one advanced list; it stays highlighted below 9.</Hint>
       </div>}
     </>}
     <ToggleRow label="Show word meanings" checked={subtitleStyling.showMeaning}

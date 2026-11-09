@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '../../../Utils/Button';
 import { FaChevronLeft, FaChevronRight, FaStop, FaVolumeUp } from 'react-icons/fa';
-import { MEANING_HEADER } from '../../meaningBoxTheme';
+import { MEANING_HEADER, MEANING_READING_BUBBLE } from '../../meaningBoxTheme';
 import { RomajiedContent } from './RomajiedContent';
 import { getLearningLevelColor } from '../../../VideoPlayer/vocabLevels';
 import { SAVE_LEVELS, isAutoKnown, savedLevelOf } from '../../../../utils/vocabSaveLevels';
@@ -11,6 +11,7 @@ import type { RomajiedGroup } from '../types';
 
 type MeaningBoxHeaderProps = {
   meaning: string;
+  hskLabel?: string;
   meaningIndex: number;
   otherMeaningsCount: number;
   romajiedData: RomajiedGroup[];
@@ -33,6 +34,7 @@ type MeaningBoxHeaderProps = {
 /** Sticky top bar: prev/next senses, TTS, headword ruby, learning star. */
 export const MeaningBoxHeader = ({
   meaning,
+  hskLabel,
   meaningIndex,
   otherMeaningsCount,
   romajiedData,
@@ -120,6 +122,8 @@ export const MeaningBoxHeader = ({
         ))}
       </div>
     </div>
+
+    {hskLabel && <span className={MEANING_READING_BUBBLE} title="HSK 3.0 word level">{hskLabel}</span>}
 
     {getLearningState && setLearningLevel && (() => {
       const level = getLearningState(meaning);

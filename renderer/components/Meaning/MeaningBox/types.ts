@@ -21,6 +21,7 @@ export type MeaningBoxProps = {
   setLearningLevel?: ((term: string, level: number) => void) | null;
   getLearningState?: ((term: string) => number) | null;
   showMeaning?: boolean;
+  hskEnabled?: boolean;
   sidebarInsets?: SidebarInsets;
   /** Steps back to the previous word; shown as "← Back" when given. */
   onBack?: (() => void) | null;

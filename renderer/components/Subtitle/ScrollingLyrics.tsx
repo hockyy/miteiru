@@ -7,6 +7,8 @@ import {adjustTimeWithShift} from "../../utils/utils";
 import type {PlaybackClock} from "../../utils/playbackClock";
 import {mandarinSpokenTones} from "../../utils/mandarinTones";
 import {videoConstants} from "../../utils/constants";
+import {useMandarinHsk} from "../../hooks/useMandarinHsk";
+import {lookupHsk, type HskWords} from "../../utils/mandarinHsk";
 
 interface LyricsLine {
   content: any[] | string;
@@ -74,6 +76,7 @@ export const ScrollingLyrics = ({
   const shownRef = useRef(EMPTY_WINDOW);
   const containerRef = useRef<HTMLDivElement>(null);
   const [fit, setFit] = useState(1);
+  const hskWords = useMandarinHsk(subtitle.language, Boolean(subtitleStyling.mandarinHsk));
 
   // Runs on every clock tick; re-renders only when the window moves or a visible line gets tokens or glosses.
   useEffect(() => {
@@ -168,6 +171,7 @@ export const ScrollingLyrics = ({
             key={line.index}
             line={line}
             lang={subtitle.language}
+            hskWords={hskWords}
             isCurrent={index === currentLineIndex}
             isPast={index < currentLineIndex}
             isFuture={index > currentLineIndex}
@@ -186,6 +190,7 @@ export const ScrollingLyrics = ({
 const LyricsLine = ({
   line,
   lang,
+  hskWords,
   isCurrent,
   isPast,
   isFuture,
@@ -197,6 +202,7 @@ const LyricsLine = ({
 }: {
   line: LyricsLine;
   lang: string;
+  hskWords: HskWords | null;
   isCurrent: boolean;
   isPast: boolean;
   isFuture: boolean;
@@ -270,6 +276,7 @@ const LyricsLine = ({
             <SentenceComponent
               origin={val.origin}
               spokenTones={tones[index]}
+              hskLevel={lookupHsk(hskWords, val.origin)}
               separation={val.separation}
               setMeaning={setMeaning}
               extraClass="lyrics-word"

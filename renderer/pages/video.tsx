@@ -522,6 +522,7 @@ function Video() {
           <BoxTipsOverlay key={videoSrc.path} tips={forecast.tips} clock={clock} enabled={forecast.tipsEnabled} shiftMs={primaryShift}
                           placement={primaryStyling.positionFromTop ? "middle" : "top"}/>
           <MeaningBox meaning={meaning} setMeaning={setMeaning} tokenizeMiteiru={tokenizeMiteiru}
+                      hskEnabled={Boolean(primaryStyling.mandarinHsk)}
                       lang={lang} setLearningLevel={setLearningLevel}
                       getLearningState={getLearningState}
                       onBack={canGoBack ? undo : null}
