@@ -1,0 +1,150 @@
+{"id":"yue-001","text":"隻貓霸住個洗手盆唔肯走喎。","categories":["casual-speech","cantonese-particles","particles"],"gold":["隻","貓","霸","住","個","洗手盆","唔","肯","走","喎","。"]}
+{"id":"yue-003","text":"你落咗幾多豉油落去呀？","categories":["casual-speech","suffix-chains","cantonese-particles","particles"],"gold":["你","落","咗","幾多","豉油","落去","呀","？"]}
+{"id":"yue-005","text":"你係鍾意個碗定鍾意碗麵？","categories":["casual-speech","particles"],"gold":["你","係","鍾意","個","碗","定","鍾意","碗","麵","？"]}
+{"id":"yue-007","text":"潘芷澄姑娘話張單唔啱。","categories":["names"],"gold":["潘芷澄","姑娘","話","張","單","唔","啱","。"],"notes":"Dictionary exceptions: 潘芷澄 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-009","text":"你咪喺度借題發揮啦。","categories":["idioms","colloquial-contractions","cantonese-particles","particles"],"gold":["你","咪","喺度","借題發揮","啦","。"]}
+{"id":"yue-011","text":"佢喺天台種緊棉花糖呀。","categories":["anime-drama","suffix-chains","cantonese-particles","particles"],"gold":["佢","喺","天台","種","緊","棉花糖","呀","。"]}
+{"id":"yue-013","text":"唔該，張凳可唔可以移埋啲？","categories":["casual-speech","suffix-chains","particles"],"gold":["唔該","，","張","凳","可","唔","可以","移","埋","啲","？"]}
+{"id":"yue-015","text":"呢個留言真係笑到我碌地。","categories":["internet-slang","suffix-chains"],"gold":["呢","個","留言","真係","笑","到","我","碌","地","。"]}
+{"id":"yue-017","text":"我仲等緊佢 approve 呢。","categories":["mixed-latin","code-switching","suffix-chains","cantonese-particles","particles"],"gold":["我","仲","等","緊","佢"," ","approve"," ","呢","。"],"notes":"Dictionary exceptions: approve (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-019","text":"頭先個客話要留張枱畀六個人，我仲以為佢哋約咗食飯，點知成班人帶住畫簿嚟寫生，碗麵擺到凍晒都未食，你話我催唔催佢哋好呀？","categories":["long-lines","casual-speech","suffix-chains","numbers-counters","cantonese-particles","particles"],"gold":["頭先","個","客","話","要","留","張","枱","畀","六","個","人","，","我","仲","以為","佢哋","約","咗","食飯","，","點知","成","班","人","帶","住","畫簿","嚟","寫生","，","碗","麵","擺","到","凍","晒","都","未","食","，","你","話","我","催","唔","催","佢哋","好","呀","？"],"notes":"Dictionary exceptions: 畫簿 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-021","text":"原來你一早知㗎喇。","categories":["colloquial-contractions","cantonese-particles","particles"],"gold":["原來","你","一早","知","㗎","喇","。"]}
+{"id":"yue-023","text":"你download緊邊個版本？","categories":["mixed-latin","code-switching","suffix-chains","particles"],"gold":["你","download","緊","邊個","版本","？"],"notes":"Dictionary exceptions: download (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-025","text":"雞蛋仔要等廿分鐘呀？","categories":["casual-speech","colloquial-contractions","numbers-counters","cantonese-particles","particles"],"gold":["雞蛋仔","要","等","廿","分鐘","呀","？"]}
+{"id":"yue-027","text":"阿媽話呢隻色唔好睇。","categories":["casual-speech","suffix-chains"],"gold":["阿媽","話","呢","隻","色","唔","好睇","。"]}
+{"id":"yue-029","text":"我唔識路，你行先啦。","categories":["casual-speech","cantonese-particles","particles"],"gold":["我","唔","識","路","，","你","行","先","啦","。"]}
+{"id":"yue-031","text":"你咁樣問，直頭係打草驚蛇。","categories":["idioms","colloquial-contractions"],"gold":["你","咁樣","問","，","直頭","係","打草驚蛇","。"],"notes":"Dictionary exceptions: 咁樣 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-033","text":"我搵到嗰張舊相喇。","categories":["suffix-chains","cantonese-particles","particles"],"gold":["我","搵到","嗰","張","舊","相","喇","。"]}
+{"id":"yue-035","text":"你咪話我知又要改期吖。","categories":["colloquial-contractions","cantonese-particles","particles"],"gold":["你","咪","話","我","知","又","要","改期","吖","。"]}
+{"id":"yue-037","text":"佢個開箱片淨係影隻手。","categories":["internet-slang"],"gold":["佢","個","開箱","片","淨係","影","隻","手","。"],"notes":"Dictionary exceptions: 開箱 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-039","text":"個booking已經cancelled咗。","categories":["mixed-latin","code-switching","suffix-chains"],"gold":["個","booking","已經","cancelled","咗","。"],"notes":"Dictionary exceptions: booking (oov), cancelled (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-041","text":"你係咪凍親呀，塊面白晒喎。","categories":["casual-speech","suffix-chains","cantonese-particles","particles"],"gold":["你","係咪","凍親","呀","，","塊","面","白","晒","喎","。"]}
+{"id":"yue-043","text":"幫我拎住呢兩袋先。","categories":["casual-speech","numbers-counters","suffix-chains"],"gold":["幫","我","拎","住","呢","兩","袋","先","。"]}
+{"id":"yue-045","text":"余卓嵐先生，條匙留低咗呀。","categories":["names","suffix-chains","cantonese-particles","particles"],"gold":["余卓嵐","先生","，","條","匙","留低","咗","呀","。"],"notes":"Dictionary exceptions: 余卓嵐 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-047","text":"呢支藥水飲過會唔會發光？","categories":["anime-drama","suffix-chains","particles"],"gold":["呢","支","藥水","飲","過","會","唔","會","發光","？"]}
+{"id":"yue-049","text":"唔係冇嘢食，係冇嘢想食。","categories":["casual-speech"],"gold":["唔","係","冇","嘢","食","，","係","冇","嘢","想","食","。"]}
+{"id":"yue-051","text":"呢杯走甜㗎喇，仲嫌甜咩？","categories":["casual-speech","colloquial-contractions","cantonese-particles","particles"],"gold":["呢","杯","走甜","㗎","喇","，","仲","嫌","甜","咩","？"]}
+{"id":"yue-053","text":"你唔好喺度指桑罵槐喎。","categories":["idioms","cantonese-particles","particles"],"gold":["你","唔好","喺度","指桑罵槐","喎","。"]}
+{"id":"yue-055","text":"個影竟然快過我轉身。","categories":["anime-drama","suffix-chains"],"gold":["個","影","竟然","快","過","我","轉身","。"]}
+{"id":"yue-057","text":"你當我冇到呀，咩都唔問。","categories":["casual-speech","colloquial-contractions","cantonese-particles","particles"],"gold":["你","當","我","冇","到","呀","，","咩","都","唔","問","。"]}
+{"id":"yue-059","text":"婆婆，呢個出口冇扶手電梯㗎，我陪你兜返去對面搭升降機啦；你袋橙畀我拎住先，唔使急，下一班車仲有幾分鐘，我哋實趕得切嘅。","categories":["long-lines","casual-speech","suffix-chains","cantonese-particles","particles"],"gold":["婆婆","，","呢","個","出口","冇","扶手電梯","㗎","，","我","陪","你","兜","返去","對面","搭","升降機","啦","；","你","袋","橙","畀","我","拎","住","先","，","唔","使","急","，","下","一","班","車","仲","有","幾","分鐘","，","我哋","實","趕","得","切","嘅","。"]}
+{"id":"yue-061","text":"呢鋪反轉到我唔識畀反應。","categories":["internet-slang"],"gold":["呢","鋪","反轉","到","我","唔","識","畀","反應","。"]}
+{"id":"yue-063","text":"對鞋細咗半個碼。","categories":["casual-speech","numbers-counters","suffix-chains"],"gold":["對","鞋","細","咗","半","個","碼","。"]}
+{"id":"yue-065","text":"我唔係嬲，係有啲唔知點講。","categories":["casual-speech"],"gold":["我","唔","係","嬲","，","係","有啲","唔","知","點","講","。"]}
+{"id":"yue-067","text":"馮曉堯師傅話條喉塞咗。","categories":["names","suffix-chains"],"gold":["馮曉堯","師傅","話","條","喉","塞","咗","。"],"notes":"Dictionary exceptions: 馮曉堯 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-069","text":"呢道門得半夜先肯開㗎。","categories":["anime-drama","colloquial-contractions","cantonese-particles","particles"],"gold":["呢","道","門","得","半夜","先","肯","開","㗎","。"]}
+{"id":"yue-071","text":"你冇聽錯，係租唔係賣。","categories":["suffix-chains"],"gold":["你","冇","聽","錯","，","係","租","唔","係","賣","。"]}
+{"id":"yue-073","text":"前面仲有廿三張籌。","categories":["numbers-counters","colloquial-contractions"],"gold":["前面","仲","有","廿三","張","籌","。"],"notes":"Dictionary exceptions: 廿三 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-075","text":"咁都叫公平？根本係厚此薄彼。","categories":["idioms","colloquial-contractions","particles"],"gold":["咁","都","叫","公平","？","根本","係","厚此薄彼","。"]}
+{"id":"yue-077","text":"啲魚蛋未熟，唔好偷食呀。","categories":["casual-speech","cantonese-particles","particles"],"gold":["啲","魚蛋","未","熟","，","唔好","偷食","呀","。"]}
+{"id":"yue-079","text":"你份draft我print咗兩份。","categories":["mixed-latin","code-switching","suffix-chains","numbers-counters"],"gold":["你","份","draft","我","print","咗","兩","份","。"],"notes":"Dictionary exceptions: draft (oov), print (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-081","text":"你真係會返嚟㗎可？","categories":["casual-speech","colloquial-contractions","cantonese-particles","particles"],"gold":["你","真係","會","返嚟","㗎","可","？"]}
+{"id":"yue-083","text":"個post紅咗，佢反而唔敢覆。","categories":["internet-slang","mixed-latin","suffix-chains"],"gold":["個","post","紅","咗","，","佢","反而","唔","敢","覆","。"],"notes":"Dictionary exceptions: post (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-085","text":"隻妖怪淨係肯食白方包。","categories":["anime-drama"],"gold":["隻","妖怪","淨係","肯","食","白","方包","。"]}
+{"id":"yue-087","text":"唔好同我講冇所謂，你揀啦。","categories":["casual-speech","cantonese-particles","particles"],"gold":["唔好","同","我","講","冇所謂","，","你","揀","啦","。"]}
+{"id":"yue-089","text":"伍樂澄醫生俾咗張紙我。","categories":["names","suffix-chains"],"gold":["伍樂澄","醫生","俾","咗","張","紙","我","。"],"notes":"Dictionary exceptions: 伍樂澄 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-091","text":"我唔記得咗你唔食蔥添。","categories":["casual-speech","suffix-chains","cantonese-particles","particles"],"gold":["我","唔","記得","咗","你","唔","食","蔥","添","。"]}
+{"id":"yue-093","text":"七個樽，一個都唔可以漏。","categories":["numbers-counters"],"gold":["七","個","樽","，","一","個","都","唔","可以","漏","。"]}
+{"id":"yue-095","text":"佢講緊嘅，你一早聽過啦？","categories":["suffix-chains","cantonese-particles","particles"],"gold":["佢","講","緊","嘅","，","你","一早","聽","過","啦","？"]}
+{"id":"yue-097","text":"得把口，真係紙上談兵。","categories":["idioms"],"gold":["得把口","，","真係","紙上談兵","。"]}
+{"id":"yue-099","text":"細佬，我唔係想管住你，只係你每次話冇事都即刻收線，我喺電話嗰邊乜都做唔到；下次唔想講嘢都得，開住個電話陪我煮飯，得唔得呀？","categories":["long-lines","casual-speech","suffix-chains","cantonese-particles","particles"],"gold":["細佬","，","我","唔","係","想","管","住","你","，","只係","你","每","次","話","冇事","都","即刻","收線","，","我","喺","電話","嗰邊","乜","都","做","唔","到","；","下次","唔","想","講嘢","都","得","，","開","住","個","電話","陪","我","煮飯","，","得","唔","得","呀","？"],"notes":"Dictionary exceptions: 嗰邊 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-101","text":"碌卡得唔得？我冇散紙喎。","categories":["casual-speech","cantonese-particles","particles"],"gold":["碌卡","得","唔","得","？","我","冇","散紙","喎","。"],"notes":"Dictionary exceptions: 碌卡 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-103","text":"我send咗個follow-up email畀佢。","categories":["mixed-latin","code-switching","suffix-chains"],"gold":["我","send","咗","個","follow-up"," ","email","畀","佢","。"],"notes":"Dictionary exceptions: follow-up (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-105","text":"你話佛系，點知凌晨仲搶緊飛。","categories":["internet-slang","suffix-chains"],"gold":["你","話","佛系","，","點知","凌晨","仲","搶","緊","飛","。"]}
+{"id":"yue-107","text":"記住留四粒燒賣畀阿公。","categories":["casual-speech","numbers-counters"],"gold":["記住","留","四","粒","燒賣","畀","阿公","。"]}
+{"id":"yue-109","text":"乜隻精靈都要交租㗎咩？","categories":["anime-drama","colloquial-contractions","cantonese-particles","particles"],"gold":["乜","隻","精靈","都","要","交租","㗎","咩","？"]}
+{"id":"yue-111","text":"易朗謙校長而家開緊會。","categories":["names","suffix-chains"],"gold":["易朗謙","校長","而家","開","緊","會","。"],"notes":"Dictionary exceptions: 易朗謙 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-113","text":"呢件唔好，個袖口爛咗。","categories":["casual-speech","suffix-chains"],"gold":["呢","件","唔","好","，","個","袖口","爛","咗","。"]}
+{"id":"yue-115","text":"上次嚟過嗰個叔叔仲記得我。","categories":["casual-speech","suffix-chains"],"gold":["上次","嚟","過","嗰","個","叔叔","仲","記得","我","。"]}
+{"id":"yue-117","text":"張符濕咗係咪就冇效㗎？","categories":["anime-drama","suffix-chains","colloquial-contractions","cantonese-particles","particles"],"gold":["張","符","濕","咗","係咪","就","冇","效","㗎","？"]}
+{"id":"yue-119","text":"你唔好得寸進尺，我只讓一次。","categories":["idioms","numbers-counters"],"gold":["你","唔好","得寸進尺","，","我","只","讓","一","次","。"]}
+{"id":"yue-121","text":"湯都凍晒喇，你仲傾緊電話。","categories":["casual-speech","suffix-chains","cantonese-particles","particles"],"gold":["湯","都","凍","晒","喇","，","你","仲","傾","緊","電話","。"]}
+{"id":"yue-123","text":"你睇吓個天，仲曬被？","categories":["casual-speech","suffix-chains","particles"],"gold":["你","睇","吓","個","天","，","仲","曬","被","？"]}
+{"id":"yue-125","text":"個client話要啲options。","categories":["mixed-latin","code-switching"],"gold":["個","client","話","要","啲","options","。"],"notes":"Dictionary exceptions: client (oov), options (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-127","text":"你唔好再喺group度放閃啦。","categories":["internet-slang","mixed-latin","code-switching","cantonese-particles","particles"],"gold":["你","唔好","再","喺","group","度","放閃","啦","。"],"notes":"Dictionary exceptions: group (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-129","text":"每人畀十二蚊，唔使找。","categories":["numbers-counters"],"gold":["每","人","畀","十二","蚊","，","唔","使","找","。"]}
+{"id":"yue-131","text":"冇謂為咗個杯同佢嘈啦。","categories":["casual-speech","suffix-chains","cantonese-particles","particles"],"gold":["冇謂","為咗","個","杯","同","佢","嘈","啦","。"],"notes":"Dictionary exceptions: 冇謂 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-133","text":"成樂陶同學件校服未乾。","categories":["names"],"gold":["成樂陶","同學","件","校服","未","乾","。"],"notes":"Dictionary exceptions: 成樂陶 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-135","text":"今朝搭過嗰架車冇冷氣。","categories":["suffix-chains"],"gold":["今朝","搭","過","嗰","架","車","冇","冷氣","。"]}
+{"id":"yue-137","text":"碟豉椒炒蜆仲未上呀？","categories":["casual-speech","cantonese-particles","particles"],"gold":["碟","豉椒","炒","蜆","仲","未","上","呀","？"]}
+{"id":"yue-139","text":"阿媽，你唔記得帶鎖匙就打畀我啦，唔好坐喺樓梯口等到咁夜先出聲；我份工係忙，但落樓同你開門嗰幾分鐘，總唔會令間公司執笠㗎。","categories":["long-lines","casual-speech","suffix-chains","colloquial-contractions","cantonese-particles","particles"],"gold":["阿媽","，","你","唔","記得","帶","鎖匙","就","打","畀","我","啦","，","唔好","坐","喺","樓梯口","等","到","咁","夜","先","出聲","；","我","份","工","係","忙","，","但","落樓","同","你","開門","嗰","幾","分鐘","，","總","唔","會","令","間","公司","執笠","㗎","。"]}
+{"id":"yue-141","text":"咁快話放棄，你係咪打退堂鼓？","categories":["idioms","colloquial-contractions","particles"],"gold":["咁","快","話","放棄","，","你","係咪","打退堂鼓","？"]}
+{"id":"yue-143","text":"唔使特登等我，留餸就得。","categories":["casual-speech"],"gold":["唔","使","特登","等","我","，","留","餸","就","得","。"]}
+{"id":"yue-145","text":"我認得佢件褸，唔認得個人。","categories":["casual-speech","suffix-chains"],"gold":["我","認得","佢","件","褸","，","唔","認得","個","人","。"]}
+{"id":"yue-147","text":"個app喺度exporting，等陣。","categories":["mixed-latin","code-switching","suffix-chains"],"gold":["個","app","喺度","exporting","，","等陣","。"],"notes":"Dictionary exceptions: app (oov), exporting (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-149","text":"個留言區突然變咗相親角。","categories":["internet-slang","suffix-chains"],"gold":["個","留言","區","突然","變","咗","相親","角","。"]}
+{"id":"yue-151","text":"嗰樽奶得返150毫升。","categories":["numbers-counters"],"gold":["嗰","樽","奶","得","返","150","毫升","。"],"notes":"Dictionary exceptions: 150 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-153","text":"係咁㗎啦，第一次梗係驚。","categories":["colloquial-contractions","numbers-counters","cantonese-particles","particles"],"gold":["係","咁","㗎","啦","，","第","一","次","梗係","驚","。"]}
+{"id":"yue-155","text":"戴卓言律師話唔可以簽。","categories":["names"],"gold":["戴卓言","律師","話","唔","可以","簽","。"],"notes":"Dictionary exceptions: 戴卓言 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-157","text":"你係咪又夢遊咗去海邊呀？","categories":["anime-drama","suffix-chains","cantonese-particles","particles"],"gold":["你","係咪","又","夢遊","咗","去","海邊","呀","？"]}
+{"id":"yue-159","text":"唔係話唔好食，係真係太滯。","categories":["casual-speech"],"gold":["唔","係","話","唔","好食","，","係","真係","太","滯","。"]}
+{"id":"yue-161","text":"你明明識，點解扮唔識啫？","categories":["casual-speech","cantonese-particles","particles"],"gold":["你","明明","識","，","點解","扮","唔","識","啫","？"]}
+{"id":"yue-163","text":"呢個安排簡直係強人所難。","categories":["idioms"],"gold":["呢","個","安排","簡直","係","強人所難","。"]}
+{"id":"yue-165","text":"我啱啱喺夢入面同你食過飯。","categories":["anime-drama","suffix-chains"],"gold":["我","啱啱","喺","夢","入面","同","你","食","過","飯","。"]}
+{"id":"yue-167","text":"唔好鬆手住，條帶仲未扣實。","categories":["casual-speech","suffix-chains"],"gold":["唔好","鬆手","住","，","條","帶","仲","未","扣","實","。"]}
+{"id":"yue-169","text":"我checked過，個link開到。","categories":["mixed-latin","code-switching","suffix-chains"],"gold":["我","checked","過","，","個","link","開","到","。"],"notes":"Dictionary exceptions: checked (oov), link (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-171","text":"個地板熱到煎得熟蛋。","categories":["anime-drama","suffix-chains"],"gold":["個","地板","熱","到","煎","得","熟","蛋","。"]}
+{"id":"yue-173","text":"你個假膠留言連我都信咗。","categories":["internet-slang","suffix-chains"],"gold":["你","個","假膠","留言","連","我","都","信","咗","。"],"notes":"Dictionary exceptions: 假膠 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-175","text":"你個Wi-Fi名係咩嚟㗎？","categories":["mixed-latin","colloquial-contractions","cantonese-particles","particles"],"gold":["你","個","Wi-Fi","名","係","咩","嚟","㗎","？"],"notes":"Dictionary exceptions: Wi-Fi (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-177","text":"田芷洛店長叫你食咗飯先。","categories":["names","suffix-chains"],"gold":["田芷洛","店長","叫","你","食","咗","飯","先","。"],"notes":"Dictionary exceptions: 田芷洛 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-179","text":"司機大哥，我知條路封咗唔關你事，車上面仲有幾個人要趕住返去接細路，不如你講低可以喺邊度落車，我哋自己諗辦法，唔好困住喺度互相鬧啦。","categories":["long-lines","casual-speech","suffix-chains","cantonese-particles","particles"],"gold":["司機","大哥","，","我","知","條","路","封","咗","唔","關","你","事","，","車","上面","仲","有","幾","個","人","要","趕","住","返去","接","細路","，","不如","你","講低","可以","喺","邊度","落車","，","我哋","自己","諗","辦法","，","唔好","困","住","喺度","互相","鬧","啦","。"]}
+{"id":"yue-181","text":"個雪糕溶緊，快啲食啦。","categories":["casual-speech","suffix-chains","cantonese-particles","particles"],"gold":["個","雪糕","溶","緊","，","快","啲","食","啦","。"]}
+{"id":"yue-183","text":"佢一笑，成條街啲燈都熄咗。","categories":["anime-drama","suffix-chains"],"gold":["佢","一","笑","，","成","條","街","啲","燈","都","熄","咗","。"]}
+{"id":"yue-185","text":"你兩邊都唔幫，咪隔岸觀火囉。","categories":["idioms","colloquial-contractions","cantonese-particles","particles"],"gold":["你","兩邊","都","唔","幫","，","咪","隔岸觀火","囉","。"]}
+{"id":"yue-187","text":"我唔慣食咁夜，你哋慢慢嚟。","categories":["casual-speech","colloquial-contractions"],"gold":["我","唔","慣","食","咁","夜","，","你哋","慢慢","嚟","。"]}
+{"id":"yue-189","text":"唔使解釋喇，我信你囉。","categories":["casual-speech","cantonese-particles","particles"],"gold":["唔","使","解釋","喇","，","我","信","你","囉","。"]}
+{"id":"yue-191","text":"我啲files仲backing up緊。","categories":["mixed-latin","code-switching","suffix-chains"],"gold":["我","啲","files","仲","backing"," ","up","緊","。"],"notes":"Dictionary exceptions: files (oov), backing (oov), up (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-193","text":"我冇掂過你個飯盒喎。","categories":["casual-speech","suffix-chains","cantonese-particles","particles"],"gold":["我","冇","掂","過","你","個","飯盒","喎","。"]}
+{"id":"yue-195","text":"呢隻色簡直係少女心爆棚。","categories":["internet-slang"],"gold":["呢","隻","色","簡直","係","少女心","爆棚","。"],"notes":"Dictionary exceptions: 少女心 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-197","text":"呢度離營地仲有2.4公里。","categories":["numbers-counters"],"gold":["呢度","離","營地","仲","有","2.4","公里","。"],"notes":"Dictionary exceptions: 2.4 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-199","text":"江悅榆導遊話聽日落雨。","categories":["names"],"gold":["江悅榆","導遊","話","聽日","落雨","。"],"notes":"Dictionary exceptions: 江悅榆 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-201","text":"你打don't worry都冇用，我緊張。","categories":["mixed-latin","code-switching"],"gold":["你","打","don't"," ","worry","都","冇用","，","我","緊張","。"],"notes":"Dictionary exceptions: don't (oov), worry (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-203","text":"個茶壺斟極都有水，點算？","categories":["anime-drama","suffix-chains","particles"],"gold":["個","茶壺","斟","極","都","有","水","，","點算","？"]}
+{"id":"yue-205","text":"你冇做過就認，咪自投羅網啦。","categories":["idioms","suffix-chains","colloquial-contractions","cantonese-particles","particles"],"gold":["你","冇","做","過","就","認","，","咪","自投羅網","啦","。"]}
+{"id":"yue-207","text":"我個追星小號畀阿爸發現咗。","categories":["internet-slang","suffix-chains"],"gold":["我","個","追星","小號","畀","阿爸","發現","咗","。"]}
+{"id":"yue-209","text":"買三送一，唔等於要買四盒。","categories":["numbers-counters"],"gold":["買","三","送","一","，","唔","等於","要","買","四","盒","。"]}
+{"id":"yue-211","text":"你唔舒服就講，唔使死頂。","categories":["casual-speech"],"gold":["你","唔","舒服","就","講","，","唔","使","死頂","。"]}
+{"id":"yue-213","text":"歐頌庭先生，呢封信係你㗎？","categories":["names","colloquial-contractions","cantonese-particles","particles"],"gold":["歐頌庭","先生","，","呢","封","信","係","你","㗎","？"],"notes":"Dictionary exceptions: 歐頌庭 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-215","text":"啲栗子熱辣辣，小心燙手。","categories":["casual-speech","suffix-chains"],"gold":["啲","栗子","熱辣辣","，","小心","燙手","。"],"notes":"Dictionary exceptions: 燙手 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-217","text":"嗰日你都喺度㗎嘛，唔記得？","categories":["casual-speech","colloquial-contractions","cantonese-particles","particles"],"gold":["嗰","日","你","都","喺度","㗎","嘛","，","唔","記得","？"]}
+{"id":"yue-219","text":"我唔想搬走唔係因為間屋值錢，係每朝推開窗都有人嗌我落街飲茶，連報紙檔隻狗都認得我；你話新屋有幾大都好，呢啲嘢唔係執入箱就帶得走㗎。","categories":["long-lines","casual-speech","suffix-chains","colloquial-contractions","cantonese-particles","particles"],"gold":["我","唔","想","搬走","唔","係","因為","間","屋","值錢","，","係","每","朝","推","開","窗","都","有人","嗌","我","落街","飲茶","，","連","報紙檔","隻","狗","都","認得","我","；","你","話","新","屋","有","幾","大","都","好","，","呢","啲","嘢","唔","係","執","入","箱","就","帶","得","走","㗎","。"]}
+{"id":"yue-221","text":"點解我把梳變咗把梯嘅？","categories":["anime-drama","suffix-chains","cantonese-particles","particles"],"gold":["點解","我","把","梳","變","咗","把","梯","嘅","？"]}
+{"id":"yue-223","text":"個USB-C頭插唔入個窿。","categories":["mixed-latin","suffix-chains"],"gold":["個","USB-C","頭","插","唔","入","個","窿","。"],"notes":"Dictionary exceptions: USB-C (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-225","text":"你飲唔飲呀？我幫你叫埋。","categories":["casual-speech","suffix-chains","cantonese-particles","particles"],"gold":["你","飲","唔","飲","呀","？","我","幫","你","叫","埋","。"]}
+{"id":"yue-227","text":"你做乜此地無銀三百兩呀？","categories":["idioms","colloquial-contractions","cantonese-particles","particles"],"gold":["你","做乜","此地無銀三百兩","呀","？"]}
+{"id":"yue-229","text":"唔好劇透，我先睇到第二集。","categories":["internet-slang","numbers-counters","suffix-chains"],"gold":["唔好","劇透","，","我","先","睇到","第","二","集","。"]}
+{"id":"yue-231","text":"0.7米咁窄，架車點入呀？","categories":["numbers-counters","colloquial-contractions","cantonese-particles","particles"],"gold":["0.7","米","咁","窄","，","架","車","點","入","呀","？"],"notes":"Dictionary exceptions: 0.7 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-233","text":"張地圖淨係落雨先現形。","categories":["anime-drama"],"gold":["張","地圖","淨係","落雨","先","現形","。"]}
+{"id":"yue-235","text":"卓樂悠同學話支筆會漏墨。","categories":["names"],"gold":["卓樂悠","同學","話","支","筆","會","漏","墨","。"],"notes":"Dictionary exceptions: 卓樂悠 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-237","text":"我撳極都冇反應嘅？","categories":["suffix-chains","cantonese-particles","particles"],"gold":["我","撳","極","都","冇","反應","嘅","？"]}
+{"id":"yue-239","text":"個月光落咗入你碗糖水。","categories":["anime-drama","suffix-chains"],"gold":["個","月光","落","咗","入","你","碗","糖水","。"]}
+{"id":"yue-241","text":"唔好啦，我唔想再麻煩人。","categories":["casual-speech","cantonese-particles","particles"],"gold":["唔好","啦","，","我","唔","想","再","麻煩","人","。"]}
+{"id":"yue-243","text":"佢話唔定聽日就返嚟㗎喇。","categories":["casual-speech","colloquial-contractions","cantonese-particles","particles"],"gold":["佢","話唔定","聽日","就","返嚟","㗎","喇","。"]}
+{"id":"yue-245","text":"OK  啦，你而家先至save。","categories":["mixed-latin","code-switching","cantonese-particles","particles"],"gold":["OK","  ","啦","，","你","而家","先至","save","。"],"notes":"Dictionary exceptions: OK (oov), save (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-247","text":"條隧道出口竟然係我個夢。","categories":["anime-drama"],"gold":["條","隧道","出口","竟然","係","我","個","夢","。"]}
+{"id":"yue-249","text":"再估都係盲人摸象，問佢啦。","categories":["idioms","cantonese-particles","particles"],"gold":["再","估","都","係","盲人摸象","，","問","佢","啦","。"],"notes":"Dictionary exceptions: 盲人摸象 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-251","text":"你戴住面具都呃唔到隻狗。","categories":["anime-drama","suffix-chains"],"gold":["你","戴","住","面具","都","呃","唔","到","隻","狗","。"]}
+{"id":"yue-253","text":"呢張圖我喺三個群都見過。","categories":["internet-slang","numbers-counters","suffix-chains"],"gold":["呢","張","圖","我","喺","三","個","群","都","見","過","。"]}
+{"id":"yue-255","text":"八點半喺六號月台等。","categories":["numbers-counters"],"gold":["八","點","半","喺","六","號","月台","等","。"]}
+{"id":"yue-257","text":"馬悅琛教授話要再驗一次。","categories":["names","numbers-counters"],"gold":["馬悅琛","教授","話","要","再","驗","一","次","。"],"notes":"Dictionary exceptions: 馬悅琛 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-259","text":"隻怪獸唔係想拆座塔，佢係想攞返塔頂嗰個風鈴，嗰件係佢細個嗰陣唯一聽過嘅玩具；你哋全部人都當佢嚟搗亂，冇人肯停低問佢想搵乜。","categories":["long-lines","anime-drama","suffix-chains","colloquial-contractions"],"gold":["隻","怪獸","唔","係","想","拆","座","塔","，","佢","係","想","攞","返","塔","頂","嗰","個","風鈴","，","嗰","件","係","佢","細個","嗰陣","唯一","聽","過","嘅","玩具","；","你哋","全部","人","都","當","佢","嚟","搗亂","，","冇","人","肯","停","低","問","佢","想","搵","乜","。"]}
+{"id":"yue-261","text":"佢冇着過呢對鞋，點知合腳啫？","categories":["casual-speech","suffix-chains","cantonese-particles","particles"],"gold":["佢","冇","着","過","呢","對","鞋","，","點知","合腳","啫","？"],"notes":"Dictionary exceptions: 合腳 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-263","text":"個書包入面有啲星星郁緊。","categories":["anime-drama","suffix-chains"],"gold":["個","書包","入面","有","啲","星星","郁","緊","。"]}
+{"id":"yue-265","text":"唔好擰開住，佢搖過支汽水。","categories":["casual-speech","suffix-chains"],"gold":["唔好","擰","開","住","，","佢","搖","過","支","汽水","。"]}
+{"id":"yue-267","text":"個bot覆咗句#later就冇聲。","categories":["mixed-latin","code-switching","suffix-chains"],"gold":["個","bot","覆","咗","句","#later","就","冇","聲","。"],"notes":"Dictionary exceptions: bot (oov), #later (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-269","text":"你再行前一步，個夢就醒喇。","categories":["anime-drama","numbers-counters","cantonese-particles","particles"],"gold":["你","再","行","前","一","步","，","個","夢","就","醒","喇","。"]}
+{"id":"yue-271","text":"唔好以為忍住唔講就相安無事。","categories":["idioms"],"gold":["唔好","以為","忍","住","唔","講","就","相安無事","。"]}
+{"id":"yue-273","text":"你阿哥嗌咗你幾次喇噃。","categories":["casual-speech","suffix-chains","cantonese-particles","particles"],"gold":["你","阿哥","嗌","咗","你","幾","次","喇","噃","。"]}
+{"id":"yue-275","text":"呢啲唔係彩蛋，係佢畫漏咗。","categories":["internet-slang","suffix-chains"],"gold":["呢","啲","唔","係","彩蛋","，","係","佢","畫","漏","咗","。"]}
+{"id":"yue-277","text":"杯水得42度，未夠熱。","categories":["numbers-counters"],"gold":["杯","水","得","42","度","，","未","夠","熱","。"],"notes":"Dictionary exceptions: 42 (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-279","text":"文卓霖主任想同你傾兩句。","categories":["names","numbers-counters"],"gold":["文卓霖","主任","想","同","你","傾","兩","句","。"],"notes":"Dictionary exceptions: 文卓霖 (name). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-281","text":"你諗住拎住條繩去捉雲？","categories":["anime-drama","suffix-chains","particles"],"gold":["你","諗住","拎","住","條","繩","去","捉","雲","？"]}
+{"id":"yue-283","text":"我唔係嚟追數，係嚟探你。","categories":["casual-speech"],"gold":["我","唔","係","嚟","追數","，","係","嚟","探","你","。"]}
+{"id":"yue-285","text":"嗰個細路仔話佢認得月亮。","categories":["anime-drama","suffix-chains"],"gold":["嗰","個","細路仔","話","佢","認得","月亮","。"]}
+{"id":"yue-287","text":"你唔好再食住個湯匙講嘢啦。","categories":["casual-speech","suffix-chains","cantonese-particles","particles"],"gold":["你","唔好","再","食","住","個","湯匙","講嘢","啦","。"]}
+{"id":"yue-289","text":"細個我成日嫌阿爸揸車慢，依家輪到我載佢去覆診，先發覺佢唔係怕快，係想我多坐喺隔籬一陣；今日唔趕，我哋兜去海旁買碗豆腐花先啦。","categories":["long-lines","casual-speech","suffix-chains","cantonese-particles","particles"],"gold":["細個","我","成日","嫌","阿爸","揸車","慢","，","依家","輪到","我","載","佢","去","覆診","，","先","發覺","佢","唔","係","怕","快","，","係","想","我","多","坐","喺","隔籬","一陣","；","今日","唔","趕","，","我哋","兜","去","海旁","買","碗","豆腐花","先","啦","。"]}
+{"id":"yue-291","text":"你話refund咗，點解仲扣錢嘅？","categories":["mixed-latin","code-switching","suffix-chains","cantonese-particles","particles"],"gold":["你","話","refund","咗","，","點解","仲","扣","錢","嘅","？"],"notes":"Dictionary exceptions: refund (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-293","text":"你哋各執一詞，叫我信邊個？","categories":["idioms","particles"],"gold":["你哋","各執一詞","，","叫","我","信","邊個","？"]}
+{"id":"yue-295","text":"呢張飛只可以改兩次。","categories":["numbers-counters"],"gold":["呢","張","飛","只","可以","改","兩","次","。"]}
+{"id":"yue-297","text":"呢條片我loop到識背喇。","categories":["internet-slang","mixed-latin","code-switching","suffix-chains","cantonese-particles","particles"],"gold":["呢","條","片","我","loop","到","識","背","喇","。"],"notes":"Dictionary exceptions: loop (oov). See dictionary-exceptions.jsonl for reasons."}
+{"id":"yue-299","text":"蕭朗瑜師傅教我聽雨聲認路。","categories":["anime-drama","names"],"gold":["蕭朗瑜","師傅","教","我","聽","雨聲","認","路","。"],"notes":"Dictionary exceptions: 蕭朗瑜 (name), 雨聲 (oov). See dictionary-exceptions.jsonl for reasons."}
