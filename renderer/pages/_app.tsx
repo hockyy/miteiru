@@ -7,6 +7,7 @@ import { useAppFont } from '../hooks/useAppFont'
 import { UpdateNotice } from '../components/UI/UpdateNotice'
 import {disableDefaultContextMenu} from '../utils/contextMenu'
 import {AppErrorBoundary} from '../components/UI/AppErrorBoundary'
+import {useAssistantWindow} from '../hooks/useAssistantWindow'
 
 // Bundled fonts (renderer/utils/fonts.ts): every weight, loaded per character range as needed.
 import '@fontsource-variable/nunito/wght.css'
@@ -18,6 +19,7 @@ import '../styles/globals.css'
 function AppContents({ Component, pageProps }: AppProps) {
   const [appFont] = useAppFont()
   useEffect(() => disableDefaultContextMenu(document), [])
+  useAssistantWindow()
   useEffect(() => {
     document.documentElement.style.setProperty('--miteiru-app-font', appFont)
   }, [appFont])

@@ -1,3 +1,6 @@
+/** A caption track's code as Miteiru accepts it (en, en-US, zh-Hant, ja-orig): it reaches yt-dlp and file names. */
+export const CAPTION_CODE = /^[A-Za-z0-9_-]{1,40}$/;
+
 export interface YoutubeCaptionTrack {
   code: string;
   name: string;

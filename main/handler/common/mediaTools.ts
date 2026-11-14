@@ -104,6 +104,23 @@ export async function checkToolPath(tool: ToolConfig): Promise<{ available: bool
 }
 
 /**
+ * Whether a tool is on this computer, found without running it: a run takes a second or more and can
+ * time out on a busy computer, which would call a present tool missing. A copy that is there but broken
+ * shows up as an error when it is used. `which` looks a command up on PATH.
+ */
+export async function toolIsInstalled(name: ToolName, which: (command: string) => Promise<string | null>): Promise<boolean> {
+  const tool = findTool(name);
+  const exists = (file: string) => fsPromises.access(file).then(() => true, () => false);
+  for (const candidate of localToolPaths(tool.executable_name)) {
+    if (await exists(candidate)) return true;
+  }
+  for (const candidate of systemMediaToolPaths(tool.name)) {
+    if (path.isAbsolute(candidate) ? await exists(candidate) : Boolean(await which(candidate).catch(() => null))) return true;
+  }
+  return false;
+}
+
+/**
  * The command for a tool that must be present; throws a message saying where to put it when it is not.
  * Uses checkMediaTools' 30-second cache, so a run that needs several tools checks them once.
  */

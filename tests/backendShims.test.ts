@@ -95,6 +95,16 @@ test("writing text goes through fs_write_text and bytes through fs_write_bytes (
   assert.deepEqual(new Uint8Array(calls[2].args.data as ArrayBuffer), new Uint8Array([1, 2, 3]));
 });
 
+test("a text write's mode reaches Rust, which applies it to an existing file too", async () => {
+  const calls: { cmd: string; args: Record<string, unknown> }[] = [];
+  setSys(async (cmd, args) => {
+    calls.push({cmd, args});
+    return null;
+  });
+  await shimFs.writeFile("C:/secret.json", "{}", {encoding: "utf8", mode: 0o600});
+  assert.deepEqual(calls[0], {cmd: "fs_write_text", args: {path: "C:/secret.json", text: "{}", append: false, mode: 0o600}});
+});
+
 test("spawn delivers output that arrives before the spawn reply, then exit and close", async () => {
   setSys(async (cmd) => {
     if (cmd === "proc_spawn") {

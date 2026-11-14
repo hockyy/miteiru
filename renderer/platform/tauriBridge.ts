@@ -14,6 +14,7 @@ import {SYS_KV_BATCH, SYS_WRITE_BYTES, SYS_ZSTD_DECOMPRESS} from './backend/prot
 import {
   PLATFORM_API_INVOKE_CHANNELS,
   LANGUAGE_LOAD_CHANNELS,
+  LANGUAGE_LOADED_EVENT,
   LIVE_CAPTIONS_EVENT_CHANNELS,
   LIVE_CAPTIONS_INVOKE_CHANNELS,
   STORE_CHANNELS
@@ -253,6 +254,13 @@ export const keepLanguageAcrossReloads = (invoke: (channel: string, args: unknow
   };
 };
 
+/** A language the backend loaded by itself (LANGUAGE_LOADED_EVENT) comes back after a reload too. */
+export const rememberLoadedLanguage = (channel: unknown) => {
+  if (typeof channel === 'string' && (LANGUAGE_LOAD_CHANNELS as readonly string[]).includes(channel)) {
+    writeSession(LANGUAGE_KEY, channel);
+  }
+};
+
 // ---- window.* installation ------------------------------------------------------------------
 
 const detectPlatform = (): NodeJS.Platform => {
@@ -299,6 +307,7 @@ export const installTauriBridge = () => {
   const host = new BackendHost();
   const target = window as unknown as Record<string, unknown>;
   const invokeBackend = keepLanguageAcrossReloads((channel, args) => host.invoke(channel, args));
+  host.on(LANGUAGE_LOADED_EVENT, rememberLoadedLanguage);
   target.backend = {
     invoke: (channel: string, ...args: unknown[]) => invokeBackend(channel, args),
     send: (channel: string, value: unknown) => host.send(channel, [value]),

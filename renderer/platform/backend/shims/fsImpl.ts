@@ -95,8 +95,11 @@ const writeData = async (file: PathLike, data: WriteData, options: WriteOptions,
   const flag = typeof options === 'object' && options ? options.flag : undefined;
   const appending = append || Boolean(flag?.startsWith('a'));
   const encoding = encodingOf(options);
+  const mode = typeof options === 'object' && options && typeof options.mode === 'number' ? options.mode : undefined;
   if (typeof data === 'string' && (!encoding || isUtf8(encoding))) {
-    await call('fs_write_text', {path, text: data, append: appending});
+    // Rust applies `mode` to an existing file too (src-tauri/src/sys/fs.rs, fs_write_text). Bytes
+    // are written with the default permissions, as before: nothing secret is written that way.
+    await call('fs_write_text', {path, text: data, append: appending, ...(mode === undefined ? {} : {mode})});
     return;
   }
   let bytes: Uint8Array;

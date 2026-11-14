@@ -15,6 +15,7 @@ import {SidebarSection, SidebarSettingRow, SidebarShell} from "./SidebarShell";
 import {MANDARIN_TONE_PALETTES, type MandarinTone, type TonePalette, type ToneTarget} from "../../utils/mandarinTones";
 import {HSK_COLORS, HSK_UNLISTED_COLOR, hskLabel, type HskLevel} from "../../utils/mandarinHsk";
 import {OpenRouterSettings} from "./OpenRouterSettings";
+import {AssistantSettings} from "./AssistantSettings";
 import {AiUsageDetails} from "./AiCostIndicator";
 import type {useSubtitleForecast} from "../../hooks/useSubtitleForecast";
 import {useExportAllAnkiCards} from "../../hooks/useExportAllAnkiCards";
@@ -581,6 +582,7 @@ export const Sidebar = ({
       {tab === "ai" && <TabPanel group="settings" id="ai">
         <OpenRouterSettings/>
         <AiStudySettings forecast={forecast} dictionaryCount={dictionaryCount} onOpenDictionary={onOpenDictionary}/>
+        <AssistantSettings/>
       </TabPanel>}
 
       {tab === "data" && <TabPanel group="settings" id="data">

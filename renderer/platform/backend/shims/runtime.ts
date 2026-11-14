@@ -9,6 +9,8 @@ export interface SysInfo {
   home: string;
   resources: string;
   exePath: string;
+  /** What an AI assistant runs to reach Miteiru (`<this> --mcp`): the AppImage path when running from one. */
+  mcpCommand?: string;
   isPackaged: boolean;
   pid: number;
 }

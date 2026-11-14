@@ -49,3 +49,9 @@ export const STORE_CHANNELS = {get: 'electron-store-get', set: 'electron-store-s
 
 /** The calls that load a language (main/handler/languages/registry.ts, startupChannelPluginIds). */
 export const LANGUAGE_LOAD_CHANNELS = ['loadKuromoji', 'loadCantonese', 'loadChinese', 'loadVietnamese'] as const;
+
+/**
+ * Sent with one of LANGUAGE_LOAD_CHANNELS when the backend loaded that language by itself (for an AI
+ * assistant, main/mcp/deps.ts), so a page reload loads it again as if the page had asked.
+ */
+export const LANGUAGE_LOADED_EVENT = 'language:loaded';

@@ -25,6 +25,8 @@ pub struct SysInfo {
   /// Whether this build checks for updates: a release build whose updater has a public key
   /// (`plugins.updater.pubkey` in tauri.conf.json). Test runs (MITEIRU_SMOKE_TEST) never do.
   pub updates: bool,
+  /// What an AI assistant starts, with `--mcp`, to reach this app (src/mcp_bridge.rs).
+  pub mcp_command: String,
 }
 
 pub fn platform() -> &'static str {
@@ -56,6 +58,25 @@ pub fn user_data_dir() -> PathBuf {
   }
   let base = dirs::config_dir().unwrap_or_else(std::env::temp_dir);
   base.join(if cfg!(debug_assertions) { "miteiru (development)" } else { "miteiru" })
+}
+
+/// Where a running Miteiru may keep its data, for clients looking for one (src/mcp_bridge.rs):
+/// `MITEIRU_USER_DATA_DIR` alone when it is set, else a release build's folder, then a development build's.
+pub fn user_data_dir_candidates() -> Vec<PathBuf> {
+  if let Some(dir) = std::env::var_os("MITEIRU_USER_DATA_DIR").filter(|v| !v.is_empty()) {
+    return vec![PathBuf::from(dir)];
+  }
+  let base = dirs::config_dir().unwrap_or_else(std::env::temp_dir);
+  vec![base.join("miteiru"), base.join("miteiru (development)")]
+}
+
+/// The program an assistant runs as `<it> --mcp`: the AppImage itself when running from one (the
+/// executable inside is mounted at a new path on each launch), else this executable.
+pub fn mcp_command() -> PathBuf {
+  std::env::var_os("APPIMAGE")
+    .filter(|v| !v.is_empty())
+    .map(PathBuf::from)
+    .unwrap_or_else(|| std::env::current_exe().unwrap_or_default())
 }
 
 /// Keep window geometry in the scratch profile too. Absolute filenames override the plugin's
@@ -125,6 +146,7 @@ pub async fn sys_info(app: tauri::AppHandle) -> Result<SysInfo, String> {
     smoke_test: std::env::var("MITEIRU_SMOKE_TEST").ok().filter(|p| !p.is_empty()),
     smoke_language_packs: std::env::var("MITEIRU_SMOKE_LANGUAGE_PACKS").ok().filter(|p| !p.is_empty()),
     updates: updates_enabled(&app),
+    mcp_command: s(mcp_command()),
   })
 }
 

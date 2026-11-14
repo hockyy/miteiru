@@ -94,7 +94,10 @@ const boot = async () => {
     {default: Learning},
     {registerAnalyzerHandlers},
     {getStore, setStoreFactory},
-    {setLanguageAssetRoots, japaneseDictionaryFolder}
+    {setLanguageAssetRoots, japaneseDictionaryFolder},
+    {registerAssistantHandlers},
+    {createMiteiruTools},
+    {createMiteiruToolDeps}
   ] = await Promise.all([
     import('../../../main/handler/common'),
     import('../../../main/handler/common/liveCaptionsHandlers'),
@@ -105,7 +108,10 @@ const boot = async () => {
     import('../../../main/handler/learning'),
     import('../../../main/handler/languages/analyzerHandlers'),
     import('../../../main/handler/common/storeHandlers'),
-    import('../../../main/handler/languages/registry')
+    import('../../../main/handler/languages/registry'),
+    import('../../../main/mcp/handlers'),
+    import('../../../main/mcp/tools'),
+    import('../../../main/mcp/deps')
   ]);
 
   // Language data is read from the bundled folder and from each installed language pack
@@ -153,6 +159,7 @@ const boot = async () => {
   registerCommonHandlers(getTokenizer, packageJson, appDataDirectory);
   registerStartupHandlers(setTokenizer, appDataDirectory);
   registerAnalyzerHandlers({getTokenizer, getToneType});
+  registerAssistantHandlers();
   Japanese.registerHandlers();
   Chinese.registerHandlers();
   Vietnamese.registerHandlers();
@@ -162,10 +169,17 @@ const boot = async () => {
   Learning.setup();
   Learning.registerHandler();
 
-  // The local analyzer API (docs/ANALYZER_SERVER.md). Rust owns the socket and forwards requests here.
+  // The assistant tools (main/mcp), served over MCP and REST by the local API below.
+  const tools = createMiteiruTools(createMiteiruToolDeps({appDataDirectory, version: info.version, getTokenizer, setTokenizer, getToneType}));
+
+  // The local API (docs/LOCAL_API.md). Rust owns the socket and forwards requests here.
   const {startAnalyzerServer} = await import('../../../main/handler/languages/analyzerServer');
   await startAnalyzerServer(
-    {appDataDirectory, version: info.version, pid: info.pid, getTokenizer, getToneType},
+    {
+      appDataDirectory, version: info.version, pid: info.pid, getTokenizer, getToneType,
+      // The MCP and REST routes check each call's arguments against its definition first.
+      callTool: (name, args) => tools[name](args)
+    },
     async (handle) => {
       analyzerHandle = handle;
       return {port: await sys('analyzer_start') as number, close: async () => undefined};
@@ -180,7 +194,8 @@ const answerAnalyzer = async ({id, method, path, token, body}: AnalyzerRequestEv
   const {status, value} = analyzerHandle
     ? await analyzerHandle({method, path, token: token ?? undefined, body})
     : {status: 503, value: {ok: false, error: 'Miteiru could not start its analyzer.'}};
-  await sys('analyzer_respond', {id, status, body: JSON.stringify(value)})
+  // No value is an empty body (JSON.stringify(undefined) is not a string, which the Rust command expects).
+  await sys('analyzer_respond', {id, status, body: value === undefined ? '' : JSON.stringify(value)})
     .catch((error) => console.error('[backend] analyzer reply failed:', error));
 };
 

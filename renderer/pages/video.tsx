@@ -65,6 +65,7 @@ import {useSubtitleRetokenization} from '../hooks/useSubtitleRetokenization';
 import {YoutubeTranscriptionControl} from '../components/VideoPlayer/YoutubeTranscriptionControl';
 import {UserDictionaryPanel} from '../components/VideoPlayer/UserDictionaryPanel';
 import {BoxTipsOverlay} from '../components/VideoPlayer/BoxTipsOverlay';
+import {useAssistantOpenVideo} from '../hooks/useAssistantOpenVideo';
 
 function Video() {
   const {
@@ -275,6 +276,13 @@ function Video() {
     loadEmbeddedSubtitle,
     setToastInfo,
     languageName: currentAppLanguage
+  });
+  // A video an AI assistant asked for (main/mcp), opened with the captions it chose.
+  useAssistantOpenVideo({
+    ready: tokenizerModeLoaded && tokenizerMode !== '' && lang !== '',
+    continueVideo,
+    videoSource: videoSrc,
+    handleMediaTrackSelection
   });
   const pendingSubtitleFileName = useMemo(
       () => getFileNameFromPath(pendingSubtitlePath),

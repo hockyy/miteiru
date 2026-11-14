@@ -15,7 +15,8 @@ export const isVideo = (path) => {
   return isArrayEndsWithMatcher(path, videoConstants.supportedVideoFormats);
 }
 const YOUTUBE_HOSTS = new Set(['youtube.com', 'youtube-nocookie.com']);
-const YOUTUBE_ID_PATTERN = /^[A-Za-z0-9_-]{11}$/;
+/** A YouTube video id on its own. */
+export const YOUTUBE_ID_PATTERN = /^[A-Za-z0-9_-]{11}$/;
 
 /**
  * The video ID in a YouTube link, or null. One parser for every place that asks, so they agree:

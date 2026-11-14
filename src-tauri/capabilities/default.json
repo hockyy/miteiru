@@ -8,6 +8,8 @@
   "permissions": [
     "core:default",
     "core:window:allow-set-fullscreen",
+    "core:window:allow-set-focus",
+    "core:window:allow-unminimize",
     "core:webview:allow-set-webview-zoom",
     "app-commands",
     "updater:default",
