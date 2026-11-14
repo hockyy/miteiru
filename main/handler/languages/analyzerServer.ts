@@ -3,11 +3,12 @@ import fs from "node:fs/promises";
 import path from "path";
 import {languagePlugins, getLanguagePluginByTokenizerMode} from "./registry";
 import {analyzeText} from "./analyzer";
+import {handleMcpBody, mcpDefinitions, ToolError, type ToolCall, validateToolArguments} from "../../mcp/protocol";
 
 /**
- * The local analyzer API (docs/ANALYZER_SERVER.md). This module answers requests; a transport owns
- * the socket: the Tauri shell's Rust listener in the app (src-tauri/src/analyzer.rs), node:http in
- * the tests.
+ * The local API (docs/LOCAL_API.md): the analyzer, and the assistant tools over MCP and REST. This
+ * module answers requests; a transport owns the socket: the Tauri shell's Rust listener in the app
+ * (src-tauri/src/analyzer.rs), node:http in the tests.
  */
 
 export interface AnalyzerServerRegistration {
@@ -26,6 +27,8 @@ export interface AnalyzerServerContext {
   getTokenizer: () => string;
   getToneType: () => Promise<string>;
   analyze?: typeof analyzeText;
+  /** Runs an assistant tool (main/mcp/tools.ts); without it the MCP and tool routes answer 503. */
+  callTool?: ToolCall;
 }
 
 export interface AnalyzerRequest {
@@ -39,6 +42,7 @@ export interface AnalyzerRequest {
 
 export interface AnalyzerResponse {
   status: number;
+  /** Sent as JSON; undefined means an empty body (a 202 for an MCP notification). */
   value: unknown;
 }
 
@@ -155,7 +159,57 @@ const handleAnalyze = async (
   return json(200, {ok: true, active, tokens});
 };
 
-/** One request of the analyzer API. Never throws: failures become a 500 JSON response. */
+const TOOL_ROUTE_PREFIX = "/tools/";
+
+const safeDecode = (text: string) => {
+  try {
+    return decodeURIComponent(text);
+  } catch {
+    return text;
+  }
+};
+
+/** POST /tools/<name>: one assistant tool over plain JSON, for scripts that don't speak MCP. */
+const handleToolRoute = async (name: string, bodyText: string, callTool: ToolCall): Promise<AnalyzerResponse> => {
+  let args: unknown;
+  try {
+    args = bodyText.trim() ? JSON.parse(bodyText) : {};
+  } catch {
+    return json(400, {ok: false, error: "Expected a JSON body."});
+  }
+  try {
+    return json(200, {ok: true, result: await callTool(name, validateToolArguments(name, args))});
+  } catch (error) {
+    if (error instanceof ToolError) return json(error.status, {ok: false, error: error.message});
+    throw error;
+  }
+};
+
+/** The MCP and tool routes, or undefined for a path that isn't one. */
+const handleAssistantRoute = async (
+  request: AnalyzerRequest,
+  pathname: string,
+  context: AnalyzerServerContext
+): Promise<AnalyzerResponse | undefined> => {
+  const isToolRoute = pathname.startsWith(TOOL_ROUTE_PREFIX) && pathname.length > TOOL_ROUTE_PREFIX.length;
+  if (pathname !== "/mcp" && pathname !== "/tools" && !isToolRoute) return undefined;
+  const {callTool} = context;
+  if (!callTool) return json(503, {ok: false, error: "Miteiru's assistant tools are not available."});
+
+  if (pathname === "/mcp") {
+    return request.method === "POST"
+      ? handleMcpBody(request.body, callTool, context.version)
+      : json(405, {ok: false, error: "Send MCP messages with POST."});
+  }
+  if (pathname === "/tools") {
+    return request.method === "GET" ? json(200, {ok: true, tools: mcpDefinitions.tools}) : undefined;
+  }
+  return request.method === "POST"
+    ? handleToolRoute(safeDecode(pathname.slice(TOOL_ROUTE_PREFIX.length)), request.body, callTool)
+    : undefined;
+};
+
+/** One request of the local API. Never throws: failures become a 500 JSON response. */
 export const handleAnalyzerRequest = async (
   request: AnalyzerRequest,
   context: AnalyzerServerContext,
@@ -175,6 +229,8 @@ export const handleAnalyzerRequest = async (
     if (request.method === "POST" && url.pathname === "/analyze-batch") {
       return await handleAnalyze(request.body, context, true);
     }
+    const assistant = await handleAssistantRoute(request, url.pathname, context);
+    if (assistant) return assistant;
     return json(404, {ok: false, error: "Not found"});
   } catch (error) {
     console.error("[AnalyzerServer]", error);
@@ -207,7 +263,9 @@ export const startAnalyzerServer = async (
   };
 
   const registrationPath = getAnalyzerServerRegistrationPath(context.appDataDirectory);
-  await fs.writeFile(registrationPath, `${JSON.stringify(registration, null, 2)}\n`, "utf8");
+  // The token opens videos and reads saved words: on a shared Linux or macOS computer, only this user
+  // may read it.
+  await fs.writeFile(registrationPath, `${JSON.stringify(registration, null, 2)}\n`, {encoding: "utf8", mode: 0o600});
 
   return {registration, registrationPath, close};
 };

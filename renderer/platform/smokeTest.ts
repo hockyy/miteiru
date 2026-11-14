@@ -490,18 +490,32 @@ export const runSmokeTest = async (outPath: string, userData: string, platform: 
   }, 10000);
   await step('analyzer', async () => {
     const registrationPath = `${userData}/analyzer-server.json`;
-    let registration: { port: number } | undefined;
+    let registration: { port: number; token: string } | undefined;
     for (let attempt = 0; attempt < 20 && !registration; attempt++) {
       registration = await invoke<string>('fs_read_text', {path: registrationPath}).then(JSON.parse, () => undefined);
       if (!registration) await sleep(500);
     }
     if (!registration) throw new Error('analyzer-server.json was not written');
-    const response = await invoke<{ status: number; body_base64?: string; bodyBase64?: string }>('http_request', {
+    type HttpReply = { status: number; body_base64?: string; bodyBase64?: string };
+    const bodyOf = (reply: HttpReply) => JSON.parse(decodeBase64(reply.bodyBase64 ?? reply.body_base64 ?? ''));
+    const response = await invoke<HttpReply>('http_request', {
       request: {url: `http://127.0.0.1:${registration.port}/health`, timeoutMs: 10000}
     });
-    const body = JSON.parse(decodeBase64(response.bodyBase64 ?? response.body_base64 ?? ''));
+    const body = bodyOf(response);
     if (response.status !== 200 || !body.ok) throw new Error(`health answered ${response.status}`);
-    return {port: registration.port, plugins: body.supportedPlugins?.length};
+    // The MCP endpoint AI assistants reach through `miteiru --mcp` (main/mcp/protocol.ts).
+    const mcp = await invoke<HttpReply>('http_request', {
+      request: {
+        url: `http://127.0.0.1:${registration.port}/mcp`,
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-Miteiru-Analyzer-Token': registration.token},
+        body: JSON.stringify({jsonrpc: '2.0', id: 1, method: 'tools/list'}),
+        timeoutMs: 10000
+      }
+    });
+    const tools = bodyOf(mcp)?.result?.tools;
+    if (mcp.status !== 200 || !Array.isArray(tools) || tools.length === 0) throw new Error(`MCP tools/list answered ${mcp.status}`);
+    return {port: registration.port, plugins: body.supportedPlugins?.length, mcpTools: tools.length};
   }, 20000);
   await step('player', () => checkPlayer(platform), 30000);
   await step('youtube', () => checkYouTube('-yslFBRBM2c').catch((error: Error) => {

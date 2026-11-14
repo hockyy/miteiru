@@ -121,6 +121,13 @@ Only for YouTube and the optional AI translation. Local videos, subtitles and di
 </details>
 
 <details>
+<summary><b>Can an AI assistant find videos for me?</b></summary>
+
+Yes. Claude and other AI apps that take MCP servers can search YouTube for videos in your language, check how many of their words you've saved, and open the one you pick in Miteiru with its subtitles set up. **Settings → AI → AI assistants** shows the command to add and copies it. Miteiru needs to be open while they work. Details, and the local API for other programs: [docs/LOCAL_API.md](docs/LOCAL_API.md).
+
+</details>
+
+<details>
 <summary><b>The YouTube subtitle list is empty</b></summary>
 
 The subtitle picker says why. Usually yt-dlp is missing or outdated. Put a current `yt-dlp` in Miteiru's tools folder or on your PATH, then load the link again.

@@ -1,4 +1,4 @@
-//! Transport for the local analyzer API (docs/ANALYZER_SERVER.md): Rust owns the socket on
+//! Transport for the local API (docs/LOCAL_API.md): Rust owns the socket on
 //! 127.0.0.1, the backend worker answers (main/handler/languages/analyzerServer.ts). Each request is
 //! sent to the webview as an `analyzer://request` event and answered through `analyzer_respond`.
 
@@ -66,6 +66,13 @@ pub async fn analyzer_start(app: AppHandle, state: State<'_, Analyzer>) -> Resul
             for mut request in server.incoming_requests() {
                 if !crate::frontend_server::is_local_request(&request, port) {
                     fail(request, 421, "Requests must be addressed to 127.0.0.1 or localhost.");
+                    continue;
+                }
+                // Browsers name the page a request comes from, and the API's clients are programs, which
+                // don't. Refusing pages outright adds to the token (which a page can't read) the Origin
+                // check that the MCP spec asks of local servers.
+                if request.headers().iter().any(|h| h.field.equiv("origin")) {
+                    fail(request, 403, "Requests from web pages are not accepted.");
                     continue;
                 }
                 let mut body = String::new();

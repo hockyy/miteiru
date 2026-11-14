@@ -1,6 +1,7 @@
 import path from "path";
 import fsPromises from "node:fs/promises";
 import {GZIP_SUFFIX, ZSTD_SUFFIX} from "../../helpers/assetFiles";
+import {limiter} from "../../helpers/limiter";
 import Japanese from "../japanese";
 import Chinese from "../chinese";
 import Vietnamese from "../vietnamese";
@@ -209,14 +210,33 @@ export const getLanguagePluginByTokenizerMode = (tokenizerMode: string) => (
   languagePlugins.find((plugin) => plugin.tokenizerMode === tokenizerMode)
 );
 
-export const loadLanguagePlugin = async (
+// Home never starts two loads, but an AI assistant (main/mcp) can load a language while the learner
+// picks one, and two first-time setups of one language must not run together.
+const oneLoadAtATime = limiter(1);
+
+/** Loads a language and its dependencies; a load asked for while another runs waits for it to finish. */
+export const loadLanguagePlugin = (
   pluginId: string,
   context: LanguagePluginContext,
   loadedPluginIds: Set<string> = new Set()
-): Promise<LanguagePluginLoadResult> => {
+): Promise<LanguagePluginLoadResult> => oneLoadAtATime(async () => {
   await refreshAssetRoots();
   return loadPlugin(pluginId, context, loadedPluginIds);
-};
+});
+
+/**
+ * Loads a language unless `skip()` says no once its turn comes (another load got a language in first);
+ * null when skipped. Deciding in its turn leaves no gap for a load the learner starts meanwhile.
+ */
+export const loadLanguagePluginUnless = (
+  skip: () => boolean,
+  pluginId: string,
+  context: LanguagePluginContext
+): Promise<LanguagePluginLoadResult | null> => oneLoadAtATime(async () => {
+  if (skip()) return null;
+  await refreshAssetRoots();
+  return loadPlugin(pluginId, context, new Set());
+});
 
 const loadPlugin = async (
   pluginId: string,

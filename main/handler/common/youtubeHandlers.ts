@@ -4,7 +4,7 @@ import os from "os";
 import path from "path";
 import fs from "fs/promises";
 import {findBestLanguageMatch} from "../../helpers/getSubtitles";
-import {listYoutubeCaptionTracks} from "../../helpers/youtubeCaptions";
+import {CAPTION_CODE, listYoutubeCaptionTracks} from "../../helpers/youtubeCaptions";
 import {downloadYoutubeCaption} from "../../helpers/youtubeCaptionDownload";
 import {parseSubtitleCues} from "../../helpers/subtitleParser";
 import {requireMediaTool} from "./mediaTools";
@@ -12,7 +12,7 @@ import {YOUTUBE_STREAM_FORMAT_ARGS, youtubeStreamSource} from "../../helpers/you
 
 // YouTube video ids and subtitle language codes (en, en-US, zh-Hant, ja-orig, ...).
 const YOUTUBE_VIDEO_ID = /^[A-Za-z0-9_-]{6,20}$/;
-const SUBTITLE_LANGUAGE = /^[A-Za-z0-9_-]{1,40}$/;
+const SUBTITLE_LANGUAGE = CAPTION_CODE;
 
 // What went wrong, from yt-dlp's stderr: its last ERROR: line, not the whole dump.
 const ytDlpErrorMessage = (stderr: string, code: number | null) => {
@@ -23,7 +23,7 @@ const ytDlpErrorMessage = (stderr: string, code: number | null) => {
 
 const YT_DLP_TIMEOUT_MS = 120_000;
 
-const runYtDlp =(ytDlpPath: string, args: string[]) => new Promise<string>((resolve, reject) => {
+export const runYtDlp = (ytDlpPath: string, args: string[], timeoutMs = YT_DLP_TIMEOUT_MS) => new Promise<string>((resolve, reject) => {
   const child = spawn(ytDlpPath, args);
   // The JSON listing can be several MB: collect the chunks and decode once.
   const stdout: Buffer[] = [];
@@ -32,8 +32,8 @@ const runYtDlp =(ytDlpPath: string, args: string[]) => new Promise<string>((reso
   // A stalled yt-dlp would otherwise leave the subtitle picker loading forever.
   const timer = setTimeout(() => {
     child.kill();
-    reject(new Error("yt-dlp did not finish within 2 minutes."));
-  }, YT_DLP_TIMEOUT_MS);
+    reject(new Error(`yt-dlp did not finish within ${Math.round(timeoutMs / 1000)} seconds.`));
+  }, timeoutMs);
 
   child.stdout.on("data", (data) => stdout.push(data));
   child.stderr.on("data", (data) => stderr.push(data));
@@ -59,7 +59,7 @@ const runYtDlp =(ytDlpPath: string, args: string[]) => new Promise<string>((reso
 const INFO_LIFETIME_MS = 20 * 60_000;
 const youtubeInfoCache = new Map<string, { at: number; info: Promise<any> }>();
 
-const youtubeInfo = (videoID: string): Promise<any> => {
+export const youtubeInfo = (videoID: string): Promise<any> => {
   const now = Date.now();
   const cached = youtubeInfoCache.get(videoID);
   if (cached && now - cached.at < INFO_LIFETIME_MS) return cached.info;
@@ -90,12 +90,58 @@ const youtubeInfo = (videoID: string): Promise<any> => {
   return info;
 };
 
+// What the AI assistant's tools (main/mcp) read of a description: its captions and what names the
+// video, never its streams.
+const CAPTION_INFO_FIELDS = [
+  "title", "channel", "uploader", "duration", "upload_date", "view_count", "live_status",
+  "subtitles", "automatic_captions", "http_headers"
+];
+const captionInfoOf = (info: any) => Object.fromEntries(CAPTION_INFO_FIELDS.filter((key) => key in (info ?? {})).map((key) => [key, info[key]]));
+const captionInfoCache = new Map<string, { at: number; info: Promise<any> }>();
+const MAX_CAPTION_INFOS = 30;
+
+/**
+ * A video's description without its streams, for tools that look at many videos and play none (a
+ * search checks up to 15): keeping each one's stream list for 20 minutes would hold tens of MB. A
+ * full description already cached serves it. `timeoutMs` bounds a run this starts, so a stalled
+ * check frees its place soon.
+ */
+export const youtubeCaptionInfo = (videoID: string, timeoutMs?: number): Promise<any> => {
+  const now = Date.now();
+  const full = youtubeInfoCache.get(videoID);
+  if (full && now - full.at < INFO_LIFETIME_MS) return full.info.then(captionInfoOf);
+  const cached = captionInfoCache.get(videoID);
+  if (cached && now - cached.at < INFO_LIFETIME_MS) return cached.info;
+  for (const [id, entry] of captionInfoCache) {
+    if (now - entry.at >= INFO_LIFETIME_MS) captionInfoCache.delete(id);
+  }
+  // The oldest go first once there are too many (Map keeps insertion order).
+  while (captionInfoCache.size >= MAX_CAPTION_INFOS) captionInfoCache.delete(captionInfoCache.keys().next().value);
+  const info = (async () => {
+    const ytDlpPath = await requireMediaTool("yt-dlp");
+    const output = await runYtDlp(ytDlpPath, [
+      "-J", "--no-playlist", "--no-warnings", `https://www.youtube.com/watch?v=${videoID}`
+    ], timeoutMs);
+    try {
+      return captionInfoOf(JSON.parse(output));
+    } catch {
+      throw new Error("yt-dlp returned video data that could not be read.");
+    }
+  })();
+  captionInfoCache.set(videoID, {at: now, info});
+  info.catch(() => {
+    if (captionInfoCache.get(videoID)?.info === info) captionInfoCache.delete(videoID);
+  });
+  return info;
+};
+
 type DownloadedSubtitle = {filePath: string; language: string};
 const subtitleDownloads = new Map<string, Promise<DownloadedSubtitle>>();
 const subtitleFiles = new Map<string, {at: number; subtitle: DownloadedSubtitle}>();
 const MAX_CACHED_SUBTITLE_FILES = 32;
 
-const downloadSubtitle = (videoID: string, lang: string): Promise<DownloadedSubtitle> => {
+/** `describe` gives the caption URLs: the full description by default, the caption-only one for the tools. */
+export const downloadSubtitle = (videoID: string, lang: string, describe: (videoID: string) => Promise<any> = youtubeInfo): Promise<DownloadedSubtitle> => {
   const key = `${videoID}:${lang}`;
   const active = subtitleDownloads.get(key);
   if (active) return active;
@@ -122,7 +168,7 @@ const downloadSubtitle = (videoID: string, lang: string): Promise<DownloadedSubt
       try {
         // The title lookup and language picker already extracted these signed URLs. A new yt-dlp
         // run per selected track repeats all player/manifest requests, especially costly on long videos.
-        const caption = await downloadYoutubeCaption(await youtubeInfo(videoID), lang);
+        const caption = await downloadYoutubeCaption(await describe(videoID), lang);
         if (caption) {
           const captionPath = `${outputBase}.${caption.ext}`;
           await fs.writeFile(captionPath, caption.content, "utf8");

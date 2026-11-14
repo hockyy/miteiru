@@ -37,48 +37,53 @@ class Learning {
     }));
   }
 
+  /** Every saved word of a language with its level and last change; also what the assistant tools read. */
+  static async loadState(lang: string): Promise<Record<string, { level: any; updTime: any }>> {
+    try {
+      const prefix = `${lang}/`; // Define the prefix for keys
+      const learningState = {};
+
+      // Define the range for the query
+      const queryOptions = {
+        gte: prefix, // Start of the range: include the prefix
+        // U+10FFFF: keys order by UTF-8 bytes, so 4-byte first characters sort past U+FFFF.
+        lte: `${prefix}\u{10FFFF}`, // End of the range: highest value that still matches the prefix
+      };
+
+      const promises = []
+      // Efficiently iterate over keys within the specified range
+      for await (const [key, value] of this.db.iterator(queryOptions)) {
+        const strippedKey = key.substring(prefix.length);
+        let parsedValue: { level: any; updTime: any; };
+
+        try {
+          parsedValue = JSON.parse(value);
+          if (typeof parsedValue.level !== 'number' || typeof parsedValue.updTime !== 'number') {
+            throw new Error('Invalid format');
+          }
+        } catch {
+          // If parsing fails, assume it's an old format (number). It has no edit time, so it
+          // counts as older than any synced entry.
+          parsedValue = {
+            level: parseInt(value, 10),
+            updTime: 0
+          };
+          await this.db.put(key, JSON.stringify(parsedValue));
+        }
+        learningState[strippedKey] = parsedValue;
+      }
+      await Promise.all(promises);
+      return learningState;
+    } catch (error) {
+      console.error('Error loading learning state:', error);
+      return {};
+    }
+  }
+
   static registerHandler() {
     ipcMain.handle('loadLearningState', async (_event, lang) => {
       if (!lang) return;
-      try {
-        const prefix = `${lang}/`; // Define the prefix for keys
-        const learningState = {};
-
-        // Define the range for the query
-        const queryOptions = {
-          gte: prefix, // Start of the range: include the prefix
-          // U+10FFFF: keys order by UTF-8 bytes, so 4-byte first characters sort past U+FFFF.
-          lte: `${prefix}\u{10FFFF}`, // End of the range: highest value that still matches the prefix
-        };
-
-        const promises = []
-        // Efficiently iterate over keys within the specified range
-        for await (const [key, value] of this.db.iterator(queryOptions)) {
-          const strippedKey = key.substring(prefix.length);
-          let parsedValue: { level: any; updTime: any; };
-
-          try {
-            parsedValue = JSON.parse(value);
-            if (typeof parsedValue.level !== 'number' || typeof parsedValue.updTime !== 'number') {
-              throw new Error('Invalid format');
-            }
-          } catch {
-            // If parsing fails, assume it's an old format (number). It has no edit time, so it
-            // counts as older than any synced entry.
-            parsedValue = {
-              level: parseInt(value, 10),
-              updTime: 0
-            };
-            await this.db.put(key, JSON.stringify(parsedValue));
-          }
-          learningState[strippedKey] = parsedValue;
-        }
-        await Promise.all(promises);
-        return learningState;
-      } catch (error) {
-        console.error('Error loading learning state:', error);
-        return {};
-      }
+      return this.loadState(lang);
     });
 
     // Handler to update a specific content's learning state

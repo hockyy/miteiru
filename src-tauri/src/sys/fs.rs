@@ -80,6 +80,44 @@ pub fn read_asset(path: &str) -> Result<Vec<u8>, String> {
   Ok(out)
 }
 
+/// Writes `data` so that at no moment can anyone but `mode` allows read it: a new file is made with
+/// `mode` beside `path` and moved over it (an existing file's wider permissions never cover the new
+/// text), and an append narrows the file before writing.
+#[cfg(unix)]
+pub fn write_bytes_with_mode(path: &str, data: &[u8], append: bool, mode: u32) -> Result<(), String> {
+  use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};
+  use std::sync::atomic::{AtomicU64, Ordering};
+  static NEXT_TEMP: AtomicU64 = AtomicU64::new(0);
+  let permissions = || fs::Permissions::from_mode(mode);
+  if append {
+    let mut f = fs::OpenOptions::new()
+      .create(true)
+      .append(true)
+      .mode(mode)
+      .open(path)
+      .map_err(|e| fs_err(&e, "open", path))?;
+    f.set_permissions(permissions()).map_err(|e| fs_err(&e, "chmod", path))?;
+    return f.write_all(data).map_err(|e| fs_err(&e, "write", path));
+  }
+  let temp = format!("{path}.{}-{}.tmp", std::process::id(), NEXT_TEMP.fetch_add(1, Ordering::Relaxed));
+  let written = (|| {
+    let mut f = fs::OpenOptions::new()
+      .write(true)
+      .create_new(true)
+      .mode(mode)
+      .open(&temp)
+      .map_err(|e| fs_err(&e, "open", &temp))?;
+    // The umask can only narrow `mode`; this makes it exact.
+    f.set_permissions(permissions()).map_err(|e| fs_err(&e, "chmod", &temp))?;
+    f.write_all(data).map_err(|e| fs_err(&e, "write", &temp))?;
+    fs::rename(&temp, path).map_err(|e| fs_err(&e, "rename", path))
+  })();
+  if written.is_err() {
+    let _ = fs::remove_file(&temp);
+  }
+  written
+}
+
 pub fn write_bytes(path: &str, data: &[u8], append: bool) -> Result<(), String> {
   if append {
     let mut f = fs::OpenOptions::new()
@@ -242,8 +280,18 @@ pub async fn fs_read_asset(path: String) -> Result<tauri::ipc::Response, String>
   read_asset(&path).map(tauri::ipc::Response::new)
 }
 
+/// `mode` (Node's writeFile option) sets the file's Unix permissions (write_bytes_with_mode). Unlike
+/// Node, it applies to a file that already exists too, so a secret rewritten in place
+/// (analyzer-server.json's token) doesn't keep the wider permissions an older version gave it.
+/// Windows keeps the folder's per-user access.
 #[tauri::command]
-pub async fn fs_write_text(path: String, text: String, append: bool) -> Result<(), String> {
+pub async fn fs_write_text(path: String, text: String, append: bool, mode: Option<u32>) -> Result<(), String> {
+  #[cfg(unix)]
+  if let Some(mode) = mode {
+    return write_bytes_with_mode(&path, text.as_bytes(), append, mode);
+  }
+  #[cfg(not(unix))]
+  let _ = mode;
   write_bytes(&path, text.as_bytes(), append)
 }
 
@@ -392,5 +440,28 @@ pub mod tests {
     assert!(Path::new(&t).is_dir());
     assert_eq!(percent_decode("C%3A%5Cmy%20dir%5C%E3%81%82.txt"), "C:\\my dir\\あ.txt");
     assert_eq!(percent_decode("100%"), "100%");
+  }
+
+  #[cfg(unix)]
+  #[test]
+  fn a_write_with_a_mode_is_never_wider_than_the_mode() {
+    use std::os::unix::fs::PermissionsExt;
+    let d = tmp("fs-mode");
+    let f = d.join("secret.json").to_string_lossy().into_owned();
+    let mode_of = |p: &str| fs::metadata(p).unwrap().permissions().mode() & 0o777;
+    // An older version's file, readable by everyone, is replaced by one only its owner reads.
+    write_bytes(&f, b"old", false).unwrap();
+    fs::set_permissions(&f, fs::Permissions::from_mode(0o644)).unwrap();
+    write_bytes_with_mode(&f, b"{\"token\":1}", false, 0o600).unwrap();
+    assert_eq!(mode_of(&f), 0o600);
+    assert_eq!(read_text(&f).unwrap(), "{\"token\":1}");
+    // An append narrows the file before adding to it.
+    fs::set_permissions(&f, fs::Permissions::from_mode(0o644)).unwrap();
+    write_bytes_with_mode(&f, b"!", true, 0o600).unwrap();
+    assert_eq!(mode_of(&f), 0o600);
+    assert_eq!(read_text(&f).unwrap(), "{\"token\":1}!");
+    // No temporary file is left beside it.
+    let names: Vec<_> = readdir(d.to_str().unwrap()).unwrap().into_iter().map(|e| e.name).collect();
+    assert_eq!(names, vec!["secret.json"]);
   }
 }

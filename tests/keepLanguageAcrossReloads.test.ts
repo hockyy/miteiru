@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import {afterEach, beforeEach, describe, it} from "node:test";
-import {keepLanguageAcrossReloads} from "../renderer/platform/tauriBridge";
+import {keepLanguageAcrossReloads, rememberLoadedLanguage} from "../renderer/platform/tauriBridge";
 
 const KEY = "miteiru.loadedLanguage";
 
@@ -47,5 +47,13 @@ describe("keeping the language across reloads", () => {
     await picked;
     assert.deepEqual(order, ["start loadKuromoji", "end loadKuromoji", "start loadChinese", "end loadChinese"]);
     assert.equal(store.get(KEY), "loadChinese");
+  });
+
+  it("remembers a language the backend loaded by itself, and nothing else", () => {
+    rememberLoadedLanguage("loadCantonese");
+    assert.equal(store.get(KEY), "loadCantonese");
+    rememberLoadedLanguage("getTokenizerMode");
+    rememberLoadedLanguage(undefined);
+    assert.equal(store.get(KEY), "loadCantonese");
   });
 });

@@ -17,7 +17,8 @@ export const nodeHttpTransport: AnalyzerTransport = (handle) => new Promise((res
       token: typeof token === "string" ? token : undefined,
       body: Buffer.concat(chunks).toString("utf8")
     });
-    const body = JSON.stringify(value);
+    // No value is an empty body, as in the app's Rust listener.
+    const body = value === undefined ? "" : JSON.stringify(value);
     res.writeHead(status, {"content-type": "application/json; charset=utf-8", "content-length": Buffer.byteLength(body)});
     res.end(body);
   });

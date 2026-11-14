@@ -4,6 +4,7 @@ mod macos_drop;
 #[cfg(windows)]
 mod webview2;
 mod frontend_server;
+pub mod mcp_bridge;
 mod player;
 mod sys;
 #[cfg(not(windows))]
