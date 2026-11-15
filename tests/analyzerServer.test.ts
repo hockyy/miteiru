@@ -5,6 +5,8 @@ import path from "node:path";
 import {afterEach, test} from "node:test";
 import {
   AnalyzerServerHandle,
+  BATCH_MAX_CHARACTERS,
+  BATCH_MAX_TEXTS,
   getAnalyzerServerRegistrationPath,
   startAnalyzerServer
 } from "../main/handler/languages/analyzerServer";
@@ -128,6 +130,35 @@ test("analyze-batch returns one result per input", async () => {
   assert.equal(response.body.results.length, 2);
   assert.equal(response.body.results[0][0].origin, "我");
   assert.equal(response.body.results[1][0].origin, "你");
+});
+
+// Bug fix: /analyze-batch ran Promise.all over however many texts it was sent, all at once.
+test("analyze-batch reads a few texts at a time, in order, and refuses too many", async () => {
+  let running = 0;
+  let mostAtOnce = 0;
+  const handle = await createServer({
+    analyze: async (text) => {
+      running++;
+      mostAtOnce = Math.max(mostAtOnce, running);
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      running--;
+      return [{origin: text}];
+    }
+  });
+  const texts = Array.from({length: 40}, (_, index) => `line ${index}`);
+  const response = await requestJson(handle, "/analyze-batch", {texts});
+  assert.equal(response.status, 200);
+  assert.deepEqual(response.body.results.map((tokens: Array<{origin: string}>) => tokens[0].origin), texts);
+  assert.ok(mostAtOnce <= 4, `at most 4 texts at once, saw ${mostAtOnce}`);
+
+  const tooMany = await requestJson(handle, "/analyze-batch", {texts: Array.from({length: BATCH_MAX_TEXTS + 1}, () => "x")});
+  assert.equal(tooMany.status, 413);
+  assert.match(tooMany.body.error, /at most 2000 items/);
+  const tooLong = await requestJson(handle, "/analyze-batch", {texts: ["x".repeat(BATCH_MAX_CHARACTERS), "y"]});
+  assert.equal(tooLong.status, 413);
+  const notText = await requestJson(handle, "/analyze-batch", {texts: ["ok", 5]});
+  assert.equal(notText.status, 400);
+  assert.match(notText.body.error, /must be a string/);
 });
 
 test("protected endpoints require the registration token", async () => {
