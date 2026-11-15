@@ -1,0 +1,480 @@
+{
+  "language": {
+    "code": "zh-Hans",
+    "name": "Mandarin Chinese (simplified)"
+  },
+  "detail": "full",
+  "format": 2,
+  "text": "没想到，龙王回到龙宫后，收到玉皇大帝的命令",
+  "tokens": [
+    {
+      "s": "没想到",
+      "start": 0,
+      "end": 3,
+      "word": true,
+      "pos": "word",
+      "base": "没想到",
+      "forms": {
+        "simplified": "没想到",
+        "traditional": "沒想到"
+      },
+      "reading": {
+        "pinyin": "méi xiǎng dào",
+        "pinyin_num": "mei2 xiang3 dao4"
+      },
+      "ruby": [
+        {
+          "base": "没",
+          "ruby": "méi"
+        },
+        {
+          "base": "想",
+          "ruby": "xiǎng"
+        },
+        {
+          "base": "到",
+          "ruby": "dào"
+        }
+      ],
+      "gloss": {
+        "en": [
+          "didn't expect"
+        ],
+        "source": "CC-CEDICT",
+        "entry_id": "61934"
+      },
+      "levels": {
+        "hsk": 4
+      },
+      "tones": [
+        2,
+        3,
+        4
+      ],
+      "tones_dictionary": [
+        2,
+        3,
+        4
+      ],
+      "reading_check": "dictionary"
+    },
+    {
+      "s": "，",
+      "start": 3,
+      "end": 4,
+      "word": false,
+      "pos": "punct"
+    },
+    {
+      "s": "龙王",
+      "start": 4,
+      "end": 6,
+      "word": true,
+      "pos": "word",
+      "base": "龙王",
+      "forms": {
+        "simplified": "龙王",
+        "traditional": "龍王"
+      },
+      "reading": {
+        "pinyin": "lóng wáng",
+        "pinyin_num": "long2 wang2"
+      },
+      "ruby": [
+        {
+          "base": "龙",
+          "ruby": "lóng"
+        },
+        {
+          "base": "王",
+          "ruby": "wáng"
+        }
+      ],
+      "gloss": {
+        "en": [
+          "Dragon King (mythology)"
+        ],
+        "source": "CC-CEDICT",
+        "entry_id": "122276"
+      },
+      "levels": {},
+      "tones": [
+        2,
+        2
+      ],
+      "tones_dictionary": [
+        2,
+        2
+      ],
+      "reading_check": "dictionary"
+    },
+    {
+      "s": "回到",
+      "start": 6,
+      "end": 8,
+      "word": true,
+      "pos": "word",
+      "base": "回到",
+      "forms": {
+        "simplified": "回到",
+        "traditional": "回到"
+      },
+      "reading": {
+        "pinyin": "huí dào",
+        "pinyin_num": "hui2 dao4"
+      },
+      "ruby": [
+        {
+          "base": "回",
+          "ruby": "huí"
+        },
+        {
+          "base": "到",
+          "ruby": "dào"
+        }
+      ],
+      "gloss": {
+        "en": [
+          "to return to"
+        ],
+        "source": "CC-CEDICT",
+        "entry_id": "23485"
+      },
+      "levels": {
+        "hsk": 1
+      },
+      "tones": [
+        2,
+        4
+      ],
+      "tones_dictionary": [
+        2,
+        4
+      ],
+      "reading_check": "dictionary"
+    },
+    {
+      "s": "龙宫",
+      "start": 8,
+      "end": 10,
+      "word": true,
+      "pos": "word",
+      "base": "龙宫",
+      "forms": {
+        "simplified": "龙宫",
+        "traditional": "龍宮"
+      },
+      "reading": {
+        "pinyin": "lóng gōng",
+        "pinyin_num": "long2 gong1"
+      },
+      "ruby": [
+        {
+          "base": "龙",
+          "ruby": "lóng"
+        },
+        {
+          "base": "宫",
+          "ruby": "gōng"
+        }
+      ],
+      "gloss": {
+        "en": [
+          "palace of the Dragon King at the bottom of the Eastern Sea"
+        ],
+        "source": "CC-CEDICT",
+        "entry_id": "122224"
+      },
+      "levels": {},
+      "tones": [
+        2,
+        1
+      ],
+      "tones_dictionary": [
+        2,
+        1
+      ],
+      "reading_check": "dictionary"
+    },
+    {
+      "s": "后",
+      "start": 10,
+      "end": 11,
+      "word": true,
+      "pos": "word",
+      "base": "后",
+      "forms": {
+        "simplified": "后",
+        "traditional": "後"
+      },
+      "reading": {
+        "pinyin": "hòu",
+        "pinyin_num": "hou4"
+      },
+      "ruby": [
+        {
+          "base": "后",
+          "ruby": "hòu"
+        }
+      ],
+      "gloss": {
+        "en": [
+          "back",
+          "behind",
+          "rear",
+          "afterwards",
+          "after",
+          "later",
+          "post-"
+        ],
+        "source": "CC-CEDICT",
+        "entry_id": "39216",
+        "alternatives": [
+          {
+            "entry_id": "19996",
+            "en": [
+              "empress",
+              "queen"
+            ]
+          },
+          {
+            "entry_id": "19995",
+            "en": [
+              "surname Hou"
+            ]
+          }
+        ]
+      },
+      "levels": {
+        "hsk": 1
+      },
+      "tones": [
+        4
+      ],
+      "tones_dictionary": [
+        4
+      ],
+      "reading_check": "dictionary"
+    },
+    {
+      "s": "，",
+      "start": 11,
+      "end": 12,
+      "word": false,
+      "pos": "punct"
+    },
+    {
+      "s": "收到",
+      "start": 12,
+      "end": 14,
+      "word": true,
+      "pos": "word",
+      "base": "收到",
+      "forms": {
+        "simplified": "收到",
+        "traditional": "收到"
+      },
+      "reading": {
+        "pinyin": "shōu dào",
+        "pinyin_num": "shou1 dao4"
+      },
+      "ruby": [
+        {
+          "base": "收",
+          "ruby": "shōu"
+        },
+        {
+          "base": "到",
+          "ruby": "dào"
+        }
+      ],
+      "gloss": {
+        "en": [
+          "to receive"
+        ],
+        "source": "CC-CEDICT",
+        "entry_id": "49109"
+      },
+      "levels": {
+        "hsk": 2
+      },
+      "tones": [
+        1,
+        4
+      ],
+      "tones_dictionary": [
+        1,
+        4
+      ],
+      "reading_check": "dictionary"
+    },
+    {
+      "s": "玉皇大帝",
+      "start": 14,
+      "end": 18,
+      "word": true,
+      "pos": "word",
+      "base": "玉皇大帝",
+      "forms": {
+        "simplified": "玉皇大帝",
+        "traditional": "玉皇大帝"
+      },
+      "reading": {
+        "pinyin": "yù huáng dà dì",
+        "pinyin_num": "yu4 huang2 da4 di4"
+      },
+      "ruby": [
+        {
+          "base": "玉",
+          "ruby": "yù"
+        },
+        {
+          "base": "皇",
+          "ruby": "huáng"
+        },
+        {
+          "base": "大",
+          "ruby": "dà"
+        },
+        {
+          "base": "帝",
+          "ruby": "dì"
+        }
+      ],
+      "gloss": {
+        "en": [
+          "Jade Emperor"
+        ],
+        "source": "CC-CEDICT",
+        "entry_id": "71381"
+      },
+      "levels": {},
+      "tones": [
+        4,
+        2,
+        4,
+        4
+      ],
+      "tones_dictionary": [
+        4,
+        2,
+        4,
+        4
+      ],
+      "reading_check": "dictionary"
+    },
+    {
+      "s": "的",
+      "start": 18,
+      "end": 19,
+      "word": true,
+      "pos": "word",
+      "base": "的",
+      "forms": {
+        "simplified": "的",
+        "traditional": "的"
+      },
+      "reading": {
+        "pinyin": "de",
+        "pinyin_num": "de5"
+      },
+      "ruby": [
+        {
+          "base": "的",
+          "ruby": "de"
+        }
+      ],
+      "gloss": {
+        "en": [
+          "of; ~'s (possessive particle)",
+          "(used after an attribute)",
+          "(used to form a nominal expression)",
+          "(used at the end of a declarative sentence for emphasis)",
+          "also pr. [di4] or [di5] in poetry and songs"
+        ],
+        "source": "CC-CEDICT",
+        "entry_id": "75454",
+        "alternatives": [
+          {
+            "entry_id": "75455",
+            "en": [
+              "a taxi; a cab (abbr. for 的士)"
+            ]
+          },
+          {
+            "entry_id": "75456",
+            "en": [
+              "really and truly"
+            ]
+          },
+          {
+            "entry_id": "75457",
+            "en": [
+              "(bound form) bull's-eye; target"
+            ]
+          }
+        ]
+      },
+      "levels": {
+        "hsk": 1
+      },
+      "tones": [
+        5
+      ],
+      "tones_dictionary": [
+        5
+      ],
+      "reading_check": "dictionary"
+    },
+    {
+      "s": "命令",
+      "start": 19,
+      "end": 21,
+      "word": true,
+      "pos": "word",
+      "base": "命令",
+      "forms": {
+        "simplified": "命令",
+        "traditional": "命令"
+      },
+      "reading": {
+        "pinyin": "mìng lìng",
+        "pinyin_num": "ming4 ling4"
+      },
+      "ruby": [
+        {
+          "base": "命",
+          "ruby": "mìng"
+        },
+        {
+          "base": "令",
+          "ruby": "lìng"
+        }
+      ],
+      "gloss": {
+        "en": [
+          "order",
+          "command"
+        ],
+        "source": "CC-CEDICT",
+        "entry_id": "20801",
+        "measure_words": [
+          "道",
+          "个"
+        ]
+      },
+      "levels": {
+        "hsk": 5
+      },
+      "tones": [
+        4,
+        4
+      ],
+      "tones_dictionary": [
+        4,
+        4
+      ],
+      "reading_check": "dictionary"
+    }
+  ]
+}
