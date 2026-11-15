@@ -1,12 +1,16 @@
 import {isKana, isKanji, toHiragana, toKatakana} from "wanakana";
 import {kanjiBeginning, readingBeginning, type JmdictWord} from "../../dictionary/jmdictDb";
 import {charAnywhere, charBeginning} from "../../dictionary/chineseDictionaryDb";
-import type {DictionaryDb} from "../../dictionary/levelDictionary";
+import {getJsonRecords, valuesWithPrefix, type DictionaryDb} from "../../dictionary/levelDictionary";
+import {normalizeChineseEntry, rankChineseEntries, shortSense, type ChineseEntryView} from "../../language/chineseEntries";
+import {rankJapaneseEntries, rankSenses} from "../../language/japaneseSenses";
 
 /** One word to gloss under a learning-mode subtitle: its dictionary form and (Japanese) reading. */
 export interface LearningGlossRequest {
   target: string;
   reading?: string;
+  /** Japanese: the token's part of speech (IPADIC, 名詞-接尾-人名), so the gloss fits its use. */
+  pos?: string;
 }
 
 // Token readings keep ー (こーひー) while JMdict may not, so compare both spelled out (こうひい).
@@ -91,9 +95,11 @@ export const findJapaneseEntry = (entries: JmdictWord[], target: string, reading
   return entries.find((word) => spelled(word) && read(word)) ?? entries.find((word) => spelled(word) || read(word));
 };
 
-/** The first gloss of `entry`, without parenthesised notes. */
-const firstGloss = (entry: JmdictWord | undefined) =>
-  (entry?.sense[0]?.gloss[0]?.text ?? "").replace(/\((.*?)\)/g, "").trim();
+/** The first gloss of `entry`'s best sense for `pos` and the word (its first sense without them), without parenthesised notes. */
+const firstGloss = (entry: JmdictWord | undefined, pos = "", surface = "") => {
+  const sense = entry ? (pos ? rankSenses(entry, {pos, surface})[0] : entry.sense[0]) : undefined;
+  return (sense?.gloss[0]?.text ?? "").replace(/\((.*?)\)/g, "").trim();
+};
 
 export const pickJapaneseGloss = (entries: JmdictWord[], target: string, reading: string): string =>
   firstGloss(findJapaneseEntry(entries, target, reading));
@@ -109,12 +115,14 @@ const SPELLING_PREFIX_FALLBACK = 200;
  */
 export const japaneseLearningGloss = async (
   db: DictionaryDb,
-  {target, reading = ""}: LearningGlossRequest
+  {target, reading = "", pos = ""}: LearningGlossRequest
 ): Promise<string> => {
   if (!target || target === "*") return "";
   const exact = await exactJapaneseMatches(db, target);
-  const entry = findJapaneseEntry(rankJapaneseMatches(exact, target), target, reading);
-  if (entry) return firstGloss(entry);
+  // With the token's part of speech the entry that fits its use wins: さん the name suffix, not 酸 "acid".
+  const ranked = pos ? rankJapaneseEntries(exact, {base: target, reading, context: {pos}}) : rankJapaneseMatches(exact, target);
+  const entry = findJapaneseEntry(ranked, target, reading);
+  if (entry) return firstGloss(entry, pos, target);
   // Spellings start with kanji; a kana word (a name, slang) missing from JMdict has nothing to find.
   if (![...target].some((character) => isKanji(character))) return "";
   const prefixed = await kanjiBeginning(db, target, SPELLING_PREFIX_FALLBACK);
@@ -137,28 +145,45 @@ export const rankChineseMatches = (matches: any[]) => {
 export const queryChineseDictionary = async (db: DictionaryDb, query: string, limit: number) =>
   rankChineseMatches([...await charBeginning(db, query, limit), ...await charAnywhere(db, query, limit)]);
 
-/** A short (≤ 10 characters) meaning of the first entry whose headword is exactly `target`. */
-export const pickChineseGloss = (entries: any[], target: string): string => {
-  for (const entry of entries) {
-    const headwords = [...(entry.content ?? "").split("，"), ...(entry.simplified ?? "").split(", ")];
-    if (!headwords.includes(target)) continue;
-    let cleaned = (entry.meaning ?? []).join("\n");
-    for (let pass = 0; pass < 3; pass++) cleaned = cleaned.replace(/\([^)(]*\)/, "");
-    for (let pass = 0; pass < 3; pass++) cleaned = cleaned.replace(/\[[^\][]*]/, "");
-    const meanings = cleaned.split(/[,;\n]/);
-    if (meanings.length > 0 && meanings[0].length > 10) meanings.sort((a, b) => a.length - b.length);
-    for (const meaning of meanings) {
-      const short = meaning.trim().replace(/\(.*/, "").replace(/\|.*/, "");
-      if (short !== "" && short.length <= 10) return short;
-    }
-    return "";
+/** The longest hint a subtitle word gets; a longer first meaning is cut at a word, with "…". */
+export const CHINESE_HINT_LENGTH = 24;
+
+/** A hint from an entry's senses: the first part of a sense that fits, else the first one cut short. */
+export const chineseHint = (entry: ChineseEntryView): string => {
+  const parts = entry.senses.map(shortSense).filter(Boolean);
+  const fitting = parts.find((part) => part.length <= CHINESE_HINT_LENGTH);
+  if (fitting) return fitting;
+  const first = parts[0] ?? "";
+  if (!first) return "";
+  const cut = first.slice(0, CHINESE_HINT_LENGTH);
+  const space = cut.lastIndexOf(" ");
+  return `${(space > 8 ? cut.slice(0, space) : cut).trim()}…`;
+};
+
+/**
+ * A short meaning of the entry that best matches `target` (rankChineseEntries: a headword that is
+ * `target`, not only a surname, the most senses). It used to keep only meanings of at most 10
+ * characters, so 没想到 ("didn't expect"), 玉皇大帝, 龙王, 飲茶 and 咗 got none.
+ */
+export const pickChineseGloss = (entries: any[], target: string, {cantonese = false}: {cantonese?: boolean} = {}): string => {
+  const views = entries.map(normalizeChineseEntry).filter((entry): entry is ChineseEntryView => entry !== null);
+  for (const entry of rankChineseEntries(views, {word: target, script: cantonese ? "traditional" : undefined, cantonese})) {
+    const hint = chineseHint(entry);
+    if (hint) return hint;
   }
   return "";
 };
 
-export const chineseLearningGloss = async (db: DictionaryDb, {target}: LearningGlossRequest): Promise<string> => {
+/** Every entry whose headword (either form) is exactly `word`: index keys are `indexes/<form>-<id>`. */
+export const exactChineseEntries = async (db: DictionaryDb, word: string): Promise<any[]> => {
+  if (!word) return [];
+  const ids = await valuesWithPrefix(db, `indexes/${word}-`);
+  return getJsonRecords<any>(db, [...new Set(ids)].map((id) => `raw/words/${id}`));
+};
+
+export const chineseLearningGloss = async (db: DictionaryDb, {target}: LearningGlossRequest, languageCode = "zh-CN"): Promise<string> => {
   if (!target) return "";
-  return pickChineseGloss(await queryChineseDictionary(db, target, 3), target);
+  return pickChineseGloss(await exactChineseEntries(db, target), target, {cantonese: languageCode === "yue"});
 };
 
 /** The shortest meaningful part (≤ 15 characters) of a VNEDict meaning. */
