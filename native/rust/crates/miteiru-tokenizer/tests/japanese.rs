@@ -169,6 +169,25 @@ fn ipadic_contract_context_unicode_suffixes_and_live_extra_words() {
                 noun: false,
             },
             DictionaryWord {
+                surface: "話す".into(),
+                reading: "はなす".into(),
+                conditions: suffix::V5,
+                noun: false,
+            },
+            DictionaryWord {
+                surface: "送る".into(),
+                reading: "おくる".into(),
+                conditions: suffix::V5,
+                noun: false,
+            },
+            // JMdict's お話し is a plain noun (story), not a suru noun: お話しした is still 話す.
+            DictionaryWord {
+                surface: "お話し".into(),
+                reading: "おはなし".into(),
+                conditions: suffix::NOUN,
+                noun: true,
+            },
+            DictionaryWord {
                 surface: "待たせる".into(),
                 reading: "またせる".into(),
                 conditions: suffix::V1,
@@ -269,6 +288,10 @@ fn ipadic_contract_context_unicode_suffixes_and_live_extra_words() {
         ("お選びくださいませ", vec!["お選びくださいませ"]),
         ("お掛けになってください", vec!["お掛けになってください"]),
         ("お待たせして", vec!["お待たせして"]),
+        // IPADIC reads お話し and お送り as one noun each; the honorific still takes the verb after.
+        ("お話ししたんですね", vec!["お話しした", "ん", "です", "ね"]),
+        ("昨日お送りしたもの", vec!["昨日", "お送りした", "もの"]),
+        ("お話をした", vec!["お話", "を", "した"]),
         ("ございません", vec!["ございません"]),
         ("じゃなくて", vec!["じゃなくて"]),
         ("子供じゃなかった", vec!["子供", "じゃなかった"]),
@@ -295,6 +318,8 @@ fn ipadic_contract_context_unicode_suffixes_and_live_extra_words() {
         ("食べれる", "食べる"),
         ("バズっちゃった", "バズる"),
         ("食べさせていただきます", "食べる"),
+        ("お話しした", "話す"),
+        ("お送りします", "送る"),
     ] {
         let tokens = tokenizer.tokenize_with_suffixes(surface);
         assert_eq!(tokens.len(), 1, "{surface}: {tokens:?}");

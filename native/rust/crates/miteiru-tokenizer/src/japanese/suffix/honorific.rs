@@ -168,14 +168,23 @@ pub(super) fn compose(
     let mut start = 0;
     while start < tokens.len() {
         let first = &tokens[start];
-        let honorific = first.surface_form == "お" && first.pos == "接頭詞";
+        // お as its own prefix (お + 待ち + ください), or IPADIC's one noun for お + a verb stem
+        // (お送り, お話し + した). honorific_base still needs a verb under the stem and refuses
+        // lexical suru nouns, so お茶 + する and お願い + します stay apart.
+        let honorific = (first.surface_form == "お" && first.pos == "接頭詞")
+            || (first.pos == "名詞"
+                && first.surface_form.starts_with('お')
+                && first.surface_form.chars().count() >= 2);
         let copula = first.pos == "助動詞" || first.surface_form == "じゃ";
         let mut best = None;
         if first.word_id >= 0 && (honorific || copula) {
             let mut surface = first.surface_form.clone();
             for (end, next) in tokens.iter().enumerate().skip(start + 1).take(15) {
+                // A nominalizer (ん, の, こと, ところ) ends the predicate, as it ends a plain verb
+                // chain: お話ししたんです is お話しした / ん / です.
                 if next.word_id < 0
                     || matches!(next.pos.as_str(), "記号" | "接続詞")
+                    || (next.pos == "名詞" && next.pos_detail_1 == "非自立")
                     || next.surface_form.chars().any(char::is_whitespace)
                 {
                     break;
