@@ -59,3 +59,31 @@ test("loadLearningState returns words whose first character is outside the BMP",
   assert.equal(state["𠺢嘛"]?.level, 1);
   assert.equal(state["好"]?.level, 3);
 });
+
+// Bug fix: loadState rewrote old-format entries while reading, so tools that only read saved words
+// (the MCP's analyze_text, list_saved_words, known_words) wrote to the store.
+test("loadState reads old-format entries without writing them back", async () => {
+  await Learning.db.put("vi/xin chào", "2");
+  await Learning.db.put("vi/cảm ơn", JSON.stringify({level: 1, updTime: 40}));
+  const writes: string[] = [];
+  const put = Learning.db.put.bind(Learning.db);
+  Learning.db.put = (async (key: string, value: string) => {
+    writes.push(key);
+    return put(key, value);
+  }) as typeof Learning.db.put;
+  try {
+    assert.deepEqual(await Learning.loadState("vi"), {"cảm ơn": {level: 1, updTime: 40}, "xin chào": {level: 2, updTime: 0}});
+  } finally {
+    Learning.db.put = put as typeof Learning.db.put;
+  }
+  assert.deepEqual(writes, []);
+  assert.equal(await Learning.db.get("vi/xin chào"), "2");
+});
+
+test("parseEntry reads both formats and treats garbage as New with no edit time", () => {
+  assert.deepEqual(Learning.parseEntry(JSON.stringify({level: 2, updTime: 9})), {level: 2, updTime: 9});
+  assert.deepEqual(Learning.parseEntry("1"), {level: 1, updTime: 0});
+  assert.deepEqual(Learning.parseEntry(JSON.stringify({level: 2})), {level: 2, updTime: 0});
+  assert.deepEqual(Learning.parseEntry("{\"level\": \"x\"}"), {level: 0, updTime: 0});
+  assert.deepEqual(Learning.parseEntry("nonsense"), {level: 0, updTime: 0});
+});
