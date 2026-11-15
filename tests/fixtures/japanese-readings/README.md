@@ -56,13 +56,23 @@ Readings of the 186 scored words (names left out), from the scorer:
 
 | Analyzer | Readings |
 | --- | ---: |
-| Miteiru (IPADIC lattice) | 84.9% (158) |
+| Miteiru before (IPADIC lattice) | 84.9% (158) |
 | UniDic (unidic-lite 2.1.2, MeCab) | 85.5% (159) |
 | Sudachi, SudachiDict-full, mode C | 86.6% (161) |
 | pyopenjtalk-plus 0.4.1.post10 (OpenJTalk) | 90.9% (169) |
 | its dictionary alone (`use_vanilla`) | 91.9% (171) |
+| **Miteiru now** | **94.6% (176)** |
+
+Miteiru now also reads all 16 counters and 2 of the 8 names, and every scored word is right in 54 of
+the 64 lines that have one.
 
 The hard cases were written knowing those phenomena, so the second check is the JVS kana benchmark
 (`scripts/eval/jvsKana.ts`). Its 2,756 lines without digits or Latin letters measure reading
-character error rates of 1.10% for Miteiru, 1.12% for UniDic (unidic-lite) and 0.55% for
-pyopenjtalk-plus.
+character error rates of 1.10% for Miteiru before, 0.78% now, 1.12% for UniDic (unidic-lite) and 0.55%
+for pyopenjtalk-plus.
+
+Both sets were used while designing the readings layer (`docs/JAPANESE_TOKENIZER.md`), so neither is a
+blind test. Blind check: on 378 lines of real clip subtitles, not looked at before and not in this
+repo, the tokenizer before and after read 33 spans differently. 30 are better now (一回 いっかい, 四分
+よんぷん, 剥がされた はがされた, 今 いま, この辺 このへん, and 六万 and 五百, which now have a reading). 3 are
+unclear (角 twice, where the clip likely means つの, and あり得る うる or える). None is worse.
