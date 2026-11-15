@@ -3,9 +3,9 @@ import fsPromises from "node:fs/promises";
 import {GZIP_SUFFIX, ZSTD_SUFFIX} from "../../helpers/assetFiles";
 import {limiter} from "../../helpers/limiter";
 import Japanese from "../japanese";
-import Chinese from "../chinese";
+import Chinese, {cantoneseEngine, mandarinEngine} from "../chinese";
 import Vietnamese from "../vietnamese";
-import {LanguagePlugin, LanguagePluginContext, LanguagePluginLoadResult} from "./types";
+import {LanguageEngineContext, LanguagePlugin, LanguagePluginContext, LanguagePluginLoadResult} from "./types";
 
 const languageAssetsRoot = path.join(__dirname, "language-assets");
 
@@ -140,6 +140,8 @@ const getVietnameseSettings = async (appDataDirectory: string) => Vietnamese.get
   dictPath: await assetPath("vietnamese", "vietnamese/vnedict.txt", "vietnamese/vnedict.txt")
 });
 
+const keyOf = async (settings: Promise<unknown>) => JSON.stringify(await settings);
+
 export const languagePlugins: LanguagePlugin[] = [
   {
     id: "han-character-core",
@@ -152,7 +154,9 @@ export const languagePlugins: LanguagePlugin[] = [
         importWanikaniRadical: settings.wanikaniRadical,
         importBaseSVG: settings.kanjiSvgPath
       });
-    }
+    },
+    engineKey: () => keyOf(getHanCharacterCoreSettings()),
+    engineReady: () => Japanese.wanikanji !== undefined
   },
   {
     id: "japanese-kuromoji",
@@ -161,7 +165,9 @@ export const languagePlugins: LanguagePlugin[] = [
     tokenizerMode: "kuromoji",
     languageCode: "ja",
     dependencies: ["han-character-core"],
-    setup: async ({appDataDirectory}) => Japanese.setup(await getJapaneseSettings(appDataDirectory))
+    setup: async ({appDataDirectory}) => Japanese.setup(await getJapaneseSettings(appDataDirectory)),
+    engineKey: ({appDataDirectory}) => keyOf(getJapaneseSettings(appDataDirectory)),
+    engineReady: () => Boolean(Japanese.Dict.db && Japanese.KanjiDict.db)
   },
   {
     id: "cantonese-jieba",
@@ -170,7 +176,10 @@ export const languagePlugins: LanguagePlugin[] = [
     tokenizerMode: "cantonese",
     languageCode: "yue",
     dependencies: ["han-character-core"],
-    setup: async ({appDataDirectory}) => Chinese.setup(await getCantoneseSettings(appDataDirectory))
+    setup: async ({appDataDirectory}) => Chinese.setup(await getCantoneseSettings(appDataDirectory)),
+    setupEngine: async ({appDataDirectory}) => cantoneseEngine.setup(await getCantoneseSettings(appDataDirectory)),
+    engineKey: ({appDataDirectory}) => keyOf(getCantoneseSettings(appDataDirectory)),
+    engineReady: () => Boolean(cantoneseEngine.Dict.db && cantoneseEngine.jieba)
   },
   {
     id: "mandarin-jieba",
@@ -179,7 +188,10 @@ export const languagePlugins: LanguagePlugin[] = [
     tokenizerMode: "jieba",
     languageCode: "zh-CN",
     dependencies: ["han-character-core"],
-    setup: async ({appDataDirectory}) => Chinese.setup(await getMandarinSettings(appDataDirectory))
+    setup: async ({appDataDirectory}) => Chinese.setup(await getMandarinSettings(appDataDirectory)),
+    setupEngine: async ({appDataDirectory}) => mandarinEngine.setup(await getMandarinSettings(appDataDirectory)),
+    engineKey: ({appDataDirectory}) => keyOf(getMandarinSettings(appDataDirectory)),
+    engineReady: () => Boolean(mandarinEngine.Dict.db && mandarinEngine.jieba)
   },
   {
     id: "vietnamese",
@@ -187,7 +199,9 @@ export const languagePlugins: LanguagePlugin[] = [
     name: "Vietnamese",
     tokenizerMode: "vietnamese",
     languageCode: "vi",
-    setup: async ({appDataDirectory}) => Vietnamese.setup(await getVietnameseSettings(appDataDirectory))
+    setup: async ({appDataDirectory}) => Vietnamese.setup(await getVietnameseSettings(appDataDirectory)),
+    engineKey: ({appDataDirectory}) => keyOf(getVietnameseSettings(appDataDirectory)),
+    engineReady: () => Vietnamese.isLoaded
   }
 ];
 
@@ -261,6 +275,7 @@ const loadPlugin = async (
   if (error) {
     return {ok: 0, message: error};
   }
+  await rememberEngine(plugin, context);
 
   loadedPluginIds.add(plugin.id);
 
@@ -269,4 +284,74 @@ const loadPlugin = async (
   }
 
   return {ok: 1, message: "Setup is ready"};
+};
+
+// ---- Engines for the language tools --------------------------------------------------------------
+
+/** The data each plugin was last set up with (engineKey), by Home or by the tools. */
+const engineKeys = new Map<string, string>();
+
+const rememberEngine = async (plugin: LanguagePlugin, context: LanguageEngineContext) => {
+  if (!plugin.engineKey) return;
+  try {
+    engineKeys.set(plugin.id, await plugin.engineKey(context));
+  } catch {
+    engineKeys.delete(plugin.id);
+  }
+};
+
+const loadEngine = async (
+  pluginId: string,
+  context: LanguageEngineContext,
+  loadedPluginIds: Set<string>
+): Promise<LanguagePluginLoadResult> => {
+  if (loadedPluginIds.has(pluginId)) return {ok: 1, message: "Setup is ready"};
+  const plugin = getLanguagePlugin(pluginId);
+  if (!plugin) return {ok: 0, message: `Unknown language plugin: ${pluginId}`};
+  for (const dependencyId of plugin.dependencies ?? []) {
+    const dependencyResult = await loadEngine(dependencyId, context, loadedPluginIds);
+    if (!dependencyResult.ok) return dependencyResult;
+  }
+  const key = plugin.engineKey ? await plugin.engineKey(context) : null;
+  const ready = key !== null && plugin.engineReady?.() === true && engineKeys.get(plugin.id) === key;
+  if (!ready) {
+    const setup = plugin.setupEngine ?? plugin.setup;
+    const error = setup ? await setup({...context, setTokenizer: () => undefined}) : null;
+    if (error) return {ok: 0, message: error};
+    if (key !== null) engineKeys.set(plugin.id, key);
+  }
+  loadedPluginIds.add(plugin.id);
+  return {ok: 1, message: "Setup is ready"};
+};
+
+/**
+ * Loads a language's dictionaries and tokenizer for the language tools (main/mcp/languageTools.ts)
+ * without making it the learner's language: Home's tokenizer setting and the word popup's Chinese stay
+ * as they are. A language already set up from the same data (by Home or an earlier call) is not set up
+ * again. Runs in turn with Home's loads, so no two setups of one language overlap.
+ */
+export const loadLanguageEngine = (pluginId: string, context: LanguageEngineContext): Promise<LanguagePluginLoadResult> => (
+  oneLoadAtATime(async () => {
+    await refreshAssetRoots();
+    return loadEngine(pluginId, context, new Set());
+  })
+);
+
+/** The file whose presence says a language's data is on this computer (bundled or an installed pack). */
+const LANGUAGE_MARKERS: Record<string, [string, string]> = {
+  "japanese-kuromoji": ["japanese", "dict/base.dat"],
+  "mandarin-jieba": ["mandarin", "chinese/zh.jieba.txt"],
+  "cantonese-jieba": ["cantonese", "cantonese/yue.jieba.txt"],
+  vietnamese: ["vietnamese", "vietnamese/vnedict.txt"]
+};
+
+/** Whether the language's data is installed, without loading it. */
+export const languageDataPresent = async (pluginId: string): Promise<boolean> => {
+  const marker = LANGUAGE_MARKERS[pluginId];
+  if (!marker) return false;
+  await refreshAssetRoots();
+  const [folder, relative] = marker;
+  const candidates = assetRoots.filter((root) => !root.plugins || root.plugins.includes(folder))
+    .map((root) => path.join(root.dir, folder, relative));
+  return (await Promise.all(candidates.map(assetCandidateExists))).some(Boolean);
 };

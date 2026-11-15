@@ -5,10 +5,11 @@ import path from "path";
 import {pinyin} from "pinyin-pro";
 import ToJyutping from "to-jyutping";
 import {Jieba} from '@node-rs/jieba'
-import {formatPinyinReading} from "./pinyinTones";
+import {formatJyutpingReading, formatPinyinReading} from "./pinyinTones";
 import {readStrokeSvg} from "../helpers/strokeSvg";
 import {readAsset} from "../helpers/assetFiles";
 import {enabledUserDictionaryEntries, lookupUserDictionaryEntry, userChineseDictionaryResult, userDictionaryToken, UserDictionaryEntry} from "../helpers/userDictionary";
+import type {DictionaryDb} from "../dictionary/levelDictionary";
 
 
 interface JyutpingResult {
@@ -20,19 +21,26 @@ interface JyutpingResult {
 const NO_USER_WORDS: UserDictionaryEntry[] = [];
 const userWordMaps = new WeakMap<UserDictionaryEntry[], Map<string, UserDictionaryEntry>>();
 
-class Chinese {
+export type ChineseLanguageCode = "zh-CN" | "yue";
 
-  static Dict = {db: null};
-  static dictPath: string;
-  static importDict: string;
-  static importBaseSVG: string;
-  static jiebaDictPath: string;
-  static jieba;
-  static languageCode = "zh-CN";
-  static userWords: UserDictionaryEntry[] | undefined;
-  static userWordsUpdating: Promise<void> = Promise.resolve();
+/**
+ * One Chinese language's engine: its dictionary (CC-CEDICT for Mandarin, CantoDict for Cantonese),
+ * its tokenizer and the learner's own words for it. Mandarin and Cantonese each have one, so both can
+ * be loaded at once: the learner's language for the subtitles and another for the language tools.
+ */
+export class ChineseEngine {
+  Dict: {db: DictionaryDb | null} = {db: null};
+  dictPath: string;
+  importDict: string;
+  importBaseSVG: string;
+  jiebaDictPath: string;
+  jieba: any;
+  userWords: UserDictionaryEntry[] | undefined;
+  userWordsUpdating: Promise<void> = Promise.resolve();
 
-  static queryHanziChinese = async (query: string) => {
+  constructor(public languageCode: ChineseLanguageCode) {}
+
+  queryHanziChinese = async (query: string) => {
     try {
       return (await hanzi(this.Dict.db, query, 1))[0];
     } catch {
@@ -40,44 +48,17 @@ class Chinese {
     }
   }
 
-  /** Closes the CC-CEDICT / CantoDict database so its cache folder can be deleted. */
-  static async closeDictionary() {
+  /** Closes the dictionary so its cache folder can be deleted. */
+  async closeDictionary() {
     await this.Dict.db?.close();
     this.Dict = {db: null};
   }
 
-  static getMandarinSettings = (appDataDirectory: string, replacements: any = {}) => {
-    return {
-      languageCode: "zh-CN",
-      jiebaDictPath: path.join(__dirname, 'chinese/zh.jieba.txt'),
-      dictPath: path.join(appDataDirectory, `cccedict-db`),
-      importDict: path.join(__dirname, 'chinese/chinese.json'),
-      importBaseSVG: path.join(__dirname, 'hanzi'),
-      ...replacements
-    }
-  }
-
-  static getCantoneseSettings = (appDataDirectory: string, replacements: any = {}) => {
-    return {
-      languageCode: "yue",
-      jiebaDictPath: path.join(__dirname, 'cantonese/yue.jieba.txt'),
-      dictPath: path.join(appDataDirectory, `cantodict-db`),
-      importDict: path.join(__dirname, 'cantonese/cantodict.json'),
-      importBaseSVG: path.join(__dirname, 'hanzi'),
-      ...replacements
-    }
-  }
-
-  // Static setup method to initialize properties
-  static async setup(settings) {
-    this.languageCode = settings.languageCode ?? "zh-CN";
+  async setup(settings) {
     this.dictPath = settings.dictPath;
     this.jiebaDictPath = settings.jiebaDictPath;
     this.importDict = settings.importDict;
     this.importBaseSVG = settings.importBaseSVG
-
-    // this.setupPy(settings)
-    // Initialize nodejieba
 
     // The Tauri build's @node-rs/jieba shim loads the dictionary file by path (its Rust side reads it).
     const loadsByPath = Jieba as unknown as {withDictFile?: (dictPath: string, dictionaryPath?: string) => Promise<unknown>};
@@ -102,31 +83,39 @@ class Chinese {
     }
   }
 
-  static async tokenizeUsingJieba(sentence: string, toneType: string) {
+  /**
+   * Mandarin words with their pinyin. The pinyin is read for the whole text at once, not word by
+   * word, so a character's reading comes from its sentence: 了 in 我吃了饭 is le, which pinyin-pro reads
+   * as liǎo when it sees 了 alone.
+   */
+  async tokenizeUsingJieba(sentence: string, toneType: string) {
     const entries = await this.updateUserWords();
-    const tokens = await this.jieba.cut(sentence);
+    const tokens: string[] = await this.jieba.cut(sentence);
+    const inContext = sentencePinyin(sentence);
+    let offset = 0;
 
     return tokens.map(word => {
+      const characters = Array.from(word);
+      const readings = characters.map((character, index) => {
+        const read = inContext[offset + index];
+        return read && read.origin === character ? read.pinyin : pinyin(character, {toneType: 'num', type: 'all'})[0]?.pinyin ?? '';
+      });
+      offset += characters.length;
       const custom = entries.get(word);
       if (custom) return userDictionaryToken(custom, toneType);
-      const pinyinInfo = pinyin(word, {
-        toneType: 'num',
-        type: 'all'
-      });
 
       return {
         origin: word,
-        pinyin: pinyinInfo.map(info => formatPinyinReading(info.pinyin, toneType)).join(' '),
-        separation: pinyinInfo.map(info => ({
-          main: info.origin,
-          pinyin: formatPinyinReading(info.pinyin, toneType)
+        pinyin: readings.map(reading => formatPinyinReading(reading, toneType)).join(' '),
+        separation: characters.map((character, index) => ({
+          main: character,
+          pinyin: formatPinyinReading(readings[index], toneType)
         }))
       };
     });
   }
 
-
-  static async updateUserWords() {
+  async updateUserWords() {
     const enabled = await enabledUserDictionaryEntries(this.languageCode);
     const entries = enabled.length ? enabled : NO_USER_WORDS;
     const work = this.userWordsUpdating.catch(() => undefined).then(async () => {
@@ -140,31 +129,11 @@ class Chinese {
     return userWordMaps.get(entries)!;
   }
 
-  static getJyutpingForSentence(sentence: string, toneType: string): Promise<JyutpingResult[]> {
+  getJyutpingForSentence(sentence: string, toneType: string): Promise<JyutpingResult[]> {
     return Promise.resolve().then(async () => {
       const entries = await this.updateUserWords();
       const segments = await this.jieba.cut(sentence);
       const result: JyutpingResult[] = [];
-
-      // Use only the Discord tone map as requested
-      const dcToneMap = {
-        '1': 'ˉ¹',
-        '2': '⸍²',
-        '3': '-₃',
-        '4': '⸜₄',
-        '5': '⸝₅',
-        '6': 'ˍ₆'
-      };
-
-      // Function to replace tone numbers with symbols
-      function replaceToneSymbol(syllable: string): string {
-        if(!syllable || !syllable.length) return ''
-        const tone = syllable.slice(-1); // Get the last character (the tone)
-        if (dcToneMap[tone]) {
-          return syllable.slice(0, -1) + dcToneMap[tone]; // Replace the tone
-        }
-        return syllable; // Return unchanged if no tone number
-      }
 
       for (const segment of segments) {
         const custom = entries.get(segment);
@@ -173,23 +142,11 @@ class Chinese {
           continue;
         }
         const jyutpingList = ToJyutping.getJyutpingList(segment);
-
-        // num: contour marks (ˉ¹); symbol: numbered jyutping (sik6)
-        const formatJyutping = (jp: string | null) => {
-          if (!jp) return jp;
-          return toneType === 'num' ? replaceToneSymbol(jp) : jp;
-        };
-
-        const formattedJyutping = jyutpingList.map(([, jp]) => formatJyutping(jp)).join(' ');
-
-        const separation = jyutpingList.map(([char, jp]) => {
-          const formattedJp = formatJyutping(jp);
-
-          return {
-            main: char,
-            jyutping: formattedJp
-          };
-        });
+        const formattedJyutping = jyutpingList.map(([, jp]) => formatJyutpingReading(jp, toneType)).join(' ');
+        const separation = jyutpingList.map(([char, jp]) => ({
+          main: char,
+          jyutping: formatJyutpingReading(jp, toneType)
+        }));
 
         result.push({
           origin: segment,
@@ -200,6 +157,87 @@ class Chinese {
 
       return result;
     });
+  }
+}
+
+/** pinyin-pro's reading of every character of `text`, read together so polyphones take their context. */
+const sentencePinyin = (text: string): Array<{origin: string; pinyin: string}> => {
+  if (!text) return [];
+  const read = pinyin(text, {toneType: 'num', type: 'all'}) as Array<{origin: string; pinyin: string}>;
+  // One item per character is what the word offsets need; anything else falls back to word by word.
+  return read.length === Array.from(text).length ? read : [];
+};
+
+export const mandarinEngine = new ChineseEngine("zh-CN");
+export const cantoneseEngine = new ChineseEngine("yue");
+
+/** The engine for a stored language code (zh-CN or yue). */
+export const chineseEngine = (languageCode: string): ChineseEngine => (languageCode === "yue" ? cantoneseEngine : mandarinEngine);
+
+/**
+ * The Chinese the learner loaded last from Home, as one static class for the word popup and the code
+ * written before Mandarin and Cantonese had an engine each. `languageCode` chooses which engine the
+ * other members reach.
+ */
+class Chinese {
+
+  static active: ChineseEngine = mandarinEngine;
+
+  static get Dict() { return this.active.Dict; }
+  static set Dict(value) { this.active.Dict = value; }
+  static get languageCode(): ChineseLanguageCode { return this.active.languageCode; }
+  static set languageCode(code: ChineseLanguageCode) { this.active = chineseEngine(code); }
+  static get jieba() { return this.active.jieba; }
+  static set jieba(value) { this.active.jieba = value; }
+  static get userWords() { return this.active.userWords; }
+  static set userWords(value) { this.active.userWords = value; }
+  static get importBaseSVG() { return this.active.importBaseSVG; }
+
+  static queryHanziChinese = (query: string) => Chinese.active.queryHanziChinese(query);
+
+  /** Closes both dictionaries so their cache folders can be deleted. */
+  static async closeDictionary() {
+    await Promise.all([mandarinEngine.closeDictionary(), cantoneseEngine.closeDictionary()]);
+  }
+
+  static getMandarinSettings = (appDataDirectory: string, replacements: any = {}) => {
+    return {
+      languageCode: "zh-CN",
+      jiebaDictPath: path.join(__dirname, 'chinese/zh.jieba.txt'),
+      dictPath: path.join(appDataDirectory, `cccedict-db`),
+      importDict: path.join(__dirname, 'chinese/chinese.json'),
+      importBaseSVG: path.join(__dirname, 'hanzi'),
+      ...replacements
+    }
+  }
+
+  static getCantoneseSettings = (appDataDirectory: string, replacements: any = {}) => {
+    return {
+      languageCode: "yue",
+      jiebaDictPath: path.join(__dirname, 'cantonese/yue.jieba.txt'),
+      dictPath: path.join(appDataDirectory, `cantodict-db`),
+      importDict: path.join(__dirname, 'cantonese/cantodict.json'),
+      importBaseSVG: path.join(__dirname, 'hanzi'),
+      ...replacements
+    }
+  }
+
+  /** Sets up the settings' language (`languageCode`) and makes it the one the word popup uses. */
+  static async setup(settings) {
+    this.active = chineseEngine(settings.languageCode ?? "zh-CN");
+    return this.active.setup(settings);
+  }
+
+  static tokenizeUsingJieba(sentence: string, toneType: string) {
+    return this.active.tokenizeUsingJieba(sentence, toneType);
+  }
+
+  static updateUserWords() {
+    return this.active.updateUserWords();
+  }
+
+  static getJyutpingForSentence(sentence: string, toneType: string) {
+    return this.active.getJyutpingForSentence(sentence, toneType);
   }
 
   static registerHandlers() {
@@ -217,8 +255,9 @@ class Chinese {
     // Short glosses for every word of a learning-mode subtitle chunk, in request order.
     ipcMain.handle('learningGlossesChinese', async (_event, requests) => {
       const db = Chinese.Dict.db;
-      return glossAll(requests, async (request) => (await lookupUserDictionaryEntry(this.languageCode, request.target))?.meaning
-        ?? (db ? chineseLearningGloss(db, request) : ""));
+      const languageCode = this.languageCode;
+      return glossAll(requests, async (request) => (await lookupUserDictionaryEntry(languageCode, request.target))?.meaning
+        ?? (db ? chineseLearningGloss(db, request, languageCode) : ""));
     })
 
     ipcMain.handle('queryHanzi', async (event, query) => {
@@ -227,7 +266,6 @@ class Chinese {
       } catch {
         return {}
       }
-      // return searchKanji(KanjiDic.db, query);
     })
 
     ipcMain.handle('readHanziSVG', async (event, filename) => readStrokeSvg(this.importBaseSVG, filename));
