@@ -2,11 +2,11 @@ import Japanese from "../handler/japanese";
 import {cantoneseEngine, mandarinEngine} from "../handler/chinese";
 import Vietnamese from "../handler/vietnamese";
 import {analyzeText} from "../handler/languages/analyzer";
-import {languageDataPresent, loadLanguageEngine} from "../handler/languages/registry";
+import {languageDataPresent, languageEngineState, loadLanguageEngine} from "../handler/languages/registry";
 import Learning from "../handler/learning";
 import {enabledUserDictionaryEntries} from "../helpers/userDictionary";
 import {readStrokeSvg} from "../helpers/strokeSvg";
-import {toolLanguageForCode, toolLanguageInfo} from "../language/languages";
+import {TOOL_LANGUAGES, toolLanguageForCode, toolLanguageInfo} from "../language/languages";
 import {loadHskWords, loadJapaneseLevels, loadPitchAccents} from "../language/studyData";
 import type {LanguageToolDeps} from "./languageTools";
 import {ToolError} from "./protocol";
@@ -64,3 +64,8 @@ export const createLanguageDeps = ({appDataDirectory, learnerLanguage, onSavedWo
   hskWords: loadHskWords,
   japaneseLevels: loadJapaneseLevels
 });
+
+/** For get_status: each tool language's data installed, and its engine loaded now. */
+export const languageStates = async (): Promise<Record<string, {installed: boolean; loaded: boolean}>> => (
+  Object.fromEntries(await Promise.all(TOOL_LANGUAGES.map(async (id) => [id, await languageEngineState(toolLanguageInfo(id).pluginId)] as const)))
+);

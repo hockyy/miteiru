@@ -10,7 +10,7 @@ import Learning from "../handler/learning";
 import {TOOL_LANGUAGES, toolLanguageForCode, toolLanguageInfo} from "../language/languages";
 import {setStudyDataRoots} from "../language/studyData";
 import {createMiteiruToolDeps} from "../mcp/deps";
-import {createLanguageDeps} from "../mcp/languageDeps";
+import {createLanguageDeps, languageStates} from "../mcp/languageDeps";
 import {errorMessage, ToolError, type ToolCall} from "../mcp/protocol";
 import {createMiteiruTools, type MiteiruToolDeps} from "../mcp/tools";
 import {createAppProxy} from "./appProxy";
@@ -142,7 +142,7 @@ export const startHeadless = async (options: HeadlessOptions): Promise<void> => 
     },
     language,
     toneType: getToneType,
-    languages: async () => Object.fromEntries(await Promise.all(TOOL_LANGUAGES.map(async (id) => [id, await languageEngineState(toolLanguageInfo(id).pluginId)] as const))),
+    languages: languageStates,
     server: "headless"
   };
   const tools = createMiteiruTools(deps);

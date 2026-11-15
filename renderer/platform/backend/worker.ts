@@ -97,7 +97,10 @@ const boot = async () => {
     {setLanguageAssetRoots, japaneseDictionaryFolder},
     {registerAssistantHandlers},
     {createMiteiruTools},
-    {createMiteiruToolDeps}
+    {createMiteiruToolDeps},
+    {createLanguageDeps, languageStates},
+    {BrowserWindow},
+    {SAVED_WORDS_CHANGED_EVENT}
   ] = await Promise.all([
     import('../../../main/handler/common'),
     import('../../../main/handler/common/liveCaptionsHandlers'),
@@ -111,7 +114,10 @@ const boot = async () => {
     import('../../../main/handler/languages/registry'),
     import('../../../main/mcp/handlers'),
     import('../../../main/mcp/tools'),
-    import('../../../main/mcp/deps')
+    import('../../../main/mcp/deps'),
+    import('../../../main/mcp/languageDeps'),
+    import('./shims/desktop'),
+    import('../platformApiChannels')
   ]);
 
   // Language data is read from the bundled folder and from each installed language pack
@@ -169,8 +175,22 @@ const boot = async () => {
   Learning.setup();
   Learning.registerHandler();
 
-  // The assistant tools (main/mcp), served over MCP and REST by the local API below.
-  const tools = createMiteiruTools(createMiteiruToolDeps({appDataDirectory, version: info.version, getTokenizer, setTokenizer, getToneType}));
+  // The assistant tools (main/mcp), served over MCP and REST by the local API below. The language tools
+  // load each language's engine on its own and never change the player's language.
+  const toolDeps = createMiteiruToolDeps({appDataDirectory, version: info.version, getTokenizer, setTokenizer, getToneType});
+  const learnerLanguage = async () => (toolDeps.loadedLanguage() ?? await toolDeps.rememberedLanguage())?.code ?? null;
+  const tools = createMiteiruTools({
+    ...toolDeps,
+    language: createLanguageDeps({
+      appDataDirectory,
+      learnerLanguage,
+      // An assistant changed saved words: the window colours its subtitles and My words from them again.
+      onSavedWordsChanged: (code) => BrowserWindow.getAllWindows().forEach((window) => window.webContents.send(SAVED_WORDS_CHANGED_EVENT, code))
+    }),
+    toneType: getToneType,
+    languages: languageStates,
+    server: 'app'
+  });
 
   // The local API (docs/LOCAL_API.md). Rust owns the socket and forwards requests here.
   const {startAnalyzerServer} = await import('../../../main/handler/languages/analyzerServer');
