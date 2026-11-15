@@ -7,14 +7,23 @@ import type {AnalyzerResponse} from "../handler/languages/analyzerServer";
  * and `tools/list` from it, so both paths describe the tools the same way.
  */
 
-interface PropertySchema {
-  type: "string" | "integer" | "number";
+/** The subset of JSON Schema the definitions use: scalars, arrays of them, and objects. */
+export interface PropertySchema {
+  type: "string" | "integer" | "number" | "boolean" | "array" | "object";
   enum?: string[];
-  default?: string | number;
+  default?: string | number | boolean;
   minLength?: number;
   maxLength?: number;
   minimum?: number;
   maximum?: number;
+  /** Arrays: the schema of each item. */
+  items?: PropertySchema;
+  minItems?: number;
+  maxItems?: number;
+  /** Objects (an array's items): their properties. */
+  properties?: Record<string, PropertySchema>;
+  required?: string[];
+  additionalProperties?: boolean;
 }
 
 interface ToolSchema {
@@ -67,7 +76,10 @@ const rangeText = (schema: PropertySchema) => {
   return "";
 };
 
-const validateProperty = (key: string, schema: PropertySchema, value: unknown) => {
+const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? "" : "s"}`;
+
+/** Checks one value against its schema; returns it, with an object's defaults filled in. */
+const validateValue = (key: string, schema: PropertySchema, value: unknown): unknown => {
   if (schema.type === "string") {
     if (typeof value !== "string") throw new ToolError(`${key} must be a string`);
     const length = codePointLength(value);
@@ -80,7 +92,25 @@ const validateProperty = (key: string, schema: PropertySchema, value: unknown) =
     if (schema.enum && !schema.enum.includes(value)) {
       throw new ToolError(`${key} must be one of: ${schema.enum.join(", ")}`);
     }
-    return;
+    return value;
+  }
+  if (schema.type === "boolean") {
+    if (typeof value !== "boolean") throw new ToolError(`${key} must be true or false`);
+    return value;
+  }
+  if (schema.type === "array") {
+    if (!Array.isArray(value)) throw new ToolError(`${key} must be an array`);
+    if (schema.minItems !== undefined && value.length < schema.minItems) {
+      throw new ToolError(schema.minItems === 1 ? `${key} must not be empty` : `${key} must have at least ${plural(schema.minItems, "item")}`);
+    }
+    if (schema.maxItems !== undefined && value.length > schema.maxItems) {
+      throw new ToolError(`${key} must have at most ${plural(schema.maxItems, "item")}`);
+    }
+    return schema.items ? value.map((item, index) => validateValue(`${key}[${index}]`, schema.items!, item)) : value;
+  }
+  if (schema.type === "object") {
+    if (!isObject(value)) throw new ToolError(`${key} must be an object`);
+    return validateObject(value, schema.properties ?? {}, schema.required ?? [], schema.additionalProperties, `${key}.`);
   }
   const kind = schema.type === "integer" ? "an integer" : "a number";
   const range = rangeText(schema);
@@ -90,6 +120,33 @@ const validateProperty = (key: string, schema: PropertySchema, value: unknown) =
   if ((schema.minimum !== undefined && value < schema.minimum) || (schema.maximum !== undefined && value > schema.maximum)) {
     throw new ToolError(expected);
   }
+  return value;
+};
+
+/** An object's properties checked and defaulted; `prefix` names nested ones (`words[0].`). */
+const validateObject = (
+  given: Record<string, unknown>,
+  properties: Record<string, PropertySchema>,
+  required: string[],
+  additionalProperties: boolean | undefined,
+  prefix = ""
+): Record<string, unknown> => {
+  if (additionalProperties === false) {
+    for (const key of Object.keys(given)) {
+      if (!Object.prototype.hasOwnProperty.call(properties, key)) throw new ToolError(`Unknown argument: ${prefix}${key}`);
+    }
+  }
+  const result: Record<string, unknown> = {};
+  for (const [key, schema] of Object.entries(properties)) {
+    const value = given[key];
+    if (value === undefined || value === null) {
+      if (required.includes(key)) throw new ToolError(`Missing argument: ${prefix}${key}`);
+      if (schema.default !== undefined) result[key] = schema.default;
+      continue;
+    }
+    result[key] = validateValue(`${prefix}${key}`, schema, value);
+  }
+  return result;
 };
 
 /**
@@ -102,26 +159,8 @@ export const validateToolArguments = (name: string, args: unknown): Record<strin
   if (!tool) throw new ToolError(`Unknown tool: ${name}`, 404);
   const given = args === undefined || args === null ? {} : args;
   if (!isObject(given)) throw new ToolError("Arguments must be an object");
-
   const {properties, required = [], additionalProperties} = tool.inputSchema;
-  if (additionalProperties === false) {
-    for (const key of Object.keys(given)) {
-      if (!Object.prototype.hasOwnProperty.call(properties, key)) throw new ToolError(`Unknown argument: ${key}`);
-    }
-  }
-
-  const result: Record<string, unknown> = {};
-  for (const [key, schema] of Object.entries(properties)) {
-    const value = given[key];
-    if (value === undefined || value === null) {
-      if (required.includes(key)) throw new ToolError(`Missing argument: ${key}`);
-      if (schema.default !== undefined) result[key] = schema.default;
-      continue;
-    }
-    validateProperty(key, schema, value);
-    result[key] = value;
-  }
-  return result;
+  return validateObject(given, properties, required, additionalProperties);
 };
 
 type JsonRpcId = string | number | null;

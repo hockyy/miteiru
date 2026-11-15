@@ -256,10 +256,14 @@ test("dictionary tokens retain normal pronunciation fields and the custom meanin
   assert.equal(japanese.hiragana, "みている");
   assert.equal(japanese.userDictionaryMeaning, "watching");
   assert.equal(japanese.separation.map((part) => part.main).join(""), "見ている");
-  const cantonese = userDictionaryToken(entry({language: "yue", surface: "香港", reading: "hoeng1 gong2", meaning: "Hong Kong"}), "symbol");
+  const cantonese = userDictionaryToken(entry({language: "yue", surface: "香港", reading: "hoeng1 gong2", meaning: "Hong Kong"}), "num");
   assert.ok("jyutping" in cantonese);
   assert.equal(cantonese.jyutping, "hoeng1 gong2");
   assert.deepEqual(cantonese.separation.map((part) => part.main), ["香", "港"]);
+  // Tone marks are Jyutping's contour marks; tone numbers were what "symbol" gave before the fix.
+  const marked = userDictionaryToken(entry({language: "yue", surface: "香港", reading: "hoeng1 gong2", meaning: "Hong Kong"}), "symbol");
+  assert.ok("jyutping" in marked);
+  assert.equal(marked.jyutping, "hoengˉ¹ gong⸍²");
   const mandarin = userDictionaryToken(entry({language: "zh-CN", surface: "你好", reading: "ni3 hao3", meaning: "hello"}), "symbol");
   assert.ok("pinyin" in mandarin);
   assert.equal(mandarin.pinyin, "nǐ hǎo");

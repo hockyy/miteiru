@@ -6,6 +6,9 @@ import {type CaptionTrack, chooseCaptions, describeTracks} from "./captionChoice
 import {errorMessage, ToolError} from "./protocol";
 import {computeCoverage, readingDiffers, wordKey} from "./videoCoverage";
 import {parseYoutubeSearch, type SearchDuration, youtubeSearchUrl} from "./youtubeSearch";
+import {createLanguageTools, type LanguageToolDeps} from "./languageTools";
+import {isToolLanguage, toolLanguageInfo, type ToolLanguage} from "../language/languages";
+import {languageModes} from "../../renderer/languages/manifest";
 
 export interface LearningLanguage {
   code: string;
@@ -46,6 +49,14 @@ export interface MiteiruToolDeps {
   openInWindow(request: OpenVideoRequest): Promise<"opened" | "declined" | "replaced" | "waiting">;
   /** The clock for the search time budget; Date.now by default. */
   now?(): number;
+  /** The language tools' engines (main/mcp/languageDeps.ts); without them those tools answer 503. */
+  language?: LanguageToolDeps;
+  /** The learner's tone display setting (store `toneType`): analyze_text's basic readings follow it. */
+  toneType?(): Promise<string>;
+  /** Which languages' data is on this computer, and which are loaded now, for get_status. */
+  languages?(): Promise<Record<string, {installed: boolean; loaded: boolean}>>;
+  /** Where the tools run: "app" inside Miteiru, "headless" in the stdio server (main/headless). */
+  server?: "app" | "headless";
 }
 
 /**
@@ -55,6 +66,33 @@ export interface MiteiruToolDeps {
 export type MiteiruTools = Record<string, (args: Record<string, unknown>) => Promise<object>>;
 
 const NO_LANGUAGE = "No language is chosen in Miteiru yet. Pick one on Miteiru's Home screen, then try again.";
+const NO_LANGUAGE_TOOLS = "Miteiru's language tools are not available here.";
+
+/** Where the language tools' facts come from, with their licences: what an app showing them credits. */
+export const DATA_SOURCES = [
+  {name: "JMdict", use: "Japanese words, readings and glosses", license: "CC BY-SA 4.0", url: "https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project", credit: "Electronic Dictionary Research and Development Group"},
+  {name: "KANJIDIC2", use: "Kanji readings, meanings and levels", license: "CC BY-SA 4.0", url: "https://www.edrdg.org/wiki/index.php/KANJIDIC_Project", credit: "Electronic Dictionary Research and Development Group"},
+  {name: "KanjiVG", use: "Kanji stroke order", license: "CC BY-SA 3.0", url: "https://kanjivg.tagaini.net/", credit: "Ulrich Apel"},
+  {name: "Kanjium", use: "Japanese pitch accents", license: "CC BY-SA 4.0", url: "https://github.com/mifunetoshiro/kanjium"},
+  {name: "JLPT word lists", use: "Japanese JLPT levels (unofficial)", license: "CC BY-SA 4.0 (the lists themselves: CC BY)", url: "https://github.com/stephenmk/yomitan-jlpt-vocab", credit: "stephenmk; Jonathan Waller"},
+  {name: "wordfreq", use: "Japanese word frequencies (freq_rank, freq_zipf; words at Zipf 3 or more)", license: "CC BY-SA 4.0 (data)", url: "https://github.com/rspeer/wordfreq", credit: "Robyn Speer"},
+  {name: "IPADIC", use: "Japanese tokenizer dictionary", license: "IPADIC licence", url: "https://github.com/taku910/mecab/tree/master/mecab-ipadic"},
+  {name: "CC-CEDICT", use: "Mandarin words, pinyin and glosses", license: "CC BY-SA 4.0", url: "https://www.mdbg.net/chinese/dictionary?page=cedict"},
+  {name: "CantoDict", use: "Cantonese words, jyutping and glosses", license: "see its site", url: "https://www.cantonese.sheik.co.uk/"},
+  {name: "Make Me a Hanzi", use: "Hanzi stroke order and decomposition", license: "Arphic Public License and LGPL", url: "https://github.com/skishore/makemeahanzi"},
+  {name: "complete-hsk-vocabulary", use: "Mandarin HSK 3.0 levels", license: "MIT", url: "https://github.com/drkameleon/complete-hsk-vocabulary"},
+  {name: "pinyin-pro", use: "Mandarin pinyin", license: "MIT", url: "https://github.com/zh-lx/pinyin-pro"},
+  {name: "OpenCC (opencc-js)", use: "A simplified copy of traditional Mandarin, read for pinyin", license: "MIT and Apache-2.0", url: "https://github.com/nk2028/opencc-js"},
+  {name: "to-jyutping", use: "Cantonese jyutping", license: "BSD-2-Clause", url: "https://github.com/CanCLID/to-jyutping"},
+  {name: "VNEDict", use: "Vietnamese glosses", license: "see its site", url: "https://www.denisowski.org/Vietnamese/Vietnamese.html"}
+];
+
+/** A named language as the video tools describe one (the manifest's mode for it). */
+const learningLanguageFor = (id: ToolLanguage): LearningLanguage => {
+  const info = toolLanguageInfo(id);
+  const mode = languageModes.find((candidate) => candidate.pluginId === info.pluginId);
+  return {code: info.code, name: mode?.englishName ?? info.name, tokenizerMode: info.tokenizerMode, pluginId: info.pluginId};
+};
 const SEARCH_BUDGET_MS = 45_000;
 const SEARCH_CHECKS_AT_ONCE = 3;
 // Each check is a full yt-dlp run against YouTube; many in a row can get the computer asked to prove
@@ -122,6 +160,18 @@ const trimmed = (value: unknown) => (typeof value === "string" ? value.trim() : 
 
 export const createMiteiruTools = (deps: MiteiruToolDeps): MiteiruTools => {
   const now = deps.now ?? Date.now;
+  const languageTools = deps.language ? createLanguageTools(deps.language) : null;
+  const requireLanguageTools = () => {
+    if (!languageTools) throw new ToolError(NO_LANGUAGE_TOOLS, 503);
+    return languageTools;
+  };
+  /** A language named in the call (its engine loaded), else null to use the learner's. */
+  const namedLanguage = async (requested: unknown): Promise<LearningLanguage | null> => {
+    if (requested === undefined || requested === null) return null;
+    if (!isToolLanguage(requested)) throw new ToolError("language must be one of: ja, zh-Hans, zh-Hant, yue, vi");
+    await requireLanguageTools().languageOf(requested);
+    return learningLanguageFor(requested);
+  };
   let loading: Promise<LearningLanguage> | null = null;
   const youtubeRun = limiter(YOUTUBE_RUNS_AT_ONCE);
   const oneRatingAtATime = limiter(1);
@@ -170,10 +220,11 @@ export const createMiteiruTools = (deps: MiteiruToolDeps): MiteiruTools => {
   const get_status = async () => {
     const loadedLanguage = deps.loadedLanguage();
     const language = loadedLanguage ?? await deps.rememberedLanguage();
-    const [saved, last, ytDlp] = await Promise.all([
+    const [saved, last, ytDlp, languages] = await Promise.all([
       language ? deps.savedWords(language.code) : null,
       deps.lastVideo(),
-      deps.ytDlpAvailable().catch(() => false)
+      deps.ytDlpAvailable().catch(() => false),
+      deps.languages?.().catch(() => undefined)
     ]);
     return {
       version: deps.version,
@@ -185,7 +236,10 @@ export const createMiteiruTools = (deps: MiteiruToolDeps): MiteiruTools => {
         stoppedAt: clockText(last.position),
         watched: Number.isFinite(last.savedAt) ? new Date(last.savedAt).toISOString() : null
       } : null,
-      youtube: {ytDlp}
+      youtube: {ytDlp},
+      ...(languages ? {languages} : {}),
+      ...(deps.server ? {server: deps.server} : {}),
+      ...(deps.language ? {sources: DATA_SOURCES} : {})
     };
   };
 
@@ -196,7 +250,7 @@ export const createMiteiruTools = (deps: MiteiruToolDeps): MiteiruTools => {
     const limit = args.limit as number;
     if (!query) throw new ToolError("query must not be empty");
 
-    const language = await learningLanguage();
+    const language = await namedLanguage(args.language) ?? await learningLanguage();
     if (captions !== "any" && !language) throw noLanguage();
 
     let listing: any;
@@ -311,7 +365,10 @@ export const createMiteiruTools = (deps: MiteiruToolDeps): MiteiruTools => {
       throw new ToolError("Miteiru is still rating other videos. Ask for this one again in a moment.", 503);
     }
     const videoId = parseVideo(String(args.video));
-    const language = await ensureLanguageLoaded();
+    // A named language is read with its own engine; the learner's with the one the subtitles use.
+    const named = isToolLanguage(args.language) ? args.language : null;
+    const language = await namedLanguage(args.language) ?? await ensureLanguageLoaded();
+    const analyze = named ? (text: string) => requireLanguageTools().analyzeRaw(named, text) : deps.analyze;
     const info = await videoInfo(videoId);
     const summary = videoSummary(videoId, info);
     const tracks = describeTracks(info);
@@ -342,7 +399,7 @@ export const createMiteiruTools = (deps: MiteiruToolDeps): MiteiruTools => {
     const ratable = Math.min(lines.length, MAX_CAPTION_LINES);
     while (tokens.length < ratable && now() - asked < RATE_DEADLINE_MS) {
       const batch = lines.slice(tokens.length, Math.min(tokens.length + ANALYZE_LINES_AT_ONCE, ratable));
-      tokens.push(...await Promise.all(batch.map((line) => deps.analyze(line.text))));
+      tokens.push(...await Promise.all(batch.map((line) => analyze(line.text))));
     }
     if (lines.length > 0 && tokens.length === 0) {
       throw new ToolError("Miteiru took too long to read this video's captions. Ask for it again in a moment.", 503);
@@ -425,6 +482,11 @@ export const createMiteiruTools = (deps: MiteiruToolDeps): MiteiruTools => {
   };
 
   const analyze_text = async (args: Record<string, unknown>) => {
+    // A language, several texts or full detail: the language tools. Otherwise the shape it always had.
+    if (args.language !== undefined || args.texts !== undefined || args.detail === "full") {
+      return requireLanguageTools().analyze(args, await deps.toneType?.() ?? "num");
+    }
+    if (typeof args.text !== "string") throw new ToolError("Missing argument: text");
     const language = await ensureLanguageLoaded();
     const [tokens, saved] = await Promise.all([deps.analyze(String(args.text)), deps.savedWords(language.code)]);
     const words = tokens.filter((token) => hasLetterOrDigit(token?.origin)).map((token) => {
@@ -446,7 +508,7 @@ export const createMiteiruTools = (deps: MiteiruToolDeps): MiteiruTools => {
   };
 
   const list_saved_words = async (args: Record<string, unknown>) => {
-    const language = await learningLanguage();
+    const language = await namedLanguage(args.language) ?? await learningLanguage();
     if (!language) throw noLanguage();
     const saved = await deps.savedWords(language.code);
     const level = args.level as "learning" | "known" | "all";
@@ -463,5 +525,19 @@ export const createMiteiruTools = (deps: MiteiruToolDeps): MiteiruTools => {
     return {language: languageSummary(language), total: countLevels(saved), words};
   };
 
-  return {get_status, search_videos, rate_video, open_video, analyze_text, list_saved_words};
+  const languageTool = (name: "lookup_word" | "lookup_character" | "readings" | "text_coverage" | "known_words" | "set_word_levels" | "conjugate" | "romanize") => (
+    (args: Record<string, unknown>) => requireLanguageTools()[name](args)
+  );
+
+  return {
+    get_status, search_videos, rate_video, open_video, analyze_text, list_saved_words,
+    lookup_word: languageTool("lookup_word"),
+    lookup_character: languageTool("lookup_character"),
+    readings: languageTool("readings"),
+    text_coverage: languageTool("text_coverage"),
+    known_words: languageTool("known_words"),
+    set_word_levels: languageTool("set_word_levels"),
+    conjugate: languageTool("conjugate"),
+    romanize: languageTool("romanize")
+  };
 };

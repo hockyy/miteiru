@@ -20,7 +20,7 @@ with the reading on top, the meaning underneath and a full dictionary entry one 
 
 ## Why Miteiru?
 
-- **Every word is clickable.** Subtitles are split into words (Kuromoji for Japanese, Jieba for Chinese) with furigana, pinyin or jyutping on top and short meanings underneath. Click a word for its full dictionary entry, pitch accent, conjugations and kanji breakdown.
+- **Every word is clickable.** Subtitles are split into words (Miteiru's own Rust tokenizers: an IPADIC lattice for Japanese, Jieba for Chinese) with furigana, pinyin or jyutping on top and short meanings underneath. Click a word for its full dictionary entry, pitch accent, conjugations and kanji breakdown.
 - **Your videos, your subtitles.** Drop in local files (MKV, MP4, HEVC, AV1, multiple audio tracks: anything [mpv](https://mpv.io) plays, with no converting) with `.srt`, `.ass`, `.vtt` or `.lrc` subtitles, or paste a YouTube link and pick one of its caption tracks.
 - **Dictionaries stay on your computer.** JMdict, KANJIDIC, CC-CEDICT, CantoDict and VNEDict work offline once a language is downloaded. No account, no subscription, no server.
 - **Made for immersion.** Your target language on top and English underneath, a key to repeat the current line, karaoke lyrics, colours for the words you know, flashcards and one-click Anki cards.
@@ -86,7 +86,7 @@ Miteiru 8.0 doesn't update itself yet: new versions appear on the [releases page
 
 | | 🇯🇵 Japanese | 🇨🇳 Mandarin | 🇭🇰 Cantonese | 🇻🇳 Vietnamese |
 | --- | --- | --- | --- | --- |
-| Words split by | Kuromoji | Jieba | Jieba (Cantonese) | Longest match |
+| Words split by | Miteiru's tokenizer (IPADIC) | Jieba | Jieba (Cantonese) | Longest match |
 | Readings | Furigana, romaji | Pinyin | Jyutping | |
 | Dictionary | JMdict, KANJIDIC | CC-CEDICT | CantoDict | VNEDict |
 | Extras | Pitch accent, conjugations, kanji strokes | Simplified and traditional, hanzi strokes | Tone marks | A meaning under every word |
@@ -170,7 +170,7 @@ npm run script:download-language-assets -- mandarin han-character-core
 
 ## Credits and license
 
-Dictionary data comes from JMdict and KANJIDIC ([EDRDG](https://www.edrdg.org/)), CC-CEDICT, CantoDict, VNEDict, KanjiVG and Make Me a Hanzi, each under its own license. Video playback uses [libmpv](https://mpv.io) and [FFmpeg](https://ffmpeg.org) in their LGPL 2.1 builds; the licence text ships with the app.
+Dictionary data comes from JMdict and KANJIDIC ([EDRDG](https://www.edrdg.org/)), CC-CEDICT, CantoDict, VNEDict, KanjiVG and Make Me a Hanzi, each under its own license. Japanese pitch accents come from [Kanjium](https://github.com/mifunetoshiro/kanjium) and Mandarin HSK levels from [complete-hsk-vocabulary](https://github.com/drkameleon/complete-hsk-vocabulary) (MIT). Japanese JLPT levels come from Jonathan Waller's [JLPT Resources](http://www.tanos.co.uk/jlpt/) through [yomitan-jlpt-vocab](https://github.com/stephenmk/yomitan-jlpt-vocab), and word frequencies from [wordfreq](https://github.com/rspeer/wordfreq) by Robyn Speer; both are CC BY-SA 4.0, kept with their licence and notices in `renderer/public/study-data/japanese-levels/`. Video playback uses [libmpv](https://mpv.io) and [FFmpeg](https://ffmpeg.org) in their LGPL 2.1 builds; the licence text ships with the app.
 
 The Japanese tokenizer is Miteiru's own Rust lattice and suffix engine, reading the existing IPADIC pack, JMdict and Your dictionary. Its kuromoji.js compatibility reference and IPADIC notices are in `native/rust/crates/miteiru-tokenizer/NOTICE`; the Apache-2.0 text ships beside them. See [the tokenizer design and evaluation](docs/JAPANESE_TOKENIZER.md).
 

@@ -55,3 +55,9 @@ export const LANGUAGE_LOAD_CHANNELS = ['loadKuromoji', 'loadCantonese', 'loadChi
  * assistant, main/mcp/deps.ts), so a page reload loads it again as if the page had asked.
  */
 export const LANGUAGE_LOADED_EVENT = 'language:loaded';
+
+/**
+ * Sent with a language code as saved words are stored (ja, zh-CN, yue, vi) when the backend changed
+ * saved words by itself (an assistant's set_word_levels, main/mcp), so the page loads them again.
+ */
+export const SAVED_WORDS_CHANGED_EVENT = 'learning:saved-words-changed';

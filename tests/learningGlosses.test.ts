@@ -99,3 +99,61 @@ test("glossAll keeps request order and turns a failed lookup into an empty gloss
   assert.deepEqual(glosses, ["A", "", "C"]);
   assert.deepEqual(await glossAll(undefined as never, async () => "x"), []);
 });
+
+// ---- Bug fixes: POS-blind Japanese glosses, and Chinese meanings over 10 characters dropped ----------
+
+const sense = (pos: string[], glosses: string[], info: string[] = []) => ({
+  partOfSpeech: pos, appliesToKanji: ["*"], appliesToKana: ["*"], related: [], antonym: [], field: [], dialect: [],
+  misc: [], info, languageSource: [], gloss: glosses.map((text) => ({lang: "eng", text, type: null}))
+});
+
+test("japaneseLearningGloss picks the entry and sense that fit the token's part of speech", async () => {
+  const file = path.join(directory, "jmdict-pos.json");
+  await fs.writeFile(file, JSON.stringify({
+    version: "1", dictDate: "2026-01-01", dictRevisions: [], tags,
+    words: [
+      // JMdict's さん entries: the common noun 酸 sorts before the suffix, which used to win.
+      {id: "1304260", kanji: [{common: true, text: "酸", tags: []}], kana: [{common: true, text: "さん", tags: [], appliesToKanji: ["*"]}], sense: [sense(["n"], ["acid"])]},
+      {id: "1005340", kanji: [], kana: [{common: true, text: "さん", tags: [], appliesToKanji: ["*"]}], sense: [sense(["suf"], ["Mr.", "Mrs.", "Miss"])]},
+      {id: "1008490", kanji: [], kana: [{common: true, text: "と", tags: [], appliesToKanji: ["*"]}], sense: [
+        sense(["prt", "conj"], ["if", "when"]), sense(["prt", "conj"], ["and"]), sense(["prt"], ["with"]),
+        sense(["prt"], ["used for quoting (thoughts, speech, etc.)"])
+      ]}
+    ]
+  }), "utf8");
+  const {db} = await setupJmdict(path.join(directory, "jmdict-pos-db"), file);
+  try {
+    // Without a part of speech the old order stands (what a 7.x renderer still asks).
+    assert.equal(await japaneseLearningGloss(db, {target: "さん", reading: "さん"}), "acid");
+    assert.equal(await japaneseLearningGloss(db, {target: "さん", reading: "さん", pos: "名詞-接尾-人名"}), "Mr.");
+    assert.equal(await japaneseLearningGloss(db, {target: "と", reading: "と", pos: "助詞-格助詞-一般"}), "with");
+    assert.equal(await japaneseLearningGloss(db, {target: "と", reading: "と", pos: "助詞-並立助詞"}), "and");
+    assert.equal(await japaneseLearningGloss(db, {target: "と", reading: "と", pos: "助詞-接続助詞"}), "if");
+    assert.equal(await japaneseLearningGloss(db, {target: "と", reading: "と", pos: "助詞-格助詞-引用"}), "used for quoting");
+  } finally {
+    await db.close();
+  }
+});
+
+test("pickChineseGloss keeps meanings longer than 10 characters and reads CantoDict's nested senses", () => {
+  // CC-CEDICT entries as the Mandarin pack stores them.
+  assert.equal(pickChineseGloss([{id: "61934", content: "沒想到", simplified: "没想到", pinyin: ["mei2 xiang3 dao4"], meaning: ["didn't expect"]}], "没想到"), "didn't expect");
+  assert.equal(pickChineseGloss([{id: "71381", content: "玉皇大帝", simplified: "玉皇大帝", pinyin: ["Yu4 huang2 Da4 di4"], meaning: ["Jade Emperor"]}], "玉皇大帝"), "Jade Emperor");
+  assert.equal(pickChineseGloss([{id: "122276", content: "龍王", simplified: "龙王", pinyin: ["Long2 wang2"], meaning: ["Dragon King (mythology)"]}], "龙王"), "Dragon King");
+  // 后 is a surname, empress, and the simplified form of 後: the common word wins.
+  const hou = [
+    {id: "19995", content: "后", simplified: "后", pinyin: ["Hou4"], meaning: ["surname Hou"]},
+    {id: "19996", content: "后", simplified: "后", pinyin: ["hou4"], meaning: ["empress", "queen", "(archaic) monarch", "ruler"]},
+    {id: "39216", content: "後", simplified: "后", pinyin: ["hou4"], meaning: ["back", "behind", "rear", "afterwards", "after", "later", "post-"]}
+  ];
+  assert.equal(pickChineseGloss(hou, "后"), "back");
+  assert.equal(pickChineseGloss(hou, "後"), "back");
+  // CantoDict's word list: each inner list is a sense cut at its commas.
+  const yumCha = {id: "15178", content: "飲茶", simplified: "", pinyin: null, jyutping: "jam2 caa4",
+    meaning: [["to drink tea"], ["to go yumcha", " to have dim sum at a teahouse, usually referring to a meal at the time of breakfast or lunch only"]]};
+  assert.equal(pickChineseGloss([yumCha], "飲茶", {cantonese: true}), "to drink tea");
+  const zo = {id: "2372", content: "咗", simplified: "", pinyin: null, jyutping: "zo2",
+    meaning: [["used after a verb as a perfective aspect marker for completed actions or past events"]]};
+  const hint = pickChineseGloss([zo], "咗", {cantonese: true});
+  assert.ok(hint.startsWith("used after a verb") && hint.endsWith("…") && hint.length <= 25, hint);
+});

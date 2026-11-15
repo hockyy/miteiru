@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import {test} from "node:test";
 import {
+  formatJyutpingReading,
   formatPinyinReading,
   replacePinyinToneSymbol,
   toPinyinToneMarks
@@ -29,9 +30,24 @@ test("toPinyinToneMarks places tones on vowels", () => {
   assert.equal(toPinyinToneMarks("de5"), "de");
 });
 
-test("formatPinyinReading uses contours for num and diacritics for symbol", () => {
-  assert.equal(formatPinyinReading("ni3", "num"), "niᵛ₃");
+// The setting is "Tone numbers: ni3 hao3", off for "Tone marks: nǐ hǎo" (VideoPlayer/Sidebar.tsx). Before
+// the fix `num` gave contour marks (niᵛ₃), and Cantonese had the two swapped (`num` gave neiˍ₅).
+test("formatPinyinReading gives tone numbers for num and tone marks for symbol", () => {
+  assert.equal(formatPinyinReading("ni3", "num"), "ni3");
   assert.equal(formatPinyinReading("ni3", "symbol"), "nǐ");
-  assert.equal(formatPinyinReading("hao2", "num"), "hao⸍²");
+  assert.equal(formatPinyinReading("hao2", "num"), "hao2");
   assert.equal(formatPinyinReading("hao2", "symbol"), "háo");
+  // pinyin-pro writes the neutral tone as 0; a tone number shows it as 5, a tone mark as nothing.
+  assert.equal(formatPinyinReading("ma0", "num"), "ma5");
+  assert.equal(formatPinyinReading("ma0", "symbol"), "ma");
+  assert.equal(formatPinyinReading("", "num"), "");
+});
+
+test("formatJyutpingReading gives tone numbers for num and contour marks for symbol", () => {
+  assert.equal(formatJyutpingReading("nei5", "num"), "nei5");
+  assert.equal(formatJyutpingReading("nei5", "symbol"), "nei⸝₅");
+  assert.equal(formatJyutpingReading("sik6", "symbol"), "sikˍ₆");
+  assert.equal(formatJyutpingReading("hou2", "symbol"), "hou⸍²");
+  assert.equal(formatJyutpingReading(null, "symbol"), null);
+  assert.equal(formatJyutpingReading("abc", "symbol"), "abc");
 });

@@ -187,7 +187,7 @@ A pack is a table with codec `file`: the key is a file's path under `language-as
 | `cantonese` | `cantonese/**` | `cantonese-jieba` | 8.1 MiB |
 | `vietnamese` | `vietnamese/**` | `vietnamese` | 0.6 MiB |
 
-Japanese pitch accents and the grammar catalogue stay in the app: the page fetches them from its own export and nothing in `main/` reads them. A language needs every pack that serves it: Mandarin needs `mandarin` and `hanzi`.
+Japanese pitch accents and the grammar catalogue stay in the app: the page fetches them from its own export. `main/language/studyData.ts` reads the pitch accents too, for the language tools (from disk under `renderer/public` in a checkout, else from the page's own origin), with the HSK levels and the Japanese JLPT levels and word frequencies in `study-data/`. A language needs every pack that serves it: Mandarin needs `mandarin` and `hanzi`.
 
 `PACKS` and `EXCLUDED` in `scripts/data/buildLanguagePacks.ts` list what each pack takes. The build fails when a staged file is in no pack and not excluded, so new data cannot be left out without anyone noticing (`.DS_Store` is skipped). `npm run build:language-packs` stages and compresses `renderer/public/language-assets` in a temporary folder the way `stageTauriResources.mjs` does, and writes the packs and the manifest to `dist/language-packs/`. The release workflow does this in its own `language-packs` job, uploads the `.mtrpack` files to the release and hands the folder to the build jobs.
 

@@ -1,0 +1,441 @@
+{
+  "language": {
+    "code": "ja",
+    "name": "Japanese"
+  },
+  "detail": "full",
+  "format": 2,
+  "text": "今日ねなんか税理士さんとね、お話ししたんですね",
+  "tokens": [
+    {
+      "s": "今日",
+      "start": 0,
+      "end": 2,
+      "word": true,
+      "pos": "noun",
+      "tag": "名詞-副詞可能",
+      "base": "今日",
+      "reading": {
+        "kana": "きょう",
+        "romaji": "kyou"
+      },
+      "ruby": [
+        {
+          "base": "今日",
+          "ruby": "きょう"
+        }
+      ],
+      "gloss": {
+        "en": [
+          "today; this day",
+          "these days; recently; nowadays"
+        ],
+        "source": "JMdict",
+        "entry_id": "1579110"
+      },
+      "levels": {
+        "jlpt": "N5",
+        "freq_rank": 193,
+        "freq_zipf": 5.57
+      },
+      "pitch": {
+        "reading": "きょう",
+        "accents": [
+          1
+        ],
+        "patterns": [
+          "atamadaka"
+        ],
+        "morae": [
+          "きょ",
+          "う"
+        ]
+      },
+      "reading_check": "dictionary"
+    },
+    {
+      "s": "ね",
+      "start": 2,
+      "end": 3,
+      "word": true,
+      "pos": "particle",
+      "tag": "助詞-終助詞",
+      "base": "ね",
+      "reading": {
+        "kana": "ね",
+        "romaji": "ne"
+      },
+      "ruby": [
+        {
+          "base": "ね",
+          "ruby": ""
+        }
+      ],
+      "gloss": {
+        "en": [
+          "so, ...; well, ...; you see, ...; you understand?",
+          "right?; isn't it?; doesn't it?; don't you?; don't you think?",
+          "you know; you see; I must say; I should think",
+          "will you?; please",
+          "I'm not sure if ...; I have my doubts about whether ...",
+          "hey; say; listen; look; come on"
+        ],
+        "source": "JMdict",
+        "entry_id": "2029080"
+      },
+      "levels": {
+        "freq_rank": 26,
+        "freq_zipf": 6.63
+      },
+      "reading_check": "dictionary"
+    },
+    {
+      "s": "なんか",
+      "start": 3,
+      "end": 6,
+      "word": true,
+      "pos": "filler",
+      "tag": "フィラー",
+      "base": "なんか",
+      "reading": {
+        "kana": "なんか",
+        "romaji": "nanka"
+      },
+      "ruby": [
+        {
+          "base": "なんか",
+          "ruby": ""
+        }
+      ],
+      "gloss": {
+        "en": [
+          "something like ...; things like ...; someone like ...; the likes of ..."
+        ],
+        "source": "JMdict",
+        "entry_id": "1009500",
+        "alternatives": [
+          {
+            "entry_id": "1188270",
+            "en": [
+              "somehow; for some reason",
+              "what ?; what ?"
+            ]
+          }
+        ]
+      },
+      "levels": {
+        "jlpt": "N1",
+        "freq_rank": 211,
+        "freq_zipf": 5.54
+      },
+      "reading_check": "dictionary"
+    },
+    {
+      "s": "税理士",
+      "start": 6,
+      "end": 9,
+      "word": true,
+      "pos": "noun",
+      "tag": "名詞-一般",
+      "base": "税理士",
+      "reading": {
+        "kana": "ぜいりし",
+        "romaji": "zeirishi"
+      },
+      "ruby": [
+        {
+          "base": "税理士",
+          "ruby": "ぜいりし"
+        }
+      ],
+      "gloss": {
+        "en": [
+          "tax counsellor; tax counselor; licensed tax accountant"
+        ],
+        "source": "JMdict",
+        "entry_id": "1382200"
+      },
+      "levels": {
+        "freq_rank": 19336,
+        "freq_zipf": 3.3
+      },
+      "reading_check": "dictionary"
+    },
+    {
+      "s": "さん",
+      "start": 9,
+      "end": 11,
+      "word": true,
+      "pos": "suffix",
+      "tag": "名詞-接尾-人名",
+      "base": "さん",
+      "reading": {
+        "kana": "さん",
+        "romaji": "san"
+      },
+      "ruby": [
+        {
+          "base": "さん",
+          "ruby": ""
+        }
+      ],
+      "gloss": {
+        "en": [
+          "Mr.; Mrs.; Miss; Ms.; -san",
+          "politeness marker"
+        ],
+        "source": "JMdict",
+        "entry_id": "1005340",
+        "alternatives": [
+          {
+            "entry_id": "2085690",
+            "en": [
+              "Mt.; Mount",
+              "Mt.; Mount"
+            ]
+          }
+        ]
+      },
+      "levels": {
+        "jlpt": "N1",
+        "freq_rank": 75,
+        "freq_zipf": 6.07
+      },
+      "reading_check": "dictionary"
+    },
+    {
+      "s": "と",
+      "start": 11,
+      "end": 12,
+      "word": true,
+      "pos": "particle",
+      "tag": "助詞-格助詞-一般",
+      "base": "と",
+      "reading": {
+        "kana": "と",
+        "romaji": "to"
+      },
+      "ruby": [
+        {
+          "base": "と",
+          "ruby": ""
+        }
+      ],
+      "gloss": {
+        "en": [
+          "with",
+          "if; when",
+          "and",
+          "used for quoting",
+          "indicates a question",
+          "promoted pawn"
+        ],
+        "source": "JMdict",
+        "entry_id": "1008490"
+      },
+      "levels": {
+        "jlpt": "N1",
+        "freq_rank": 10,
+        "freq_zipf": 7.21
+      },
+      "reading_check": "dictionary"
+    },
+    {
+      "s": "ね",
+      "start": 12,
+      "end": 13,
+      "word": true,
+      "pos": "particle",
+      "tag": "助詞-終助詞",
+      "base": "ね",
+      "reading": {
+        "kana": "ね",
+        "romaji": "ne"
+      },
+      "ruby": [
+        {
+          "base": "ね",
+          "ruby": ""
+        }
+      ],
+      "gloss": {
+        "en": [
+          "so, ...; well, ...; you see, ...; you understand?",
+          "right?; isn't it?; doesn't it?; don't you?; don't you think?",
+          "you know; you see; I must say; I should think",
+          "will you?; please",
+          "I'm not sure if ...; I have my doubts about whether ...",
+          "hey; say; listen; look; come on"
+        ],
+        "source": "JMdict",
+        "entry_id": "2029080"
+      },
+      "levels": {
+        "freq_rank": 26,
+        "freq_zipf": 6.63
+      },
+      "reading_check": "dictionary"
+    },
+    {
+      "s": "、",
+      "start": 13,
+      "end": 14,
+      "word": false,
+      "pos": "punct"
+    },
+    {
+      "s": "お話しした",
+      "start": 14,
+      "end": 19,
+      "word": true,
+      "pos": "verb",
+      "tag": "動詞-自立",
+      "base": "話す",
+      "reading": {
+        "kana": "おはなしした",
+        "romaji": "ohanashishita"
+      },
+      "ruby": [
+        {
+          "base": "お",
+          "ruby": ""
+        },
+        {
+          "base": "話",
+          "ruby": "はな"
+        },
+        {
+          "base": "しした",
+          "ruby": ""
+        }
+      ],
+      "gloss": {
+        "en": [
+          "to talk; to speak; to converse; to chat",
+          "to tell; to explain; to narrate; to mention; to describe; to discuss",
+          "to speak"
+        ],
+        "source": "JMdict",
+        "entry_id": "1562350"
+      },
+      "levels": {
+        "jlpt": "N5",
+        "freq_rank": 2143,
+        "freq_zipf": 4.61
+      },
+      "conjugation": {
+        "dictionary_form": "話す",
+        "kind": "verb",
+        "ladder": []
+      },
+      "reading_check": "dictionary"
+    },
+    {
+      "s": "ん",
+      "start": 19,
+      "end": 20,
+      "word": true,
+      "pos": "noun",
+      "tag": "名詞-非自立-一般",
+      "base": "ん",
+      "reading": {
+        "kana": "ん",
+        "romaji": "n"
+      },
+      "ruby": [
+        {
+          "base": "ん",
+          "ruby": ""
+        }
+      ],
+      "gloss": {
+        "en": [
+          "the expectation is that ...; the reason is that ...; the fact is that ...; the explanation is that ...; it is that ..."
+        ],
+        "source": "JMdict",
+        "entry_id": "2087820",
+        "alternatives": [
+          {
+            "entry_id": "2139720",
+            "en": [
+              "'s; of; belonging to",
+              "at; in; on; during"
+            ]
+          }
+        ]
+      },
+      "levels": {
+        "freq_rank": 16,
+        "freq_zipf": 6.9
+      },
+      "reading_check": "dictionary"
+    },
+    {
+      "s": "です",
+      "start": 20,
+      "end": 22,
+      "word": true,
+      "pos": "auxiliary",
+      "tag": "助動詞",
+      "base": "です",
+      "reading": {
+        "kana": "です",
+        "romaji": "desu"
+      },
+      "ruby": [
+        {
+          "base": "です",
+          "ruby": ""
+        }
+      ],
+      "gloss": {
+        "en": [
+          "be; is"
+        ],
+        "source": "JMdict",
+        "entry_id": "1628500"
+      },
+      "levels": {
+        "freq_rank": 18,
+        "freq_zipf": 6.79
+      },
+      "reading_check": "dictionary"
+    },
+    {
+      "s": "ね",
+      "start": 22,
+      "end": 23,
+      "word": true,
+      "pos": "particle",
+      "tag": "助詞-終助詞",
+      "base": "ね",
+      "reading": {
+        "kana": "ね",
+        "romaji": "ne"
+      },
+      "ruby": [
+        {
+          "base": "ね",
+          "ruby": ""
+        }
+      ],
+      "gloss": {
+        "en": [
+          "right?; isn't it?; doesn't it?; don't you?; don't you think?",
+          "you know; you see; I must say; I should think",
+          "will you?; please",
+          "I'm not sure if ...; I have my doubts about whether ...",
+          "so, ...; well, ...; you see, ...; you understand?",
+          "hey; say; listen; look; come on"
+        ],
+        "source": "JMdict",
+        "entry_id": "2029080"
+      },
+      "levels": {
+        "freq_rank": 26,
+        "freq_zipf": 6.63
+      },
+      "reading_check": "dictionary"
+    }
+  ]
+}

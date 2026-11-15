@@ -5,10 +5,11 @@ import type {Line, SubtitleContainer} from "./DataStructures";
 
 export type TokenizeMiteiru = (text: string) => Promise<any[]>;
 
-/** A word to gloss (main's LearningGlossRequest): dictionary form plus, for Japanese, its reading. */
+/** A word to gloss (main's LearningGlossRequest): dictionary form plus, for Japanese, its reading and part of speech. */
 interface LearningLookup {
   target: string;
   reading?: string;
+  pos?: string;
 }
 
 interface SubtitleLanguageSupport {
@@ -36,7 +37,8 @@ const subtitleLanguageSupportByLang: Record<string, SubtitleLanguageSupport> = {
       if (!target || target === "*") return null;
       // Short kana words are particles and auxiliaries: no gloss.
       if ((isHiragana(target) || isKatakana(target)) && target.length <= 3) return null;
-      return {target, reading: token.hiragana ?? ""};
+      // The part of speech picks the entry and sense that fit the line's use of the word.
+      return {target, reading: token.hiragana ?? "", ...(typeof token.pos === "string" && token.pos ? {pos: token.pos} : {})};
     }
   },
   [languageCodes.mandarin]: surfaceFormSupport("learningGlossesChinese"),
@@ -51,7 +53,7 @@ export const isLearningSubtitleLanguage = (language: string) => Boolean(getSubti
 // Glosses already fetched during one subtitle's processing, by target and reading.
 type GlossCache = Map<string, string>;
 
-const glossKey = ({target, reading = ""}: LearningLookup) => `${target}\u0000${reading}`;
+const glossKey = ({target, reading = "", pos = ""}: LearningLookup) => `${target}\u0000${reading}\u0000${pos}`;
 
 // A dictionary refresh invalidates older work before its replacement is ready. All learning paths
 // share this guard, including an initial subtitle analysis that is still running in the background.

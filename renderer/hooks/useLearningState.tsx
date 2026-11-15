@@ -83,7 +83,18 @@ const useLearningState = (lang: string) => {
       // A load for a language already switched away from must not land over the new one's.
       if (cancelled) return;
       // With no language yet the backend answers nothing; `in` needs an object to search.
-      setLearningState(val ?? {});
+      const stored = (val ?? {}) as Record<string, LearningStateType>;
+      setLearningState(stored);
+      // A word saved here is written to the store too, so a stored entry as new as this session's (or
+      // newer: an assistant or a progress file changed it since) takes over from it.
+      const superseded = (content: string, entry: LearningStateType) => (stored[content]?.updTime ?? -1) >= (entry?.updTime ?? 0);
+      for (const [content, entry] of Object.entries(savedEntries.current)) {
+        if (superseded(content, entry)) delete savedEntries.current[content];
+      }
+      setCachedLearningState((cached) => {
+        const kept = Object.entries(cached as Record<string, LearningStateType>).filter(([content, entry]) => !superseded(content, entry));
+        return kept.length === Object.keys(cached).length ? cached : Object.fromEntries(kept);
+      });
       setLoadedLang(lang);
     }, (error) => {
       if (cancelled) return;

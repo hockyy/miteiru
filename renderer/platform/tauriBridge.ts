@@ -17,8 +17,10 @@ import {
   LANGUAGE_LOADED_EVENT,
   LIVE_CAPTIONS_EVENT_CHANNELS,
   LIVE_CAPTIONS_INVOKE_CHANNELS,
+  SAVED_WORDS_CHANGED_EVENT,
   STORE_CHANNELS
 } from './platformApiChannels';
+import {announceLearningStateChanged} from '../utils/learningStateEvents';
 
 type Listener = (...args: unknown[]) => void;
 
@@ -308,6 +310,10 @@ export const installTauriBridge = () => {
   const target = window as unknown as Record<string, unknown>;
   const invokeBackend = keepLanguageAcrossReloads((channel, args) => host.invoke(channel, args));
   host.on(LANGUAGE_LOADED_EVENT, rememberLoadedLanguage);
+  // An assistant changed saved words (set_word_levels): the pages showing them load them again.
+  host.on(SAVED_WORDS_CHANGED_EVENT, (lang) => {
+    if (typeof lang === 'string' && lang) announceLearningStateChanged(lang);
+  });
   target.backend = {
     invoke: (channel: string, ...args: unknown[]) => invokeBackend(channel, args),
     send: (channel: string, value: unknown) => host.send(channel, [value]),

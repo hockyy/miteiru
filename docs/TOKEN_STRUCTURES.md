@@ -2,7 +2,7 @@
 
 Quick reference for token structures returned by each language's tokenizer.
 
-## Japanese (Kuromoji)
+## Japanese (Miteiru's Rust tokenizer over IPADIC; the token shape is kuromoji.js's)
 
 **Rich morphological analysis with readings and grammar:**
 

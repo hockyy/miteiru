@@ -39,6 +39,9 @@ tiny_http = "0.12"
 raw-window-handle = "0.6"
 miteiru-mpv = { path = "../native/rust/crates/miteiru-mpv" }
 miteiru-tokenizer = { path = "../native/rust/crates/miteiru-tokenizer" }
+# Data tables, compressed assets and the tokenizer stores, shared with the headless language
+# server's Node addon (native/rust/crates/miteiru-node), so both give the same answers.
+miteiru-langdata = { path = "../native/rust/crates/miteiru-langdata" }
 
 # In-app updates (src-tauri/src/updates.rs). Desktop only; held to the 2.12 / 2.3 lines that
 # match tauri 2.12 (newer ones ask for a newer tauri).
@@ -47,7 +50,7 @@ tauri-plugin-updater = "~2.12"
 tauri-plugin-process = "~2.3"
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.60", features = ["Win32_Foundation", "Win32_UI_WindowsAndMessaging"] }
+windows-sys = { version = "0.60", features = ["Win32_Foundation", "Win32_System_Threading", "Win32_UI_WindowsAndMessaging"] }
 # The same versions wry uses (file_drop_windows.rs talks to its WebView2).
 webview2-com = "0.39"
 windows-core = "0.62"
@@ -66,6 +69,10 @@ opt-level = "s"
 strip = true
 
 [profile.release.package.miteiru-tokenizer]
+opt-level = 3
+
+# Dictionary table reads (a gloss per word of a subtitle file) and the tokenizer stores.
+[profile.release.package.miteiru-langdata]
 opt-level = 3
 
 # JMdict parsing and native token-batch serialization are on the subtitle hot path.

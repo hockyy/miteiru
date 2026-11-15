@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import path from "path";
 import {languagePlugins, getLanguagePluginByTokenizerMode} from "./registry";
 import {analyzeText} from "./analyzer";
+import {mapLimit} from "../../helpers/mapLimit";
 import {handleMcpBody, mcpDefinitions, ToolError, type ToolCall, validateToolArguments} from "../../mcp/protocol";
 
 /**
@@ -66,6 +67,11 @@ export const getAnalyzerServerRegistrationPath = (appDataDirectory: string) => (
 );
 
 const json = (status: number, value: unknown): AnalyzerResponse => ({status, value});
+
+/** /analyze-batch: a long video's subtitles in one request, read a few lines at a time. */
+export const BATCH_MAX_TEXTS = 2000;
+export const BATCH_MAX_CHARACTERS = 200_000;
+const BATCH_TEXTS_AT_ONCE = 4;
 
 const getActiveLanguage = (tokenizerMode: string) => {
   const plugin = getLanguagePluginByTokenizerMode(tokenizerMode);
@@ -145,10 +151,22 @@ const handleAnalyze = async (
   const toneType = await context.getToneType();
   const analyzer = context.analyze ?? analyzeText;
   if (batch) {
-    if (!Array.isArray(body.texts)) {
+    const texts = body.texts;
+    if (!Array.isArray(texts)) {
       return json(400, {ok: false, error: "Expected JSON body with texts array."});
     }
-    const results = await Promise.all(body.texts.map((text) => analyzer(text, {tokenizerMode, toneType})));
+    if (texts.some((text) => typeof text !== "string")) {
+      return json(400, {ok: false, error: "Every item of texts must be a string."});
+    }
+    if (texts.length > BATCH_MAX_TEXTS) {
+      return json(413, {ok: false, error: `texts must have at most ${BATCH_MAX_TEXTS} items; send them in several requests.`});
+    }
+    const characters = texts.reduce((total, text) => total + text.length, 0);
+    if (characters > BATCH_MAX_CHARACTERS) {
+      return json(413, {ok: false, error: `texts must hold at most ${BATCH_MAX_CHARACTERS} characters in all; send them in several requests.`});
+    }
+    // A few at a time: the subtitles on screen share this backend with the request.
+    const results = await mapLimit(texts, BATCH_TEXTS_AT_ONCE, new AbortController().signal, (text) => analyzer(text, {tokenizerMode, toneType}));
     return json(200, {ok: true, active, results});
   }
 

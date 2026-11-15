@@ -209,6 +209,23 @@ test("string lengths count code points, not UTF-16 units", () => {
   assert.throws(() => validateToolArguments("search_videos", {query: "😀".repeat(201)}), toolError(400, "query must have at most 200 characters"));
 });
 
+test("array arguments: item types and lengths, and objects inside with their own required and unknown keys", () => {
+  assert.deepEqual(validateToolArguments("text_coverage", {language: "ja", texts: ["猫"]}), {language: "ja", texts: ["猫"], limit: 50});
+  assert.throws(() => validateToolArguments("text_coverage", {language: "ja", texts: "猫"}), toolError(400, "texts must be an array"));
+  assert.throws(() => validateToolArguments("text_coverage", {language: "ja", texts: []}), toolError(400, "texts must not be empty"));
+  assert.throws(() => validateToolArguments("analyze_text", {texts: Array.from({length: 201}, () => "a")}), toolError(400, "texts must have at most 200 items"));
+  assert.throws(() => validateToolArguments("analyze_text", {texts: ["a", 5]}), toolError(400, "texts[1] must be a string"));
+  assert.throws(() => validateToolArguments("analyze_text", {texts: ["a", "x".repeat(5001)]}), toolError(400, "texts[1] must have at most 5000 characters"));
+  const words = [{word: "猫", level: "known"}];
+  assert.deepEqual(validateToolArguments("set_word_levels", {language: "ja", words}), {language: "ja", words});
+  assert.throws(() => validateToolArguments("set_word_levels", {language: "ja", words: [{word: "猫"}]}), toolError(400, "Missing argument: words[0].level"));
+  assert.throws(() => validateToolArguments("set_word_levels", {language: "ja", words: [words[0], {word: "犬", level: "great"}]}),
+    toolError(400, "words[1].level must be one of: new, learning, known"));
+  assert.throws(() => validateToolArguments("set_word_levels", {language: "ja", words: [{...words[0], why: 1}]}), toolError(400, "Unknown argument: words[0].why"));
+  assert.throws(() => validateToolArguments("set_word_levels", {language: "ja", words: ["猫"]}), toolError(400, "words[0] must be an object"));
+  assert.throws(() => validateToolArguments("known_words", {language: "ja", offset: -1}), toolError(400, "offset must be an integer, 0 or more"));
+});
+
 test("validateToolArguments for a tool that does not exist is a 404", () => {
   assert.throws(() => validateToolArguments("nope", {}), toolError(404, "Unknown tool: nope"));
 });

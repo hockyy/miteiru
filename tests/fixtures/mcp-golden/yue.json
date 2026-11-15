@@ -1,0 +1,210 @@
+{
+  "language": {
+    "code": "yue",
+    "name": "Cantonese"
+  },
+  "detail": "full",
+  "format": 2,
+  "text": "佢哋今日去咗飲茶",
+  "tokens": [
+    {
+      "s": "佢哋",
+      "start": 0,
+      "end": 2,
+      "word": true,
+      "pos": "word",
+      "base": "佢哋",
+      "reading": {
+        "jyutping": "keoi5 dei6"
+      },
+      "ruby": [
+        {
+          "base": "佢",
+          "ruby": "keoi5"
+        },
+        {
+          "base": "哋",
+          "ruby": "dei6"
+        }
+      ],
+      "gloss": {
+        "en": [
+          "they, them, the third-person plural pronoun"
+        ],
+        "source": "CantoDict",
+        "entry_id": "17558",
+        "alternatives": [
+          {
+            "entry_id": "34538",
+            "en": [
+              "them; they",
+              "Third-party plural pronoun"
+            ]
+          }
+        ]
+      },
+      "levels": {},
+      "tones": [
+        5,
+        6
+      ],
+      "reading_check": "dictionary"
+    },
+    {
+      "s": "今日",
+      "start": 2,
+      "end": 4,
+      "word": true,
+      "pos": "word",
+      "base": "今日",
+      "reading": {
+        "jyutping": "gam1 jat6"
+      },
+      "ruby": [
+        {
+          "base": "今",
+          "ruby": "gam1"
+        },
+        {
+          "base": "日",
+          "ruby": "jat6"
+        }
+      ],
+      "gloss": {
+        "en": [
+          "today"
+        ],
+        "source": "CantoDict",
+        "entry_id": "11756",
+        "alternatives": [
+          {
+            "entry_id": "34788",
+            "en": [
+              "today"
+            ]
+          }
+        ]
+      },
+      "levels": {},
+      "tones": [
+        1,
+        6
+      ],
+      "reading_check": "dictionary"
+    },
+    {
+      "s": "去",
+      "start": 4,
+      "end": 5,
+      "word": true,
+      "pos": "word",
+      "base": "去",
+      "reading": {
+        "jyutping": "heoi3"
+      },
+      "ruby": [
+        {
+          "base": "去",
+          "ruby": "heoi3"
+        }
+      ],
+      "gloss": {
+        "en": [
+          "to go to, to depart for",
+          "to remove, to get rid of",
+          "in order to (do something), used between two verbal expressions, and/or after the second expression",
+          "an euphemism for dying, to be gone, to pass away",
+          "move quickly, smoothly and efficiently"
+        ],
+        "source": "CantoDict",
+        "entry_id": "4908",
+        "alternatives": [
+          {
+            "entry_id": "4909",
+            "en": [
+              "suffix placed after verb, used as a directional complement to indicate that an action is carried out away from the speaker"
+            ]
+          }
+        ]
+      },
+      "levels": {},
+      "tones": [
+        3
+      ],
+      "reading_check": "dictionary"
+    },
+    {
+      "s": "咗",
+      "start": 5,
+      "end": 6,
+      "word": true,
+      "pos": "word",
+      "base": "咗",
+      "reading": {
+        "jyutping": "zo2"
+      },
+      "ruby": [
+        {
+          "base": "咗",
+          "ruby": "zo2"
+        }
+      ],
+      "gloss": {
+        "en": [
+          "used after a verb as a perfective aspect marker for completed actions or past events",
+          "used after an adjective to describe the state of an object which has undergone changes"
+        ],
+        "source": "CantoDict",
+        "entry_id": "2372"
+      },
+      "levels": {},
+      "tones": [
+        2
+      ],
+      "reading_check": "dictionary"
+    },
+    {
+      "s": "飲茶",
+      "start": 6,
+      "end": 8,
+      "word": true,
+      "pos": "word",
+      "base": "飲茶",
+      "reading": {
+        "jyutping": "jam2 caa4"
+      },
+      "ruby": [
+        {
+          "base": "飲",
+          "ruby": "jam2"
+        },
+        {
+          "base": "茶",
+          "ruby": "caa4"
+        }
+      ],
+      "gloss": {
+        "en": [
+          "to drink tea",
+          "to go yumcha, to have dim sum at a teahouse, usually referring to a meal at the time of breakfast or lunch only"
+        ],
+        "source": "CantoDict",
+        "entry_id": "15178",
+        "alternatives": [
+          {
+            "entry_id": "51492",
+            "en": [
+              "to drink tea, but often used to mean going out to eat dim sum 點心 (since the main beverage there is tea)"
+            ]
+          }
+        ]
+      },
+      "levels": {},
+      "tones": [
+        2,
+        4
+      ],
+      "reading_check": "dictionary"
+    }
+  ]
+}

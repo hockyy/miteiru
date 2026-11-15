@@ -1,207 +1,73 @@
 # Miteiru Language Support
 
-Miteiru is a multi-language subtitle learning application that supports various languages for video subtitle processing, tokenization, and dictionary lookup.
+Miteiru splits subtitles into words, shows each word's reading, and looks words up in a dictionary that stays on your computer. Four languages are supported, each with its own tokenizer, dictionary and saved words.
 
-## Supported Languages
+## Languages
 
-### 🇯🇵 Japanese
-- **Tokenizer**: Kuromoji (built in, IPADIC; MeCab support was removed because it needed a separate install)
-- **Features**: Furigana, Romaji, Advanced POS analysis, Verb conjugation, Mixed script handling
-- **Dictionaries**: JMDict (Japanese-English), KanjiDic
-- **Script Support**: Hiragana, Katakana, Kanji, Mixed compounds
-- **Advanced Features**: 
-  - Compound word recognition ("日本語" as single unit)
-  - Inflection analysis ("見たよ" → base form "見る")
-  - Counter word handling ("か月", "個", "人")
-  - Particle classification and grammar analysis
-  - Foreign text integration (numbers, English within Japanese)
-- **Special Features**: Kanji stroke order, Wanikani integration
+| | Japanese 日本語 | Mandarin 中文 | Cantonese 廣東話 | Vietnamese Tiếng Việt |
+| --- | --- | --- | --- | --- |
+| **Word splitting** | Miteiru's own Rust tokenizer: a MeCab-style lattice over IPADIC, with a JMdict-checked suffix engine that keeps inflected forms whole (見たよ → 見た + よ, base 見る) | jieba (jieba-rs, in Rust) | jieba (jieba-rs, in Rust), with Cantonese words | Longest match over syllables, from the end of the line, against VNEDict |
+| **Readings** | Furigana in hiragana, romaji | Pinyin from pinyin-pro, read a whole line at a time so polyphones take their context; tone marks or numbers | Jyutping from to-jyutping; tone numbers or contour marks | — (written as it is read) |
+| **Dictionary** | JMdict, KANJIDIC2 | CC-CEDICT | CantoDict | VNEDict (54,375+ entries) |
+| **Also** | Pitch accent (Kanjium), conjugation tables and the steps back to the dictionary form, kanji stroke order (KanjiVG) | HSK 3.0 levels, tone colours after tone sandhi, simplified and traditional forms, hanzi stroke order (Make Me a Hanzi) | Hanzi stroke order (Make Me a Hanzi) | A meaning under every word |
 
-### 🇨🇳 Chinese (Mandarin)
-- **Tokenizer**: Jieba
-- **Features**: Pinyin pronunciation, Traditional/Simplified support
-- **Dictionary**: CC-CEDICT
-- **Script Support**: Simplified & Traditional Chinese
-- **Special Features**: Tone numbers and symbols, Hanzi stroke order
+Mandarin and Cantonese each have an engine of their own (jieba, dictionary and Your dictionary), so one never changes the other. Traditional Mandarin is read for pinyin through a simplified copy of the line (OpenCC), since pinyin-pro knows its context words in simplified characters: 我們 is wǒ men, 什麼 is shén me.
 
-### 🇭🇰 Cantonese  
-- **Tokenizer**: Jieba (Cantonese variant)
-- **Features**: Jyutping romanization, Tone symbols
-- **Dictionary**: CantoDict
-- **Script Support**: Traditional Chinese
-- **Special Features**: Cantonese-specific tone mapping
+The Japanese tokenizer's design and evaluation are in [docs/JAPANESE_TOKENIZER.md](docs/JAPANESE_TOKENIZER.md); the Vietnamese one is in [docs/VIETNAMESE_IMPLEMENTATION.md](docs/VIETNAMESE_IMPLEMENTATION.md).
 
-### 🇻🇳 Vietnamese
-- **Tokenizer**: Longest-match suffix algorithm
-- **Features**: Vietnamese-English translations, Diacritic support  
-- **Dictionary**: VNEDict (54,375+ entries)
-- **Script Support**: Vietnamese Latin script with diacritics
-- **Special Features**: Word-level meaning annotation
+## Choosing a language
 
-## Language Selection
+On the Home screen, pick a language and press Watch, Continue, Study or Flashcards. The first time, Miteiru downloads the language's pack (Japanese: `japanese`; Mandarin: `mandarin` and `hanzi`; Cantonese: `cantonese` and `hanzi`; Vietnamese: `vietnamese`; see [docs/DATA_FORMAT.md](docs/DATA_FORMAT.md)). The chosen language is used for:
 
-1. Launch Miteiru
-2. Select your preferred language from the home screen:
-   - **Kuromoji - Japanese** 🐣 - Fast Japanese tokenizer
-   - **Jieba - Cantonese** 🥘 - Cantonese with Jyutping
-   - **Jieba - Chinese** 🐉 - Mandarin with Pinyin
-   - **Vietnamese** 🇻🇳 - Vietnamese with English meanings
+- splitting subtitles into words and showing their readings,
+- the dictionary when you click a word,
+- learning mode and the saved words,
+- the AI assistant tools, when a call names no language.
 
-3. The selected language will be used for:
-   - Subtitle tokenization and processing
-   - Dictionary lookups when clicking words
-   - Learning mode functionality
-   - Automatic language detection for subtitle files
+## Subtitle languages
 
-## Subtitle Language Detection
+A subtitle whose name marks it as English (`show.en.srt`, `show.eng.ass`, `show.english.vtt`, `show.en-US.srt`) is shown underneath to read along, without readings or word tracking. Any other subtitle is in the language you chose and is split into words.
 
-Miteiru automatically detects subtitle language based on filename:
+## Saved words
 
-- **Files with `.en.` in name** → English (secondary subtitle)
-- **Files without `.en.` in name** → Selected app language (primary subtitle)
+Every word can be saved as **New** (0), **Learning** (1) or **Known** (2): clicking a word cycles through them, and the word popup sets one directly. Words are saved in their dictionary form (見た is saved as 見る), with the time, so a newer change wins when progress is synced. The words among the most frequent of a video (the video sidebar's "top N%" setting) show as already known (3) without being saved.
 
-**Examples:**
-- `movie.srt` → Native language (Vietnamese, Japanese, etc.)
-- `movie.vi.srt` → Native language  
-- `movie.en.srt` → English (secondary)
-- `show.zh.srt` → Native language
-- `show.en.srt` → English (secondary)
+## Token structures
 
-## Token Structure by Language
+Each language's tokens, as the subtitles and the local API's `/analyze` receive them, are in [docs/TOKEN_STRUCTURES.md](docs/TOKEN_STRUCTURES.md).
 
-### Japanese (Kuromoji)
-```json
-{
-    "origin": "我",
-    "hiragana": "わが", 
-    "basicForm": "我",
-    "pos": "名詞-一般",
-    "separation": [
-        {
-            "main": "我",
-            "hiragana": "わが",
-            "romaji": "waga",
-            "isKana": false,
-            "isKanji": true,
-            "isMixed": false
-        }
-    ]
-}
-```
+## For other programs
 
-### Chinese (Mandarin)
-```json
-{
-    "origin": "我",
-    "pinyin": "wǒ",
-    "separation": [
-        {
-            "main": "我",
-            "pinyin": "wǒ"
-        }
-    ]
-}
-```
+[docs/LOCAL_API.md](docs/LOCAL_API.md): the AI assistant tools over MCP (`miteiru --mcp`), the local HTTP API, and the headless server that answers the same tools with Miteiru closed (`node scripts/miteiru-mcp.mjs`). Every text tool takes a language (`ja`, `zh-Hans`, `zh-Hant`, `yue`, `vi`), and `analyze_text` with `detail: "full"` gives every token's surface, dictionary form, part of speech, machine-stable reading, ruby, dictionary gloss with its entry id, JLPT, HSK and frequency levels, pitch accent, tones, conjugation and saved level.
 
-### Cantonese  
-```json
-{
-    "origin": "我",
-    "jyutping": "ngo⸝₅",
-    "separation": [
-        {
-            "main": "我", 
-            "jyutping": "ngo⸝₅"
-        }
-    ]
-}
-```
+## Technical implementation
 
-### Vietnamese
-```json
-{
-    "origin": "Việt Nam",
-    "meaning": "Vietnam, Vietnamese",
-    "separation": [
-        { "main": "Việt", "meaning": "Vietnam, Vietnamese" },
-        { "main": " " },
-        { "main": "Nam", "meaning": "Vietnam, Vietnamese" }
-    ]
-}
-```
+- **Backend:** the language handlers in `main/` run in a Web Worker beside the page; the Rust shell (`src-tauri/`) provides files, processes, storage and the tokenizers. The page calls the backend through `window.backend.invoke(channel, ...args)`.
+- **Tokenizers:** `native/rust/crates/miteiru-tokenizer` (Japanese and jieba), with the dictionary tables and their stores in `native/rust/crates/miteiru-langdata`. The app uses them through Tauri commands, and the headless server through a Node addon (`native/rust/crates/miteiru-node`), so both split text the same way.
+- **Data:** language packs (`.mtrpack`) installed from the Home screen, holding each language's `language-assets`; small study data (pitch accents, HSK, JLPT and frequency lists) ships with the app in `renderer/public`. For development, `npm run script:initrepo` downloads the data.
+- **Interface:** UI components and subtitle rendering in `renderer/`.
 
-## Features by Language
+## Adding new languages
 
-| Feature | Japanese | Chinese | Cantonese | Vietnamese |
-|---------|----------|---------|-----------|------------|
-| Tokenization | ✅ Advanced | ✅ Jieba | ✅ Jieba | ✅ Dictionary |
-| Pronunciation | ✅ Furigana | ✅ Pinyin | ✅ Jyutping | ❌ |
-| Romanization | ✅ Romaji | ✅ Pinyin | ✅ Jyutping | ❌ |
-| Dictionary | ✅ JMDict | ✅ CC-CEDICT | ✅ CC-Canto | ✅ VNEDict |
-| Meanings | ✅ | ✅ | ✅ | ✅ |
-| Grammar | ✅ POS Tags | ❌ | ❌ | ❌ |
-| Learning Mode | ✅ | ✅ | ✅ | ✅ |
-| Character Info | ✅ Kanji | ✅ Hanzi | ✅ Hanzi | ❌ |
-
-## Learning Features
-
-### Word Clicking
-- Click any word to copy it and see dictionary definition
-- Right-click to change learning state (for supported languages)
-- Hover to see pronunciation/meaning tooltips
-
-### Learning States
-- **State 0** (New): Near-white highlighting
-- **State 1** (Learning): Yellow highlighting
-- **State 2** (Known): Green highlighting
-- **State 3** (Mastered): Cyan highlighting
-
-### Frequency Tracking
-All languages track word frequency across subtitles for learning prioritization.
-
-### Dictionary Integration
-Each language provides integrated dictionary lookup:
-- **Japanese**: JMDict with full definitions
-- **Chinese**: CC-CEDICT with English meanings
-- **Cantonese**: CC-Canto with definitions  
-- **Vietnamese**: VNEDict with English translations
-
-## Technical Implementation
-
-### Architecture
-- **Backend**: Language handlers for tokenization and dictionaries (`main/`), running in a Web Worker beside the page; a Rust shell (`src-tauri/`) provides files, processes and storage
-- **Interface**: UI components and subtitle rendering (`renderer/`)
-- **Messaging**: the page calls the backend through `window.backend.invoke(channel, ...args)`
-- **Dictionary Storage**: Plugin-owned local assets under `renderer/public/language-assets`
-- **Asset Packaging**: Each plugin asset folder has an `asset-manifest.json` and can be packed into or restored from `<plugin-id>-assets.zip` for future download/install flows
-- **Asset Downloading**: `npm run script:initrepo` or `npm run script:download-language-assets` downloads plugin zips from the [assets release](https://github.com/hockyy/miteiru/releases/tag/assets)
-
-### Performance
-- Dictionaries loaded on language selection
-- Tokenization optimized for real-time subtitle processing
-- Caching for frequently accessed dictionary entries
-- Efficient data structures for fast lookups
-
-## Adding New Languages
-
-See [Language Implementation Guide](docs/LANGUAGE_IMPLEMENTATION.md) for detailed instructions on adding support for additional languages like Thai, Korean, Arabic, etc.
+See the [Language Implementation Guide](docs/LANGUAGE_IMPLEMENTATION.md).
 
 ## Troubleshooting
 
-### Dictionary Not Loading
-1. Check if language dictionary files exist in `app/[language]/` directory
-2. Verify file encoding is UTF-8
-3. Check console for loading errors
+### A language doesn't load
 
-### Tokenization Issues  
-1. Ensure language is properly selected on home screen
-2. Check subtitle file encoding
-3. Verify subtitle language detection is working correctly
+1. On the Home screen, open **Languages** and check that the language's packs are installed and up to date (**Update** when one is outdated).
+2. Remove a pack that still won't load and download it again, or install it from a file.
+3. Check the developer console for loading errors.
 
-### Performance Issues
-1. Large dictionary files may cause slower startup
-2. Very long subtitle lines may impact tokenization speed
-3. Consider breaking up extremely long subtitle files
+### Words are split wrongly
+
+1. Make sure the subtitle is in the language chosen on the Home screen (an English-named subtitle is not split).
+2. Check the subtitle file's encoding (UTF-8 is safest).
+3. Add the word to Your dictionary: it is kept whole from then on.
+
+### Slow subtitles
+
+Very long subtitle lines take longer to split; a subtitle file of many thousands of lines is fine.
 
 ---
 

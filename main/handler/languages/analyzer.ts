@@ -1,6 +1,6 @@
 import {isConjugationOf} from "./verbConjugation";
 import Japanese from "../japanese";
-import Chinese from "../chinese";
+import {cantoneseEngine, mandarinEngine} from "../chinese";
 import Vietnamese from "../vietnamese";
 import {MiteiruJapaneseWordWithSeparations} from "./japaneseAnalysis";
 import {analyzeWithUserDictionary, enabledUserDictionaryEntries} from "../../helpers/userDictionary";
@@ -110,12 +110,13 @@ const analyzeDefaultText = async (sentence: string, tokenizerMode: string, toneT
     return parseJapaneseVerbs(separated);
   }
 
+  // Each Chinese language has its own engine, so one can be read while the other is the learner's.
   if (tokenizerMode === "cantonese") {
-    return Chinese.getJyutpingForSentence(sentence, toneType);
+    return cantoneseEngine.getJyutpingForSentence(sentence, toneType);
   }
 
   if (tokenizerMode === "jieba") {
-    return Chinese.tokenizeUsingJieba(sentence, toneType);
+    return mandarinEngine.tokenizeUsingJieba(sentence, toneType);
   }
 
   if (tokenizerMode === "vietnamese") {

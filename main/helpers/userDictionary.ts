@@ -1,6 +1,6 @@
 import {toHiragana} from "wanakana";
 import {splitOkuriganaCompact} from "../../renderer/utils/japaneseOkurigana";
-import {formatPinyinReading} from "../handler/pinyinTones";
+import {formatJyutpingReading, formatPinyinReading} from "../handler/pinyinTones";
 import {getStore} from "../handler/common/storeHandlers";
 
 export const USER_DICTIONARY_KEY = "userDictionary.data";
@@ -204,9 +204,8 @@ export const userDictionaryToken = (entry: UserDictionaryEntry, toneType = "num"
   }
   if (entry.language === "vi") return {...common, separation: entry.surface.split(/\s+/).map((main) => ({main}))};
   const field = entry.language === "yue" ? "jyutping" : "pinyin";
-  const tones: Record<string, string> = {1: "ˉ¹", 2: "⸍²", 3: "-₃", 4: "⸜₄", 5: "⸝₅", 6: "ˍ₆"};
   const readings = entry.reading.split(/\s+/).map((reading) => entry.language === "zh-CN" ? formatPinyinReading(reading, toneType)
-    : toneType === "num" ? reading.replace(/([1-6])$/, (match) => tones[match]) : reading);
+    : formatJyutpingReading(reading, toneType));
   const characters = Array.from(entry.surface);
   const separation = characters.length === readings.length ? characters.map((main, index) => ({main, [field]: readings[index]}))
     : [{main: entry.surface, [field]: readings.join(" ")}];
