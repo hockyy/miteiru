@@ -13,7 +13,7 @@ import {rankJapaneseEntries, rankSenses, senseFitsPos, senseLine, type SenseCont
 import {isToolLanguage, toolLanguageInfo, type StoredLanguageCode, type ToolLanguage, type ToolLanguageInfo} from "../language/languages";
 import {mandarinSpokenTones} from "../language/mandarinTones";
 import {classifyAccent, lookupPitchAccent, splitIntoMorae, type PitchAccentMap} from "../language/pitchAccent";
-import {comparableJyutping, comparablePinyin, numberedTone, pinyinMarked, pinyinNumbered, stripVietnamese, vietnameseTone} from "../language/readings";
+import {comparableJyutping, comparablePinyin, numberedTone, pinyinMarked, pinyinNumbered, pinyinToNumbers, stripVietnamese, vietnameseTone} from "../language/readings";
 import {alignTokens, type Piece} from "../language/tokenAlign";
 import {ToolError} from "./protocol";
 import {isCountedWord, wordKey} from "./videoCoverage";
@@ -751,13 +751,16 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
     const first = rawEntries[0] ?? {};
     const hsk = cantonese ? undefined : lookupHsk(await deps.hskWords(), char);
     const strings = (value: unknown) => (Array.isArray(value) ? value : value ? [value] : []).filter((item): item is string => typeof item === "string" && item !== "");
+    // The character lists write pinyin with tone marks; the tools give both forms, as everywhere else.
+    const pinyinNumbers = [...new Set(rawEntries.flatMap((entry) => strings(entry.pinyin)).map(pinyinToNumbers).filter(Boolean))];
+    const jyutping = [...new Set(rawEntries.flatMap((entry) => strings(entry.jyutping)).map(comparableJyutping).filter(Boolean))];
     return {
       ...head,
       source: cantonese ? "CantoDict" : "CC-CEDICT",
       found: rawEntries.length > 0,
       readings: {
-        ...(strings(first.pinyin).length ? {pinyin: [...new Set(rawEntries.flatMap((entry) => strings(entry.pinyin)))]} : {}),
-        ...(rawEntries.some((entry) => strings(entry.jyutping).length) ? {jyutping: [...new Set(rawEntries.flatMap((entry) => strings(entry.jyutping)))]} : {})
+        ...(pinyinNumbers.length ? {pinyin: pinyinNumbers.map((reading) => reading.split(" ").map(pinyinMarked).join(" ")), pinyin_num: pinyinNumbers} : {}),
+        ...(jyutping.length ? {jyutping} : {})
       },
       meanings: rawEntries.flatMap((entry) => strings(entry.meaning)),
       ...(rawEntries.some((entry) => strings(entry.notes).length) ? {notes: rawEntries.flatMap((entry) => strings(entry.notes))} : {}),

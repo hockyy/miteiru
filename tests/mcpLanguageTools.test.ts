@@ -65,7 +65,8 @@ const dictionaries = (async () => ({
       {id: "90001", content: "行", simplified: "行", pinyin: ["xing2"], meaning: ["to walk", "OK"]},
       {id: "90002", content: "行", simplified: "行", pinyin: ["hang2"], meaning: ["row", "line", "profession"]}
     ],
-    characters: [{id: "5001", content: "龙", pinyin: ["long2"], meaning: ["dragon"], decomposition: "⿻丿尤", radical: "龙", stroke_count: 5}]
+    // The character list writes pinyin with tone marks.
+    characters: [{id: "5001", content: "龙", pinyin: ["lóng"], meaning: ["dragon"], decomposition: "⿻丿尤", radical: "龙", stroke_count: 5}]
   } as never),
   cantodict: await memoryDictionary(chineseImport, {
     version: "test",
@@ -420,7 +421,7 @@ test("lookup_character gives readings, meanings, levels and stroke paths", async
   // KanjiVG's minified files leave some attributes unquoted.
   assert.deepEqual(kanji.strokes, {source: "KanjiVG", count: 2, paths: ["M24.99,14c2.36,1.5,6.1,6.17,6.7,8.5", "M12,30c1,1,2,2,3,3"]});
   const hanzi = await call("lookup_character", {language: "zh-Hans", char: "龙"});
-  assert.deepEqual(hanzi.readings, {pinyin: ["long2"]});
+  assert.deepEqual(hanzi.readings, {pinyin: ["lóng"], pinyin_num: ["long2"]});
   assert.equal(hanzi.decomposition, "⿻丿尤");
   assert.deepEqual(hanzi.strokes, {source: "Make Me a Hanzi", count: 2, outlines: ["M1 1Z", "M2 2Z"], medians: ["M5 5L6 6"]});
   // Not in this KANJIDIC, but KanjiVG has its strokes: the strokes, and found false.

@@ -1,3 +1,4 @@
+import {convert} from "pinyin-pro";
 import {toPinyinToneMarks} from "../handler/pinyinTones";
 
 /**
@@ -13,6 +14,14 @@ export const pinyinNumbered = (syllable: string): string => {
   if (/[0-5]$/.test(text)) return text.replace(/0$/, "5");
   // pinyin-pro leaves a syllable it has no reading for as the character itself.
   return /^[a-züv:ê]+$/i.test(text) ? `${text}5` : text;
+};
+
+const TONE_MARK = /[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/i;
+
+/** Pinyin as numbered syllables from either form a source writes it in: lóng or long2 is long2, de or de0 is de5. */
+export const pinyinToNumbers = (text: string): string => {
+  const numbered = TONE_MARK.test(text) ? convert(text, {format: "symbolToNum"}) : text;
+  return numbered.split(/\s+/).filter(Boolean).map(pinyinNumbered).join(" ");
 };
 
 /** A numbered syllable with tone marks: ni3 is nǐ, ma5 is ma. */
