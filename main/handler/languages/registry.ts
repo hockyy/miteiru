@@ -355,3 +355,10 @@ export const languageDataPresent = async (pluginId: string): Promise<boolean> =>
     .map((root) => path.join(root.dir, folder, relative));
   return (await Promise.all(candidates.map(assetCandidateExists))).some(Boolean);
 };
+
+/** Whether a language's data is installed and its engine loaded now, for get_status. */
+export const languageEngineState = async (pluginId: string): Promise<{installed: boolean; loaded: boolean}> => {
+  const plugin = getLanguagePlugin(pluginId);
+  const loaded = plugin?.engineReady?.() === true && engineKeys.has(pluginId);
+  return {installed: loaded || await languageDataPresent(pluginId), loaded};
+};
