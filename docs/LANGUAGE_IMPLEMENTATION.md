@@ -29,7 +29,7 @@ Current asset ownership:
 
 ## Existing Language Implementations
 
-### Japanese (Kuromoji)
+### Japanese (Miteiru's Rust tokenizer over IPADIC, tokenizer mode `kuromoji`)
 
 **Token Structure:**
 ```json

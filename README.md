@@ -86,7 +86,7 @@ Miteiru 8.0 doesn't update itself yet: new versions appear on the [releases page
 
 | | 🇯🇵 Japanese | 🇨🇳 Mandarin | 🇭🇰 Cantonese | 🇻🇳 Vietnamese |
 | --- | --- | --- | --- | --- |
-| Words split by | Kuromoji | Jieba | Jieba (Cantonese) | Longest match |
+| Words split by | Miteiru's tokenizer (IPADIC) | Jieba | Jieba (Cantonese) | Longest match |
 | Readings | Furigana, romaji | Pinyin | Jyutping | |
 | Dictionary | JMdict, KANJIDIC | CC-CEDICT | CantoDict | VNEDict |
 | Extras | Pitch accent, conjugations, kanji strokes | Simplified and traditional, hanzi strokes | Tone marks | A meaning under every word |
