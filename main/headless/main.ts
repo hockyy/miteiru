@@ -5,7 +5,7 @@ import path from "node:path";
 import {setSys} from "../../renderer/platform/backend/sys";
 import {initRuntime} from "../../renderer/platform/backend/shims/runtime";
 import {setStoreFactory} from "../handler/common/storeHandlers";
-import {languageEngineState, loadLanguageEngine, setLanguageAssetRoots} from "../handler/languages/registry";
+import {languageDataRoot, languageEngineState, loadLanguageEngine, setLanguageAssetRoots} from "../handler/languages/registry";
 import Learning from "../handler/learning";
 import {TOOL_LANGUAGES, toolLanguageForCode, toolLanguageInfo} from "../language/languages";
 import {setStudyDataRoots} from "../language/studyData";
@@ -17,7 +17,7 @@ import {createAppProxy} from "./appProxy";
 import {KvStore} from "./kvStore";
 import {defaultAddonPath, loadAddon} from "./nativeAddon";
 import {createNodeSys} from "./nodeSys";
-import {installedPackRoots, registrationDirs, resolveProfile} from "./profile";
+import {checkoutDataRoots, installedPackRoots, registrationDirs, resolveProfile} from "./profile";
 import {SettingsStore} from "./settingsStore";
 import {serveStdio} from "./stdioServer";
 
@@ -37,6 +37,12 @@ export interface HeadlessOptions {
   addonPath?: string;
   /** More folders holding `<plugin>/…` language data, searched before the installed packs. */
   assets?: string[];
+  /**
+   * This checkout's own language data, staged by `scripts/miteiru-mcp.mjs --build` in the form a pack
+   * holds it (scripts/stageHeadlessData.mjs); searched after the installed packs. Default
+   * `<repoRoot>/dist/headless/language-assets`.
+   */
+  checkoutData?: string;
   /** Languages to load at start, before any call asks: "learner" (the default), "all" or "none". */
   preload?: "learner" | "all" | "none";
   /** Hand open_video and set_word_levels to a running Miteiru when there is one (default true). */
@@ -108,7 +114,10 @@ export const startHeadless = async (options: HeadlessOptions): Promise<void> => 
   const settings = new SettingsStore(path.join(profile.userData, "config.json"));
   setStoreFactory(async () => settings as never);
   const extraAssets = (options.assets ?? []).map((dir) => ({dir: path.resolve(dir)}));
-  setLanguageAssetRoots(async () => [...extraAssets, ...installedPackRoots(profile.languagePacks)]);
+  // The learner's installed packs (what their Miteiru reads) first; this checkout's staged data for any
+  // language they have no pack for. Asked again at every language load, so a --build meanwhile counts.
+  const checkoutData = path.resolve(options.checkoutData ?? path.join(repoRoot, "dist", "headless", "language-assets"));
+  setLanguageAssetRoots(async () => [...extraAssets, ...installedPackRoots(profile.languagePacks), ...checkoutDataRoots(checkoutData)]);
   setStudyDataRoots([path.join(repoRoot, "renderer", "public")]);
   if (!setupError) Learning.setup();
 
@@ -127,7 +136,18 @@ export const startHeadless = async (options: HeadlessOptions): Promise<void> => 
   });
   const proxy = options.proxy === false ? null : createAppProxy(registrationDirs(profile, {profile: options.profile, development: options.development}));
   const learnerCode = async () => (base.loadedLanguage() ?? await base.rememberedLanguage())?.code ?? null;
-  const language = createLanguageDeps({appDataDirectory: cache, learnerLanguage: learnerCode});
+  const language = createLanguageDeps({
+    appDataDirectory: cache,
+    learnerLanguage: learnerCode,
+    notInstalledHint: "Or prepare this checkout's own language data: download it with npm run script:initrepo, then run node scripts/miteiru-mcp.mjs --build."
+  });
+  /** Where a language's data is read from, for get_status: an installed pack, this checkout, or --assets. */
+  const dataSource = (root: string | null) => {
+    if (!root) return {};
+    const resolved = path.resolve(root);
+    if (resolved === checkoutData) return {data: "checkout"};
+    return {data: resolved.startsWith(path.resolve(profile.languagePacks) + path.sep) ? "installed pack" : "assets"};
+  };
 
   const deps: MiteiruToolDeps = {
     ...base,
@@ -142,7 +162,11 @@ export const startHeadless = async (options: HeadlessOptions): Promise<void> => 
     },
     language,
     toneType: getToneType,
-    languages: languageStates,
+    languages: async () => {
+      const states = await languageStates();
+      const roots = await Promise.all(TOOL_LANGUAGES.map((id) => languageDataRoot(toolLanguageInfo(id).pluginId)));
+      return Object.fromEntries(TOOL_LANGUAGES.map((id, index) => [id, {...states[id], ...dataSource(roots[index])}]));
+    },
     server: "headless"
   };
   const tools = createMiteiruTools(deps);

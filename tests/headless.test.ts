@@ -6,10 +6,12 @@ import {PassThrough} from "node:stream";
 import {after, test} from "node:test";
 import {createAppProxy} from "../main/headless/appProxy";
 import {decodeBatch, KvStore} from "../main/headless/kvStore";
-import {installedPackRoots, registrationDirs, resolveProfile, runningApps, type RunningApp} from "../main/headless/profile";
+import {checkoutDataRoots, installedPackRoots, registrationDirs, resolveProfile, runningApps, type RunningApp} from "../main/headless/profile";
 import {SettingsStore} from "../main/headless/settingsStore";
 import {serveStdio} from "../main/headless/stdioServer";
-import type {ToolCall} from "../main/mcp/protocol";
+import {languageDataRoot, setLanguageAssetRoots} from "../main/handler/languages/registry";
+import {createLanguageDeps} from "../main/mcp/languageDeps";
+import {ToolError, type ToolCall} from "../main/mcp/protocol";
 
 const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "miteiru-headless-test-"));
 after(() => fs.rmSync(scratch, {recursive: true, force: true}));
@@ -120,6 +122,38 @@ test("installedPackRoots takes the newest finished install of each pack", () => 
     ["mandarin-ccc-1", ["mandarin"]]
   ]);
   assert.deepEqual(installedPackRoots(path.join(scratch, "missing")), []);
+});
+
+test("checkoutDataRoots offers the staged checkout data as one root with its plugin folders", () => {
+  const staged = path.join(scratch, "staged", "language-assets");
+  assert.deepEqual(checkoutDataRoots(staged), [], "never staged");
+  fs.mkdirSync(path.join(staged, "mandarin", "chinese"), {recursive: true});
+  fs.mkdirSync(path.join(staged, "japanese"), {recursive: true});
+  fs.writeFileSync(path.join(staged, "stray.txt"), "");
+  const [root] = checkoutDataRoots(staged);
+  assert.equal(root.dir, staged);
+  assert.deepEqual(root.plugins.sort(), ["japanese", "mandarin"]);
+});
+
+// Bug fix: with no Mandarin data anywhere, analyze_text answered a raw "ENOENT … dist\headless\chinese\
+// zh.jieba.txt": the engine's setup threw, and the tools never got to say the language isn't installed.
+test("a language with no data anywhere answers 409 saying how to get it, not a file error", async () => {
+  const empty = path.join(scratch, "no-language-data");
+  fs.mkdirSync(empty, {recursive: true});
+  setLanguageAssetRoots(async () => [{dir: empty}]);
+  try {
+    const deps = createLanguageDeps({appDataDirectory: empty, learnerLanguage: async () => null, notInstalledHint: "Or run --build."});
+    await assert.rejects(deps.ensureLanguage("zh-Hans"), (error: unknown) => {
+      assert.ok(error instanceof ToolError);
+      assert.equal(error.status, 409);
+      assert.match(error.message, /^Mandarin Chinese \(simplified\) isn't installed on this computer\. .* Or run --build\.$/);
+      assert.doesNotMatch(error.message, /ENOENT/);
+      return true;
+    });
+    assert.equal(await languageDataRoot("mandarin-jieba"), null);
+  } finally {
+    setLanguageAssetRoots(async () => []);
+  }
 });
 
 test("runningApps reads registrations newest first and skips closed apps and other hosts", () => {

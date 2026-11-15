@@ -90,7 +90,15 @@ async def main():
 asyncio.run(main())
 ```
 
-**Needs:** Node 22.15 or newer, and Rust (`cargo`) the first time: the first start builds the addon (`cargo build --release -p miteiru-node`, about 20 seconds) and bundles the server with esbuild (under a second); later starts reuse both until their sources change. Build ahead with `npm run build:headless`. The languages must be installed: open Miteiru once and choose each language on its Home screen, which downloads its pack.
+**Needs:** Node 22.15 or newer, and Rust (`cargo`) the first time: the first start builds the addon (`cargo build --release -p miteiru-node`, about 20 seconds) and bundles the server with esbuild (under a second); later starts reuse both until their sources change. Build ahead with `npm run build:headless`.
+
+**Language data.** Each language is read from the first of:
+
+1. folders given with `--assets`;
+2. the installed Miteiru's language packs (choose a language once on Miteiru's Home screen to download its pack);
+3. this checkout's own data: `npm run script:initrepo` downloads it into `renderer/public/language-assets`, and `node scripts/miteiru-mcp.mjs --build` prepares it for the server in `dist/headless/language-assets`, the form a pack holds it in (the JSON dictionaries become data tables; every other file is a hard link to the checkout's). This takes about 90 seconds, once: `--build` prepares it again only when the downloaded data changed.
+
+So a plain checkout works with no Miteiru installed: `npm install`, `npm run script:initrepo`, `node scripts/miteiru-mcp.mjs --build`, then `node scripts/miteiru-mcp.mjs`. When the downloaded data changed since the last `--build`, the server says so on stderr at start (and keeps reading the earlier preparation). `get_status` says where each language's data came from (`languages.<code>.data`: `installed pack`, `checkout` or `assets`).
 
 | Option | Meaning |
 | --- | --- |
@@ -99,16 +107,16 @@ asyncio.run(main())
 | `--assets <dir>` | A folder of `<plugin>/…` language data in the installed packs' format (dictionaries as `.pack` tables), read before the installed packs (more than once for more folders). A development checkout's JSON dictionaries are imported only by the app. |
 | `--preload learner\|all\|none` | Languages to load at start, in the background: the learner's (default), every installed one, or none. |
 | `--no-proxy` | Never hand `open_video` or `set_word_levels` to a running Miteiru. |
-| `--build` | Build the addon and the bundle, then exit. |
+| `--build` | Build the addon and the bundle, prepare this checkout's language data (when it changed), then exit. |
 | `--check` | Print the paths it would use, then exit. |
 
-**What it reads.** The installed app's profile (`%APPDATA%\miteiru`, `~/Library/Application Support/miteiru`, `~/.config/miteiru`), its language packs (`%LOCALAPPDATA%\id.hocky.miteiru\language-packs` and the macOS and Linux equivalents), `config.json` read-only (re-read when the app changes it: Your dictionary, the tone setting, the last chosen language), and the saved words in `learningStateDB.sqlite3`. SQLite lets the app and the headless server use the saved words at once: reads see a consistent snapshot, and a write waits up to 5 seconds for the other's. A Miteiru 7 profile whose saved words the app hasn't brought over yet is left alone; open Miteiru 8 once first. Dictionaries shipped as JSON are cached in the system temp folder, never in the profile.
+**What it reads.** The installed app's profile (`%APPDATA%\miteiru`, `~/Library/Application Support/miteiru`, `~/.config/miteiru`), its language packs (`%LOCALAPPDATA%\id.hocky.miteiru\language-packs` and the macOS and Linux equivalents), `config.json` read-only (re-read when the app changes it: Your dictionary, the tone setting, the last chosen language), and the saved words in `learningStateDB.sqlite3`. SQLite lets the app and the headless server use the saved words at once: reads see a consistent snapshot, and a write waits up to 5 seconds for the other's. A Miteiru 7 profile whose saved words the app hasn't brought over yet is left alone; open Miteiru 8 once first. The server's own scratch files go to the system temp folder, never into the profile.
 
 **With Miteiru open.** `open_video` needs the window, and `set_word_levels` should reach it at once, so these two go to the running app when there is one (a registration whose process is gone is skipped); everything else is answered by the headless server itself, with the same code. With the app closed, `open_video` answers that Miteiru isn't open, and `set_word_levels` writes the store directly; the app reads the change when it next loads the saved words.
 
 **Speed** (Windows, a warm start with the addon and bundle built): the server answers `initialize` 0.2–0.3 s after it is spawned. A language's first call loads it: Japanese about 0.7 s, Mandarin about 0.2 s, Cantonese well under 0.1 s. After that, `analyze_text` with `detail: "full"` takes 25–50 ms for a 30-character Japanese line and 5–12 ms for a Mandarin or Cantonese one.
 
-Nothing but MCP messages is written to stdout; progress and errors go to stderr. `get_status` says `"server": "headless"` and which languages are installed and loaded.
+Nothing but MCP messages is written to stdout; progress and errors go to stderr. `get_status` says `"server": "headless"`, which languages are installed and loaded, and where each one's data comes from. A language with no data anywhere answers `409` saying how to get it (install its pack, or download and `--build` this checkout's data).
 
 ## Tools
 
@@ -431,13 +439,14 @@ From the headless server, with Japanese as the learner's language:
 ```json
 {"version": "8.2.0", "language": {"code": "ja", "name": "Japanese", "loaded": false}, "savedWords": {"learning": 1, "known": 1}, "lastVideo": null,
  "youtube": {"ytDlp": true},
- "languages": {"ja": {"installed": true, "loaded": true}, "zh-Hans": {"installed": true, "loaded": false}, "zh-Hant": {"installed": true, "loaded": false},
-               "yue": {"installed": true, "loaded": false}, "vi": {"installed": true, "loaded": false}},
+ "languages": {"ja": {"installed": true, "loaded": true, "data": "installed pack"}, "zh-Hans": {"installed": true, "loaded": false, "data": "checkout"},
+               "zh-Hant": {"installed": true, "loaded": false, "data": "checkout"}, "yue": {"installed": true, "loaded": false, "data": "installed pack"},
+               "vi": {"installed": true, "loaded": false, "data": "checkout"}},
  "server": "headless",
  "sources": [{"name": "JMdict", "use": "Japanese words, readings and glosses", "license": "CC BY-SA 4.0", "url": "https://www.edrdg.org/wiki/index.php/JMdict-EDICT_Dictionary_Project", "credit": "Electronic Dictionary Research and Development Group"}, "…"]}
 ```
 
-`language.loaded` says whether the player has the learner's language loaded (in the headless server, only after a tool that uses the player's language, such as `rate_video`, loaded it); `languages` says which languages' tools are ready.
+`language.loaded` says whether the player has the learner's language loaded (in the headless server, only after a tool that uses the player's language, such as `rate_video`, loaded it); `languages` says which languages' tools are ready and, in the headless server, where each one's data is read from (`installed pack`, `checkout` or `assets`; see [Language data](#the-headless-server-miteiru-closed)).
 
 ## Data sources
 

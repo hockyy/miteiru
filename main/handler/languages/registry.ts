@@ -356,6 +356,18 @@ export const languageDataPresent = async (pluginId: string): Promise<boolean> =>
   return (await Promise.all(candidates.map(assetCandidateExists))).some(Boolean);
 };
 
+/** The asset root a language's data is read from (the first that has it, as loading picks it), or null. */
+export const languageDataRoot = async (pluginId: string): Promise<string | null> => {
+  const marker = LANGUAGE_MARKERS[pluginId];
+  if (!marker) return null;
+  await refreshAssetRoots();
+  const [folder, relative] = marker;
+  const roots = assetRoots.filter((root) => !root.plugins || root.plugins.includes(folder));
+  const found = await Promise.all(roots.map((root) => assetCandidateExists(path.join(root.dir, folder, relative))));
+  const index = found.indexOf(true);
+  return index >= 0 ? roots[index].dir : null;
+};
+
 /** Whether a language's data is installed and its engine loaded now, for get_status. */
 export const languageEngineState = async (pluginId: string): Promise<{installed: boolean; loaded: boolean}> => {
   const plugin = getLanguagePlugin(pluginId);

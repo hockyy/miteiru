@@ -17,21 +17,31 @@ export interface LanguageDepsContext {
   learnerLanguage: () => Promise<string | null>;
   /** Saved words of a language changed (set_word_levels): the app tells its window to reload them. */
   onSavedWordsChanged?: (code: string) => void;
+  /** Where else a missing language's data can come from, said after "isn't installed" (the headless server's --build). */
+  notInstalledHint?: string;
 }
+
+const INSTALL_HINT = "Open Miteiru and choose it on the Home screen once, which downloads its language pack.";
 
 /**
  * The language tools' view of Miteiru's engines: the same tokenizers, dictionaries, saved words and Your
  * dictionary the subtitles use. The app's backend worker and the headless server both build theirs here.
  */
-export const createLanguageDeps = ({appDataDirectory, learnerLanguage, onSavedWordsChanged}: LanguageDepsContext): LanguageToolDeps => ({
+export const createLanguageDeps = ({appDataDirectory, learnerLanguage, onSavedWordsChanged, notInstalledHint}: LanguageDepsContext): LanguageToolDeps => ({
   defaultLanguage: async () => toolLanguageForCode((await learnerLanguage()) ?? ""),
 
   ensureLanguage: async (language) => {
     const info = toolLanguageInfo(language);
-    const result = await loadLanguageEngine(info.pluginId, {appDataDirectory});
+    let result: {ok: number; message?: string};
+    try {
+      result = await loadLanguageEngine(info.pluginId, {appDataDirectory});
+    } catch (error) {
+      // A setup can throw as well as answer: a missing word list is an ENOENT from deep inside.
+      result = {ok: 0, message: error instanceof Error ? error.message : String(error)};
+    }
     if (result.ok === 1) return;
     if (!await languageDataPresent(info.pluginId)) {
-      throw new ToolError(`${info.name} isn't installed on this computer. Open Miteiru and choose it on the Home screen once, which downloads its language pack.`, 409);
+      throw new ToolError(`${info.name} isn't installed on this computer. ${INSTALL_HINT}${notInstalledHint ? ` ${notInstalledHint}` : ""}`, 409);
     }
     throw new ToolError(`Miteiru couldn't load ${info.name}: ${result.message}`, 409);
   },
