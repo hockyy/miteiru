@@ -100,6 +100,19 @@ export const installedPackRoots = (root: string): Array<{dir: string; plugins: s
   });
 };
 
+/**
+ * This checkout's staged language data (scripts/stageHeadlessData.mjs) as one root carrying the plugin
+ * folders it has; nothing when it was never staged.
+ */
+export const checkoutDataRoots = (dir: string): Array<{dir: string; plugins: string[]}> => {
+  try {
+    const plugins = fs.readdirSync(dir, {withFileTypes: true}).filter((entry) => entry.isDirectory()).map((entry) => entry.name);
+    return plugins.length > 0 ? [{dir, plugins}] : [];
+  } catch {
+    return [];
+  }
+};
+
 export interface RunningApp {
   host: string;
   port: number;

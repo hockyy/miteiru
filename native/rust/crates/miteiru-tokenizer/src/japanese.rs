@@ -1,7 +1,9 @@
 //! A byte-indexed, minimum-cost IPADIC lattice with independent app and user lexicons.
 
+mod costs;
 mod dictionary;
 mod extras;
+mod readings;
 pub mod suffix;
 
 use crate::lexicon::{ExtraWord, WordSource};
@@ -73,7 +75,8 @@ impl Tokenizer {
     }
 
     pub fn load_with(read: impl FnMut(&str) -> Result<Vec<u8>, String>) -> Result<Self, String> {
-        let dictionary = Dictionary::load(read)?;
+        let mut dictionary = Dictionary::load(read)?;
+        costs::apply(&mut dictionary, costs::TABLE);
         let mut noun_context = (0, 0);
         dictionary.prefixes("猫", |length, key| {
             if length != "猫".len() {
@@ -191,7 +194,13 @@ impl Tokenizer {
                 .sum::<usize>()
     }
 
+    /// The lattice's words for `text`, with readings settled in context (numbers and counters, and the
+    /// words whose neighbours decide their reading: japanese/readings.rs).
     pub fn tokenize(&self, text: &str) -> Vec<Token> {
+        readings::refine(self, self.lattice(text))
+    }
+
+    fn lattice(&self, text: &str) -> Vec<Token> {
         if text.is_empty() {
             return Vec::new();
         }

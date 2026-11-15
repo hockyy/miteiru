@@ -89,6 +89,12 @@ impl Entries {
         })
     }
 
+    /// Replaces an entry's word cost (crate::japanese::costs).
+    pub fn set_cost(&mut self, id: u32, cost: i16) {
+        let offset = id as usize + 4;
+        self.data[offset..offset + 2].copy_from_slice(&cost.to_le_bytes());
+    }
+
     pub fn targets(&self, key: usize) -> &[u32] {
         let (start, length) = self.spans.get(key).copied().unwrap_or_default();
         &self.ids[start as usize..(start + length) as usize]

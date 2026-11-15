@@ -1,6 +1,6 @@
 # Japanese tokenizer
 
-Miteiru owns the tokenizer logic in `native/rust/crates/miteiru-tokenizer/src/japanese*`. No new dictionary or corpus is downloaded. The worker defaults to the Rust commands `japanese_load`, `japanese_set_words`, `japanese_tokenize` and `japanese_tokenize_batch`. The installed Japanese pack supplies the same IPADIC files and JMdict MTRPACK2 table as before. JMdict validates suffix bases by default; its headword-node layer is an explicit opt-in. There is no pack-format or UI change.
+Miteiru owns the tokenizer logic in `native/rust/crates/miteiru-tokenizer/src/japanese*`. Nothing is downloaded at run time. The worker defaults to the Rust commands `japanese_load`, `japanese_set_words`, `japanese_tokenize` and `japanese_tokenize_batch`. The installed Japanese pack supplies the same IPADIC files and JMdict MTRPACK2 table as before. JMdict validates suffix bases by default; its headword-node layer is an explicit opt-in. Readings in context come from a word-cost table built into the tokenizer and a readings pass after the lattice (see [Readings in context](#readings-in-context)). There is no pack-format or UI change.
 
 ## Design and research
 
@@ -14,6 +14,81 @@ This is an engineering choice for our shipped resources, not a claim of universa
 The loader trims kuromoji's unused zero-filled buffers; features are decoded only for the winning path. It validates map bounds, context IDs, matrix dimensions and character definitions. `flate2` was already used by Tauri; `unicode-normalization` supplies standard Unicode tables, not tokenizer logic. Extra tries are built directly from sorted prefix ranges into flat 32-bit node/edge indexes, without a temporary tree allocation per node. The lemma map retains just boxed surfaces and type bits, not every JMdict reading twice.
 
 All token-object fields remain available: surface, POS/details, conjugation type/form, dictionary base, reading and pronunciation. Known morphology keeps IPADIC metadata; a composed learner unit keeps the head's type, final inflection form and the concatenated surface readings. Dictionary words use their JMdict reading; the caller supplies user readings/meanings. Positions are one-based Unicode scalar offsets in the original text, and IDs are opaque (negative for extra words). The repair pass cannot split an inflected auxiliary such as `ちゃわ` in `忘れちゃわない`. Honorific composition excludes lexical suru nouns such as `おかわり`; nominal copulas remain separate from their nouns.
+
+## Readings in context
+
+A word's reading is what furigana, lookups and the language tools show (`analyze_text` gives it to
+Mathesis, whose teachers rely on it). IPADIC's lattice alone read 日本酒 as 日本 + 酒 (にっぽん + しゅ)
+and 米から as べい, 一本 as いちほん, 二人 as ににん, and どこ行った as おこなった. Two parts fix this, in
+the shared Rust tokenizer, so the app and the headless server read the same.
+
+**Research.** I compared alternatives a Rust or Node app can embed on CPU, on a gold set of 65 lines
+written as hard cases (`tests/fixtures/japanese-readings`, 186 scored kanji words). The second check
+was the JVS kana benchmark (arXiv 2606.22009; `scripts/eval/jvsKana.ts`; 2,756 lines without digits).
+Both guided the design, so the blind check came last: on 378 lines of real clip subtitles not looked at
+before (not in this repo), the old and new tokenizer read 33 spans differently. 30 are better now, 3
+unclear (角 twice, あり得る), none worse.
+
+| Analyzer | Gold readings | JVS reading CER |
+| --- | ---: | ---: |
+| Miteiru before (IPADIC) | 84.9% | 1.10% |
+| UniDic (unidic-lite 2.1.2, as MeCab, Vibrato or Lindera run it) | 85.5% | 1.12% |
+| Sudachi with SudachiDict-full (modes A and C) | 86.6% | |
+| pyopenjtalk-plus 0.4.1.post10 (OpenJTalk; NAIST-jdic, UniDic-CSJ) | 90.9% | 0.55% |
+| that dictionary alone, without its post-processing | 91.9% | |
+| **Miteiru now** | **94.6%** | **0.78%** |
+
+The paper's own kana error rates on JVS agree on the order: OpenJTalk 1.03%, KyTea 1.42%, MeCab with
+UniDic 1.54%, MeCab with IPADIC 1.78%, Sudachi 1.83%. The best measured reader is pyopenjtalk-plus's
+dictionary, an IPADIC descendant with years of cost audits and reading fixes. Switching to it would
+double the tokenizer's dictionary (790,000 entries against 392,000; by its file sizes, an estimated
+30 MB more memory), change segmentation, and need a new Japanese pack. Instead, its judgement is
+carried over to the entries IPADIC already has.
+
+**Word costs** (`data/ipadic-costs.tsv`, 11,324 entries, applied when the tokenizer loads):
+`scripts/data/buildJapaneseCosts.ts` builds the table from the plus dictionary's `sys.dic`.
+
+- The reading the plus dictionary prefers for a word may get cheaper and its other readings dearer,
+  never the reverse: 日本 にほん, 後 あと, 大勢 おおぜい, 緑色 みどりいろ, 金 かね over the surname キム.
+- Whole words IPADIC has but the lattice split now win: 日本酒, 一日中, 十六夜.
+- Readings the plus dictionary dropped cost more: 夜中 やちゅう, the prefix 今 こん, 剥がす へがす.
+
+Function words, kana words, suffixes, numerals, numeral + counter words and one-kanji country names
+keep IPADIC's costs. The plus dictionary segments those its own way, and copying them split として,
+なんか and 何で, or read 現代人 as げんだいにん. Entries are matched by surface, part of speech and
+reading, so another IPADIC build only skips lines.
+
+**Readings pass** (`src/japanese/readings.rs`, after the lattice):
+
+- *Numbers*: a number written in several kanji is one word read as a whole (二十 にじゅう, 三百
+  さんびゃく, 二〇二六 にせんにじゅうろく), as the tokenizer guidelines ask (do not split 五百).
+- *Counters*: numeral and counter stay two learner units (三 / 人), each with its sound change: 一本
+  いっ・ぽん, 三本 さん・ぼん, 六本 ろっ・ぽん, 十個 じゅっ・こ, 三階 さん・がい, 一か月 いっ・かげつ, 十ページ
+  じゅっ・ぺーじ, 四分 よん・ぷん. Native counts get native readings: 一人 ひと・り, 二人 ふた・り, 四人
+  よ・にん, 三日 みっ・か, 二十日 はつ・か, 四月 し・がつ, 九時 く・じ, 二十歳 はた・ち. A day after a month
+  is a date (四月一日 ついたち), and 三分の一 is a fraction (ぶん). After Arabic digits only the counter
+  changes (3本 ぼん), since digits carry no furigana.
+- *Context*: 行った is おこなった after an object with を in its clause, いった otherwise. 何 is なん
+  before の, と, だ, です, て or a counting noun (何文字), なに otherwise. A one-kanji country name standing
+  alone before a particle is the plain noun (米から こめ), while 日米 keeps べい.
+
+**Cost.** Loading takes about 20 ms more on the owner's PC: about 645 ms to 665 ms, JMdict scan
+included. A warm batch of 3,185 lines takes about 160 ms before and after (155–166 ms over runs), since
+words the rules don't touch pass through as they are. The table adds about 0.5 MB to each binary and
+allocates nothing: it only changes costs the dictionary already holds.
+
+Boundaries are unchanged or better on the tokenizer-eval gold, measured through headless
+`analyze_text`. Dev goes from 97.20% to 97.24% F1 (exact lines 73.33% → 74.00%); test stays at 97.88%.
+
+**Still wrong**, as in every analyzer measured: the readings only meaning decides (人気のない ひとけ, お茶と最中
+もなか, 生物なので なまもの, サイン色紙 しきし, 今日の日本社会 こんにち, 辛すぎる from a curry). Also words IPADIC
+lacks (令和, 着ぐるみ) and names (不知火, 兎田). On Mathesis's side a teacher can pin a reading the
+dictionary allows.
+
+Reproduce: `npx tsx --test tests/japaneseReadings.test.ts` (needs the addon:
+`cargo build --release --manifest-path native/rust/Cargo.toml -p miteiru-node`), and
+`npx tsx scripts/eval/jvsKana.ts <jvs_nonpara_kana.csv>` with the CSV from
+https://github.com/CyberAgentAILab/jvs_nonpara_kana (commit 3c7f1cd).
 
 ## Extra lexicons
 

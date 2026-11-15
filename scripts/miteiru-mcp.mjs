@@ -11,18 +11,21 @@
 //   --assets <dir>    a folder of <plugin>/... language data (the packs' format: .pack tables) to read first
 //   --preload ...     languages to load at start: the learner's (default), all installed, or none
 //   --no-proxy        never hand open_video or set_word_levels to a running Miteiru
-//   --build           rebuild the bundle and the addon, then exit
+//   --build           rebuild the bundle and the addon, stage this checkout's language data, then exit
 //   --check           print the paths it would use, then exit
 //
 // The first start builds the Node addon with cargo (about 20 seconds) and bundles the server with
-// esbuild (under a second); later starts reuse both until their sources change. Nothing but MCP
-// messages is written to stdout: progress goes to stderr.
+// esbuild (under a second); later starts reuse both until their sources change. --build also stages the
+// language data this checkout downloaded (npm run script:initrepo) into dist/headless/language-assets,
+// about 90 seconds once (scripts/stageHeadlessData.mjs); the server reads it for any language the
+// installed Miteiru has no pack for. Nothing but MCP messages is written to stdout: progress goes to stderr.
 import {spawnSync} from 'node:child_process';
 import fs from 'node:fs';
 import {createRequire} from 'node:module';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {buildHeadless, headlessBundleIsStale} from './buildHeadless.mjs';
+import {downloadedPlugins, HEADLESS_DATA, headlessDataIsStale, sourceFiles, stageHeadlessData} from './stageHeadlessData.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
@@ -71,7 +74,14 @@ const buildAddon = () => {
 };
 
 if (flag('--check')) {
-  process.stderr.write(`${JSON.stringify({root, addon: addonPath, addonStale: addonIsStale(), bundleStale: headlessBundleIsStale()}, null, 2)}\n`);
+  const files = sourceFiles();
+  process.stderr.write(`${JSON.stringify({
+    root,
+    addon: addonPath,
+    addonStale: addonIsStale(),
+    bundleStale: headlessBundleIsStale(),
+    checkoutData: {folder: HEADLESS_DATA, downloaded: downloadedPlugins(files), staged: fs.existsSync(HEADLESS_DATA), stale: headlessDataIsStale({files})}
+  }, null, 2)}\n`);
   process.exit(0);
 }
 
@@ -84,7 +94,22 @@ if (flag('--build') || headlessBundleIsStale()) {
 } else {
   bundle = path.join(root, 'dist', 'headless', 'miteiru-headless.cjs');
 }
-if (flag('--build')) process.exit(0);
+if (flag('--build')) {
+  try {
+    const plugins = stageHeadlessData();
+    log(plugins.length ? `this checkout's language data is ready: ${plugins.join(', ')}` : 'this checkout has no language data (npm run script:initrepo downloads it); only installed packs will be read');
+  } catch (error) {
+    log(`the language data was not staged: ${error instanceof Error ? error.message : String(error)}`);
+    process.exit(1);
+  }
+  process.exit(0);
+}
+// A server start only looks (about 10 ms); staging takes a minute, which an MCP client would not wait for.
+if (headlessDataIsStale({quick: true})) {
+  log(downloadedPlugins(sourceFiles(undefined, {quick: true})).length
+    ? "this checkout's language data changed since the last --build, or was never staged: run node scripts/miteiru-mcp.mjs --build to use it. Until then only the installed language packs are read."
+    : 'this checkout has no language data any more; run node scripts/miteiru-mcp.mjs --build to clear the old stage.');
+}
 
 const preload = option('--preload');
 const require = createRequire(import.meta.url);

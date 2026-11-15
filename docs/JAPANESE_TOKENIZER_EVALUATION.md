@@ -2,6 +2,8 @@
 
 Implementation frozen at `40214d141412ce2719489ff2a8ffa3a9c5657d27`, rebased onto `a2bbea0` (Chinese tokenizer PR #198). Gold is main commit `165d16f` (PR #197). Only ja.dev was used for tuning. The test split was scored once after freezing; later changes are reporting only. Predictions include the real processKuromojinToSeparations and parseJapaneseVerbs pipeline. JMdict headword nodes are off by default; suffix validation and Your dictionary are on. No artificial user entries contribute to the final gold scores.
 
+Later, reporting only: the readings layer (2026-11-15, [JAPANESE_TOKENIZER.md](JAPANESE_TOKENIZER.md#readings-in-context)) measured through headless `analyze_text` gives dev 97.24% F1 / 74.00% exact lines (was 97.20% / 73.33% on the same harness) and test 97.88% / 76.00% (unchanged). The one difference is numbers written in several kanji as one word (二十 / 歳).
+
 ## Gold results
 
 | Split / pipeline | Boundary F1 | Exact lines |
