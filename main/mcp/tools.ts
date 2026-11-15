@@ -75,13 +75,14 @@ export const DATA_SOURCES = [
   {name: "KanjiVG", use: "Kanji stroke order", license: "CC BY-SA 3.0", url: "https://kanjivg.tagaini.net/", credit: "Ulrich Apel"},
   {name: "Kanjium", use: "Japanese pitch accents", license: "CC BY-SA 4.0", url: "https://github.com/mifunetoshiro/kanjium"},
   {name: "JLPT word lists", use: "Japanese JLPT levels (unofficial)", license: "CC BY-SA 4.0 (the lists themselves: CC BY)", url: "https://github.com/stephenmk/yomitan-jlpt-vocab", credit: "stephenmk; Jonathan Waller"},
-  {name: "wordfreq", use: "Japanese word frequency ranks", license: "CC BY-SA 4.0", url: "https://github.com/rspeer/wordfreq", credit: "Robyn Speer"},
+  {name: "wordfreq", use: "Japanese word frequencies (freq_rank, freq_zipf; words at Zipf 3 or more)", license: "CC BY-SA 4.0 (data)", url: "https://github.com/rspeer/wordfreq", credit: "Robyn Speer"},
   {name: "IPADIC", use: "Japanese tokenizer dictionary", license: "IPADIC licence", url: "https://github.com/taku910/mecab/tree/master/mecab-ipadic"},
   {name: "CC-CEDICT", use: "Mandarin words, pinyin and glosses", license: "CC BY-SA 4.0", url: "https://www.mdbg.net/chinese/dictionary?page=cedict"},
   {name: "CantoDict", use: "Cantonese words, jyutping and glosses", license: "see its site", url: "https://www.cantonese.sheik.co.uk/"},
   {name: "Make Me a Hanzi", use: "Hanzi stroke order and decomposition", license: "Arphic Public License and LGPL", url: "https://github.com/skishore/makemeahanzi"},
   {name: "complete-hsk-vocabulary", use: "Mandarin HSK 3.0 levels", license: "MIT", url: "https://github.com/drkameleon/complete-hsk-vocabulary"},
   {name: "pinyin-pro", use: "Mandarin pinyin", license: "MIT", url: "https://github.com/zh-lx/pinyin-pro"},
+  {name: "OpenCC (opencc-js)", use: "A simplified copy of traditional Mandarin, read for pinyin", license: "MIT and Apache-2.0", url: "https://github.com/nk2028/opencc-js"},
   {name: "to-jyutping", use: "Cantonese jyutping", license: "BSD-2-Clause", url: "https://github.com/CanCLID/to-jyutping"},
   {name: "VNEDict", use: "Vietnamese glosses", license: "see its site", url: "https://www.denisowski.org/Vietnamese/Vietnamese.html"}
 ];

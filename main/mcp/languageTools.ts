@@ -8,7 +8,7 @@ import {mapLimit} from "../helpers/mapLimit";
 import {normalizeChineseEntry, rankChineseEntries, entryHasReading, shortSense, type ChineseEntryView} from "../language/chineseEntries";
 import {lookupHsk, type HskWords} from "../language/hsk";
 import {japaneseRuby, chineseRuby, type RubySegment} from "../language/japaneseRuby";
-import {lookupFrequencyRank, lookupJlpt, type JapaneseLevels} from "../language/japaneseLevels";
+import {japaneseLevelFields, type JapaneseLevels} from "../language/japaneseLevels";
 import {rankJapaneseEntries, rankSenses, senseFitsPos, senseLine, type SenseContext} from "../language/japaneseSenses";
 import {isToolLanguage, toolLanguageInfo, type StoredLanguageCode, type ToolLanguage, type ToolLanguageInfo} from "../language/languages";
 import {mandarinSpokenTones} from "../language/mandarinTones";
@@ -324,8 +324,7 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
 
     const baseReading = entryReading(entry, base, kana, inflected);
     const pitch = pitchOf(data.pitch, base, baseReading);
-    const jlpt = lookupJlpt(data.levels, base, baseReading);
-    const rank = lookupFrequencyRank(data.levels, base);
+    const levels = japaneseLevelFields(data.levels, {entryId: entry?.id, spelling: base, reading: baseReading});
     const pos = user ? "noun" : japanesePos(tag);
     let conjugation: object | undefined;
     if (inflected && (pos === "verb" || pos === "adjective") && entry) {
@@ -361,7 +360,7 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
       reading: {kana, romaji},
       ruby: japaneseRuby(piece.s, kana),
       gloss: user ? userGloss(user) : entry ? jmdictGloss(entry, senseContext, alternatives) : null,
-      levels: {...(jlpt ? {jlpt} : {}), ...(rank ? {freq_rank: rank} : {})},
+      levels,
       ...(pitch ? {pitch} : {}),
       ...(conjugation ? {conjugation} : {}),
       saved: savedLevelName(levelOf(context.saved, base)),
@@ -565,8 +564,6 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
   const jmdictEntryView = (entry: JmdictWord, tags: Record<string, string>, data: StudyData) => {
     const firstReading = entry.kana.find((kana) => kana.common)?.text ?? entry.kana[0]?.text ?? "";
     const spelling = entry.kanji.find((kanji) => kanji.common)?.text ?? entry.kanji[0]?.text ?? firstReading;
-    const jlpt = lookupJlpt(data.levels, spelling, firstReading);
-    const rank = lookupFrequencyRank(data.levels, spelling);
     const pitch = entry.kana.map((kana) => pitchOf(data.pitch, spelling, kana.text)).filter(Boolean);
     return {
       entry_id: entry.id,
@@ -590,7 +587,7 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
         ...(sense.related.length ? {related: sense.related.map((xref) => xref.filter((part) => typeof part === "string").join("・"))} : {}),
         ...(sense.antonym.length ? {antonyms: sense.antonym.map((xref) => xref.filter((part) => typeof part === "string").join("・"))} : {})
       })),
-      levels: {...(jlpt ? {jlpt} : {}), ...(rank ? {freq_rank: rank} : {})},
+      levels: japaneseLevelFields(data.levels, {entryId: entry.id, spelling, reading: firstReading}),
       ...(pitch.length ? {pitch} : {})
     };
   };
@@ -880,9 +877,7 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
     const sorted = [...lemmas.entries()].sort((a, b) => b[1].count - a[1].count);
     const levelsFor = (word: string, reading?: string) => {
       if (info.id === "ja") {
-        const jlpt = lookupJlpt(data.levels, word, reading);
-        const rank = lookupFrequencyRank(data.levels, word);
-        return {...(jlpt ? {jlpt} : {}), ...(rank ? {freq_rank: rank} : {})};
+        return japaneseLevelFields(data.levels, {spelling: word, reading});
       }
       const hsk = info.code === "zh-CN" ? lookupHsk(data.hsk, word) : undefined;
       return typeof hsk === "number" ? {hsk} : {};
