@@ -151,6 +151,7 @@ export const startHeadless = async (options: HeadlessOptions): Promise<void> => 
     if (setupError) throw new ToolError(setupError, 503);
     if (name === "open_video") {
       const outcome = proxy ? await proxy.call(name, args) : {answered: false as const, reason: "not-open" as const};
+      log(`open_video: ${"reason" in outcome ? `no running Miteiru took it (${outcome.reason})` : "handed to the running Miteiru"}`);
       if (!outcome.answered) return tools.open_video(args);
       if (outcome.error) throw new ToolError(outcome.error, 409);
       return outcome.result as object;
@@ -158,6 +159,7 @@ export const startHeadless = async (options: HeadlessOptions): Promise<void> => 
     if (name === "set_word_levels" && proxy) {
       // In the app the change reaches its window at once; an app from before this tool, or none, gets it written here.
       const outcome = await proxy.call(name, args);
+      log(`set_word_levels: ${"reason" in outcome ? `written here (${outcome.reason === "not-open" ? "Miteiru isn't open" : "the running Miteiru doesn't have the tool"})` : "handed to the running Miteiru"}`);
       if (outcome.answered) {
         if (outcome.error) throw new ToolError(outcome.error, 409);
         return outcome.result as object;

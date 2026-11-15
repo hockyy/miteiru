@@ -8,7 +8,7 @@
 //
 //   --profile <dir>   a Miteiru user data folder (as MITEIRU_USER_DATA_DIR); its packs are <dir>/language-packs
 //   --dev-profile     a development build's profile, "miteiru (development)"
-//   --assets <dir>    a folder of <plugin>/... language data to read before the installed packs
+//   --assets <dir>    a folder of <plugin>/... language data (the packs' format: .pack tables) to read first
 //   --preload ...     languages to load at start: the learner's (default), all installed, or none
 //   --no-proxy        never hand open_video or set_word_levels to a running Miteiru
 //   --build           rebuild the bundle and the addon, then exit

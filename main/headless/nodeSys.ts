@@ -61,7 +61,12 @@ export const createNodeSys = (addon: MiteiruAddon, kv: KvStore): SysCall => {
     [SYS_KV_BATCH]: (args) => kv.batch(Number(args.handle), decodeBatch(args.data as ArrayBuffer)),
     kv_range: (args) => kv.range(Number(args.handle), (args.opts ?? {}) as RangeOptions),
     kv_clear: (args) => kv.clear(Number(args.handle), (args.opts ?? {}) as RangeOptions),
-    proc_which: (args) => findOnPath(text(args.name))
+    proc_which: (args) => findOnPath(text(args.name)),
+    // A development checkout keeps dictionaries as JSON, which only the app imports (dict_import.rs);
+    // installed packs, and data in their format, hold ready tables and never need this.
+    kv_import_dictionary: (args) => {
+      throw `ENOSYS: function not implemented, the headless server reads dictionaries as tables (.pack), as installed language packs hold them, and does not import ${text(args.path)}. Use the installed packs, or --assets with a folder in their format.`;
+    }
   };
   return async (cmd, args = {}) => {
     const command = commands[cmd];

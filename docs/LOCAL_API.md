@@ -96,7 +96,7 @@ asyncio.run(main())
 | --- | --- |
 | `--profile <dir>` | A Miteiru user data folder instead of the installed app's (as `MITEIRU_USER_DATA_DIR`); its packs are `<dir>/language-packs`. |
 | `--dev-profile` | A development build's profile, `miteiru (development)`. |
-| `--assets <dir>` | A folder of `<plugin>/…` language data, read before the installed packs (more than once for more folders). |
+| `--assets <dir>` | A folder of `<plugin>/…` language data in the installed packs' format (dictionaries as `.pack` tables), read before the installed packs (more than once for more folders). A development checkout's JSON dictionaries are imported only by the app. |
 | `--preload learner\|all\|none` | Languages to load at start, in the background: the learner's (default), every installed one, or none. |
 | `--no-proxy` | Never hand `open_video` or `set_word_levels` to a running Miteiru. |
 | `--build` | Build the addon and the bundle, then exit. |
