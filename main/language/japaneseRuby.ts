@@ -43,17 +43,22 @@ export const japaneseRuby = (surface: string, reading: string): RubySegment[] =>
 
   // Walk the runs: a kana run must appear next in the reading; a run before it takes what lies between.
   const result: RubySegment[] = [];
-  const matched = match(runs, 0, kana, 0, result);
+  const matched = match(runs, 0, kana, 0, result, {steps: 0});
   if (matched) return result;
   return [{base: surface, ruby: kana}];
 };
 
+/** Enough for any real word; a long run of repeated kana could otherwise make the search very long. */
+const MAX_MATCH_STEPS = 5000;
+
 /**
  * Backtracking match of runs[index..] against kana[at..]; fills `out`. A needs-reading run takes at
  * least one kana; it is tried shortest first, which is right when the next kana run's first kana also
- * ends the reading of this one (聞き手 read ききて: 聞/き, き, 手/て).
+ * ends the reading of this one (聞き手 read ききて: 聞/き, き, 手/て). Gives up (false) after
+ * MAX_MATCH_STEPS tries, and the word is then one segment.
  */
-const match = (runs: Run[], index: number, kana: string, at: number, out: RubySegment[]): boolean => {
+const match = (runs: Run[], index: number, kana: string, at: number, out: RubySegment[], budget: {steps: number}): boolean => {
+  if (++budget.steps > MAX_MATCH_STEPS) return false;
   if (index === runs.length) return at === kana.length;
   const run = runs[index];
   if (run.kana) {
@@ -62,8 +67,9 @@ const match = (runs: Run[], index: number, kana: string, at: number, out: RubySe
     for (let length = Math.max(1, run.text.length - 2); length <= Math.min(kana.length - at, run.text.length + 2); length++) {
       if (looseKana(kana.slice(at, at + length)) !== written) continue;
       out.push({base: run.text, ruby: ""});
-      if (match(runs, index + 1, kana, at + length, out)) return true;
+      if (match(runs, index + 1, kana, at + length, out, budget)) return true;
       out.pop();
+      if (budget.steps > MAX_MATCH_STEPS) return false;
     }
     return false;
   }
@@ -71,8 +77,9 @@ const match = (runs: Run[], index: number, kana: string, at: number, out: RubySe
   for (let end = at + 1; end <= kana.length; end++) {
     if (isLast && end !== kana.length) continue;
     out.push({base: run.text, ruby: kana.slice(at, end)});
-    if (match(runs, index + 1, kana, end, out)) return true;
+    if (match(runs, index + 1, kana, end, out, budget)) return true;
     out.pop();
+    if (budget.steps > MAX_MATCH_STEPS) return false;
   }
   return false;
 };

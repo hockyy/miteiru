@@ -620,9 +620,9 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
   });
 
   const lookup_word = async (args: Record<string, unknown>) => {
-    const info = await languageOf(args.language);
     const word = String(args.word).trim().normalize("NFC");
     if (!word) throw new ToolError("word must not be empty");
+    const info = await languageOf(args.language);
     const reading = typeof args.reading === "string" ? args.reading.trim() : "";
     const pos = typeof args.pos === "string" ? args.pos : "";
     const limit = args.limit as number;
@@ -700,9 +700,9 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
   };
 
   const lookup_character = async (args: Record<string, unknown>) => {
-    const info = await languageOf(args.language);
     const characters = Array.from(String(args.char).trim().normalize("NFC"));
     if (characters.length !== 1 || !/\p{Script=Han}/u.test(characters[0])) throw new ToolError("char must be one Han character (a kanji or hanzi)");
+    const info = await languageOf(args.language);
     const char = characters[0];
     const codepoint = char.codePointAt(0)!;
     const head = {language: languageSummary(info), char, codepoint: `U+${codepoint.toString(16).toUpperCase().padStart(4, "0")}`};
@@ -774,9 +774,9 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
   // ---- readings ------------------------------------------------------------------------------------------
 
   const readings = async (args: Record<string, unknown>) => {
-    const info = await languageOf(args.language);
     const word = String(args.word).trim().normalize("NFC");
     if (!word) throw new ToolError("word must not be empty");
+    const info = await languageOf(args.language);
     const head = {language: languageSummary(info), word};
     const tokens = await deps.analyze(info.id, word);
     const tokenized = tokens.map((token) => String(info.id === "ja" ? token.hiragana ?? "" : info.code === "yue" ? token.jyutping ?? "" : token.pinyin ?? "")).join(" ").trim();
@@ -930,7 +930,6 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
   const LEVEL_NUMBERS: Record<SavedLevel, number> = {new: 0, learning: 1, known: 2};
 
   const set_word_levels = async (args: Record<string, unknown>) => {
-    const info = await languageOf(args.language);
     const requested = args.words as Array<{word: string; level: SavedLevel}>;
     const words = new Map<string, SavedLevel>();
     for (const [index, item] of requested.entries()) {
@@ -938,6 +937,7 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
       if (!/[\p{L}\p{N}]/u.test(word)) throw new ToolError(`words[${index}].word must hold a letter or digit`);
       words.set(word, item.level);
     }
+    const info = await languageOf(args.language);
     const before = await deps.savedWords(info.code);
     const time = now();
     const entries: SavedWords = {};
@@ -953,10 +953,10 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
   // ---- conjugate -----------------------------------------------------------------------------------------
 
   const conjugate = async (args: Record<string, unknown>) => {
-    const info = await languageOf(args.language ?? "ja");
-    if (info.id !== "ja") throw new ToolError("conjugate is for Japanese.");
     const word = String(args.word).trim().normalize("NFC");
     if (!word) throw new ToolError("word must not be empty");
+    if (args.language !== undefined && args.language !== "ja") throw new ToolError("conjugate is for Japanese.");
+    const info = await languageOf("ja");
     const db = deps.jmdict();
     if (!db) throw new ToolError("Japanese isn't loaded: its dictionary is not open.", 409);
     let dictionaryForm = word;
