@@ -50,7 +50,7 @@ tauri-plugin-updater = "~2.12"
 tauri-plugin-process = "~2.3"
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.60", features = ["Win32_Foundation", "Win32_UI_WindowsAndMessaging"] }
+windows-sys = { version = "0.60", features = ["Win32_Foundation", "Win32_System_Threading", "Win32_UI_WindowsAndMessaging"] }
 # The same versions wry uses (file_drop_windows.rs talks to its WebView2).
 webview2-com = "0.39"
 windows-core = "0.62"

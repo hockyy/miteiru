@@ -19,17 +19,34 @@ const REGISTRATION_FILE: &str = "analyzer-server.json";
 const TOKEN_HEADER: &str = "X-Miteiru-Analyzer-Token";
 /// A little longer than the app gives its worker to answer (analyzer.rs), so the app's own 504 arrives first.
 const CALL_TIMEOUT: Duration = Duration::from_secs(130);
+/// A running app accepts a loopback connection at once, even while busy (the OS completes it). A port
+/// nobody listens on is refused only after about 2 s on Windows, which retries, so a registration left
+/// by a closed app whose pid is in use again costs at most this.
+const CONNECT_TIMEOUT: Duration = Duration::from_secs(1);
 const NOT_OPEN: &str = "Miteiru isn't open. Ask the learner to open it, then try again.";
 
-type Out = Arc<Mutex<std::io::Stdout>>;
+type Out = Arc<Mutex<Box<dyn Write + Send>>>;
+type Forward = Arc<dyn Fn(&Value) -> Option<Value> + Send + Sync>;
 
-/// Answers MCP messages until stdin closes; returns the exit code.
+/// Answers MCP messages until stdin closes and every call is answered; returns the exit code.
 pub fn run() -> i32 {
+  if std::env::args_os().skip(1).any(|arg| arg == "--headless") {
+    // stderr only: stdout is the MCP channel.
+    eprintln!("miteiru --mcp: --headless is not part of the app. With Miteiru closed, run the headless server from a checkout: node <repo>/scripts/miteiru-mcp.mjs (docs/LOCAL_API.md). This server answers while Miteiru is open.");
+  }
   let definitions: Value = serde_json::from_str(DEFINITIONS).expect("main/mcp/definitions.json is valid JSON");
-  let version = app_version();
-  let out: Out = Arc::new(Mutex::new(std::io::stdout()));
+  let out: Out = Arc::new(Mutex::new(Box::new(std::io::stdout())));
+  serve(std::io::stdin().lock(), &out, &definitions, &app_version(), Arc::new(forward));
+  0
+}
+
+/// Reads one message per line from `input` and answers on `out`; tool calls go to `forward`, each on
+/// its own thread. Returns once `input` ends and every call has its answer: a client may write its
+/// requests and close stdin before the first answer arrives.
+fn serve(input: impl BufRead, out: &Out, definitions: &Value, version: &str, forward: Forward) {
   let calls: Arc<Mutex<Calls>> = Arc::default();
-  for line in std::io::stdin().lock().split(b'\n') {
+  let mut workers: Vec<std::thread::JoinHandle<()>> = Vec::new();
+  for line in input.split(b'\n') {
     let Ok(line) = line else { break };
     let text = String::from_utf8_lossy(&line);
     let text = text.trim();
@@ -39,12 +56,12 @@ pub fn run() -> i32 {
     let message: Value = match serde_json::from_str(text) {
       Ok(message) => message,
       Err(_) => {
-        send(&out, &error(Value::Null, -32700, "Parse error"));
+        send(out, &error(Value::Null, -32700, "Parse error"));
         continue;
       }
     };
-    match answer_here(&message, &definitions, &version) {
-      Here::Reply(reply) => send(&out, &reply),
+    match answer_here(&message, definitions, version) {
+      Here::Reply(reply) => send(out, &reply),
       Here::Ignore => {
         if let Some(id) = cancelled_request(&message) {
           lock(&calls).cancel(id);
@@ -58,17 +75,22 @@ pub fn run() -> i32 {
         }
         let out = out.clone();
         let calls = calls.clone();
-        std::thread::spawn(move || {
+        let forward = forward.clone();
+        workers.retain(|worker| !worker.is_finished());
+        workers.push(std::thread::spawn(move || {
           let reply = forward(&message);
           let cancelled = id.is_some_and(|id| lock(&calls).finish(&id));
           if let Some(reply) = reply.filter(|_| !cancelled) {
             send(&out, &reply);
           }
-        });
+        }));
       }
     }
   }
-  0
+  // stdin is closed, but the calls still running are answered: each ends within CALL_TIMEOUT.
+  for worker in workers {
+    let _ = worker.join();
+  }
 }
 
 /// Calls passed to the app and not answered yet, and which of them the client cancelled: a cancelled
@@ -174,6 +196,8 @@ struct RunningApp {
   port: u16,
   token: String,
   started_at: u64,
+  /// The app's process, when the file names it.
+  pid: Option<u32>,
 }
 
 fn parse_registration(text: &str) -> Option<RunningApp> {
@@ -188,19 +212,55 @@ fn parse_registration(text: &str) -> Option<RunningApp> {
     port: u16::try_from(registration.get("port")?.as_u64()?).ok()?,
     token: registration.get("token")?.as_str()?.to_owned(),
     started_at: registration.get("startedAt").and_then(Value::as_u64).unwrap_or(0),
+    pid: registration.get("pid").and_then(Value::as_u64).and_then(|pid| u32::try_from(pid).ok()),
   })
 }
 
-/// Read again for every call: a restarted app listens on a new port with a new token.
+/// Read again for every call: a restarted app listens on a new port with a new token. A file whose
+/// app has closed (its process is gone) is skipped without trying its port.
 fn running_apps() -> Vec<RunningApp> {
   let mut apps: Vec<RunningApp> = crate::sys::info::user_data_dir_candidates()
     .iter()
     .filter_map(|dir| std::fs::read_to_string(dir.join(REGISTRATION_FILE)).ok())
     .filter_map(|text| parse_registration(&text))
+    .filter(|app| app.pid.is_none_or(process_alive))
     .collect();
   // The newest run first: an older file may be left by an app that has closed since.
   apps.sort_by(|a, b| b.started_at.cmp(&a.started_at));
   apps
+}
+
+/// Whether a process with this id is running (another user's counts).
+#[cfg(windows)]
+fn process_alive(pid: u32) -> bool {
+  use windows_sys::Win32::Foundation::{CloseHandle, GetLastError, ERROR_ACCESS_DENIED, STILL_ACTIVE};
+  use windows_sys::Win32::System::Threading::{GetExitCodeProcess, OpenProcess, PROCESS_QUERY_LIMITED_INFORMATION};
+  // SAFETY: plain Win32 calls; the handle is closed before returning.
+  unsafe {
+    let handle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid);
+    if handle.is_null() {
+      return GetLastError() == ERROR_ACCESS_DENIED;
+    }
+    let mut code = 0u32;
+    let read = GetExitCodeProcess(handle, &mut code);
+    CloseHandle(handle);
+    read != 0 && code == STILL_ACTIVE as u32
+  }
+}
+
+#[cfg(unix)]
+fn process_alive(pid: u32) -> bool {
+  let Ok(pid) = i32::try_from(pid) else { return false };
+  if pid <= 0 {
+    return false;
+  }
+  // SAFETY: signal 0 sends nothing; it only asks whether the process exists.
+  unsafe { libc::kill(pid, 0) == 0 || std::io::Error::last_os_error().raw_os_error() == Some(libc::EPERM) }
+}
+
+#[cfg(not(any(windows, unix)))]
+fn process_alive(_pid: u32) -> bool {
+  true
 }
 
 fn forward(message: &Value) -> Option<Value> {
@@ -246,6 +306,7 @@ fn post(app: &RunningApp, body: &str) -> Result<(u16, String), String> {
     // No proxy: a proxy set for the web must not see the token or be asked for 127.0.0.1.
     let client = reqwest::Client::builder()
       .timeout(CALL_TIMEOUT)
+      .connect_timeout(CONNECT_TIMEOUT)
       .no_proxy()
       .build()
       .map_err(|e| e.to_string())?;
@@ -409,10 +470,70 @@ mod tests {
   #[test]
   fn registrations_are_read_for_this_computer_only() {
     let app = parse_registration(r#"{"host":"127.0.0.1","port":49183,"token":"t","pid":1,"startedAt":5}"#).unwrap();
-    assert_eq!(app, RunningApp {host: "127.0.0.1".into(), port: 49183, token: "t".into(), started_at: 5});
+    assert_eq!(app, RunningApp {host: "127.0.0.1".into(), port: 49183, token: "t".into(), started_at: 5, pid: Some(1)});
+    assert_eq!(parse_registration(r#"{"host":"localhost","port":1,"token":"t"}"#).unwrap().pid, None);
     assert!(parse_registration(r#"{"host":"example.com","port":1,"token":"t"}"#).is_none());
     assert!(parse_registration(r#"{"host":"127.0.0.1","port":70000,"token":"t"}"#).is_none());
     assert!(parse_registration("not json").is_none());
+  }
+
+  // Bug fix: a registration left by a closed app cost about 2 s per call on Windows, which retries a
+  // refused loopback connection; its process is checked first now.
+  #[test]
+  fn a_closed_apps_process_is_seen_as_gone() {
+    assert!(process_alive(std::process::id()));
+    let child = std::process::Command::new(if cfg!(windows) { "cmd" } else { "true" })
+      .args(if cfg!(windows) { &["/C", "exit"][..] } else { &[][..] })
+      .spawn()
+      .unwrap();
+    let pid = child.id();
+    let mut child = child;
+    child.wait().unwrap();
+    drop(child);
+    assert!(!process_alive(pid), "an exited child's pid is not alive");
+    assert!(!process_alive(u32::MAX - 2));
+  }
+
+  /// Output a test can read back.
+  #[derive(Clone, Default)]
+  struct Shared(Arc<Mutex<Vec<u8>>>);
+
+  impl Write for Shared {
+    fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
+      lock(&self.0).extend_from_slice(bytes);
+      Ok(bytes.len())
+    }
+    fn flush(&mut self) -> std::io::Result<()> {
+      Ok(())
+    }
+  }
+
+  // Bug fix: the bridge returned when stdin closed, so a client that wrote its requests and closed
+  // stdin at once got no answer to any call still at the app.
+  #[test]
+  fn calls_are_answered_after_stdin_closes() {
+    let input = concat!(
+      r#"{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"get_status"}}"#, "\n",
+      r#"{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"analyze_text"}}"#, "\n",
+      r#"{"jsonrpc":"2.0","id":3,"method":"ping"}"#, "\n"
+    );
+    let shared = Shared::default();
+    let out: Out = Arc::new(Mutex::new(Box::new(shared.clone())));
+    let slow: Forward = Arc::new(|message: &Value| {
+      std::thread::sleep(Duration::from_millis(300));
+      Some(json!({"jsonrpc": "2.0", "id": message["id"], "result": {"answered": true}}))
+    });
+    let started = std::time::Instant::now();
+    serve(std::io::Cursor::new(input), &out, &definitions(), "9.9.9", slow);
+    // Both calls ran at once, and serve waited for them after the input ended.
+    assert!(started.elapsed() >= Duration::from_millis(300));
+    assert!(started.elapsed() < Duration::from_millis(3000));
+    let text = String::from_utf8(lock(&shared.0).clone()).unwrap();
+    let mut ids: Vec<i64> = text.lines().map(|line| serde_json::from_str::<Value>(line).unwrap()["id"].as_i64().unwrap()).collect();
+    // The ping is answered at once, before the calls.
+    assert_eq!(ids.first(), Some(&3));
+    ids.sort_unstable();
+    assert_eq!(ids, vec![1, 2, 3]);
   }
 
   #[test]
