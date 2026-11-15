@@ -2490,6 +2490,7 @@ dependencies = [
  "libc",
  "libloading 0.9.0",
  "log",
+ "miteiru-langdata",
  "miteiru-mpv",
  "miteiru-tokenizer",
  "raw-window-handle",
@@ -2511,6 +2512,18 @@ dependencies = [
  "webview2-com",
  "windows-core",
  "windows-sys 0.60.2",
+ "zstd",
+]
+
+[[package]]
+name = "miteiru-langdata"
+version = "0.0.0"
+dependencies = [
+ "flate2",
+ "log",
+ "miteiru-tokenizer",
+ "serde",
+ "serde_json",
  "zstd",
 ]
 

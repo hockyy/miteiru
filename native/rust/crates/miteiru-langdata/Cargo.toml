@@ -1,0 +1,16 @@
+[package]
+name = "miteiru-langdata"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+description = "Miteiru's language data engines (data tables, compressed assets, the Japanese and Chinese tokenizer stores), shared by the desktop app (src-tauri) and the Node addon (miteiru-node) so both give the same answers"
+
+[dependencies]
+miteiru-tokenizer = { path = "../miteiru-tokenizer" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# Data table blocks and `.zst` assets (docs/DATA_FORMAT.md).
+zstd = "0.13"
+# `.gz` assets (development downloads).
+flate2 = "1"
+log = "0.4"
