@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import {test} from "node:test";
-import Chinese, {cantoneseEngine, chineseEngine, mandarinEngine} from "../main/handler/chinese";
+import Chinese, {cantoneseEngine, chineseEngine, mandarinEngine, sentencePinyin} from "../main/handler/chinese";
 import {analyzeText} from "../main/handler/languages/analyzer";
 import {languagePlugins, loadLanguageEngine, loadLanguagePlugin} from "../main/handler/languages/registry";
 import {setStoreFactory} from "../main/handler/common/storeHandlers";
@@ -50,6 +50,23 @@ test("Mandarin pinyin is read in its sentence: 了 after a verb is le, not liǎo
     mandarinEngine.jieba = fakeJieba(["没想到", "，", "龙王"]);
     const words: any[] = await mandarinEngine.tokenizeUsingJieba("没想到，龙王", "num");
     assert.deepEqual(words.map((token) => token.separation.map((part) => part.pinyin)), [["mei2", "xiang3", "dao4"], [""], ["long2", "wang2"]]);
+  } finally {
+    mandarinEngine.jieba = saved;
+  }
+});
+
+test("Traditional Mandarin is read through its simplified copy: 我們 is wǒ men, 什麼 is shén me", async () => {
+  noUserWords();
+  const saved = mandarinEngine.jieba;
+  try {
+    mandarinEngine.jieba = fakeJieba(["我們", "今天", "說", "什麼", "？"]);
+    mandarinEngine.userWords = undefined;
+    const numbers: any[] = await mandarinEngine.tokenizeUsingJieba("我們今天說什麼？", "num");
+    // The words and their characters stay traditional; only the reading comes from the simplified copy.
+    assert.deepEqual(numbers.map((token) => token.origin), ["我們", "今天", "說", "什麼", "？"]);
+    assert.deepEqual(numbers.map((token) => token.pinyin), ["wo3 men5", "jin1 tian1", "shuo1", "shen2 me5", ""]);
+    assert.deepEqual(numbers[0].separation.map((part) => part.main), ["我", "們"]);
+    assert.deepEqual(sentencePinyin("頭髮很長").map((read) => `${read.origin}${read.pinyin}`), ["頭tou2", "髮fa0", "很hen3", "長chang2"]);
   } finally {
     mandarinEngine.jieba = saved;
   }

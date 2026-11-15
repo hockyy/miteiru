@@ -3,6 +3,7 @@ import {chineseLearningGloss, glossAll, queryChineseDictionary} from "./language
 import {ipcMain} from "../../renderer/platform/backend/shims/desktop";
 import path from "path";
 import {pinyin} from "pinyin-pro";
+import * as OpenCC from "opencc-js/t2cn";
 import ToJyutping from "to-jyutping";
 import {Jieba} from '@node-rs/jieba'
 import {formatJyutpingReading, formatPinyinReading} from "./pinyinTones";
@@ -160,12 +161,27 @@ export class ChineseEngine {
   }
 }
 
-/** pinyin-pro's reading of every character of `text`, read together so polyphones take their context. */
-const sentencePinyin = (text: string): Array<{origin: string; pinyin: string}> => {
+let traditionalToSimplified: ((text: string) => string) | undefined;
+const simplifiedCopy = (text: string): string => {
+  traditionalToSimplified ??= OpenCC.Converter({from: 't', to: 'cn'});
+  return traditionalToSimplified(text);
+};
+
+/**
+ * pinyin-pro's reading of every character of `text`, read together so polyphones take their context.
+ * pinyin-pro knows its context words in simplified characters (們 alone is mén, 我们 is wǒ men), so a
+ * traditional line is read through its simplified copy when that copy has the same characters count;
+ * every item keeps the line's own character as its origin.
+ */
+export const sentencePinyin = (text: string): Array<{origin: string; pinyin: string}> => {
   if (!text) return [];
-  const read = pinyin(text, {toneType: 'num', type: 'all'}) as Array<{origin: string; pinyin: string}>;
+  const characters = Array.from(text);
+  const simplified = simplifiedCopy(text);
+  const source = simplified !== text && Array.from(simplified).length === characters.length ? simplified : text;
+  const read = pinyin(source, {toneType: 'num', type: 'all'}) as Array<{origin: string; pinyin: string}>;
   // One item per character is what the word offsets need; anything else falls back to word by word.
-  return read.length === Array.from(text).length ? read : [];
+  if (read.length !== characters.length) return [];
+  return source === text ? read : read.map((item, index) => ({origin: characters[index], pinyin: item.pinyin}));
 };
 
 export const mandarinEngine = new ChineseEngine("zh-CN");
