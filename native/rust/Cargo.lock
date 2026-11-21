@@ -270,7 +270,7 @@ dependencies = [
 name = "miteiru-opencc"
 version = "1.4.1"
 dependencies = [
- "zstd 0.13.4",
+ "zstd",
 ]
 
 [[package]]
