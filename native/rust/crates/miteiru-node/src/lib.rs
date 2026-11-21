@@ -20,7 +20,7 @@ use napi_derive::napi;
 
 /// Bumped when a function's name or shape changes, so the JS side can refuse a stale build.
 #[napi]
-pub const ADDON_API: u32 = 5;
+pub const ADDON_API: u32 = 6;
 
 static JAPANESE: LazyLock<JapaneseStore> = LazyLock::new(JapaneseStore::default);
 static CHINESE: LazyLock<JiebaStore> = LazyLock::new(JiebaStore::default);
@@ -150,6 +150,19 @@ impl Task for ChineseLoad {
 #[napi]
 pub fn jieba_load(key: String, dict_path: String, dictionary_path: Option<String>) -> AsyncTask<ChineseLoad> {
   AsyncTask::new(ChineseLoad { key, dict_path, dictionary_path })
+}
+
+/// A segmented word and its optional tag from the language pack.
+#[napi(object)]
+pub struct TaggedChineseWord {
+  pub s: String,
+  pub tag: Option<String>,
+}
+
+#[napi]
+pub fn jieba_cut_tagged(key: String, text: String, hmm: bool) -> napi::Result<Vec<TaggedChineseWord>> {
+  let words = CHINESE.cut_tagged(&key, &text, hmm).map_err(failure)?;
+  Ok(words.into_iter().map(|word| TaggedChineseWord { s: word.s, tag: word.tag }).collect())
 }
 
 /// `jieba_cut`: the words of `text`.

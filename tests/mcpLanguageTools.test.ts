@@ -4,7 +4,7 @@ import {jmdictImport, type JmdictWord} from "../main/dictionary/jmdictDb";
 import {chineseImport} from "../main/dictionary/chineseDictionaryDb";
 import {kanjidicImport} from "../main/dictionary/kanjidicDb";
 import {parseJapaneseLevels} from "../main/language/japaneseLevels";
-import {FULL_FORMAT, POS_VALUES, type LanguageToolDeps, type SavedWords} from "../main/mcp/languageTools";
+import {chinesePos, FULL_FORMAT, POS_VALUES, type LanguageToolDeps, type SavedWords} from "../main/mcp/languageTools";
 import {mcpDefinitions, ToolError, validateToolArguments} from "../main/mcp/protocol";
 import {createMiteiruTools, type LearningLanguage, type MiteiruToolDeps} from "../main/mcp/tools";
 import {memoryDictionary} from "./helpers/memoryDictionary";
@@ -258,6 +258,21 @@ test("without the language engines the language tools answer 503, and the old to
   await assert.rejects(call("analyze_text", {language: "ja", text: "猫"}), rejects(503, /language tools are not available/));
   const old = await call("analyze_text", {text: "猫が好きです"});
   assert.deepEqual(old.words.map((word: any) => word.text), ["猫", "が", "好き", "です"]);
+});
+
+test("Chinese POS preserves proper-noun subtypes and maps other jieba tags by first letter", () => {
+  for (const [pos, tags] of Object.entries({
+    verb: ["v", "vg", "vd", "vn"], noun: ["ng", "tg", "f"],
+    proper_noun: ["nr", "nrfg", "nrt", "ns", "nt", "nz", "R"],
+    pronoun: ["r", "rg", "rz"], adjective: ["ag", "ad", "an", "zg"],
+    adverb: ["dg"], numeral: ["mq"], classifier: ["q"], particle: ["uj", "y", "p"],
+    conjunction: ["c"], interjection: ["o"], idiom: ["i"], expression: ["l"],
+    prefix: ["h"], suffix: ["k"], punct: ["wj"], other: ["x", "g"], word: ["eng", ""],
+  })) {
+    for (const tag of tags) assert.equal(chinesePos(tag), pos, tag);
+  }
+  assert.equal(chinesePos(undefined), "word");
+  assert.equal(chinesePos(null), "word");
 });
 
 // ---- analyze_text ------------------------------------------------------------------------------------

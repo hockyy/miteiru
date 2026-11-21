@@ -8,7 +8,7 @@ import type {LanguagePlugin} from "../main/handler/languages/types";
 
 const noUserWords = () => setStoreFactory(async () => ({get: (_key: string, fallback?: unknown) => fallback, set: () => undefined}));
 
-const fakeJieba = (words: string[]) => ({cut: async () => words, setUserWords: async () => undefined});
+const fakeJieba = (words: string[]) => ({cutTagged: async () => words.map(s => ({s})), setUserWords: async () => undefined});
 
 test("Mandarin and Cantonese have an engine each; the analyzer reads each mode's own", async () => {
   noUserWords();

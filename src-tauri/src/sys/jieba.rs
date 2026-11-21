@@ -1,7 +1,7 @@
 //! The Chinese tokenizers' commands (Mandarin and Cantonese, by key). The store (miteiru-langdata,
 //! with its tests) is shared with the headless language server's addon, so both cut text the same way.
 
-pub use miteiru_langdata::chinese::{JiebaStore, UserWord};
+pub use miteiru_langdata::chinese::{JiebaStore, TaggedWord, UserWord};
 
 #[tauri::command]
 pub async fn jieba_load(
@@ -30,4 +30,14 @@ pub async fn jieba_cut(
   hmm: bool,
 ) -> Result<Vec<String>, String> {
   store.cut(&key, &text, hmm)
+}
+
+#[tauri::command]
+pub async fn jieba_cut_tagged(
+  store: tauri::State<'_, JiebaStore>,
+  key: String,
+  text: String,
+  hmm: bool,
+) -> Result<Vec<TaggedWord>, String> {
+  store.cut_tagged(&key, &text, hmm)
 }

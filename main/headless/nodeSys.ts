@@ -44,6 +44,7 @@ export const createNodeSys = (addon: MiteiruAddon, kv: KvStore): SysCall => {
     japanese_tokenize: async (args) => JSON.parse(await addon.japaneseTokenizeBatch(text(args.dictPath), [text(args.text)]))[0],
     japanese_tokenize_batch: async (args) => JSON.parse(await addon.japaneseTokenizeBatch(text(args.dictPath), (args.texts as unknown[]).map(text))),
     jieba_load: (args) => addon.jiebaLoad(text(args.key), text(args.dictPath), typeof args.dictionaryPath === "string" ? args.dictionaryPath : null),
+    jieba_cut_tagged: (args) => addon.jiebaCutTagged(text(args.key), text(args.text), args.hmm !== false),
     jieba_cut: (args) => addon.jiebaCut(text(args.key), text(args.text), args.hmm !== false),
     opencc_convert_batch: (args) => addon.openccConvertBatch(text(args.mode), (args.lines as Array<string | number[]>).map(openccText)),
     ...readingCommands(addon),

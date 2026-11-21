@@ -30,7 +30,9 @@ const LINES = [
   {language: "ja", text: "猫が好きです。"},
   {language: "zh-Hans", text: "我喝茶。"},
   {language: "zh-Hant", text: "我們喝茶。"},
-  {language: "yue", text: "佢哋今日去咗飲茶"}
+  {language: "yue", text: "佢哋今日去咗飲茶"},
+  {language: "zh-Hans", text: "我喝冰咖啡"},
+  {language: "yue", text: "佢飲奶茶"}
 ] as const;
 
 /** --check's report: what --build would do. */
@@ -89,6 +91,9 @@ test("the headless server answers ja, zh-Hans, zh-Hant and yue from a plain chec
   assert.equal(token(result(3), "我們").reading.pinyin_num, "wo3 men5");
   assert.equal(token(result(4), "飲茶").reading.jyutping, "jam2 caa4");
   assert.match(token(result(4), "飲茶").gloss.en.join("; "), /tea/);
+  const parts = (answer: any) => answer.tokens.map(({s, pos, tag}: any) => [s, pos, tag]);
+  assert.deepEqual(parts(result(5)), [["我", "pronoun", "r"], ["喝", "verb", "vg"], ["冰", "noun", "n"], ["咖啡", "noun", "n"]]);
+  assert.deepEqual(parts(result(6)), [["佢", "pronoun", "r"], ["飲", "verb", "v"], ["奶茶", "noun", "n"]]);
   // Nothing came from an installed pack: this profile has none. (Calls run at once, so get_status may
   // answer before a language finished loading: only where the data is from is compared.)
   const languages = result(9).languages;

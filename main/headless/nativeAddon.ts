@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import type {TaggedChineseWord} from "../../renderer/platform/backend/shims/jieba";
 
 /**
  * The Node-API addon (native/rust/crates/miteiru-node): the same Rust tokenizers and data tables the
@@ -17,6 +18,7 @@ export interface MiteiruAddon {
   japaneseTokenizeBatch(dictPath: string, texts: string[]): Promise<string>;
   jiebaLoad(key: string, dictPath: string, dictionaryPath?: string | null): Promise<void>;
   jiebaCut(key: string, text: string, hmm: boolean): string[];
+  jiebaCutTagged(key: string, text: string, hmm: boolean): TaggedChineseWord[];
   openccConvertBatch(mode: string, lines: string[]): string[];
   jyutpingBatch(texts: string[]): string;
   pinyinBatch(texts: string[], simplify: boolean): string;
@@ -31,7 +33,7 @@ export interface MiteiruAddon {
 }
 
 /** The ADDON_API this code is written against; a build with another one is refused. */
-export const EXPECTED_ADDON_API = 5;
+export const EXPECTED_ADDON_API = 6;
 
 /** The file cargo builds for the crate on this system. */
 export const addonFileName = (platform: NodeJS.Platform = process.platform) => (

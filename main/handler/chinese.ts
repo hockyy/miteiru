@@ -14,6 +14,7 @@ import type {DictionaryDb} from "../dictionary/levelDictionary";
 interface JyutpingResult {
   origin: string;
   jyutping: string;
+  part?: string;
   separation: { main: string; jyutping: string | null }[];
 }
 
@@ -33,7 +34,7 @@ export class ChineseEngine {
   importDict: string;
   importBaseSVG: string;
   jiebaDictPath: string;
-  jieba: Pick<Jieba, "cut" | "setUserWords">;
+  jieba: Pick<Jieba, "cutTagged" | "setUserWords">;
   userWords: UserDictionaryEntry[] | undefined;
   userWordsUpdating: Promise<void> = Promise.resolve();
 
@@ -84,10 +85,10 @@ export class ChineseEngine {
   async tokenizeUsingJieba(sentence: string, toneType: string) {
     const entries = await this.updateUserWords();
     const format = toneType === "symbol" ? "symbol" : "num";
-    const [tokens, inContext]: [string[], Array<{origin: string; pinyin: string}>] = await Promise.all([
-      this.jieba.cut(sentence), sentencePinyin(sentence, format),
+    const [tokens, inContext] = await Promise.all([
+      this.jieba.cutTagged(sentence), sentencePinyin(sentence, format),
     ]);
-    const chars = tokens.flatMap(word => Array.from(word));
+    const chars = tokens.flatMap(({s}) => Array.from(s));
     const missing = [...new Set(chars.filter((char, i) => inContext[i]?.origin !== char))];
     const fallbackRows = missing.length ? await pinyinReadingsBatch(missing, format) : [];
     const fallback = new Map(missing.map((char, i) => [char, fallbackRows[i][0] ?? ""]));
@@ -97,7 +98,7 @@ export class ChineseEngine {
     });
     let offset = 0;
 
-    return tokens.map(word => {
+    return tokens.map(({s: word, tag}) => {
       const characters = Array.from(word);
       const readings = formatted.slice(offset, offset + characters.length);
       offset += characters.length;
@@ -106,6 +107,7 @@ export class ChineseEngine {
 
       return {
         origin: word,
+        ...(tag ? {part: tag} : {}),
         pinyin: readings.join(' '),
         separation: characters.map((character, index) => ({
           main: character,
@@ -132,11 +134,11 @@ export class ChineseEngine {
   getJyutpingForSentence(sentence: string, toneType: string): Promise<JyutpingResult[]> {
     return Promise.resolve().then(async () => {
       const entries = await this.updateUserWords();
-      const segments = await this.jieba.cut(sentence);
+      const segments = await this.jieba.cutTagged(sentence);
       const result: JyutpingResult[] = [];
 
-      const readings = await jyutpingBatch(segments);
-      for (const [index, segment] of segments.entries()) {
+      const readings = await jyutpingBatch(segments.map(({s}) => s));
+      for (const [index, {s: segment, tag}] of segments.entries()) {
         const custom = entries.get(segment);
         if (custom) {
           result.push(userDictionaryToken(custom, toneType) as unknown as JyutpingResult);
@@ -151,6 +153,7 @@ export class ChineseEngine {
 
         result.push({
           origin: segment,
+          ...(tag ? {part: tag} : {}),
           jyutping: formattedJyutping,
           separation: separation
         });

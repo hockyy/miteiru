@@ -109,7 +109,10 @@ export const japanesePos = (tag: string): Pos => {
 
 /** A coarse part of speech for a jieba tag's first letter (CC-CEDICT has none). */
 export const chinesePos = (part: string | null | undefined): Pos => {
-  switch (part) {
+  if (!part) return "word";
+  if (/^n[rstz]/.test(part)) return "proper_noun";
+  if (part === "eng") return "word";
+  switch (part[0]) {
     case "n": case "t": case "s": case "f": return "noun";
     case "R": return "proper_noun";
     case "r": return "pronoun";
@@ -126,7 +129,7 @@ export const chinesePos = (part: string | null | undefined): Pos => {
     case "l": return "expression";
     case "h": return "prefix";
     case "k": return "suffix";
-    case undefined: case null: case "": return "word";
+    case "w": return "punct";
     default: return "other";
   }
 };

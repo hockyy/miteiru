@@ -42,6 +42,7 @@ permissions = [
   "allow-kv-close",
   "allow-jieba-load",
   "allow-jieba-cut",
+  "allow-jieba-cut-tagged",
   "allow-opencc-convert-batch",
   "allow-jyutping-batch",
   "allow-pinyin-batch",

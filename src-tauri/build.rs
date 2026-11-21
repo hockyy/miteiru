@@ -39,6 +39,7 @@ const COMMANDS: &[&str] = &[
     "kv_close",
     "jieba_load",
     "jieba_cut",
+    "jieba_cut_tagged",
     "opencc_convert_batch",
     "jyutping_batch",
     "pinyin_batch",

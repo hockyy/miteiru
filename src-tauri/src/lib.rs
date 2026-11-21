@@ -89,6 +89,7 @@ pub fn run() {
       kv::kv_close,
       jieba::jieba_load,
       jieba::jieba_cut,
+      jieba::jieba_cut_tagged,
       sys::opencc::opencc_convert_batch,
       sys::reading::jyutping_batch,
       sys::reading::pinyin_batch,

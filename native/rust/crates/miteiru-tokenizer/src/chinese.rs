@@ -2,7 +2,7 @@
 
 use crate::lexicon::{ExtraWord, WordSource};
 use cedarwood::Cedar;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::io::BufRead;
 use std::sync::Arc;
 
@@ -33,9 +33,13 @@ impl Lexicon {
         if let Some((index, _, _)) = self.trie.exact_match_search(word) {
             self.costs[index as usize] = cost;
         } else {
-            self.trie.update(word, self.costs.len() as i32);
-            self.costs.push(cost);
+            self.insert_new(word, cost);
         }
+    }
+
+    fn insert_new(&mut self, word: &str, cost: f64) {
+        self.trie.update(word, self.costs.len() as i32);
+        self.costs.push(cost);
     }
 
     fn cost(&self, word: &str) -> Option<f64> {
@@ -45,11 +49,18 @@ impl Lexicon {
     }
 }
 
+struct Tag {
+    raw: Box<str>,
+    // The lattice distinguishes person names (R) and otherwise uses the first letter.
+    part: u8,
+}
+
 struct Base {
     lexicon: Lexicon,
     unknown_cost: f64,
     extra_caps: [f64; 4],
-    parts: Vec<u8>,
+    tag_ids: Vec<u32>,
+    tags: Vec<Tag>,
     name_weights: BTreeMap<char, f64>,
     name_median: f64,
     lexical_exceptions: BTreeMap<String, f64>,
@@ -75,7 +86,9 @@ impl Tokenizer {
         let mut lexicon = Lexicon::default();
         let mut frequencies = Vec::<u64>::new();
         let mut lengths = Vec::new();
-        let mut parts = Vec::new();
+        let mut tag_ids = Vec::new();
+        let mut tags = Vec::<Tag>::new();
+        let mut interned = HashMap::<Box<str>, u32>::new();
         let mut allowed = Vec::new();
         let mut name_weights = BTreeMap::<char, f64>::new();
         let mut lexical_candidates = BTreeMap::<String, usize>::new();
@@ -98,11 +111,23 @@ impl Tokenizer {
                     .parse::<u64>()
                     .map_err(|error| format!("line {number}: invalid frequency: {error}"))?;
                 let tag = fields.next().unwrap_or("");
-                let part = if tag.starts_with("nr") {
-                    b'R'
+                let tag_id = if let Some(&id) = interned.get(tag) {
+                    id
                 } else {
-                    tag.as_bytes().first().copied().unwrap_or(b'x')
+                    let id = tags.len() as u32;
+                    let part = if tag.starts_with("nr") {
+                        b'R'
+                    } else {
+                        tag.as_bytes().first().copied().unwrap_or(b'x')
+                    };
+                    tags.push(Tag {
+                        raw: tag.into(),
+                        part,
+                    });
+                    interned.insert(tag.into(), id);
+                    id
                 };
+                let part = tags[tag_id as usize].part;
                 let admissible = Self::grammatical_edge(word, part, language);
                 let ambiguous = !admissible
                     && word
@@ -117,7 +142,7 @@ impl Tokenizer {
                 }
                 if let Some((index, _, _)) = lexicon.trie.exact_match_search(word) {
                     frequencies[index as usize] = frequency;
-                    parts[index as usize] = part;
+                    tag_ids[index as usize] = tag_id;
                     allowed[index as usize] = admissible;
                     if ambiguous {
                         lexical_candidates.insert(word.to_string(), index as usize);
@@ -126,10 +151,10 @@ impl Tokenizer {
                     if ambiguous {
                         lexical_candidates.insert(word.to_string(), frequencies.len());
                     }
-                    lexicon.insert(word, 0.0);
+                    lexicon.insert_new(word, 0.0);
                     frequencies.push(frequency);
                     lengths.push(word.chars().count().min(3));
-                    parts.push(part);
+                    tag_ids.push(tag_id);
                     allowed.push(admissible);
                 }
             }
@@ -170,7 +195,8 @@ impl Tokenizer {
                 lexicon,
                 unknown_cost,
                 extra_caps,
-                parts,
+                tag_ids,
+                tags,
                 name_weights,
                 name_median,
                 lexical_exceptions,
@@ -273,12 +299,26 @@ impl Tokenizer {
             .is_some_and(|letter| particles.contains(letter))
     }
 
+    fn base_tag(&self, index: i32) -> &Tag {
+        &self.base.tags[self.base.tag_ids[index as usize] as usize]
+    }
+
+    /// User overlays carry no POS. Dictionary duplicates use the same last row as their frequency.
+    pub fn tag(&self, word: &str) -> Option<&str> {
+        if word.contains('\0') || (!self.user.costs.is_empty() && self.user.cost(word).is_some()) {
+            return None;
+        }
+        let (index, _, _) = self.base.lexicon.trie.exact_match_search(word)?;
+        let raw = &self.base_tag(index).raw;
+        (!raw.is_empty()).then_some(raw)
+    }
+
     fn part(&self, word: &str) -> u8 {
         self.base
             .lexicon
             .trie
             .exact_match_search(word)
-            .map_or(b'x', |(index, _, _)| self.base.parts[index as usize])
+            .map_or(b'x', |(index, _, _)| self.base_tag(index).part)
     }
 
     fn productive_phrase(&self, word: &str) -> bool {
@@ -349,7 +389,7 @@ impl Tokenizer {
             .common_prefix_iter(suffix)
             .any(|(index, offset)| {
                 offset + 1 > given.len_utf8()
-                    && self.base.parts[index as usize] != b'R'
+                    && self.base_tag(index).part != b'R'
                     && self.base.lexicon.costs[index as usize].is_finite()
             })
         {
@@ -1107,6 +1147,41 @@ mod tests {
         assert_eq!(stats.added, 1);
         assert_eq!(stats.filtered, 1);
         assert!(tokenizer.has_word("星際薯片"));
+    }
+
+    #[test]
+    fn raw_tags_follow_duplicate_rows_and_do_not_leak_into_user_words() {
+        let mut tokenizer = Tokenizer::with_dict(
+            &mut Cursor::new("喝 1 v\n喝 10053 vg\n我 100 r\n咖啡 1400 n\n冰 2173 n\n無 5\n"),
+            Language::Mandarin,
+        )
+        .unwrap();
+        let tokens: Vec<_> = tokenizer
+            .cut("我喝冰咖啡", true)
+            .into_iter()
+            .map(|word| (word, tokenizer.tag(word)))
+            .collect();
+        assert_eq!(
+            tokens,
+            [
+                ("我", Some("r")),
+                ("喝", Some("vg")),
+                ("冰", Some("n")),
+                ("咖啡", Some("n"))
+            ]
+        );
+        assert_eq!(tokenizer.tag("無"), None);
+        assert_eq!(tokenizer.tag("𠮷"), None);
+        assert_eq!(tokenizer.tag("a\0b"), None);
+        tokenizer
+            .replace_user_words(&[ExtraWord {
+                surface: "咖啡".into(),
+                source: WordSource::UserManual,
+            }])
+            .unwrap();
+        assert_eq!(tokenizer.tag("咖啡"), None);
+        tokenizer.replace_user_words(&[]).unwrap();
+        assert_eq!(tokenizer.tag("咖啡"), Some("n"));
     }
 
     #[test]

@@ -171,8 +171,8 @@ Without `language`, a tool uses the language the learner chose in Miteiru. Each 
 | `s` | every token | The exact text it covers. |
 | `start`, `end` | every token | Code point offsets, end exclusive. |
 | `word` | every token | `false` for spaces, punctuation and symbols. |
-| `pos` | every token | A coarse part of speech: `noun`, `proper_noun`, `pronoun`, `verb`, `adjective`, `adverb`, `particle`, `auxiliary`, `conjunction`, `interjection`, `determiner`, `numeral`, `classifier`, `prefix`, `suffix`, `filler`, `idiom`, `expression`, `other`, and for pieces that aren't words `space`, `punct` or `symbol`. Mandarin and Cantonese words are `word`: their tokenizer gives no part of speech, and CC-CEDICT and CantoDict have none. |
-| `tag` | Japanese words | The tokenizer's own IPADIC tag (`名詞-接尾-人名`). |
+| `pos` | every token | A coarse part of speech: `noun`, `proper_noun`, `pronoun`, `verb`, `adjective`, `adverb`, `particle`, `auxiliary`, `conjunction`, `interjection`, `determiner`, `numeral`, `classifier`, `prefix`, `suffix`, `filler`, `idiom`, `expression`, `other`, and for pieces that aren't words `space`, `punct` or `symbol`. Mandarin and Cantonese use the tag in the tokenizer word list. An untagged word gets `word`, and an entry from Your dictionary gets `noun`. |
+| `tag` | Tagged Japanese, Mandarin and Cantonese words | The original IPADIC tag for Japanese (`名詞-接尾-人名`) or jieba tag for Chinese (`vg` for 喝 in the Mandarin word list). |
 | `base` | words | The dictionary form (書いた → 書く); the word itself in Chinese and Vietnamese. |
 | `reading` | words that have one | Japanese `{kana, romaji}` (hiragana, Hepburn); Mandarin `{pinyin, pinyin_num}` (`méi xiǎng dào`, `mei2 xiang3 dao4`, the neutral tone `5`); Cantonese `{jyutping}` (`jam2 caa4`). Never changed by the learner's tone display setting. Vietnamese has none: it is written as it is read. |
 | `ruby` | Japanese, Mandarin and Cantonese words | `[{base, ruby}]` whose `base`s join to `s`. Japanese: each kanji run with its part of the reading, okurigana and kana bare (送り仮名 → `送`/おく, `り`, `仮名`/がな). Chinese: one per character. |
