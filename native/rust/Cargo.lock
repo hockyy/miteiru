@@ -241,6 +241,7 @@ version = "0.0.0"
 dependencies = [
  "flate2",
  "log",
+ "miteiru-opencc",
  "miteiru-tokenizer",
  "serde",
  "serde_json",
@@ -263,6 +264,13 @@ dependencies = [
  "napi-build",
  "napi-derive",
  "serde_json",
+]
+
+[[package]]
+name = "miteiru-opencc"
+version = "1.4.1"
+dependencies = [
+ "zstd 0.13.4",
 ]
 
 [[package]]

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-opencc-convert-batch"
+description = "Enables the opencc_convert_batch command without any pre-configured scope."
+commands.allow = ["opencc_convert_batch"]
+
+[[permission]]
+identifier = "deny-opencc-convert-batch"
+description = "Denies the opencc_convert_batch command without any pre-configured scope."
+commands.deny = ["opencc_convert_batch"]

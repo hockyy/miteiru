@@ -10,6 +10,7 @@ pub mod jieba;
 pub mod kv;
 pub mod langpack;
 pub mod mkv;
+pub mod opencc;
 pub mod proc;
 pub mod shell;
 pub mod table;

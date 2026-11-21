@@ -2,12 +2,12 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import {createHash, randomUUID} from "node:crypto";
-import * as OpenCC from "opencc-js";
+import {convertTranscription} from "./openccTranscription";
 import type {YoutubeTranscriptionSegmentRequest} from "../../renderer/types/youtubeTranscription";
 import {parseYoutubeVideoId} from "../../renderer/utils/utils";
 import {
   asrLanguageForAppLang, DEFAULT_ASR_MODEL, isKnownAsrModel,
-  maxCueCharsForAppLang, shouldConvertToTraditional
+  maxCueCharsForAppLang
 } from "../../renderer/utils/generateSubtitlesConfig";
 import {openRouterMessages} from "../../renderer/utils/openRouterConstants";
 import {requireMediaTool} from "../handler/common/mediaTools";
@@ -21,7 +21,6 @@ const AUDIO_URL_LIFETIME_MS = 15 * 60_000;
 const MAX_SEGMENT_SECONDS = 90;
 const MAX_AUDIO_BYTES = 1_500_000;
 const SEGMENT_TIMEOUT_MS = 180_000;
-const toTraditional = OpenCC.Converter({from: "cn", to: "hk"});
 
 export type YoutubeAudioSource = {
   url: string;
@@ -226,9 +225,9 @@ export function createYoutubeSegmentTranscriber(options: TranscriberOptions) {
         throwIfAborted(signal);
         const endMs = Math.round((request.startSeconds + duration) * 1000);
         const startMs = Math.round(request.startSeconds * 1000);
-        entries = cuesFromTranscription({...body, duration: body.duration ?? duration}, 0, {
-          maxChars: maxCueCharsForAppLang(request.lang),
-          convertText: (text) => shouldConvertToTraditional(request.lang) ? toTraditional(text) : text
+        const converted = await convertTranscription(body, request.lang);
+        entries = cuesFromTranscription({...converted, duration: body.duration ?? duration}, 0, {
+          maxChars: maxCueCharsForAppLang(request.lang)
         }).flatMap((cue, index) => {
           const from = Math.max(startMs, Math.round((request.startSeconds + cue.start) * 1000));
           const to = Math.min(endMs, Math.round((request.startSeconds + cue.end) * 1000));

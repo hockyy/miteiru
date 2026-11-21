@@ -2,7 +2,6 @@ import { toRomaji } from '../../../main/language/wanakana'
 import { videoConstants } from "../../utils/constants";
 import { v4 as uuidv4 } from 'uuid';
 import type { SubtitleEntry as Entry } from "../../../main/helpers/subtitleParser";
-import * as OpenCC from 'opencc-js';
 import { parse as parseASS } from 'ass-compiler';
 import { parseLRC } from "./LrcParser";
 import {fillSubtitleWithLearningContent, TokenizeMiteiru} from "./subtitleLanguageSupport";
@@ -11,23 +10,6 @@ import {languageCodes} from "../../languages/manifest";
 function removeTags(text) {
   const regex = /\{\\.+?}/g;
   return text.replace(regex, '');
-}
-
-const toSimplified = OpenCC.Converter({
-  from: 'tw',
-  to: 'cn'
-});
-const toTraditional = OpenCC.Converter({
-  from: 'cn',
-  to: 'tw'
-});
-const noChanger = (text: string) => {
-  return text
-};
-
-function preProcess(text, accentChanger = noChanger) {
-  const removedTag = removeTags(text);
-  return accentChanger(removedTag);
 }
 
 interface HufWord {
@@ -240,8 +222,7 @@ export class SubtitleContainer {
       } else {
         entries = parsedSubtitle.content.entries;
       }
-      this.createFromArrayEntries(subtitleContainer, entries, lang, isSimplified);
-      return subtitleContainer;
+      return await this.createFromArrayEntries(subtitleContainer, entries, lang, isSimplified);
     } catch (error) {
       console.error('Error parsing subtitle:', error);
       throw error;
@@ -260,11 +241,12 @@ export class SubtitleContainer {
   }
 
 
-  static createFromArrayEntries(subtitleContainer: SubtitleContainer, entries: Entry[], lang: string, isSimplified: boolean = true) {
+  static async createFromArrayEntries(subtitleContainer: SubtitleContainer, entries: Entry[], lang: string, isSimplified: boolean = true) {
     if (subtitleContainer === null) {
       subtitleContainer = new SubtitleContainer();
     }
     subtitleContainer.language = lang;
+    const cues: {from: number; to: number; text: string}[] = [];
     let last = 0;
     for (const {
       from,
@@ -275,14 +257,14 @@ export class SubtitleContainer {
       const realFrom = Math.max(from - videoConstants.subtitleFramerate * videoConstants.subtitleStartPlusMultiplier, last);
       const realTo = to + videoConstants.subtitleFramerate * videoConstants.subtitleEndPlusMultiplier;
       if (realFrom > realTo) continue;
-      let changeAccent = noChanger;
-      if (lang === languageCodes.mandarin) {
-        if (isSimplified) changeAccent = toSimplified;
-        else changeAccent = toTraditional;
-      }
-      subtitleContainer.lines.push(new Line(Math.max(from, last), realTo, preProcess(text, changeAccent)));
+      cues.push({from: Math.max(from, last), to: realTo, text: removeTags(text)});
       last = Math.max(last, realTo + videoConstants.subtitleFramerate + 1);
     }
+    const texts = cues.map(cue => cue.text);
+    const converted: string[] = lang === languageCodes.mandarin && texts.length
+      ? await window.backend.invoke('subtitle:convert-chinese', isSimplified ? 'tw2s' : 's2tw', texts)
+      : texts;
+    cues.forEach((cue, i) => subtitleContainer.lines.push(new Line(cue.from, cue.to, converted[i])));
     return subtitleContainer;
   }
 

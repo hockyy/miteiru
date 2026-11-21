@@ -2521,6 +2521,7 @@ version = "0.0.0"
 dependencies = [
  "flate2",
  "log",
+ "miteiru-opencc",
  "miteiru-tokenizer",
  "serde",
  "serde_json",
@@ -2532,6 +2533,13 @@ name = "miteiru-mpv"
 version = "0.0.0"
 dependencies = [
  "libloading 0.9.0",
+]
+
+[[package]]
+name = "miteiru-opencc"
+version = "1.4.1"
+dependencies = [
+ "zstd",
 ]
 
 [[package]]

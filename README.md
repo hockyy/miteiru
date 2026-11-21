@@ -170,6 +170,8 @@ npm run script:download-language-assets -- mandarin han-character-core
 
 ## Credits and license
 
+Chinese subtitle conversions use an in-house Rust port of [opencc-js 1.4.1](https://github.com/nk2028/opencc-js) (MIT and Apache-2.0).
+
 Dictionary data comes from JMdict and KANJIDIC ([EDRDG](https://www.edrdg.org/)), CC-CEDICT, CantoDict, VNEDict, KanjiVG and Make Me a Hanzi, each under its own license. Japanese pitch accents come from [Kanjium](https://github.com/mifunetoshiro/kanjium) and Mandarin HSK levels from [complete-hsk-vocabulary](https://github.com/drkameleon/complete-hsk-vocabulary) (MIT). Japanese JLPT levels come from Jonathan Waller's [JLPT Resources](http://www.tanos.co.uk/jlpt/) through [yomitan-jlpt-vocab](https://github.com/stephenmk/yomitan-jlpt-vocab), and word frequencies from [wordfreq](https://github.com/rspeer/wordfreq) by Robyn Speer; both are CC BY-SA 4.0, kept with their licence and notices in `renderer/public/study-data/japanese-levels/`. Video playback uses [libmpv](https://mpv.io) and [FFmpeg](https://ffmpeg.org) in their LGPL 2.1 builds; the licence text ships with the app.
 
 The Japanese tokenizer is Miteiru's own Rust lattice and suffix engine, reading the existing IPADIC pack, JMdict and Your dictionary. Its kuromoji.js compatibility reference and IPADIC notices are in `native/rust/crates/miteiru-tokenizer/NOTICE`; the Apache-2.0 text ships beside them. See [the tokenizer design and evaluation](docs/JAPANESE_TOKENIZER.md).

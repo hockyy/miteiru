@@ -11,7 +11,7 @@ Miteiru splits subtitles into words, shows each word's reading, and looks words 
 | **Dictionary** | JMdict, KANJIDIC2 | CC-CEDICT | CantoDict | VNEDict (54,375+ entries) |
 | **Also** | Pitch accent (Kanjium), conjugation tables and the steps back to the dictionary form, kanji stroke order (KanjiVG) | HSK 3.0 levels, tone colours after tone sandhi, simplified and traditional forms, hanzi stroke order (Make Me a Hanzi) | Hanzi stroke order (Make Me a Hanzi) | A meaning under every word |
 
-Mandarin and Cantonese each have an engine of their own (tokenizer, dictionary and Your dictionary), so one never changes the other. Traditional Mandarin is read for pinyin through a simplified copy of the line (OpenCC), since pinyin-pro knows its context words in simplified characters: 我們 is wǒ men, 什麼 is shén me.
+Mandarin and Cantonese each have an engine of their own (tokenizer, dictionary and Your dictionary), so one never changes the other. Traditional Mandarin is read for pinyin through a simplified copy of the line, since pinyin-pro knows its context words in simplified characters: 我們 is wǒ men, 什麼 is shén me. Subtitle conversions use an in-house Rust port of [opencc-js 1.4.1](https://github.com/nk2028/opencc-js) (MIT and Apache-2.0).
 
 The Japanese tokenizer's design and evaluation are in [docs/JAPANESE_TOKENIZER.md](docs/JAPANESE_TOKENIZER.md); the Vietnamese one is in [docs/VIETNAMESE_IMPLEMENTATION.md](docs/VIETNAMESE_IMPLEMENTATION.md).
 

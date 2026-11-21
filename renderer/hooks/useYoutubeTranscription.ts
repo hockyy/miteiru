@@ -69,6 +69,7 @@ export function useYoutubeTranscription(options: {
     setState(emptyState);
     setEnabled(true);
     let analysis = Promise.resolve();
+    let entriesRevision = 0;
     let presentLines = new Set<Line>();
     const scheduled = new WeakSet();
     const valid = () => generation.current === run && isCurrentSubtitle(subtitle.id);
@@ -90,9 +91,17 @@ export function useYoutubeTranscription(options: {
         }
       },
       onState: (next) => { if (generation.current === run) setState(next); },
-      onEntries: (entries) => {
+      onEntries: async (entries) => {
         if (!valid()) return;
-        const parsed = SubtitleContainer.createFromArrayEntries(new SubtitleContainer(), entries, current.lang, latest.current.forceSimplified);
+        const revision = ++entriesRevision;
+        let parsed: SubtitleContainer;
+        try {
+          parsed = await SubtitleContainer.createFromArrayEntries(new SubtitleContainer(), entries, current.lang, latest.current.forceSimplified);
+        } catch (error) {
+          if (valid() && revision === entriesRevision) setState(old => ({...old, error: String(error)}));
+          return;
+        }
+        if (!valid() || revision !== entriesRevision) return;
         const key = (line) => `${line.timeStart}:${line.timeEnd}:${line.text}`;
         const previous = new Map(subtitle.lines.map((line) => [key(line), line]));
         const nextLines = parsed.lines.map((line) => previous.get(key(line)) ?? line);

@@ -17,6 +17,7 @@ export interface MiteiruAddon {
   japaneseTokenizeBatch(dictPath: string, texts: string[]): Promise<string>;
   jiebaLoad(key: string, dictPath: string, dictionaryPath?: string | null): Promise<void>;
   jiebaCut(key: string, text: string, hmm: boolean): string[];
+  openccConvertBatch(mode: string, lines: string[]): string[];
   jiebaUserWords(key: string, words: UserWord[]): void;
   tableOpen(path: string): number;
   tableClose(handle: number): void;
@@ -26,15 +27,15 @@ export interface MiteiruAddon {
 }
 
 /** The ADDON_API this code is written against; a build with another one is refused. */
-export const EXPECTED_ADDON_API = 1;
+export const EXPECTED_ADDON_API = 2;
 
 /** The file cargo builds for the crate on this system. */
 export const addonFileName = (platform: NodeJS.Platform = process.platform) => (
   platform === "win32" ? "miteiru_node.dll" : platform === "darwin" ? "libmiteiru_node.dylib" : "libmiteiru_node.so"
 );
 
-/** Where a checkout's release build of the addon is: native/rust/target/release/<file>. */
-export const defaultAddonPath = (repoRoot: string) => path.join(repoRoot, "native", "rust", "target", "release", addonFileName());
+/** Cargo's release output, including checkouts with a shared CARGO_TARGET_DIR. */
+export const defaultAddonPath = (repoRoot: string) => path.join(process.env.CARGO_TARGET_DIR || path.join(repoRoot, "native", "rust", "target"), "release", addonFileName());
 
 /** Loads the addon at `file` (MITEIRU_NODE_ADDON overrides it) and checks its API version. */
 export const loadAddon = (file: string): MiteiruAddon => {

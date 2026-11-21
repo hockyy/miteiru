@@ -6,6 +6,7 @@ publish.workspace = true
 description = "Miteiru's language data engines (data tables, compressed assets, the Japanese and Chinese tokenizer stores), shared by the desktop app (src-tauri) and the Node addon (miteiru-node) so both give the same answers"
 
 [dependencies]
+miteiru-opencc = { path = "../miteiru-opencc" }
 miteiru-tokenizer = { path = "../miteiru-tokenizer" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
