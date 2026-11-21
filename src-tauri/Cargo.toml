@@ -72,6 +72,9 @@ strip = true
 [profile.release.package.miteiru-tokenizer]
 opt-level = 3
 
+[profile.release.package.miteiru-jyutping]
+opt-level = 3
+
 # Dictionary table reads (a gloss per word of a subtitle file) and the tokenizer stores.
 [profile.release.package.miteiru-langdata]
 opt-level = 3

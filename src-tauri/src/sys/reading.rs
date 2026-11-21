@@ -1,5 +1,5 @@
 #[tauri::command]
-pub async fn jyutping_batch(texts: Vec<String>) -> Result<Vec<Vec<Option<&'static str>>>, String> {
-  tauri::async_runtime::spawn_blocking(move || texts.iter().map(|text| miteiru_jyutping::readings(text)).collect())
+pub async fn jyutping_batch(texts: Vec<String>) -> Result<String, String> {
+  tauri::async_runtime::spawn_blocking(move || miteiru_jyutping::batch(&texts))
     .await.map_err(|error| error.to_string())
 }

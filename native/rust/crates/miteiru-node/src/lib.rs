@@ -107,9 +107,8 @@ pub fn opencc_convert_batch(mode: String, lines: Vec<napi::bindgen_prelude::Utf1
 }
 
 #[napi]
-pub fn jyutping_batch(texts: Vec<String>) -> napi::Result<String> {
-  let rows: Vec<_> = texts.iter().map(|text| miteiru_jyutping::readings(text)).collect();
-  serde_json::to_string(&rows).map_err(|error| failure(error.to_string()))
+pub fn jyutping_batch(texts: Vec<String>) -> String {
+  miteiru_jyutping::batch(&texts)
 }
 
 pub struct ChineseLoad {
