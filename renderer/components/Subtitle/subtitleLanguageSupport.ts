@@ -1,4 +1,4 @@
-import {isHiragana, isKatakana} from "wanakana";
+import {isHiragana, isKatakana} from "../../../main/language/wanakana";
 import {languageCodes} from "../../languages/manifest";
 import {escapeHtml} from "../../utils/html";
 import type {Line, SubtitleContainer} from "./DataStructures";

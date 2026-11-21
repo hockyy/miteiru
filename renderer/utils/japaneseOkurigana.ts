@@ -3,7 +3,7 @@
  * backend's analyzer (main/handler/languages/japaneseAnalysis.ts) and by the word popup, which reads
  * dictionary headwords with the kana JMdict gives them.
  */
-import {isKana, isKanji, isMixed, toHiragana, toRomaji} from "wanakana";
+import {isKana, isKanji, isMixed, toHiragana, toRomaji} from "../../main/language/wanakana";
 
 export interface MiteiruJapaneseSeparation {
   main: string;

@@ -1,4 +1,4 @@
-import {toHiragana} from "wanakana";
+import {toHiragana} from "../language/wanakana";
 import {splitOkuriganaCompact} from "../../renderer/utils/japaneseOkurigana";
 import {formatJyutpingReading, formatPinyinReading} from "../handler/pinyinTones";
 import {getStore} from "../handler/common/storeHandlers";

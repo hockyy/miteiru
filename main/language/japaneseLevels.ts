@@ -1,4 +1,4 @@
-import {isKana, toHiragana} from "wanakana";
+import {isKana, toHiragana} from "./wanakana";
 
 /**
  * Japanese word levels for the language tools: a JLPT level (N5 easiest to N1) and a word frequency.

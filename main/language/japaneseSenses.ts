@@ -1,4 +1,4 @@
-import {isKana, toHiragana} from "wanakana";
+import {isKana, toHiragana} from "./wanakana";
 import type {JmdictSense, JmdictWord} from "../dictionary/jmdictDb";
 import {rankJapaneseMatches, sameKanaReading} from "../handler/languages/learningGlosses";
 

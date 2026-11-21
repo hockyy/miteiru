@@ -174,4 +174,6 @@ Dictionary data comes from JMdict and KANJIDIC ([EDRDG](https://www.edrdg.org/))
 
 The Japanese tokenizer is Miteiru's own Rust lattice and suffix engine, reading the existing IPADIC pack, JMdict and Your dictionary. Its kuromoji.js compatibility reference and IPADIC notices are in `native/rust/crates/miteiru-tokenizer/NOTICE`; the Apache-2.0 text ships beside them. See [the tokenizer design and evaluation](docs/JAPANESE_TOKENIZER.md).
 
+Japanese kana and romaji conversion uses an in-house port of the MIT-licensed [WanaKana 5.3.1](https://github.com/WaniKani/WanaKana).
+
 Miteiru is made by [Hocky Yudhiono](https://github.com/hockyy) and licensed under [CC BY-NC-SA 4.0](LICENSE.md). It is provided as is; use it at your own risk. Found a security issue? Email [miteiru@hocky.id](mailto:miteiru@hocky.id) or open an issue.

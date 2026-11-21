@@ -1,4 +1,4 @@
-import {isKana, toHiragana, toRomaji} from "wanakana";
+import {isKana, toHiragana, toRomaji} from "../language/wanakana";
 import type {DictionaryDb} from "../dictionary/levelDictionary";
 import type {JmdictWord} from "../dictionary/jmdictDb";
 import {exactChineseEntries, exactJapaneseMatches} from "../handler/languages/learningGlosses";

@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { CJKStyling, defaultLearningColorStyling } from "../../utils/CJKStyling";
 import { getTextShadowFromStroke } from "../../utils/subtitleStroke";
 import React, { ReactNode, useCallback, useEffect, useState } from "react";
-import { isMixed, toRomaji } from "wanakana"
+import { isMixed, toRomaji } from "../../../main/language/wanakana"
 import {mandarinToneColor, type MandarinTone} from "../../utils/mandarinTones";
 import {hskUnderline, type HskLevel} from "../../utils/mandarinHsk";
 

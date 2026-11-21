@@ -1,4 +1,4 @@
-import {toHiragana} from "wanakana";
+import {toHiragana} from "../../language/wanakana";
 import {splitOkuriganaCompact, type MiteiruJapaneseSeparation} from "../../../renderer/utils/japaneseOkurigana";
 
 export {splitOkuriganaCompact};
