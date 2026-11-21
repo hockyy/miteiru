@@ -5,10 +5,9 @@ import path from "path";
 import {pinyin} from "pinyin-pro";
 import * as OpenCC from "opencc-js/t2cn";
 import ToJyutping from "to-jyutping";
-import {Jieba} from '@node-rs/jieba'
+import {Jieba} from "../../renderer/platform/backend/shims/jieba";
 import {formatJyutpingReading, formatPinyinReading} from "./pinyinTones";
 import {readStrokeSvg} from "../helpers/strokeSvg";
-import {readAsset} from "../helpers/assetFiles";
 import {enabledUserDictionaryEntries, lookupUserDictionaryEntry, userChineseDictionaryResult, userDictionaryToken, UserDictionaryEntry} from "../helpers/userDictionary";
 import type {DictionaryDb} from "../dictionary/levelDictionary";
 
@@ -35,7 +34,7 @@ export class ChineseEngine {
   importDict: string;
   importBaseSVG: string;
   jiebaDictPath: string;
-  jieba: any;
+  jieba: Pick<Jieba, "cut" | "setUserWords">;
   userWords: UserDictionaryEntry[] | undefined;
   userWordsUpdating: Promise<void> = Promise.resolve();
 
@@ -61,15 +60,9 @@ export class ChineseEngine {
     this.importDict = settings.importDict;
     this.importBaseSVG = settings.importBaseSVG
 
-    // The Tauri build's @node-rs/jieba shim loads the dictionary file by path (its Rust side reads it).
-    const loadsByPath = Jieba as unknown as {withDictFile?: (dictPath: string, dictionaryPath?: string) => Promise<unknown>};
-    this.jieba = loadsByPath.withDictFile
-      // App-dictionary headwords (CC-CEDICT / CantoDict) stay off: on the held-out gold set they changed F1 by
-      // −0.02 to +0.3 points, made 6/30 Mandarin and 11/30 Cantonese reviewed lines worse (wrong senses,
-      // phrases glued across words) and added ~100 ms / ~50 ms to the first load. Pass `this.importDict` to try
-      // them again; docs/chinese-tokenizer-evaluation.md has the numbers. Your dictionary still takes part.
-      ? await loadsByPath.withDictFile(this.jiebaDictPath)
-      : Jieba.withDict(await readAsset(this.jiebaDictPath));
+    // App-dictionary headwords stay off. See docs/chinese-tokenizer-evaluation.md for their
+    // effect on Mandarin and Cantonese boundaries and load time. Your dictionary still takes part.
+    this.jieba = await Jieba.withDictFile(this.jiebaDictPath);
     this.userWords = undefined;
     try {
       await this.Dict.db?.close();
@@ -121,7 +114,7 @@ export class ChineseEngine {
     const entries = enabled.length ? enabled : NO_USER_WORDS;
     const work = this.userWordsUpdating.catch(() => undefined).then(async () => {
       if (this.userWords === entries) return;
-      await this.jieba.setUserWords?.(entries.map(({surface, source}) => ({surface, source})));
+      await this.jieba.setUserWords(entries.map(({surface, source}) => ({surface, source})));
       this.userWords = entries;
     });
     this.userWordsUpdating = work;

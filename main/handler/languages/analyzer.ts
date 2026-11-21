@@ -18,7 +18,7 @@ export type AnalyzeTextResult = any[];
 const CHAIN_BREAKING_PARTICLES = ["と", "でしょ", "の", "という"];
 // Dependent verbs that start their own word (〜てやる, 〜たりする).
 const NOT_AUXILIARY_VERBS = ["やる", "する"];
-// Auxiliary verbs Kuromoji does not always tag as such (ある after て is 動詞-自立).
+// Auxiliary verbs IPADIC does not always tag as such (ある after て is 動詞-自立).
 const ALWAYS_AUXILIARY_VERBS = ["いる", "ある", "おる", "られる", "れる", "せる", "させる"];
 
 /** Whether a token can continue the verb before it: auxiliaries, particles, and suffix or dependent verbs. */
@@ -92,7 +92,7 @@ export const analyzeText = async (
       const entry = bySurface.get(token.origin);
       return entry ? japaneseUserDictionaryToken(entry, toneType) : token;
     });
-    return parseJapaneseVerbs(separated, {learnerUnits: Boolean(Japanese.kuromojiTokenizer?.tokenizeWithUserWords)});
+    return parseJapaneseVerbs(separated, {learnerUnits: true});
   }
 
   const language = {kuromoji: "ja", cantonese: "yue", jieba: "zh-CN", vietnamese: "vi"}[tokenizerMode];

@@ -1,5 +1,4 @@
-import type {Tokenizer, KuromojiToken} from 'kuromoji';
-import {analyzeWithUserDictionary, userDictionaryToken, type UserDictionaryEntry} from './userDictionary';
+import {userDictionaryToken, type UserDictionaryEntry} from './userDictionary';
 import type {MiteiruJapaneseWordWithSeparations} from '../handler/languages/japaneseAnalysis';
 import {hasExactJapaneseDefault} from './japaneseDictionaryPriority';
 import type {DictionaryDb} from '../dictionary/levelDictionary';
@@ -19,25 +18,4 @@ export const japaneseTokenizerEntries = (entries: UserDictionaryEntry[], db: Dic
     .then((result) => result.filter((entry): entry is UserDictionaryEntry => entry !== null));
   filteredEntries.set(entries, {db, entries: filtered});
   return filtered;
-};
-
-export type JapaneseBackendTokenizer = Omit<Tokenizer, 'tokenize' | 'tokenizeForSentence'> & {
-  tokenize(text: string): KuromojiToken[] | Promise<KuromojiToken[]>;
-  tokenizeForSentence(text: string): KuromojiToken[] | Promise<KuromojiToken[]>;
-  setUserWords?: (entries: UserDictionaryEntry[]) => Promise<void>;
-  tokenizeWithUserWords?: (text: string, entries: UserDictionaryEntry[]) => Promise<KuromojiToken[]>;
-};
-
-export const tokenizeJapaneseWithEntries = async (tokenizer: JapaneseBackendTokenizer, sentence: string, entries?: UserDictionaryEntry[]): Promise<KuromojiToken[]> => {
-  if (tokenizer.tokenizeWithUserWords && entries) return tokenizer.tokenizeWithUserWords(sentence, entries);
-  if (tokenizer.setUserWords) {
-    if (entries) await tokenizer.setUserWords(entries);
-    return tokenizer.tokenizeForSentence(sentence);
-  }
-  if (!entries?.length) return tokenizer.tokenizeForSentence(sentence);
-  const fragments = await analyzeWithUserDictionary(sentence, 'ja', entries, (text) => tokenizer.tokenizeForSentence(text));
-  return fragments.map((token) => token.surface_form !== undefined ? token : {
-    word_id: -1, word_type: 'KNOWN', word_position: 1, surface_form: token.origin, basic_form: token.origin,
-    pos: '名詞', pos_detail_1: '一般', pos_detail_2: '*', pos_detail_3: '*', conjugated_type: '*', conjugated_form: '*',
-  });
 };

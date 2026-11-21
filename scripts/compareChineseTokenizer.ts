@@ -95,9 +95,9 @@ export function compareChineseTokenizers(assets: string, output: string, extraCo
     const corpusPath = extraCorpus ? path.join(extraCorpus, `${language}.dev.jsonl`) : path.join(output, `${language}.corpus.jsonl`);
     const corpus = jsonl<Line>(corpusPath);
     const predictions = new Map<string, Prediction[]>();
-    for (const [label, engine, overlay, hmm] of [["jieba", "jieba", false, true], ["jieba-no-hmm", "jieba", false, false], ["base", "native", false, true], ["app", "native", true, true]] as const) {
+    for (const label of ["base", "app"]) {
       const outputPath = path.join(output, `${language}.${label}.jsonl`);
-      const run = spawnSync(binary, [engine, language === "yue" ? "yue" : "zh", path.join(directory, language === "yue" ? "yue.jieba.txt" : "zh.jieba.txt"), overlay ? wordsPath : "-", corpusPath, outputPath, String(hmm)], {cwd: root, env, encoding: "utf8"});
+      const run = spawnSync(binary, ["native", language === "yue" ? "yue" : "zh", path.join(directory, language === "yue" ? "yue.jieba.txt" : "zh.jieba.txt"), label === "app" ? wordsPath : "-", corpusPath, outputPath, "true"], {cwd: root, env, encoding: "utf8"});
       if (run.status) throw new Error(run.stderr || `${label} failed`);
       const result = jsonl<Prediction>(outputPath);
       predictions.set(label, result);
@@ -105,14 +105,12 @@ export function compareChineseTokenizers(assets: string, output: string, extraCo
       console.log(JSON.stringify(metrics));
       summary.push(metrics);
     }
-    for (const [label, before, report] of [["base", "jieba", "base"], ["app", "base", "app"], ["app", "jieba", "full"]]) {
-      const previous = predictions.get(before)!;
-      const current = predictions.get(label)!;
-      const changed = corpus.flatMap((line, index) => JSON.stringify(previous[index].tokens) === JSON.stringify(current[index].tokens) ? []
-        : [{...line, before: previous[index].tokens, after: current[index].tokens}]);
-      writeJsonl(path.join(output, `${language}.${report}.changed.jsonl`), changed);
-      summary.push({language, comparison: `${before}->${label}`, changedLines: changed.length, lines: corpus.length, changedShare: changed.length / corpus.length});
-    }
+    const base = predictions.get("base")!;
+    const app = predictions.get("app")!;
+    const changed = corpus.flatMap((line, index) => JSON.stringify(base[index].tokens) === JSON.stringify(app[index].tokens) ? []
+      : [{...line, before: base[index].tokens, after: app[index].tokens}]);
+    writeJsonl(path.join(output, `${language}.app.changed.jsonl`), changed);
+    summary.push({language, comparison: "base->app", changedLines: changed.length, lines: corpus.length, changedShare: changed.length / corpus.length});
   }
   fs.writeFileSync(path.join(output, "summary.json"), JSON.stringify(summary, null, 2));
 }

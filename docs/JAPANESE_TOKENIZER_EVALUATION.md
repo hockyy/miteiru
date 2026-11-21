@@ -163,4 +163,4 @@ The artificial user experiment is separate: manual 推し活 and AI 量子計算
 - cargo test in src-tauri: 86 passed, 4 existing ignored; zero failures.
 - Release-like Tauri build, gold dev/test scoring, reconstruction, batch-codec fixture and live add/remove/popup checks pass.
 
-No new dictionaries/corpora were downloaded, no pack format or UI changed, and Chinese/lexicon source files were preserved. Research, fallback instructions and reproduction commands: JAPANESE_TOKENIZER.md. Remaining limits include some recent kana loanwords, lexical prefixes and semantic ambiguity; the held-out test was not used to tune those.
+No new dictionaries/corpora were downloaded, no pack format or UI changed, and Chinese/lexicon source files were preserved. The tokenizer design and commands for evaluating the Rust modes are in [JAPANESE_TOKENIZER.md](JAPANESE_TOKENIZER.md). Remaining limits include some recent kana loanwords, lexical prefixes and semantic ambiguity; the held-out test was not used to tune those.

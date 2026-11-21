@@ -1,7 +1,6 @@
 // Bundles Miteiru's headless language server (main/headless/main.ts) for Node into
 // dist/headless/miteiru-headless.cjs. The app's code runs as it does in the backend worker, with the
-// same shims for kuromoji, @node-rs/jieba and level, whose `sys(...)` the addon answers
-// (main/headless/nodeSys.ts); everything else is Node's own.
+// tokenizer calls answered by the addon (main/headless/nodeSys.ts). Only level needs an alias.
 //
 //   node scripts/buildHeadless.mjs     build when a source changed since the last build
 //   node scripts/buildHeadless.mjs -f  build anyway
@@ -11,7 +10,6 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const shim = (name) => path.join(root, 'renderer/platform/backend/shims', `${name}.ts`);
 export const HEADLESS_BUNDLE = path.join(root, 'dist', 'headless', 'miteiru-headless.cjs');
 const STAMP = `${HEADLESS_BUNDLE}.inputs.json`;
 
@@ -35,11 +33,7 @@ export const buildHeadless = async () => {
     platform: 'node',
     format: 'cjs',
     target: 'node22',
-    alias: {
-      kuromoji: shim('kuromoji'),
-      '@node-rs/jieba': shim('jieba'),
-      level: shim('level')
-    },
+    alias: {level: path.join(root, 'renderer/platform/backend/shims/level.ts')},
     metafile: true,
     legalComments: 'none',
     logLevel: 'warning',

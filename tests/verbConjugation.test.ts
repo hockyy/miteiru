@@ -4,7 +4,7 @@ import path from "node:path";
 import {test} from "node:test";
 import {isConjugationOf} from "../main/handler/languages/verbConjugation";
 import {parseJapaneseVerbs} from "../main/handler/languages/analyzer";
-import Japanese from "../main/handler/japanese";
+import verbTokens from "./fixtures/japanese-verb-tokens.json";
 
 const CONJUGATIONS: Record<string, string[]> = {
   食べる: [
@@ -75,12 +75,14 @@ test("isConjugationOf keeps jp-verbs' answers across the conjugation corpus", ()
   assert.ok(cases.length > 2500);
 });
 
+// Input to the verb grouper, captured from the Rust japanese_tokenize example's base IPADIC lattice.
+const groupVerbs = (sentence: keyof typeof verbTokens, learnerUnits = false) => parseJapaneseVerbs(
+  verbTokens[sentence].map(([origin, basicForm, pos]) => ({origin, basicForm, pos, hiragana: "", separation: []})),
+  {learnerUnits}
+);
+
 test('native learner units stop before final particles and modality', async () => {
-  Japanese.kuromojiDictPath = path.join(process.cwd(), 'node_modules', 'kuromoji', 'dict');
-  const tokenizer = await Japanese.loadKuromojiTokenizer();
-  const group = async (sentence: string) => (await parseJapaneseVerbs(
-    Japanese.processKuromojinToSeparations(await tokenizer.tokenizeForSentence(sentence)), {learnerUnits: true}
-  )).map((token) => token.origin);
+  const group = async (sentence: keyof typeof verbTokens) => (await groupVerbs(sentence, true)).map((token) => token.origin);
   assert.deepEqual(await group('本を読んでいますよね'), ['本', 'を', '読んでいます', 'よ', 'ね']);
   assert.deepEqual(await group('帰ったらしい'), ['帰った', 'らしい']);
   assert.deepEqual(await group('教えてやる'), ['教えて', 'やる']);
@@ -89,11 +91,7 @@ test('native learner units stop before final particles and modality', async () =
 });
 
 test("the analyzer groups a verb with its conjugation chain", async () => {
-  Japanese.kuromojiDictPath = path.join(process.cwd(), "node_modules", "kuromoji", "dict");
-  const tokenizer = await Japanese.loadKuromojiTokenizer();
-  const group = async (sentence: string) => (await parseJapaneseVerbs(
-    Japanese.processKuromojinToSeparations(await tokenizer.tokenizeForSentence(sentence))
-  )).map((token) => token.origin);
+  const group = async (sentence: keyof typeof verbTokens) => (await groupVerbs(sentence)).map((token) => token.origin);
 
   assert.deepEqual(await group("寿司を食べられなかった。"), ["寿司", "を", "食べられなかった", "。"]);
   assert.deepEqual(await group("本を読んでいます"), ["本", "を", "読んでいます"]);
@@ -104,12 +102,8 @@ test("the analyzer groups a verb with its conjugation chain", async () => {
   assert.deepEqual(await group("行くので"), ["行く", "ので"]);
 });
 
-test("auxiliary verbs Kuromoji tags as suffix or dependent verbs join the verb, based on the main verb", async () => {
-  Japanese.kuromojiDictPath = path.join(process.cwd(), "node_modules", "kuromoji", "dict");
-  const tokenizer = await Japanese.loadKuromojiTokenizer();
-  const group = async (sentence: string) => (await parseJapaneseVerbs(
-    Japanese.processKuromojinToSeparations(await tokenizer.tokenizeForSentence(sentence))
-  )).map((token) => `${token.origin}(${token.basicForm})`);
+test("auxiliary verbs tagged as suffix or dependent verbs join the verb, based on the main verb", async () => {
+  const group = async (sentence: keyof typeof verbTokens) => (await groupVerbs(sentence)).map((token) => `${token.origin}(${token.basicForm})`);
 
   assert.deepEqual(await group("寿司を食べさせられなかった"), ["寿司(寿司)", "を(を)", "食べさせられなかった(食べる)"]);
   assert.deepEqual(await group("手紙が書かれる"), ["手紙(手紙)", "が(が)", "書かれる(書く)"]);

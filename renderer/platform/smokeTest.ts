@@ -126,7 +126,7 @@ const checkYouTube = (videoId: string) => new Promise<string>((resolveCheck, rej
 
 /**
  * Loads every language from the assets as this build ships them (zstd-compressed or in tables
- * when packaged): their tokenizers (kuromoji, jieba) and dictionaries (src-tauri/src/sys/table.rs,
+ * when packaged): their tokenizers and dictionaries (src-tauri/src/sys/table.rs,
  * vnedict.txt.zst), a real lookup in each, then one stroke-order SVG from each stroke pack. A build
  * that bundles the language assets must load all four. A build that ships language packs instead
  * (src-tauri/src/sys/langpack.rs) installs them first, from MITEIRU_SMOKE_LANGUAGE_PACKS (Vietnamese

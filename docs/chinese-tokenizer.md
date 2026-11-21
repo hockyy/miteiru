@@ -1,6 +1,6 @@
 # Native Mandarin and Cantonese tokenization
 
-Miteiru owns the decoder and scoring in `miteiru-tokenizer::chinese`. The only production dependency is cedarwood 0.4, an efficiently updatable double-array trie. `jieba-rs` 0.8.1 is an exact-version **dev dependency**, used only as a comparison engine. No dictionary, corpus, or neural model is downloaded.
+Miteiru owns the decoder and scoring in `miteiru-tokenizer::chinese`. The decoder uses cedarwood 0.4 for its double-array trie. No dictionary, corpus, or neural model is downloaded.
 
 ## Method and research
 
@@ -9,7 +9,7 @@ A unigram maximum-probability word lattice and jieba's DAG maximum-probability r
 Research considered:
 
 - [Kudo, ACL 2018, unigram language-model segmentation](https://aclanthology.org/P18-1007/): globally scored alternatives, rather than greedy longest matching. This paper concerns subwords for translation, not evidence that its training recipe is the best Chinese word segmenter.
-- [jieba-rs maintainer's performance study](https://messense.me/making-jieba-rs-2-4x-faster): avoid regex, logarithms, string-keyed lookups, and unnecessary allocation in hot paths. The comparison deliberately pins the app's old 0.8.1, not the faster current release.
+- [jieba-rs maintainer's performance study](https://messense.me/making-jieba-rs-2-4x-faster): avoid regex, logarithms, string-keyed lookups, and unnecessary allocation in hot paths. The original evaluation used version 0.8.1, matching the app at the time.
 - [PyCantonese's documented segmenter](https://docs.pycantonese.org/stable/word_segmentation.html): its current hybrid uses Cantonese-specific training data. A Mandarin HMM is not a Cantonese model. Those external dictionaries/corpora/models were **not downloaded**.
 - [Lam, Lau and Lee, 2024, Multi-Tiered Cantonese Word Segmentation](https://aclanthology.org/2024.lrec-main.1047/): Cantonese has competing legitimate segmentation conventions. Miteiru's target is dictionary-look-up-able learning units, not an unsupported claim of universal linguistic word boundaries.
 - [cedarwood 0.4.6](https://docs.rs/cedarwood/0.4.6/cedarwood/): a data structure only; no segmentation or language model logic comes from it.
@@ -38,7 +38,7 @@ Mandarin uses CC-CEDICT; Cantonese uses CantoDict. Cross-language CEDICT augment
 
 ## Reproduce
 
-`npx tsx scripts/compareChineseTokenizer.ts <existing language-assets> <scratch output>` builds an optimized comparison binary under the required shared target directory. It reports base load time, retained/peak requested heap bytes (a counting allocator, not RSS), warm throughput, both HMM settings for jieba, dictionary token share, Han character coverage, changed-line share, and JSONL predictions. Each engine runs in a fresh process. Prediction generation is outside the timed throughput loop; both engines use the same allocator instrumentation and corpus. Repeat measurements on an idle machine before comparing small differences.
+`npx tsx scripts/compareChineseTokenizer.ts <existing language-assets> <scratch output>` builds an optimized comparison binary under the required shared target directory. It reports base load time, retained/peak requested heap bytes (a counting allocator, not RSS), warm throughput, dictionary token share, Han character coverage, changed-line share, and JSONL predictions. The base and app-headword modes each run in a fresh process with the same allocator instrumentation and corpus. Prediction generation occurs outside the timed throughput loop. Repeat measurements on an idle machine before comparing small differences.
 
 There are **500 distinct authored Mandarin sentences and 500 Cantonese sentences**, covering casual dialogue, names, numbers, computing, travel, food, punctuation and mixed Latin/emoji. Traditional Mandarin is converted with the repo's existing OpenCC dependency; Cantonese naturally rewrites many of the same scenarios. These are not 1,500 independent annotations. Fourteen existing test/fixture snippets are added to each variant, including intentionally cross-language snippets. Gold fixtures are explicitly excluded from the collector. These sentences are stress/comparison material, not a gold accuracy benchmark.
 
@@ -55,7 +55,7 @@ cargo run --release --manifest-path native/rust/Cargo.toml -p miteiru-tokenizer 
 npx.cmd tsx scripts/evalTokenizers.ts --predictions "$output/zh-Hans.native.dev.jsonl" --variant zh-Hans --split dev
 ```
 
-The example accepts `{id,text}` JSONL, ignores additional fields, writes `{id,tokens}` JSONL and asserts exact reconstruction. Set the headwords argument to `-` for the native base, or engine to `jieba` for the pinned Rust reference. `true`/`false` selects the legacy HMM flag (typed/name OOV for native). JS pinyin/jyutping generation preserves these token surfaces; the Node fallback still uses its installed native jieba package, so the committed Node baseline and pinned Rust baseline are reported separately.
+The example accepts `{id,text}` JSONL, ignores additional fields, writes `{id,tokens}` JSONL and asserts exact reconstruction. Set the headwords argument to `-` to use the base word list. The final flag enables or disables typed and name handling for out-of-vocabulary words. JS pinyin and jyutping generation preserves the resulting token surfaces.
 
 ## Evidence and review status
 

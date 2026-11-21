@@ -1,11 +1,33 @@
 import assert from "node:assert/strict";
-import os from "node:os";
+import fs from "node:fs";
 import path from "node:path";
 import {test} from "node:test";
 import iconv from "iconv-lite";
+import ts from "typescript";
 import {decodeText} from "../main/helpers/textEncoding";
 import {parseSubtitleCues} from "../main/helpers/subtitleParser";
 import Japanese from "../main/handler/japanese";
+import {setStoreFactory} from "../main/handler/common/storeHandlers";
+import {setSys} from "../renderer/platform/backend/sys";
+
+test("the app and its tools use Miteiru's Rust tokenizers", () => {
+  const root = path.resolve(__dirname, "..");
+  const retired = ["kuromoji", "@node-rs/jieba"];
+  const manifest = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
+  const dependencies = {...manifest.dependencies, ...manifest.devDependencies, ...manifest.optionalDependencies};
+  for (const name of retired) assert.ok(!Object.hasOwn(dependencies, name), name);
+  const files = fs.globSync("**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}", {cwd: root, exclude: [
+    "**/node_modules/**", "**/target/**", "**/dist/**", "**/.next/**", "app/**", "renderer/out/**", "renderer/public/**", "src-tauri/resources/**"
+  ]});
+  for (const file of files) {
+    const source = fs.readFileSync(path.join(root, file), "utf8");
+    if (!retired.some((name) => source.includes(name))) continue;
+    for (const {fileName} of ts.preProcessFile(source, true, true).importedFiles) {
+      const specifier = fileName.split("node_modules/").at(-1);
+      assert.ok(!retired.some((name) => specifier === name || specifier.startsWith(name + "/")), `${file} imports ${fileName}`);
+    }
+  }
+});
 
 const srt = (text: string) => `1\n00:00:01,000 --> 00:00:03,000\n${text}\n\n2\n00:00:04,000 --> 00:00:06,000\n${text}\n`;
 
@@ -60,13 +82,18 @@ test("parseSubtitleCues handles the inputs @plussub/srt-vtt-parser got wrong", (
   assert.equal(first("1\n10:02:03,040 --> 10:02:04,000\nlate\n").from, ((10 * 60 + 2) * 60 + 3) * 1000 + 40);
 });
 
-test("a failed Kuromoji dictionary load can be retried", async () => {
-  Japanese.kuromojiDictPath = path.join(os.tmpdir(), "no-such-kuromoji-dict");
-  await assert.rejects(Japanese.loadKuromojiTokenizer());
-
-  Japanese.kuromojiDictPath = path.join(process.cwd(), "node_modules", "kuromoji", "dict");
+test("a failed Japanese dictionary load can be retried", async () => {
+  setStoreFactory(async () => ({get: (_key, fallback) => fallback, set: () => undefined}));
+  let loads = 0;
+  setSys(async (cmd) => {
+    if (cmd === "japanese_load" && ++loads === 1) throw new Error("missing IPADIC");
+    if (cmd === "japanese_tokenize") return [{surface_form: "見"}];
+  });
+  await assert.rejects(Japanese.loadKuromojiTokenizer(), /missing IPADIC/);
   const tokenizer = await Japanese.loadKuromojiTokenizer();
-  assert.equal(tokenizer.tokenizeForSentence("見た")[0].surface_form, "見");
+  assert.equal((await tokenizer.tokenizeForSentence("見た"))[0].surface_form, "見");
+  assert.equal(await Japanese.loadKuromojiTokenizer(), tokenizer);
+  assert.equal(loads, 2);
 });
 
 test("decodeText keeps UTF-8 with a stray bad byte and reads ISO-2022-JP", () => {

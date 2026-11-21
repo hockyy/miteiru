@@ -49,16 +49,16 @@ test("the reading scorer: spans both cuts share, alternatives, unscored words, o
   assert.deepEqual([summary.readings.correct, summary.readings.total, summary.counters.accuracy], [2, 3, 1]);
 });
 
-const addonFile = defaultAddonPath(root);
-const ipadic = path.join(root, "node_modules", "kuromoji", "dict");
+const addonFile = process.env.MITEIRU_NODE_ADDON || defaultAddonPath(root);
+const ipadic = process.env.MITEIRU_IPADIC_DIR || path.join(root, "renderer/public/language-assets/japanese/dict");
 const skip = !fs.existsSync(addonFile)
   ? "build the Node addon first: cargo build --release --manifest-path native/rust/Cargo.toml -p miteiru-node"
-  : !fs.existsSync(path.join(ipadic, "base.dat.gz")) ? "needs node_modules/kuromoji/dict (npm ci)" : false;
+  : !["base.dat", "base.dat.gz", "base.dat.zst"].some((file) => fs.existsSync(path.join(ipadic, file)))
+    ? "needs the Japanese language assets or MITEIRU_IPADIC_DIR" : false;
 
 test("Miteiru's Japanese tokenizer reads the gold set's words right in context", {skip}, async () => {
   const addon = loadAddon(addonFile);
-  // IPADIC as kuromoji ships it, the same files as the Japanese pack's; JMdict only joins verb
-  // endings into learner units and does not change a reading.
+  // Use the Japanese pack's IPADIC on its own to measure readings independently of JMdict.
   await addon.japaneseLoad(ipadic, null, false);
   const predictions: Record<string, PredictedToken[]> = {};
   for (let at = 0; at < gold.length; at += 128) {

@@ -7,8 +7,7 @@
 //! - [`lexicon`]: the extra words both take, and where they come from.
 //!
 //! Japanese preserves kuromoji token fields, with normalization and typed suffix chains.
-//! Chinese compares against jieba-rs, but optimizes for
-//! dictionary-look-up-able learning units rather than exact output parity.
+//! Chinese scores word boundaries for dictionary lookup.
 
 pub mod chinese;
 pub mod japanese;

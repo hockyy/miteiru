@@ -4,7 +4,7 @@ Measured on Windows (Intel Core Ultra 7 265K, Rust 1.91.1, Node 22.23.3) on 2026
 
 ## Gold: base and dictionary effects separately
 
-Each split has 150 lines per variant. F1 counts internal Unicode-code-point boundaries, including punctuation/whitespace; exact is whole-line token equality. User words are absent from all gold runs. The official baseline is the committed Node jieba + app token-building runner. Its package behavior is not byte-identical to the pinned Rust jieba-rs 0.8.1 comparison; both are shown explicitly.
+Each split has 150 lines per variant. F1 counts internal Unicode-code-point boundaries, including punctuation/whitespace; exact is whole-line token equality. User words are absent from all gold runs. The official baseline records the former Node jieba and app token-building pipeline. The tables report this baseline and the separate jieba-rs 0.8.1 comparison.
 
 | Variant | Official Node dev F1 / exact | Native base dev F1 / exact | Native + app dev F1 / exact |
 | --- | ---: | ---: | ---: |

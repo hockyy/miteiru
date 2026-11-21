@@ -1,17 +1,16 @@
-import type {KuromojiToken} from 'kuromoji';
+import type {JapaneseToken} from '../../../../main/handler/languages/japaneseAnalysis';
 import type {UserDictionaryEntry} from '../../../../main/helpers/userDictionary';
 import {getStore} from '../../../../main/handler/common/storeHandlers';
 import {sys} from '../sys';
 import {decodeJapaneseTokenBatch} from './japaneseTokenBatch';
 
-export const JAPANESE_FALLBACK_KEY = 'tokenizer.japanese.useKuromoji';
 export const JAPANESE_APP_WORDS_KEY = 'tokenizer.japanese.useJmdictWords';
 
 type Word = {surface: string; source: string};
 type Request = {text: string; entries?: UserDictionaryEntry[]; words?: Word[]; revision?: string;
-  resolve: (tokens: KuromojiToken[]) => void; reject: (error: unknown) => void};
+  resolve: (tokens: JapaneseToken[]) => void; reject: (error: unknown) => void};
 
-class NativeTokenizer {
+export class JapaneseTokenizer {
   private entries: UserDictionaryEntry[] | undefined;
   private syncing: Promise<void> = Promise.resolve();
   private nativeRevision: string | undefined;
@@ -19,7 +18,14 @@ class NativeTokenizer {
   private scheduled = false;
   private versions = new WeakMap<UserDictionaryEntry[], {words: Word[]; revision: string}>();
 
-  constructor(private readonly dictPath: string) {}
+  private constructor(private readonly dictPath: string) {}
+
+  static async load(dictPath: string, jmdictPath?: string) {
+    const store = await getStore();
+    await sys('japanese_load', {dictPath, jmdictPath: jmdictPath ?? null,
+      appWords: store.get(JAPANESE_APP_WORDS_KEY, false) === true});
+    return new JapaneseTokenizer(dictPath);
+  }
 
   async setUserWords(entries: UserDictionaryEntry[]) {
     if (entries === this.entries) return this.syncing;
@@ -33,13 +39,13 @@ class NativeTokenizer {
     return this.syncing;
   }
 
-  tokenizeForSentence(text: string): Promise<KuromojiToken[]> { return this.request(text); }
+  tokenizeForSentence(text: string): Promise<JapaneseToken[]> { return this.request(text); }
 
-  tokenizeWithUserWords(text: string, entries: UserDictionaryEntry[]): Promise<KuromojiToken[]> {
+  tokenizeWithUserWords(text: string, entries: UserDictionaryEntry[]): Promise<JapaneseToken[]> {
     return this.request(text, entries);
   }
 
-  private request(text: string, entries?: UserDictionaryEntry[]): Promise<KuromojiToken[]> {
+  private request(text: string, entries?: UserDictionaryEntry[]): Promise<JapaneseToken[]> {
     let version = entries ? this.versions.get(entries) : undefined;
     if (entries && !version) {
       const words = entries.map(({surface, source}) => ({surface, source}));
@@ -93,7 +99,7 @@ class NativeTokenizer {
 
   private async dispatch(requests: Request[]) {
     try {
-      let tokens: KuromojiToken[][];
+      let tokens: JapaneseToken[][];
       if (requests.length === 1) tokens = [await sys('japanese_tokenize', {dictPath: this.dictPath, text: requests[0].text})];
       else {
         const response = await sys('japanese_tokenize_batch', {dictPath: this.dictPath, texts: requests.map((request) => request.text)});
@@ -106,21 +112,3 @@ class NativeTokenizer {
 
   tokenize(text: string) { return this.tokenizeForSentence(text); }
 }
-
-export const builder = (options: {dicPath: string; jmdictPath?: string}) => ({
-  build(callback: (error: unknown, tokenizer?: unknown) => void) {
-    const build = async () => {
-      const store = await getStore();
-      if (store.get(JAPANESE_FALLBACK_KEY, false) === true) {
-        const {default: legacy} = await import('./kuromojiFallback');
-        return new Promise((resolve, reject) => legacy.builder(options).build((error, tokenizer) => error ? reject(error) : resolve(tokenizer)));
-      }
-      await sys('japanese_load', {dictPath: options.dicPath, jmdictPath: options.jmdictPath ?? null,
-        appWords: store.get(JAPANESE_APP_WORDS_KEY, false) === true});
-      return new NativeTokenizer(options.dicPath);
-    };
-    void build().then((tokenizer) => callback(null, tokenizer), (error) => callback(error));
-  }
-});
-
-export default {builder};

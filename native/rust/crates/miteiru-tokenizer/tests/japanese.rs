@@ -7,10 +7,13 @@ fn ipadic_contract_context_unicode_suffixes_and_live_extra_words() {
     let directory = std::env::var_os("MITEIRU_IPADIC_DIR")
         .map(PathBuf::from)
         .unwrap_or_else(|| {
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../../../node_modules/kuromoji/dict")
+            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("../../../../renderer/public/language-assets/japanese/dict")
         });
     if !directory.is_dir() {
-        eprintln!("IPADIC integration test needs npm ci or MITEIRU_IPADIC_DIR");
+        eprintln!(
+            "IPADIC integration test needs the Japanese language assets or MITEIRU_IPADIC_DIR"
+        );
         return;
     }
     let mut tokenizer = Tokenizer::from_directory(&directory).unwrap();

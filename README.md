@@ -20,7 +20,7 @@ with the reading on top, the meaning underneath and a full dictionary entry one 
 
 ## Why Miteiru?
 
-- **Every word is clickable.** Subtitles are split into words (Miteiru's own Rust tokenizers: an IPADIC lattice for Japanese, Jieba for Chinese) with furigana, pinyin or jyutping on top and short meanings underneath. Click a word for its full dictionary entry, pitch accent, conjugations and kanji breakdown.
+- **Every word is clickable.** Miteiru's Rust tokenizers split Japanese and Chinese subtitles into words. Each word has furigana, pinyin or jyutping on top and a short meaning underneath. Click a word for its full dictionary entry, pitch accent, conjugations and kanji breakdown.
 - **Your videos, your subtitles.** Drop in local files (MKV, MP4, HEVC, AV1, multiple audio tracks: anything [mpv](https://mpv.io) plays, with no converting) with `.srt`, `.ass`, `.vtt` or `.lrc` subtitles, or paste a YouTube link and pick one of its caption tracks.
 - **Dictionaries stay on your computer.** JMdict, KANJIDIC, CC-CEDICT, CantoDict and VNEDict work offline once a language is downloaded. No account, no subscription, no server.
 - **Made for immersion.** Your target language on top and English underneath, a key to repeat the current line, karaoke lyrics, colours for the words you know, flashcards and one-click Anki cards.
@@ -86,7 +86,7 @@ Miteiru 8.0 doesn't update itself yet: new versions appear on the [releases page
 
 | | 🇯🇵 Japanese | 🇨🇳 Mandarin | 🇭🇰 Cantonese | 🇻🇳 Vietnamese |
 | --- | --- | --- | --- | --- |
-| Words split by | Miteiru's tokenizer (IPADIC) | Jieba | Jieba (Cantonese) | Longest match |
+| Words split by | Miteiru's tokenizer (IPADIC) | Miteiru's tokenizer (Mandarin word list) | Miteiru's tokenizer (Cantonese word list) | Longest match |
 | Readings | Furigana, romaji | Pinyin | Jyutping | |
 | Dictionary | JMdict, KANJIDIC | CC-CEDICT | CantoDict | VNEDict |
 | Extras | Pitch accent, conjugations, kanji strokes | Simplified and traditional, hanzi strokes | Tone marks | A meaning under every word |

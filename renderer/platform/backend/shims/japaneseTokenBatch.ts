@@ -1,10 +1,10 @@
-import type {KuromojiToken} from 'kuromoji';
+import type {JapaneseToken} from '../../../../main/handler/languages/japaneseAnalysis';
 
 type Features = [string, string, string, string, string, string];
 type Word = [number, string, number, string, number, string, string | null, string | null];
 
 /** Decode the native transport's shared POS/conjugation table into ordinary token objects. */
-export const decodeJapaneseTokenBatch = (bytes: ArrayBuffer): KuromojiToken[][] => {
+export const decodeJapaneseTokenBatch = (bytes: ArrayBuffer): JapaneseToken[][] => {
   const {features, tokens} = JSON.parse(new TextDecoder().decode(bytes)) as {features: Features[]; tokens: Word[][]};
   if (!Array.isArray(features) || !Array.isArray(tokens)) throw new Error('Invalid Japanese token batch');
   return tokens.map((line) => line.map((word) => {
