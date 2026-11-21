@@ -1,15 +1,16 @@
 import {isKana, toHiragana, toRomaji} from "../language/wanakana";
 import type {DictionaryDb} from "../dictionary/levelDictionary";
 import type {JmdictWord} from "../dictionary/jmdictDb";
-import {exactChineseEntries, exactJapaneseMatches} from "../handler/languages/learningGlosses";
+import type {MiteiruJapaneseWord} from "../handler/languages/japaneseAnalysis";
+import {exactChineseViews, exactJapaneseMatches} from "../handler/languages/learningGlosses";
 import {buildInflectionTable} from "../handler/languages/inflectionTable";
 import type {UserDictionaryEntry} from "../helpers/userDictionary";
 import {mapLimit} from "../helpers/mapLimit";
-import {normalizeChineseEntry, rankChineseEntries, entryHasReading, shortSense, type ChineseEntryView} from "../language/chineseEntries";
+import {rankChineseEntries, entryHasReading, resolveChineseReference, shortSense, type ChineseEntryView, type ResolvedChineseReference} from "../language/chineseEntries";
 import {lookupHsk, type HskWords} from "../language/hsk";
 import {japaneseRuby, chineseRuby, type RubySegment} from "../language/japaneseRuby";
 import {japaneseLevelFields, type JapaneseLevels} from "../language/japaneseLevels";
-import {rankJapaneseEntries, rankSenses, senseFitsPos, senseLine, type SenseContext} from "../language/japaneseSenses";
+import {kanaOf, rankJapaneseEntries, rankSenses, senseFitsPos, senseLine, type SenseContext} from "../language/japaneseSenses";
 import {isToolLanguage, toolLanguageInfo, type StoredLanguageCode, type ToolLanguage, type ToolLanguageInfo} from "../language/languages";
 import {mandarinSpokenTones} from "../language/mandarinTones";
 import {classifyAccent, lookupPitchAccent, splitIntoMorae, type PitchAccentMap} from "../language/pitchAccent";
@@ -164,9 +165,46 @@ const cached = (db: object, key: string, read: () => Promise<any[]>): Promise<an
 
 const japaneseEntries = (db: DictionaryDb, word: string): Promise<JmdictWord[]> => cached(db, `ja\u0000${word}`, () => exactJapaneseMatches(db, word));
 
-const chineseEntries = (db: DictionaryDb, word: string): Promise<ChineseEntryView[]> => cached(db, `zh\u0000${word}`, async () => (
-  (await exactChineseEntries(db, word)).map(normalizeChineseEntry).filter((entry): entry is ChineseEntryView => entry !== null)
-));
+// JMdict writes Arabic numerals full width. Keep the caller's original spelling in the result.
+const jmdictDigits = (text: string) => text.replace(/[0-9]/g, (digit) => String.fromCharCode(digit.charCodeAt(0) + 0xfee0));
+const appliesTo = (forms: string[], text: string) => forms.includes("*") || forms.includes(text);
+const couldStartCount = /^[〇一二三四五六七八九十百千万億兆何0-9０-９]./u;
+
+/** The tokenizer supplies the two pronunciations. JMdict establishes what each piece means. */
+const composedCounterReadings = async (db: DictionaryDb, word: string, tokens: MiteiruJapaneseWord[], whole: JmdictWord[], filter = "") => {
+  const [number, counter] = tokens;
+  const pair = counter?.counterReading;
+  if (tokens.length !== 2 || !pair || number.origin + counter.origin !== word) return {};
+  const numberReading = kanaOf(pair.number);
+  const counterReading = kanaOf(pair.counter);
+  const reading = numberReading + counterReading;
+  if (filter && kanaOf(filter) !== reading) return {};
+
+  const spelling = jmdictDigits(word);
+  const listed = spelling === word ? whole : [...whole, ...await japaneseEntries(db, spelling)];
+  if (listed.length && !listed.some((entry) => entry.kana.some((kana) => kanaOf(kana.text) === reading
+    && (appliesTo(kana.appliesToKanji, word) || appliesTo(kana.appliesToKanji, spelling))))) return {};
+
+  const numeral = jmdictDigits(number.origin);
+  const [numbers, counters] = await Promise.all([japaneseEntries(db, numeral), japaneseEntries(db, counter.origin)]);
+  const numberEntry = rankJapaneseEntries(numbers, {base: numeral, reading: numberReading, context: {pos: number.pos}})
+    .find((entry) => entry.sense.some((sense) => appliesTo(sense.appliesToKanji, numeral)
+      && sense.partOfSpeech.includes(numeral === "何" ? "pref" : "num")));
+  const counterEntries = rankJapaneseEntries(counters, {base: counter.origin, reading: counterReading, context: {pos: counter.pos}});
+  const matchesUnit = (entry: JmdictWord, unit: string) => entry.kana.some((kana) =>
+    kanaOf(kana.text) === unit && appliesTo(kana.appliesToKanji, counter.origin)
+    && entry.sense.some((sense) => sense.partOfSpeech.includes("ctr")
+      && appliesTo(sense.appliesToKanji, counter.origin) && appliesTo(sense.appliesToKana, kana.text)));
+  const counterEntry = counterEntries.find((entry) => matchesUnit(entry, counterReading))
+    ?? counterEntries.find((entry) => matchesUnit(entry, kanaOf(pair.base)));
+  if (!numberEntry || !counterEntry) return {};
+  return {composed_readings: [{reading, romaji: toRomaji(reading), rule: "counter", parts: [
+    {s: number.origin, reading: numberReading, entry_id: numberEntry.id},
+    {s: counter.origin, reading: counterReading, entry_id: counterEntry.id}
+  ]}]};
+};
+
+const chineseEntries = (db: DictionaryDb, word: string): Promise<ChineseEntryView[]> => cached(db, `zh\u0000${word}`, () => exactChineseViews(db, word));
 
 // ---- Building blocks ---------------------------------------------------------------------------------
 
@@ -199,10 +237,11 @@ const jmdictGloss = (entry: JmdictWord, context: SenseContext, alternatives: Jmd
   };
 };
 
-const chineseGloss = (entry: ChineseEntryView, source: string, alternatives: ChineseEntryView[]) => ({
-  en: entry.senses.length > 0 ? entry.senses.slice(0, MAX_SENSES) : entry.references.slice(0, MAX_SENSES),
+const chineseGloss = (entry: ChineseEntryView, source: string, alternatives: ChineseEntryView[], resolved?: ResolvedChineseReference) => ({
+  en: (resolved?.senses ?? (entry.senses.length ? entry.senses : entry.references)).slice(0, MAX_SENSES),
   source,
   entry_id: entry.id,
+  ...(resolved ? {via: {word: resolved.word, entry_id: resolved.entry_id, relation: resolved.relation}} : {}),
   ...(entry.measureWords.length > 0 ? {measure_words: entry.measureWords} : {}),
   ...(entry.senses.length > 0 && entry.references.length > 0 ? {references: entry.references} : {}),
   ...(entry.standardChinese ? {standard_chinese: entry.standardChinese} : {}),
@@ -399,11 +438,13 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
 
     let ranked: ChineseEntryView[] = [];
     let all: ChineseEntryView[] = [];
+    const match = {word: piece.s, script: info.script ?? "traditional", reading: readingText, cantonese} as const;
     if (db && !user) {
       all = await chineseEntries(db, piece.s);
-      ranked = rankChineseEntries(all, {word: piece.s, script: info.script ?? "traditional", reading: readingText, cantonese});
+      ranked = rankChineseEntries(all, match);
     }
     const entry = ranked[0];
+    const resolved = entry?.referenceTargets && db ? await resolveChineseReference(entry, match, (word) => chineseEntries(db, word)) : undefined;
     let readingCheck: "dictionary" | "mismatch" | "unknown" = "unknown";
     let dictionaryReadings: string[] | undefined;
     if (all.length > 0 && readingText) {
@@ -432,7 +473,7 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
       ...(entry && !cantonese && entry.simplified && entry.traditional ? {forms: {simplified: entry.simplified, traditional: entry.traditional}} : {}),
       ...(readingText ? {reading} : {}),
       ruby: chineseRuby(parts.map((part) => ({main: part.main, reading: cantonese ? part.reading : pinyinMarked(pinyinNumbered(part.reading))}))),
-      gloss: user ? userGloss(user) : entry ? chineseGloss(entry, cantonese ? "CantoDict" : "CC-CEDICT", ranked.slice(1)) : null,
+      gloss: user ? userGloss(user) : entry ? chineseGloss(entry, cantonese ? "CantoDict" : "CC-CEDICT", ranked.slice(1), resolved) : null,
       levels: {...(typeof hsk === "number" ? {hsk} : {})},
       ...(tones.some((tone) => tone !== null) ? {tones} : {}),
       ...(!cantonese && numbered.length ? {tones_dictionary: numbered.map((syllable) => numberedTone(syllable, 5))} : {}),
@@ -600,7 +641,7 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
     };
   };
 
-  const chineseEntryView = (entry: ChineseEntryView, source: string, hsk: HskWords | null, cantonese: boolean) => ({
+  const chineseEntryView = (entry: ChineseEntryView, source: string, hsk: HskWords | null, cantonese: boolean, resolved?: ResolvedChineseReference) => ({
     entry_id: entry.id,
     source,
     traditional: entry.traditional,
@@ -609,6 +650,7 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
     ...(entry.pinyin.length ? {pinyin: entry.pinyin.map((reading) => ({pinyin_num: reading, pinyin: reading.split(/\s+/).map((syllable) => pinyinMarked(pinyinNumbered(syllable))).join(" ")}))} : {}),
     ...(entry.jyutping.length ? {jyutping: entry.jyutping} : {}),
     senses: entry.senses,
+    ...(resolved ? {resolved_from: {word: resolved.word, entry_id: resolved.entry_id, senses: resolved.senses}} : {}),
     ...(entry.measureWords.length ? {measure_words: entry.measureWords} : {}),
     ...(entry.references.length ? {references: entry.references} : {}),
     ...(entry.standardChinese ? {standard_chinese: entry.standardChinese} : {}),
@@ -641,11 +683,12 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
       const db = deps.jmdict();
       if (!db) throw new ToolError("Japanese isn't loaded: its dictionary is not open.", 409);
       const data = await studyData(info);
-      let entries = await japaneseEntries(db, word);
+      const whole = await japaneseEntries(db, word);
+      let entries = whole;
       let dictionaryForm: string | undefined;
+      const tokens = !whole.length || couldStartCount.test(word) ? await deps.analyze("ja", word) : [];
       if (entries.length === 0) {
         // An inflected form: look up the dictionary form Miteiru's tokenizer gives it.
-        const tokens = await deps.analyze("ja", word);
         const words = tokens.filter((token) => /[\p{L}\p{N}]/u.test(String(token?.origin ?? "")));
         if (words.length === 1 && wordKey(words[0]) !== word) {
           dictionaryForm = wordKey(words[0]);
@@ -662,7 +705,8 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
         ...head,
         ...(dictionaryForm ? {dictionary_form: dictionaryForm} : {}),
         total: ranked.length + (user ? 1 : 0),
-        entries: [...(user ? [userEntryView(user)] : []), ...ranked.slice(0, limit).map((entry) => jmdictEntryView(entry, tags, data))]
+        entries: [...(user ? [userEntryView(user)] : []), ...ranked.slice(0, limit).map((entry) => jmdictEntryView(entry, tags, data))],
+        ...await composedCounterReadings(db, word, tokens, whole, reading)
       };
     }
 
@@ -684,12 +728,17 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
     if (!db) throw new ToolError(`${info.name} isn't loaded: its dictionary is not open.`, 409);
     let entries = await chineseEntries(db, word);
     if (reading) entries = entries.filter((entry) => entryHasReading(entry, reading, cantonese));
-    const ranked = rankChineseEntries(entries, {word, script: info.script ?? "traditional", reading: reading || undefined, cantonese});
+    const match = {word, script: info.script ?? "traditional", reading: reading || undefined, cantonese} as const;
+    const ranked = rankChineseEntries(entries, match);
     const hsk = cantonese ? null : await deps.hskWords();
+    const views = await Promise.all(ranked.slice(0, limit).map(async (entry) => {
+      const resolved = await resolveChineseReference(entry, match, (target) => chineseEntries(db, target));
+      return chineseEntryView(entry, cantonese ? "CantoDict" : "CC-CEDICT", hsk, cantonese, resolved);
+    }));
     return {
       ...head,
       total: ranked.length + (user ? 1 : 0),
-      entries: [...(user ? [userEntryView(user)] : []), ...ranked.slice(0, limit).map((entry) => chineseEntryView(entry, cantonese ? "CantoDict" : "CC-CEDICT", hsk, cantonese))]
+      entries: [...(user ? [userEntryView(user)] : []), ...views]
     };
   };
 
@@ -813,7 +862,8 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
           found.push({reading, romaji: toRomaji(reading), common: kana.common, entry_ids: [entry.id], ...(pitch ? {pitch: {accents: pitch.accents, patterns: pitch.patterns}} : {})});
         }
       }
-      return {...head, source: "JMdict", tokenizer_reading: toHiragana(tokenized, {convertLongVowelMark: false}), readings: found};
+      return {...head, source: "JMdict", tokenizer_reading: kanaOf(tokenized), readings: found,
+        ...await composedCounterReadings(db, word, tokens, entries)};
     }
     if (info.id === "vi") throw new ToolError("readings is for Japanese, Mandarin and Cantonese: Vietnamese is written as it is read.");
 

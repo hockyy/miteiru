@@ -25,6 +25,32 @@ export const pinyinToNumbersBatch = async (texts: string[]): Promise<string[]> =
   return texts.map(text => (TONE_MARK.test(text) ? converted[index++] : text).split(/\s+/).filter(Boolean).map(pinyinNumbered).join(" "));
 };
 
+const MARKED_VOWELS: Record<string, [string, number]> = Object.fromEntries(
+  ["āáǎà a", "ēéěè e", "īíǐì i", "ōóǒò o", "ūúǔù u", "ǖǘǚǜ ü"].flatMap((row) => {
+    const [marks, base] = row.split(" ");
+    return [...marks].flatMap((mark, tone) => [[mark, [base, tone + 1]], [mark.toUpperCase(), [base.toUpperCase(), tone + 1]]]);
+  })
+);
+
+/** One tone-marked syllable as numbered pinyin: diǎn is dian3, lǘ is lü2, de is de5. */
+const markedSyllableToNumbered = (syllable: string): string => {
+  let tone = 0;
+  const plain = [...syllable.normalize("NFC")].map((char) => {
+    const marked = MARKED_VOWELS[char];
+    if (!marked) return char;
+    tone = marked[1];
+    return marked[0];
+  }).join("");
+  return tone ? `${plain}${tone}` : pinyinNumbered(plain);
+};
+
+/**
+ * Pinyin as numbered syllables, synchronously, for text a dictionary already wrote syllable by syllable
+ * (CC-CEDICT's [yi1 dian3] or [yī diǎn]). Running text needs pinyinToNumbersBatch, which reads it in context.
+ */
+export const pinyinToNumbers = (text: string): string => text.split(/\s+/).filter(Boolean)
+  .map((syllable) => (TONE_MARK.test(syllable) ? markedSyllableToNumbered(syllable) : pinyinNumbered(syllable))).join(" ");
+
 /** A numbered syllable with tone marks: ni3 is nǐ, ma5 is ma. */
 export const pinyinMarked = (numbered: string): string => (/[1-5]$/.test(numbered) ? toPinyinToneMarks(numbered) : numbered);
 

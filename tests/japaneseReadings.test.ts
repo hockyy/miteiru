@@ -56,6 +56,66 @@ const skip = !fs.existsSync(addonFile)
   : !["base.dat", "base.dat.gz", "base.dat.zst"].some((file) => fs.existsSync(path.join(ipadic, file)))
     ? "needs the Japanese language assets or MITEIRU_IPADIC_DIR" : false;
 
+// Columns are 1–10, 100, 1000, and 何. Use digits as well as kanji: 百足 can be the single word
+// むかで, but 100足 is a count. A dash marks a count outside the native series or a calendar month.
+const counterTable = `
+杯 イッパイ ニハイ サンバイ ヨンハイ ゴハイ ロッパイ ナナハイ ハッパイ キュウハイ ジュッパイ ヒャッパイ センバイ ナンバイ
+匹 イッピキ ニヒキ サンビキ ヨンヒキ ゴヒキ ロッピキ ナナヒキ ハッピキ キュウヒキ ジュッピキ ヒャッピキ センビキ ナンビキ
+本 イッポン ニホン サンボン ヨンホン ゴホン ロッポン ナナホン ハッポン キュウホン ジュッポン ヒャッポン センボン ナンボン
+分 イップン ニフン サンプン ヨンプン ゴフン ロップン ナナフン ハップン キュウフン ジュップン ヒャップン センプン ナンプン
+回 イッカイ ニカイ サンカイ ヨンカイ ゴカイ ロッカイ ナナカイ ハッカイ キュウカイ ジュッカイ ヒャッカイ センカイ ナンカイ
+階 イッカイ ニカイ サンガイ ヨンカイ ゴカイ ロッカイ ナナカイ ハッカイ キュウカイ ジュッカイ ヒャッカイ センカイ ナンガイ
+軒 イッケン ニケン サンゲン ヨンケン ゴケン ロッケン ナナケン ハッケン キュウケン ジュッケン ヒャッケン センケン ナンゲン
+個 イッコ ニコ サンコ ヨンコ ゴコ ロッコ ナナコ ハッコ キュウコ ジュッコ ヒャッコ センコ ナンコ
+歳 イッサイ ニサイ サンサイ ヨンサイ ゴサイ ロクサイ ナナサイ ハッサイ キュウサイ ジュッサイ ヒャクサイ センサイ ナンサイ
+冊 イッサツ ニサツ サンサツ ヨンサツ ゴサツ ロクサツ ナナサツ ハッサツ キュウサツ ジュッサツ ヒャクサツ センサツ ナンサツ
+足 イッソク ニソク サンゾク ヨンソク ゴソク ロクソク ナナソク ハッソク キュウソク ジュッソク ヒャクソク センゾク ナンゾク
+着 イッチャク ニチャク サンチャク ヨンチャク ゴチャク ロクチャク ナナチャク ハッチャク キュウチャク ジュッチャク ヒャクチャク センチャク ナンチャク
+台 イチダイ ニダイ サンダイ ヨンダイ ゴダイ ロクダイ ナナダイ ハチダイ キュウダイ ジュウダイ ヒャクダイ センダイ ナンダイ
+枚 イチマイ ニマイ サンマイ ヨンマイ ゴマイ ロクマイ ナナマイ ハチマイ キュウマイ ジュウマイ ヒャクマイ センマイ ナンマイ
+人 ヒトリ フタリ サンニン ヨニン ゴニン ロクニン ナナニン ハチニン キュウニン ジュウニン ヒャクニン センニン ナンニン
+日 イチニチ フツカ ミッカ ヨッカ イツカ ムイカ ナノカ ヨウカ ココノカ トオカ ヒャクニチ センニチ ナンニチ
+月 イチガツ ニガツ サンガツ シガツ ゴガツ ロクガツ シチガツ ハチガツ クガツ ジュウガツ - - ナンガツ
+つ ヒトツ フタツ ミッツ ヨッツ イツツ ムッツ ナナツ ヤッツ ココノツ - - - -
+時 イチジ ニジ サンジ ヨジ ゴジ ロクジ シチジ ハチジ クジ ジュウジ ヒャクジ センジ ナンジ
+頭 イットウ ニトウ サントウ ヨントウ ゴトウ ロクトウ ナナトウ ハットウ キュウトウ ジュットウ ヒャクトウ セントウ ナントウ
+羽 イチワ ニワ サンバ ヨンワ ゴワ ロッパ ナナワ ハッパ キュウワ ジュッパ ヒャッパ センバ ナンバ
+件 イッケン ニケン サンケン ヨンケン ゴケン ロッケン ナナケン ハッケン キュウケン ジュッケン ヒャッケン センケン ナンケン
+度 イチド ニド サンド ヨンド ゴド ロクド ナナド ハチド キュウド ジュウド ヒャクド センド ナンド
+番 イチバン ニバン サンバン ヨンバン ゴバン ロクバン ナナバン ハチバン キュウバン ジュウバン ヒャクバン センバン ナンバン
+発 イッパツ ニハツ サンパツ ヨンパツ ゴハツ ロッパツ ナナハツ ハッパツ キュウハツ ジュッパツ ヒャッパツ センパツ ナンパツ
+泊 イッパク ニハク サンパク ヨンパク ゴハク ロッパク ナナハク ハッパク キュウハク ジュッパク ヒャッパク センパク ナンパク
+皿 ヒトサラ フタサラ サンサラ ヨンサラ ゴサラ ロクサラ ナナサラ ハチサラ キュウサラ ジュウサラ ヒャクサラ センサラ ナンサラ
+箱 ヒトハコ フタハコ サンハコ ヨンハコ ゴハコ ロクハコ ナナハコ ハチハコ キュウハコ ジュウハコ ヒャクハコ センハコ ナンハコ
+袋 ヒトフクロ フタフクロ サンフクロ ヨンフクロ ゴフクロ ロクフクロ ナナフクロ ハチフクロ キュウフクロ ジュウフクロ ヒャクフクロ センフクロ ナンフクロ
+週間 イッシュウカン ニシュウカン サンシュウカン ヨンシュウカン ゴシュウカン ロクシュウカン ナナシュウカン ハッシュウカン キュウシュウカン ジュッシュウカン ヒャクシュウカン センシュウカン ナンシュウカン
+年 イチネン ニネン サンネン ヨネン ゴネン ロクネン ナナネン ハチネン キュウネン ジュウネン ヒャクネン センネン ナンネン
+ページ イッページ ニページ サンページ ヨンページ ゴページ ロッページ ナナページ ハッページ キュウページ ジュッページ ヒャッページ センページ ナンページ
+`.trim();
+
+test("the addon reads numeral and counter pairs in digits and kanji", {skip}, async () => {
+  const addon = loadAddon(addonFile);
+  await addon.japaneseLoad(ipadic, null, false);
+  const digits = "1 2 3 4 5 6 7 8 9 10 100 1000".split(" ");
+  for (const row of counterTable.split("\n")) {
+    const [unit, ...expected] = row.split(" ");
+    const numbers = [...digits, ..."一二三四五六七八九十百千何"];
+    const words = numbers.map((n) => n + unit);
+    const batch = JSON.parse(await addon.japaneseTokenizeBatch(ipadic, words));
+    for (const [index, word] of words.entries()) {
+      const tokens = batch[index];
+      if (index >= digits.length && tokens.length === 1) {
+        assert.equal(tokens[0].surface_form, word);
+        assert.equal(tokens[0].counter_reading, undefined);
+        continue;
+      }
+      assert.deepEqual(tokens.map((token) => token.surface_form), [numbers[index], unit], word);
+      const pair = tokens[1].counter_reading;
+      assert.equal(pair ? pair.number + pair.counter : "-", expected[index < digits.length ? index : index - digits.length], word);
+    }
+  }
+});
+
 test("Miteiru's Japanese tokenizer reads the gold set's words right in context", {skip}, async () => {
   const addon = loadAddon(addonFile);
   // Use the Japanese pack's IPADIC on its own to measure readings independently of JMdict.

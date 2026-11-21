@@ -5,7 +5,7 @@
 //! keep numerals and counters apart: 三 / 人), except that a number written in several kanji becomes
 //! one word (二十, 三百), as the tokenizer guidelines ask.
 
-use super::{Kind, Node, Token, Tokenizer};
+use super::{CounterReading, Kind, Node, Token, Tokenizer};
 
 /// Kanji that write numbers.
 const KANJI_DIGITS: &str = "〇一二三四五六七八九十百千万億兆";
@@ -320,6 +320,7 @@ fn merge_numbers(tokens: Vec<Token>) -> Vec<Token> {
                     basic_form: surface,
                     pronunciation: Some(reading.clone()),
                     reading: Some(reading),
+                    counter_reading: None,
                 });
                 index = last;
             }
@@ -1167,16 +1168,90 @@ fn month(tokens: &[Token], index: usize) -> bool {
     }
 }
 
+/// An isolated count also has a pronunciation as a whole. Digits have a spoken value even when
+/// their token has no furigana, and native counters have bound forms (一皿 ひとさら, 二箱 ふたはこ).
+fn counter_reading(
+    amount: &Number,
+    counter: &Token,
+    counted: Option<&Counted>,
+) -> Option<CounterReading> {
+    let unit = counter.surface_form.as_str();
+    let plain = counter.reading.as_deref()?;
+    let number = match amount.ending {
+        Ending::Question => "ナン".to_string(),
+        _ => number_reading(amount.value?),
+    };
+    let (number, reading) = match unit {
+        "つ" => {
+            let stems = [
+                "ヒト",
+                "フタ",
+                "ミッ",
+                "ヨッ",
+                "イツ",
+                "ムッ",
+                "ナナ",
+                "ヤッ",
+                "ココノ",
+            ];
+            let index = usize::try_from(amount.value?.checked_sub(1)?).ok()?;
+            (stems.get(index)?.to_string(), "ツ")
+        }
+        "皿" | "箱" | "袋" if matches!(amount.value, Some(1 | 2)) => (
+            (if amount.value == Some(1) {
+                "ヒト"
+            } else {
+                "フタ"
+            })
+            .into(),
+            plain,
+        ),
+        "羽" => match amount.ending {
+            Ending::Digit(3) | Ending::Question | Ending::Thousand | Ending::Man => (number, "バ"),
+            Ending::Digit(6 | 8) | Ending::Ten | Ending::Hundred => (geminate(&number), "パ"),
+            _ => (number, "ワ"),
+        },
+        "月" if counted.is_none() => return None,
+        _ => match counted {
+            Some(pair) => {
+                let number = pair.number.as_ref().map_or(number.clone(), |change| {
+                    renumber(&number, change, amount.ending)
+                });
+                (number, pair.counter.as_str())
+            }
+            None => (number, plain),
+        },
+    };
+    Some(CounterReading {
+        number,
+        counter: reading.into(),
+        base: plain.into(),
+    })
+}
+
 fn counters(tokens: &mut [Token]) {
     for index in 1..tokens.len() {
         let counter = &tokens[index];
-        if counter.pos != "名詞"
-            || counter.pos_detail_1 != "接尾"
-            || counter.pos_detail_2 != "助数詞"
-        {
+        let classifier = counter.pos == "名詞"
+            && counter.pos_detail_1 == "接尾"
+            && counter.pos_detail_2 == "助数詞";
+        // IPADIC also splits 2つ and 4月, tagging the unit as an auxiliary or ordinary noun.
+        let isolated = tokens.len() == 2;
+        if !classifier && !(isolated && matches!(counter.surface_form.as_str(), "つ" | "月")) {
             continue;
         }
-        let Some(amount) = number(&tokens[index - 1]) else {
+        let previous = &tokens[index - 1];
+        let amount =
+            if isolated && previous.surface_form == "何" && previous.pos_detail_1 == "代名詞" {
+                Some(Number {
+                    value: None,
+                    ending: Ending::Question,
+                    kanji: true,
+                })
+            } else {
+                number(previous)
+            };
+        let Some(amount) = amount else {
             continue;
         };
         let date = index >= 2 && month(tokens, index - 2);
@@ -1186,10 +1261,17 @@ fn counters(tokens: &mut [Token]) {
             && tokens
                 .get(index + 2)
                 .is_some_and(|token| number(token).is_some());
+        let pair = counted(&amount, &counter.surface_form, date, fraction);
+        if isolated {
+            tokens[index].counter_reading = counter_reading(&amount, counter, pair.as_ref());
+        }
+        if !classifier || !is_number(&tokens[index - 1]) {
+            continue;
+        }
         let Some(Counted {
             number: change,
             counter: reading,
-        }) = counted(&amount, &counter.surface_form, date, fraction)
+        }) = pair
         else {
             continue;
         };
@@ -1480,6 +1562,7 @@ mod tests {
             basic_form: "*".into(),
             reading: None,
             pronunciation: None,
+            counter_reading: None,
         })
         .unwrap();
         assert!(!number.kanji);

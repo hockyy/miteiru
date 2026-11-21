@@ -1,8 +1,9 @@
-use miteiru_tokenizer::japanese::Token;
+use miteiru_tokenizer::japanese::{CounterReading, Token};
 use std::collections::HashMap;
 
 type Features<'a> = [&'a str; 6];
-type Word<'a> = (
+#[derive(serde::Serialize)]
+struct Word<'a>(
   i64,
   &'a str,
   usize,
@@ -11,6 +12,7 @@ type Word<'a> = (
   &'a str,
   Option<&'a str>,
   Option<&'a str>,
+  #[serde(skip_serializing_if = "Option::is_none")] Option<&'a CounterReading>,
 );
 
 /// An internal IPC envelope; public tokens retain all kuromoji-compatible fields.
@@ -44,7 +46,7 @@ impl<'a> Batch<'a> {
               features.push(feature);
               index
             });
-            (
+            Word(
               word.word_id,
               word.word_type.as_str(),
               word.word_position,
@@ -53,6 +55,7 @@ impl<'a> Batch<'a> {
               word.basic_form.as_str(),
               word.reading.as_deref(),
               word.pronunciation.as_deref(),
+              word.counter_reading.as_ref(),
             )
           })
           .collect()

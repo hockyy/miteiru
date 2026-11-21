@@ -128,7 +128,7 @@ Nothing but MCP messages is written to stdout; progress and errors go to stderr.
 | `open_video` | Plays a YouTube video in Miteiru with captions in the language as the main subtitle and English underneath, unless other tracks are named (`main_subtitle`, `translation`, which can be `none`). Starts at `start_at` seconds, which must be before the end. If Miteiru is on its Home screen, it loads the last-chosen language first. Miteiru comes to the front and goes to its video page; on a page holding typed text (Study a text) it asks the learner first, and if they stay, the answer says so. `opened: true` means the window took the video and began loading it. A newer call replaces one the window hasn't taken yet, and the older one's answer says it won't open. |
 | `analyze_text` | Splits `text` (or up to 200 `texts`) into words. By default, the words with their dictionary forms, readings and saved levels, as it always answered; with `detail: "full"`, every piece of the text as a token with all its dictionary facts ([below](#analyze_text-in-full-detail)). |
 | `list_saved_words` | The saved words, `learning`, `known` or `all`, most recently changed first. |
-| `lookup_word` | Every dictionary entry for a word, with every sense, its parts of speech, the common flag, a stable entry id, all spellings and readings, and its levels. An inflected Japanese word is looked up by its dictionary form. Filters: `reading`, `pos`. |
+| `lookup_word` | Every dictionary entry for a word, with every sense, its parts of speech, the common flag, a stable entry id, all spellings and readings, and its levels. An inflected Japanese word is looked up by its dictionary form. Mandarin and Cantonese entries consisting of a reference can add `resolved_from`. Filters: `reading`, `pos`. |
 | `lookup_character` | A kanji or hanzi: readings, meanings, grade, levels, stroke count, radical, and the stroke paths (KanjiVG for Japanese, Make Me a Hanzi for Chinese). |
 | `readings` | Every reading the dictionaries give a word, with the entries it belongs to, beside the tokenizer's own reading. |
 | `text_coverage` | For a set of texts: how many words are saved as Known and Learning (by count and by lemma), coverage percentages, and the unsaved words with their levels, most frequent first. |
@@ -184,6 +184,7 @@ Without `language`, a tool uses the language the learner chose in Miteiru. Each 
 | `conjugation` | inflected Japanese verbs and adjectives | `{dictionary_form, kind, ladder}`: the steps from the inflected form back to the dictionary form. |
 | `saved` | words | `new`, `learning` or `known`, from the learner's saved words. |
 | `reading_check` | words | `dictionary` when the tokenizer's reading is one the dictionary gives the word, `mismatch` when it isn't (then `dictionary_readings` lists the dictionary's), `unknown` when the dictionary doesn't have the word. |
+| `gloss.via` | resolved Mandarin and Cantonese references | `{word, entry_id, relation}` identifies the headword whose senses appear in `gloss.en`. |
 
 `format` changes only when a field changes meaning or shape; new fields can be added to format 2.
 
@@ -221,6 +222,16 @@ The full answers for three test lines (Japanese, Mandarin, Cantonese) are in [`t
 ## Tool reference
 
 Each example is a `tools/call` request's `arguments` and the answer's `structuredContent` (the same JSON is the result's text content). Long answers are shortened with `…`.
+
+When a Mandarin or Cantonese token gets its English gloss from a dictionary reference, `gloss.entry_id` identifies the token’s own entry and `gloss.via` identifies the headword that supplied `gloss.en`. Learning-mode subtitle hints use a short sense from the same headword. For `{"language":"zh-Hans","detail":"full","text":"一点儿"}`, the headless server returns
+
+```json
+{"language":{"code":"zh-Hans","name":"Mandarin Chinese (simplified)"},"detail":"full","format":2,"text":"一点儿","tokens":[
+ {"s":"一点儿","start":0,"end":3,"word":true,"pos":"word","base":"一点儿","forms":{"simplified":"一点儿","traditional":"一點兒"},
+  "reading":{"pinyin":"yì diǎn ér","pinyin_num":"yi4 dian3 er2"},"ruby":[{"base":"一","ruby":"yì"},{"base":"点","ruby":"diǎn"},{"base":"儿","ruby":"ér"}],
+  "gloss":{"en":["a bit","a little","one dot","one point"],"source":"CC-CEDICT","entry_id":"981","via":{"word":"一点","entry_id":"977","relation":"erhua"}},
+  "levels":{"hsk":1},"tones":[4,3,2],"tones_dictionary":[4,3,2],"saved":"new","reading_check":"mismatch","dictionary_readings":["yi1 dian3 r5"]}]}
+```
 
 ### `analyze_text` (basic)
 
@@ -273,6 +284,15 @@ Mandarin and Cantonese entries give `traditional`, `simplified`, `pinyin` (`[{pi
    "pinyin": [{"pinyin_num": "hang2", "pinyin": "háng"}], "senses": ["row", "line", "commercial firm", "…"], "levels": {"hsk": 1}}]}
 ```
 
+When all definitions point to another headword, `lookup_word` can add `resolved_from` to the entry. It follows one reference in the requested script, matches any bracketed pinyin, and uses a target with definitions of its own. The entry’s `senses` and `references` describe the source record. The same lookup in `analyze_text` identifies the relation as `erhua`, `variant` (including old variants and alternate spellings), `same_as`, `see`, or `abbreviation`. The headless response for `{"language":"zh-Hans","word":"一点儿"}` is
+
+```json
+{"language":{"code":"zh-Hans","name":"Mandarin Chinese (simplified)"},"word":"一点儿","total":1,"entries":[
+ {"entry_id":"981","source":"CC-CEDICT","traditional":"一點兒","simplified":"一点儿","pinyin":[{"pinyin_num":"yi1 dian3 r5","pinyin":"yī diǎn r"}],
+  "senses":[],"resolved_from":{"word":"一点","entry_id":"977","senses":["a bit","a little","one dot","one point"]},
+  "references":["erhua variant of 一点"],"levels":{"hsk":1}}]}
+```
+
 ```json
 {"language": "vi", "word": "sinh viên"}
 ```
@@ -283,6 +303,14 @@ Mandarin and Cantonese entries give `traditional`, `simplified`, `pinyin` (`[{pi
 ```
 
 A word in Your dictionary comes first, as `{"entry_id": "user:<language>:<word>", "source": "Your dictionary", …}`. An inflected Japanese word (`行かなかった`) adds `"dictionary_form": "行く"`.
+
+For a Japanese numeral followed by a counter, `lookup_word` can also return `composed_readings` at the top level. The entry IDs in its two parts identify the numeral and the counter sense. Each part gives its pronunciation in the compound. For example, the headless server answers `{"language":"ja","word":"六匹"}` with
+
+```json
+{"language":{"code":"ja","name":"Japanese"},"word":"六匹","total":0,"entries":[],
+ "composed_readings":[{"reading":"ろっぴき","romaji":"roppiki","rule":"counter","parts":[
+   {"s":"六","reading":"ろっ","entry_id":"1585310"},{"s":"匹","reading":"ぴき","entry_id":"1583370"}]}]}
+```
 
 ### `lookup_character`
 
@@ -329,6 +357,27 @@ Arguments: `language` (`ja`, `zh-Hans`, `zh-Hant` or `yue`), `word`.
   {"reading": "こんにち", "romaji": "konnichi", "common": true, "entry_ids": ["1579110"]},
   {"reading": "こんち", "romaji": "konchi", "common": false, "entry_ids": ["1579110"]},
   {"reading": "こんじつ", "romaji": "konjitsu", "common": false, "entry_ids": ["1579110"]}]}
+```
+
+`readings` and `lookup_word` both add `composed_readings` when the tokenizer splits the input into a numeral (kanji, digits, or 何) and one counter, and JMdict identifies both parts. The whole reading comes from the tokenizer’s counter rules. If JMdict lists the whole word, the composed reading must agree with one of its readings. `readings` lists the whole word’s dictionary readings, and `tokenizer_reading` separates its tokens with spaces. These are headless responses for 三杯, 一杯 and 何本.
+
+```json
+{"language":{"code":"ja","name":"Japanese"},"word":"三杯","source":"JMdict","tokenizer_reading":"さん ばい","readings":[],
+ "composed_readings":[{"reading":"さんばい","romaji":"sanbai","rule":"counter","parts":[
+   {"s":"三","reading":"さん","entry_id":"1579350"},{"s":"杯","reading":"ばい","entry_id":"2019640"}]}]}
+```
+
+```json
+{"language":{"code":"ja","name":"Japanese"},"word":"一杯","source":"JMdict","tokenizer_reading":"いっ ぱい",
+ "readings":[{"reading":"いっぱい","romaji":"ippai","common":true,"entry_ids":["1165670"],"pitch":{"accents":[1],"patterns":["atamadaka"]}}],
+ "composed_readings":[{"reading":"いっぱい","romaji":"ippai","rule":"counter","parts":[
+   {"s":"一","reading":"いっ","entry_id":"1160790"},{"s":"杯","reading":"ぱい","entry_id":"2019640"}]}]}
+```
+
+```json
+{"language":{"code":"ja","name":"Japanese"},"word":"何本","source":"JMdict","tokenizer_reading":"なん ぼん","readings":[],
+ "composed_readings":[{"reading":"なんぼん","romaji":"nanbon","rule":"counter","parts":[
+   {"s":"何","reading":"なん","entry_id":"2846738"},{"s":"本","reading":"ぼん","entry_id":"1522150"}]}]}
 ```
 
 ```json

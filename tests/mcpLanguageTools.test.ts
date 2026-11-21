@@ -3,6 +3,7 @@ import {test} from "node:test";
 import {jmdictImport, type JmdictWord} from "../main/dictionary/jmdictDb";
 import {chineseImport} from "../main/dictionary/chineseDictionaryDb";
 import {kanjidicImport} from "../main/dictionary/kanjidicDb";
+import {chineseLearningGloss} from "../main/handler/languages/learningGlosses";
 import {parseJapaneseLevels} from "../main/language/japaneseLevels";
 import {chinesePos, FULL_FORMAT, POS_VALUES, type LanguageToolDeps, type SavedWords} from "../main/mcp/languageTools";
 import {mcpDefinitions, ToolError, validateToolArguments} from "../main/mcp/protocol";
@@ -401,6 +402,65 @@ test("analyze_text with a language and no detail keeps the old word shape", asyn
   assert.deepEqual(batch.results.map((result: any) => result.words[0].text), ["猫", "好き"]);
 });
 
+test("Chinese dictionary pointers use one same-script, reading-matched definition in tools and subtitle hints", async () => {
+  const word = (id: string, content: string, meaning: string[], simplified = content, pinyin = ["yi1 dian3"]) =>
+    ({id, content, simplified, pinyin, meaning});
+  const reference = "一點|一点[yi1 dian3]";
+  const relations = [
+    ["甲", "variant of", "variant"], ["乙", "old variant of", "variant"], ["丙", "also written", "variant"],
+    ["丁", "same as", "same_as"], ["戊", "see also", "see"], ["己", "abbr. for", "abbreviation"]
+  ];
+  const db = await memoryDictionary(chineseImport, {version: "", characters: [], words: [
+    word("981", "一點兒", ["erhua variant of " + reference], "一点儿", ["yi1 dian3 r5"]),
+    word("977", "一點", ["a bit", "a little"], "一点"),
+    word("wrong-tone", "一點", ["other", "longer", "entry"], "一点", ["yi1 dian4"]),
+    word("wrong-script", "一点", ["wrong", "script", "only"], "異"),
+    ...relations.map(([s, prefix]) => word(s, s, [prefix + " " + reference])),
+    word("own", "庚", ["own definition", "see " + reference]),
+    word("mismatch", "辛", ["see 一點|一点[yi1 dian1]"]),
+    word("second-target", "另", ["see 缺", "see 一點|一点[yī diǎn]"]),
+    word("missing", "壬", ["see 缺"]), word("chain", "癸", ["see 甲"]),
+    word("cycle-a", "前", ["see 後"]), word("cycle-b", "後", ["see 前"]),
+    word("self", "自", ["see 自"]), word("opposite", "反", ["see 异"]), word("other-form", "异", ["wrong script"], "别")
+  ]});
+  const canto = await memoryDictionary(chineseImport, {version: "", characters: [], words: [
+    {id: "3536", content: "齙", jyutping: "baau6", meaning: [["see "], ["齙牙"], ["baau6 ngaa4"]]},
+    {id: "3537", content: "齙牙", jyutping: "baau6 ngaa4", meaning: [["buck teeth"]]},
+    {id: "homophone", content: "齙牙", jyutping: "baau6 ngaa5", meaning: [["wrong"], ["reading"], ["here"]]},
+    {id: "mixed", content: "北菇", jyutping: "bak1 gu1", meaning: [["shiitake mushrooms"], ["see "], ["北姑"]]}
+  ]});
+  const {call} = await toolsWith({chineseDictionary: (code) => code === "yue" ? canto : db,
+    analyze: async (lang, text) => chineseTokens(lang === "yue" ? "jyutping" : "pinyin", {[text]: lang === "yue" ? "baau6" : "yi4 dian3 er2"})(text)});
+  for (const [language, surface, target] of [["zh-Hans", "一点儿", "一点"], ["zh-Hant", "一點兒", "一點"]]) {
+    const entry = (await call("lookup_word", {language, word: surface})).entries[0];
+    assert.deepEqual(entry.senses, []);
+    assert.deepEqual(entry.references, ["erhua variant of 一点"]);
+    assert.deepEqual(entry.resolved_from, {word: target, entry_id: "977", senses: ["a bit", "a little"]});
+    const [token] = (await call("analyze_text", {language, text: surface, detail: "full"})).tokens;
+    assert.deepEqual(token.gloss, {source: "CC-CEDICT", entry_id: "981", en: ["a bit", "a little"],
+      via: {word: target, entry_id: "977", relation: "erhua"}});
+    assert.equal(token.reading.pinyin_num, "yi4 dian3 er2");
+    assert.equal(await chineseLearningGloss(db, {target: surface}), "a bit");
+  }
+  for (const [surface, , relation] of relations) {
+    const [token] = (await call("analyze_text", {language: "zh-Hans", text: surface, detail: "full"})).tokens;
+    assert.deepEqual(token.gloss.via, {word: "一点", entry_id: "977", relation});
+  }
+  const [fallback] = (await call("lookup_word", {language: "zh-Hans", word: "另"})).entries;
+  assert.equal(fallback.resolved_from.entry_id, "977");
+  for (const surface of ["庚", "辛", "壬", "癸", "前", "後", "自", "反"]) {
+    const [entry] = (await call("lookup_word", {language: "zh-Hans", word: surface})).entries;
+    assert.equal("resolved_from" in entry, false, surface);
+  }
+  const [cantoEntry] = (await call("lookup_word", {language: "yue", word: "齙"})).entries;
+  assert.deepEqual(cantoEntry.resolved_from, {word: "齙牙", entry_id: "3537", senses: ["buck teeth"]});
+  assert.deepEqual(cantoEntry.senses, ["see", "齙牙", "baau6 ngaa4"]);
+  const [tooth] = (await call("analyze_text", {language: "yue", text: "齙", detail: "full"})).tokens;
+  assert.deepEqual(tooth.gloss.via, {word: "齙牙", entry_id: "3537", relation: "see"});
+  assert.equal(await chineseLearningGloss(canto, {target: "齙"}, "yue"), "buck teeth");
+  assert.equal(await chineseLearningGloss(canto, {target: "北菇"}, "yue"), "shiitake mushrooms");
+});
+
 // ---- The dictionary tools ------------------------------------------------------------------------------
 
 test("lookup_word gives every entry with every sense, POS names, entry ids and levels", async () => {
@@ -468,6 +528,36 @@ test("readings lists every dictionary reading with the tokenizer's", async () =>
   assert.deepEqual(row.tokenizer_reading, {pinyin_num: "xing2", pinyin: "xíng"});
   // Vietnamese is written as it is read: the definition leaves it out.
   await assert.rejects(call("readings", {language: "vi", word: "tôi"}), rejects(400, /language must be one of: ja, zh-Hans, zh-Hant, yue$/));
+});
+
+test("Japanese readings and lookup_word compose only dictionary-backed counter readings", async () => {
+  const db = await memoryDictionary(jmdictImport, {version: "test", dictDate: "", dictRevisions: [], tags: {}, words: [
+    jmWord("number", ["三", "３"], ["さん"], [sense(["num"], ["three"])]),
+    jmWord("cup", ["杯"], ["さかずき"], [sense(["n"], ["sake cup"])]),
+    jmWord("counter", ["杯"], ["はい"], [sense(["ctr"], ["counter for cupfuls"])]),
+    jmWord("cat", ["猫"], ["ねこ"], [sense(["n"], ["cat"])]),
+    jmWord("other", ["三箱"], ["みはこ"], [sense(["n"], ["another word"])]),
+    jmWord("boxes", ["箱"], ["はこ"], [sense(["ctr"], ["boxes"])])
+  ]});
+  const {call} = await toolsWith({jmdict: () => db, analyze: async (_, word) => {
+    if (word === "猫") return japaneseTokens(word);
+    const [number, unit] = Array.from(word);
+    return [{origin: number, pos: "名詞-数", hiragana: "さん"}, {origin: unit, pos: "名詞-接尾-助数詞", hiragana: "ばい",
+      counterReading: {number: "サン", counter: unit === "箱" ? "ハコ" : "バイ", base: unit === "箱" ? "ハコ" : "ハイ"}}];
+  }});
+  for (const tool of ["readings", "lookup_word"]) {
+    for (const word of ["三杯", "3杯"]) {
+      const result = await call(tool, {language: "ja", word});
+      assert.deepEqual(result.composed_readings, [{reading: "さんばい", romaji: "sanbai", rule: "counter", parts: [
+        {s: word[0], reading: "さん", entry_id: "number"}, {s: "杯", reading: "ばい", entry_id: "counter"}
+      ]}]);
+      assert.deepEqual(result.readings ?? result.entries, []);
+    }
+    // Plain noun, missing numeral, missing unit, noun without a counter sense, conflicting whole word.
+    for (const word of ["猫", "六杯", "三匹", "三猫", "三箱"]) {
+      assert.equal("composed_readings" in await call(tool, {language: "ja", word}), false, word);
+    }
+  }
 });
 
 test("text_coverage counts words by saved level and lists the unknown ones with their levels", async () => {
