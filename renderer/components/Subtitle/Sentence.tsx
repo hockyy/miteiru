@@ -2,7 +2,7 @@ import {renderSubtitleHtml} from "../../utils/subtitleHtml";
 import styled from "styled-components";
 import { CJKStyling, defaultLearningColorStyling } from "../../utils/CJKStyling";
 import { getTextShadowFromStroke } from "../../utils/subtitleStroke";
-import React, { ReactNode, useCallback, useEffect, useState } from "react";
+import React, { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { isMixed, toRomaji } from "../../../main/language/wanakana"
 import {mandarinToneColor, type MandarinTone} from "../../utils/mandarinTones";
 import {hskUnderline, type HskLevel} from "../../utils/mandarinHsk";
@@ -193,6 +193,7 @@ export const JapaneseSentence = ({
   getLearningStateClass = () => ''
 }: SentenceParam) => {
   const [separationContent, setSeparationContent] = useState([]);
+  const mixedOrigin = useMemo(() => isMixed(origin), [origin]);
 
   const [learningClassName, setLearningClassName] = useState('');
   useEffect(() => {
@@ -226,7 +227,7 @@ export const JapaneseSentence = ({
         // Plain text only: these render inside an <rt>, and nested <rt>/<rp> is invalid HTML.
         const hiragana = val.hiragana ?? '';
         const romaji = val.romaji != '' ? val.romaji : toRomaji(val.main);
-        const showHelp = val.isKanji || val.isMixed || isMixed(origin);
+        const showHelp = val.isKanji || val.isMixed || mixedOrigin;
         const showRomaji = (val.isKana || showHelp);
         const showFurigana = ((val.isKana && subtitleStyling.showFuriganaOnKana) || showHelp);
         return <ruby className="ruby-under-reading" style={{
@@ -242,7 +243,7 @@ export const JapaneseSentence = ({
         </ruby>
       })
     })
-  }, [separation, subtitleStyling, learningClassName, origin]);
+  }, [separation, subtitleStyling, learningClassName, origin, mixedOrigin]);
 
 
   return <StyledSentence

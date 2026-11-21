@@ -2,21 +2,19 @@ export const HIRAGANA_START = 0x3041;
 export const KATAKANA_START = 0x30a1;
 const HIRAGANA_END = 0x3096;
 const KATAKANA_END = 0x30fc;
-const KANJI_START = 0x4e00;
-const KANJI_END = 0x9faf;
 
-const ROMAJI_RANGES = [
-  [0x0000, 0x007f], // ASCII
-  [0x0100, 0x0101], // Ā ā
-  [0x0112, 0x0113], // Ē ē
-  [0x012a, 0x012b], // Ī ī
-  [0x014c, 0x014d], // Ō ō
-  [0x016a, 0x016b], // Ū ū
-];
-const EN_PUNCTUATION_RANGES = [
-  [0x20, 0x2f], [0x3a, 0x3f], [0x5b, 0x60], [0x7b, 0x7e],
-  [0x2018, 0x2019], [0x201c, 0x201d],
-];
+// These are WanaKana's BMP ranges, including its U+9FAF upper bound for kanji.
+// ー counts as both hiragana and katakana. ASCII punctuation counts as romaji.
+const HIRAGANA = /^[ぁ-ゖー]+$/;
+const KATAKANA = /^[ァ-ー]+$/;
+const KANA = /^[ぁ-ゖァ-ー]+$/;
+const KANJI = /^[\u4e00-\u9faf々]+$/;
+const ROMAJI = /^[\x00-\x7fĀāĒēĪīŌōŪū]+$/;
+const ANY_KANA = /[ぁ-ゖァ-ー]/;
+const ANY_KANJI = /[\u4e00-\u9faf々]/;
+const ANY_KATAKANA = /[ァ-ー]/;
+const ANY_ROMAJI = /[\x00-\x7fĀāĒēĪīŌōŪū]/;
+const STARTS_WITH_ENGLISH_PUNCTUATION = /^[\x20-\x2f\x3a-\x3f\x5b-\x60\x7b-\x7e‘’“”]/;
 
 function isCharInRange(char: string, start: number, end: number): boolean {
   const code = char.charCodeAt(0);
@@ -25,23 +23,14 @@ function isCharInRange(char: string, start: number, end: number): boolean {
 
 export const isCharHiragana = (char: string) => char === "ー" || isCharInRange(char, HIRAGANA_START, HIRAGANA_END);
 export const isCharKatakana = (char: string) => isCharInRange(char, KATAKANA_START, KATAKANA_END);
-const isCharKana = (char: string) => isCharHiragana(char) || isCharKatakana(char);
-const isCharKanji = (char: string) => isCharInRange(char, KANJI_START, KANJI_END) || char === "々";
-const isCharRomaji = (char: string) => ROMAJI_RANGES.some(([start, end]) => isCharInRange(char, start, end));
-export const isCharEnglishPunctuation = (char: string) =>
-  EN_PUNCTUATION_RANGES.some(([start, end]) => isCharInRange(char, start, end));
+export const isCharEnglishPunctuation = (input: string) => STARTS_WITH_ENGLISH_PUNCTUATION.test(input);
+export const containsKana = (input: string) => ANY_KANA.test(input);
+export const containsKanji = (input: string) => ANY_KANJI.test(input);
+export const containsKatakana = (input: string) => ANY_KATAKANA.test(input);
 
-function everyChar(input: string, predicate: (char: string) => boolean): boolean {
-  return typeof input === "string" && input.length > 0 && [...input].every(predicate);
-}
-
-export const isHiragana = (input = "") => everyChar(input, isCharHiragana);
-export const isKatakana = (input = "") => everyChar(input, isCharKatakana);
-export const isKana = (input = "") => everyChar(input, isCharKana);
-export const isKanji = (input = "") => everyChar(input, isCharKanji);
-export const isRomaji = (input: string) => everyChar(input, isCharRomaji);
-
-export function isMixed(input = ""): boolean {
-  const chars = [...input];
-  return chars.some(isCharKana) && chars.some(isCharRomaji);
-}
+export const isHiragana = (input = "") => typeof input === "string" && HIRAGANA.test(input);
+export const isKatakana = (input = "") => typeof input === "string" && KATAKANA.test(input);
+export const isKana = (input = "") => typeof input === "string" && KANA.test(input);
+export const isKanji = (input = "") => typeof input === "string" && KANJI.test(input);
+export const isRomaji = (input: string) => ROMAJI.test(input);
+export const isMixed = (input = "") => input.length > 1 && ANY_ROMAJI.test(input) && containsKana(input);

@@ -6,9 +6,11 @@
  * - Kept the eight functions used by Miteiru and the convertLongVowelMark and passRomaji options.
  * - Removed IME and DOM helpers, custom maps, obsolete kana, uppercase katakana and unused exports.
  * - Cached only the default mapping trees and joined completed chunks without retaining input offsets.
+ * - Used compiled character ranges and the existing Hepburn tree for long vowels.
+ * - Added bounded caches for short readings at Miteiru's furigana and spoken-romaji call sites.
  */
 import {
-  HIRAGANA_START, KATAKANA_START, isCharEnglishPunctuation, isCharHiragana,
+  HIRAGANA_START, KATAKANA_START, containsKatakana, isCharEnglishPunctuation, isCharHiragana,
   isCharKatakana, isMixed, isRomaji,
 } from "./characters";
 import {applyMapping} from "./kanaMapping";
@@ -20,6 +22,7 @@ export {isHiragana, isKana, isKanji, isKatakana, isMixed} from "./characters";
 const LONG_VOWELS: Record<string, string> = {a: "あ", i: "い", u: "う", e: "え", o: "う"};
 
 function katakanaToHiragana(input: string, convertLongVowelMark: boolean, isDestinationRomaji: boolean): string {
+  if (!containsKatakana(input)) return input;
   let previousKana = "";
   let hiragana = "";
   for (let index = 0; index < input.length; index++) {
@@ -27,7 +30,9 @@ function katakanaToHiragana(input: string, convertLongVowelMark: boolean, isDest
     if (char === "・" || (char === "ー" && index === 0) || char === "ヶ" || char === "ヵ") {
       hiragana += char;
     } else if (convertLongVowelMark && previousKana && char === "ー") {
-      const vowel = toRomaji(previousKana).slice(-1);
+      // previousKana is one hiragana code unit, so its whole transliteration is at the root.
+      const romaji = getKanaToHepburnTree().children[previousKana]?.value ?? previousKana;
+      const vowel = romaji.slice(-1);
       // オー becomes おう on its own, but おお on the way to romaji.
       hiragana += isDestinationRomaji && isCharKatakana(input[index - 1]) && vowel === "o"
         ? "お" : LONG_VOWELS[vowel] ?? "";

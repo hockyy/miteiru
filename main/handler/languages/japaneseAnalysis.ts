@@ -1,4 +1,5 @@
 import {toHiragana} from "../../language/wanakana";
+import {cacheTokenReading} from "../../language/wanakana/cacheTokenReading";
 import {splitOkuriganaCompact, type MiteiruJapaneseSeparation} from "../../../renderer/utils/japaneseOkurigana";
 
 export {splitOkuriganaCompact};
@@ -43,14 +44,15 @@ const kuromojiReading = (item: JapaneseToken): string => item.reading ?? item.pr
  * otherwise read 大きい as "oukii" and 先生 as "sensee".
  */
 const spokenKana = (reading: string, pronunciation?: string): string => {
+  if (!pronunciation || pronunciation === reading) return reading;
   const written = Array.from(reading);
-  const spoken = Array.from(pronunciation ?? "");
+  const spoken = Array.from(pronunciation);
   if (spoken.length !== written.length) return reading;
   return written.map((char, index) => (spoken[index] === "ー" ? char : spoken[index])).join("");
 };
 
 // Furigana follows the dictionary reading; ー stays as written (ホーム → ほーむ, not ほうむ).
-const toFuriganaHiragana = (kana: string): string => toHiragana(kana, {convertLongVowelMark: false});
+const toFuriganaHiragana = cacheTokenReading(kana => toHiragana(kana, {convertLongVowelMark: false}));
 
 export const kuromojinToJapaneseWords = (texts: JapaneseToken[]): MiteiruJapaneseWord[] => texts.map((item) => ({
   origin: item.surface_form,

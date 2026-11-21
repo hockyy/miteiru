@@ -103,12 +103,20 @@ test("processKuromojinToSeparations takes furigana from the dictionary reading, 
 test("processKuromojinToSeparations keeps pronunciation-based romaji for particles", () => {
   const tokens = processKuromojinToSeparations([
     kuromojiToken("は", "ハ", "ワ", "助詞"),
+    kuromojiToken("歯", "ハ", "ハ"),
     kuromojiToken("へ", "ヘ", "エ", "助詞"),
     kuromojiToken("こんにちは", "コンニチハ", "コンニチワ", "感動詞"),
   ]);
 
-  assert.deepEqual(tokens.map((token) => token.hiragana), ["は", "へ", "こんにちは"]);
-  assert.deepEqual(tokens.map((token) => token.separation[0].romaji), ["wa", "e", "konnichiwa"]);
+  assert.deepEqual(tokens.map((token) => token.hiragana), ["は", "は", "へ", "こんにちは"]);
+  assert.deepEqual(tokens.map((token) => token.separation[0].romaji), ["wa", "ha", "e", "konnichiwa"]);
+});
+
+test("a mixed-script separation keeps the existing per-character flags", () => {
+  const [token] = processKuromojinToSeparations([kuromojiToken("字Aあ字", "ジ", "ジ")]);
+  assert.deepEqual(token.separation, [{
+    main: "字Aあ字", hiragana: "じ", romaji: "ji", isKana: true, isKanji: true, isMixed: false
+  }]);
 });
 
 test("processKuromojinToSeparations leaves unknown words without a reading", () => {
