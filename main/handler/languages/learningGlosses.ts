@@ -1,4 +1,4 @@
-import {isKana, isKanji, toHiragana, toKatakana} from "wanakana";
+import {isKana, isKanji, toHiragana, toKatakana} from "../../language/wanakana";
 import {kanjiBeginning, readingBeginning, type JmdictWord} from "../../dictionary/jmdictDb";
 import {charAnywhere, charBeginning} from "../../dictionary/chineseDictionaryDb";
 import {getJsonRecords, valuesWithPrefix, type DictionaryDb} from "../../dictionary/levelDictionary";

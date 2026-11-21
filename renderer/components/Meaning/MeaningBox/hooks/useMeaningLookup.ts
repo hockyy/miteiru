@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { isKanji } from 'wanakana';
+import { isKanji } from '../../../../../main/language/wanakana';
 import { videoConstants } from '../../../../utils/constants';
 import { getMeaningEntries } from '../../meaningEntries';
 import {

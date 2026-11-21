@@ -1,4 +1,4 @@
-import {toHiragana} from "wanakana";
+import {toHiragana} from "./wanakana";
 
 /** One ruby segment: `base` as written, `ruby` its reading in hiragana, "" when the base is read as written (kana). */
 export interface RubySegment {

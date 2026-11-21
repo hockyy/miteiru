@@ -15,6 +15,8 @@ Mandarin and Cantonese each have an engine of their own (tokenizer, dictionary a
 
 The Japanese tokenizer's design and evaluation are in [docs/JAPANESE_TOKENIZER.md](docs/JAPANESE_TOKENIZER.md); the Vietnamese one is in [docs/VIETNAMESE_IMPLEMENTATION.md](docs/VIETNAMESE_IMPLEMENTATION.md).
 
+Japanese readings use kana and romaji conversion from an in-house port of the MIT-licensed [WanaKana 5.3.1](https://github.com/WaniKani/WanaKana).
+
 ## Choosing a language
 
 On the Home screen, pick a language and press Watch, Continue, Study or Flashcards. The first time, Miteiru downloads the language's pack (Japanese: `japanese`; Mandarin: `mandarin` and `hanzi`; Cantonese: `cantonese` and `hanzi`; Vietnamese: `vietnamese`; see [docs/DATA_FORMAT.md](docs/DATA_FORMAT.md)). The chosen language is used for:

@@ -77,6 +77,7 @@ export const DATA_SOURCES = [
   {name: "JLPT word lists", use: "Japanese JLPT levels (unofficial)", license: "CC BY-SA 4.0 (the lists themselves: CC BY)", url: "https://github.com/stephenmk/yomitan-jlpt-vocab", credit: "stephenmk; Jonathan Waller"},
   {name: "wordfreq", use: "Japanese word frequencies (freq_rank, freq_zipf; words at Zipf 3 or more)", license: "CC BY-SA 4.0 (data)", url: "https://github.com/rspeer/wordfreq", credit: "Robyn Speer"},
   {name: "IPADIC", use: "Japanese tokenizer dictionary", license: "IPADIC licence", url: "https://github.com/taku910/mecab/tree/master/mecab-ipadic"},
+  {name: "WanaKana", use: "Japanese kana and romaji conversion (in-house port of wanakana 5.3.1)", license: "MIT", url: "https://github.com/WaniKani/WanaKana", credit: "WaniKani Community Github"},
   {name: "CC-CEDICT", use: "Mandarin words, pinyin and glosses", license: "CC BY-SA 4.0", url: "https://www.mdbg.net/chinese/dictionary?page=cedict"},
   {name: "CantoDict", use: "Cantonese words, jyutping and glosses", license: "see its site", url: "https://www.cantonese.sheik.co.uk/"},
   {name: "Make Me a Hanzi", use: "Hanzi stroke order and decomposition", license: "Arphic Public License and LGPL", url: "https://github.com/skishore/makemeahanzi"},

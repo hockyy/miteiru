@@ -3,7 +3,9 @@
  * backend's analyzer (main/handler/languages/japaneseAnalysis.ts) and by the word popup, which reads
  * dictionary headwords with the kana JMdict gives them.
  */
-import {isKana, isKanji, isMixed, toHiragana, toRomaji} from "wanakana";
+import {isKanji, toHiragana, toRomaji} from "../../main/language/wanakana";
+import {cacheTokenReading} from "../../main/language/wanakana/cacheTokenReading";
+import {containsKana, containsKanji} from "../../main/language/wanakana/characters";
 
 export interface MiteiruJapaneseSeparation {
   main: string;
@@ -14,12 +16,7 @@ export interface MiteiruJapaneseSeparation {
   isMixed: boolean;
 }
 
-const anyOneTrue = (word: string, func: (value: string) => boolean) => {
-  for (const ch of word) {
-    if (func(ch)) return true;
-  }
-  return false;
-};
+const tokenRomaji = cacheTokenReading(toRomaji);
 
 const createStoredObject = (
   textMain: string,
@@ -28,10 +25,11 @@ const createStoredObject = (
 ): MiteiruJapaneseSeparation => ({
   main: textMain,
   hiragana: textHiragana,
-  romaji: toRomaji(textSpoken),
-  isKana: anyOneTrue(textMain, isKana),
-  isKanji: anyOneTrue(textMain, isKanji),
-  isMixed: anyOneTrue(textMain, isMixed)
+  romaji: tokenRomaji(textSpoken),
+  isKana: containsKana(textMain),
+  isKanji: containsKanji(textMain),
+  // The stored flag tests each character for mixed scripts. No single character is both kana and romaji.
+  isMixed: false
 });
 
 /**
@@ -46,43 +44,25 @@ export const splitOkuriganaCompact = (text: string, reading?: string, spokenRead
   }
   const spoken = spokenReading?.length === hiragana.length ? spokenReading : hiragana;
 
-  const kanjiPointer = [text.length, -1];
   const stored: MiteiruJapaneseSeparation[] = [];
-
-  for (let i = 0; i < text.length + 1; i++) {
-    kanjiPointer[0] = i;
-    if (i === text.length + 1 || isKanji(text[i])) break;
-  }
-
-  for (let i = text.length - 1; i >= 0; i--) {
-    kanjiPointer[1] = i;
-    if (i === -1 || isKanji(text[i])) break;
-  }
+  let firstKanji = 0;
+  while (firstKanji < text.length && !isKanji(text[firstKanji])) firstKanji++;
+  let lastKanji = text.length - 1;
+  while (lastKanji > firstKanji && !isKanji(text[lastKanji])) lastKanji--;
 
   const pushPart = (main: string, start: number, end: number) => {
     stored.push(createStoredObject(main, hiragana.substring(start, end), spoken.substring(start, end)));
   };
 
-  if (kanjiPointer[0] > 0) {
-    pushPart(text.substring(0, kanjiPointer[0]), 0, kanjiPointer[0]);
+  if (firstKanji > 0) {
+    pushPart(text.substring(0, firstKanji), 0, firstKanji);
   }
 
-  if (kanjiPointer[0] <= kanjiPointer[1]) {
-    const spentBack = text.length - kanjiPointer[1];
-    pushPart(
-      text.substring(kanjiPointer[0], kanjiPointer[1] + 1),
-      kanjiPointer[0],
-      hiragana.length - spentBack + 1
-    );
-  }
-
-  if (kanjiPointer[0] <= kanjiPointer[1] && kanjiPointer[1] + 1 !== text.length) {
-    const spentBack = text.length - kanjiPointer[1];
-    pushPart(
-      text.substring(kanjiPointer[1] + 1, text.length),
-      hiragana.length - spentBack + 1,
-      hiragana.length
-    );
+  if (firstKanji <= lastKanji) {
+    const suffixLength = text.length - (lastKanji + 1);
+    const suffixReadingStart = hiragana.length - suffixLength;
+    pushPart(text.substring(firstKanji, lastKanji + 1), firstKanji, suffixReadingStart);
+    if (suffixLength) pushPart(text.substring(lastKanji + 1), suffixReadingStart, hiragana.length);
   }
 
   return stored;

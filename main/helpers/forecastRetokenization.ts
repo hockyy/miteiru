@@ -1,4 +1,4 @@
-import {toHiragana} from 'wanakana';
+import {toHiragana} from '../language/wanakana';
 import Japanese from '../handler/japanese';
 import {exactJapaneseMatches, findJapaneseEntry, rankJapaneseMatches} from '../handler/languages/learningGlosses';
 import {parseJapaneseVerbs} from '../handler/languages/analyzer';

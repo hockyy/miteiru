@@ -1,5 +1,5 @@
 /** How much of a video's speech is made of words the learner saved (the rate_video tool). */
-import {toKatakana} from "wanakana";
+import {toKatakana} from "../language/wanakana";
 
 /**
  * Whether a reading tells more than the word itself: テレビ read てれび doesn't. Compared in katakana,

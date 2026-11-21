@@ -1,4 +1,4 @@
-import { toRomaji } from 'wanakana'
+import { toRomaji } from '../../../main/language/wanakana'
 import { videoConstants } from "../../utils/constants";
 import { v4 as uuidv4 } from 'uuid';
 import type { SubtitleEntry as Entry } from "../../../main/helpers/subtitleParser";

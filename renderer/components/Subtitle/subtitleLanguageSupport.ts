@@ -1,4 +1,4 @@
-import {isHiragana, isKatakana} from "wanakana";
+import {isHiragana, isKatakana} from "../../../main/language/wanakana";
 import {languageCodes} from "../../languages/manifest";
 import {escapeHtml} from "../../utils/html";
 import type {Line, SubtitleContainer} from "./DataStructures";
@@ -36,7 +36,7 @@ const subtitleLanguageSupportByLang: Record<string, SubtitleLanguageSupport> = {
       const target = token.basicForm;
       if (!target || target === "*") return null;
       // Short kana words are particles and auxiliaries: no gloss.
-      if ((isHiragana(target) || isKatakana(target)) && target.length <= 3) return null;
+      if (target.length <= 3 && (isHiragana(target) || isKatakana(target))) return null;
       // The part of speech picks the entry and sense that fit the line's use of the word.
       return {target, reading: token.hiragana ?? "", ...(typeof token.pos === "string" && token.pos ? {pos: token.pos} : {})};
     }

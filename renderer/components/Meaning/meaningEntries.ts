@@ -1,6 +1,6 @@
 import {videoConstants} from "../../utils/constants";
 import {escapeHtml} from "../../utils/html";
-import {isKana, toHiragana} from "wanakana";
+import {isKana, toHiragana} from "../../../main/language/wanakana";
 import {splitOkuriganaCompact} from "../../utils/japaneseOkurigana";
 
 const normalizeStringArray = (value) => {

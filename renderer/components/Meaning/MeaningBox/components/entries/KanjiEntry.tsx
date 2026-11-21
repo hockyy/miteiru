@@ -1,5 +1,5 @@
 import React from 'react';
-import { toHiragana } from 'wanakana';
+import { toHiragana } from '../../../../../../main/language/wanakana';
 import KanjiVGDisplay from '../../../KanjiVGDisplay';
 import { ExternalLink } from '../shared/ExternalLink';
 import { EntryFieldList } from './EntryPrimitives';
