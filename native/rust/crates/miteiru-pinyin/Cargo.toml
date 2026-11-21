@@ -1,0 +1,12 @@
+[package]
+name = "miteiru-pinyin"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+license = "MIT"
+description = "Mandarin readings and tone conversions from pinyin-pro 3.29.3"
+
+[dependencies]
+miteiru-opencc = { path = "../miteiru-opencc" }
+serde = { version = "1", features = ["derive"] }
+zstd = "0.13"

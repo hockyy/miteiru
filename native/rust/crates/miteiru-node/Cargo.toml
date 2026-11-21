@@ -10,6 +10,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 miteiru-jyutping = { path = "../miteiru-jyutping" }
+miteiru-pinyin = { path = "../miteiru-pinyin" }
 miteiru-langdata = { path = "../miteiru-langdata" }
 napi = { version = "3", default-features = false, features = ["napi6"] }
 napi-derive = "3"

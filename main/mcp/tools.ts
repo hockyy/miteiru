@@ -82,7 +82,7 @@ export const DATA_SOURCES = [
   {name: "CantoDict", use: "Cantonese words, jyutping and glosses", license: "see its site", url: "https://www.cantonese.sheik.co.uk/"},
   {name: "Make Me a Hanzi", use: "Hanzi stroke order and decomposition", license: "Arphic Public License and LGPL", url: "https://github.com/skishore/makemeahanzi"},
   {name: "complete-hsk-vocabulary", use: "Mandarin HSK 3.0 levels", license: "MIT", url: "https://github.com/drkameleon/complete-hsk-vocabulary"},
-  {name: "pinyin-pro", use: "Mandarin pinyin", license: "MIT", url: "https://github.com/zh-lx/pinyin-pro"},
+  {name: "pinyin-pro", use: "Mandarin pinyin (in-house Rust port of pinyin-pro 3.29.3)", license: "MIT", url: "https://github.com/zh-lx/pinyin-pro"},
   {name: "OpenCC (in-house Rust port of opencc-js 1.4.1)", use: "Simplified, traditional, Hong Kong and Taiwan subtitle forms", license: "MIT and Apache-2.0", url: "https://github.com/nk2028/opencc-js"},
   {name: "to-jyutping", use: "Cantonese jyutping (in-house Rust port of to-jyutping 3.1.1)", license: "BSD-2-Clause", url: "https://github.com/CanCLID/to-jyutping"},
   {name: "VNEDict", use: "Vietnamese glosses", license: "see its site", url: "https://www.denisowski.org/Vietnamese/Vietnamese.html"}

@@ -2493,6 +2493,7 @@ dependencies = [
  "miteiru-jyutping",
  "miteiru-langdata",
  "miteiru-mpv",
+ "miteiru-pinyin",
  "miteiru-tokenizer",
  "raw-window-handle",
  "rusqlite",
@@ -2547,6 +2548,15 @@ dependencies = [
 name = "miteiru-opencc"
 version = "1.4.1"
 dependencies = [
+ "zstd",
+]
+
+[[package]]
+name = "miteiru-pinyin"
+version = "0.0.0"
+dependencies = [
+ "miteiru-opencc",
+ "serde",
  "zstd",
 ]
 

@@ -91,6 +91,8 @@ pub fn run() {
       jieba::jieba_cut,
       sys::opencc::opencc_convert_batch,
       sys::reading::jyutping_batch,
+      sys::reading::pinyin_batch,
+      sys::reading::convert_pinyin_batch,
       jieba::jieba_user_words,
       sys::japanese::japanese_load,
       sys::japanese::japanese_set_words,

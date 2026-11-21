@@ -2,8 +2,7 @@ import {hanzi, setupChineseDictionary} from "../dictionary/chineseDictionaryDb";
 import {chineseLearningGloss, glossAll, queryChineseDictionary} from "./languages/learningGlosses";
 import {ipcMain} from "../../renderer/platform/backend/shims/desktop";
 import path from "path";
-import {pinyin} from "pinyin-pro";
-import {convertOpencc} from "#miteiru/opencc";
+import {convertPinyinBatch, fullPinyinBatch, numberedPinyinBatch} from "../language/pinyin";
 import {jyutpingBatch} from "../language/jyutping";
 import {Jieba} from "../../renderer/platform/backend/shims/jieba";
 import {formatJyutpingReading, formatPinyinReading} from "./pinyinTones";
@@ -86,24 +85,29 @@ export class ChineseEngine {
     const entries = await this.updateUserWords();
     const tokens: string[] = await this.jieba.cut(sentence);
     const inContext = await sentencePinyin(sentence);
+    const chars = tokens.flatMap(word => Array.from(word));
+    const missing = [...new Set(chars.filter((char, i) => inContext[i]?.origin !== char))];
+    const fallbackRows = missing.length ? await numberedPinyinBatch(missing) : [];
+    const fallback = new Map(missing.map((char, i) => [char, fallbackRows[i][0] ?? ""]));
+    const numbers = chars.map((char, i) => inContext[i]?.origin === char ? inContext[i].pinyin : fallback.get(char) ?? "");
+    const formatted = toneType === "symbol"
+      ? (await convertPinyinBatch(numbers, "numToSymbol")).map(reading => reading.replace(/[05]$/, ""))
+      : numbers.map(reading => formatPinyinReading(reading, toneType));
     let offset = 0;
 
     return tokens.map(word => {
       const characters = Array.from(word);
-      const readings = characters.map((character, index) => {
-        const read = inContext[offset + index];
-        return read && read.origin === character ? read.pinyin : pinyin(character, {toneType: 'num', type: 'all'})[0]?.pinyin ?? '';
-      });
+      const readings = formatted.slice(offset, offset + characters.length);
       offset += characters.length;
       const custom = entries.get(word);
       if (custom) return userDictionaryToken(custom, toneType);
 
       return {
         origin: word,
-        pinyin: readings.map(reading => formatPinyinReading(reading, toneType)).join(' '),
+        pinyin: readings.join(' '),
         separation: characters.map((character, index) => ({
           main: character,
-          pinyin: formatPinyinReading(readings[index], toneType)
+          pinyin: readings[index]
         }))
       };
     });
@@ -161,16 +165,8 @@ export class ChineseEngine {
  * traditional line is read through its simplified copy when that copy has the same characters count;
  * every item keeps the line's own character as its origin.
  */
-export const sentencePinyin = async (text: string): Promise<Array<{origin: string; pinyin: string}>> => {
-  if (!text) return [];
-  const characters = Array.from(text);
-  const [simplified] = await convertOpencc('t2s', [text]);
-  const source = simplified !== text && Array.from(simplified).length === characters.length ? simplified : text;
-  const read = pinyin(source, {toneType: 'num', type: 'all'}) as Array<{origin: string; pinyin: string}>;
-  // One item per character is what the word offsets need; anything else falls back to word by word.
-  if (read.length !== characters.length) return [];
-  return source === text ? read : read.map((item, index) => ({origin: characters[index], pinyin: item.pinyin}));
-};
+export const sentencePinyin = async (text: string): Promise<Array<{origin: string; pinyin: string}>> =>
+  text ? (await fullPinyinBatch([text], true))[0] : [];
 
 export const mandarinEngine = new ChineseEngine("zh-CN");
 export const cantoneseEngine = new ChineseEngine("yue");

@@ -13,7 +13,7 @@ import {rankJapaneseEntries, rankSenses, senseFitsPos, senseLine, type SenseCont
 import {isToolLanguage, toolLanguageInfo, type StoredLanguageCode, type ToolLanguage, type ToolLanguageInfo} from "../language/languages";
 import {mandarinSpokenTones} from "../language/mandarinTones";
 import {classifyAccent, lookupPitchAccent, splitIntoMorae, type PitchAccentMap} from "../language/pitchAccent";
-import {comparableJyutping, comparablePinyin, numberedTone, pinyinMarked, pinyinNumbered, pinyinToNumbers, stripVietnamese, vietnameseTone} from "../language/readings";
+import {comparableJyutping, comparablePinyin, numberedTone, pinyinMarked, pinyinNumbered, pinyinToNumbersBatch, stripVietnamese, vietnameseTone} from "../language/readings";
 import {alignTokens, type Piece} from "../language/tokenAlign";
 import {ToolError} from "./protocol";
 import {isCountedWord, wordKey} from "./videoCoverage";
@@ -752,7 +752,7 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
     const hsk = cantonese ? undefined : lookupHsk(await deps.hskWords(), char);
     const strings = (value: unknown) => (Array.isArray(value) ? value : value ? [value] : []).filter((item): item is string => typeof item === "string" && item !== "");
     // The character lists write pinyin with tone marks; the tools give both forms, as everywhere else.
-    const pinyinNumbers = [...new Set(rawEntries.flatMap((entry) => strings(entry.pinyin)).map(pinyinToNumbers).filter(Boolean))];
+    const pinyinNumbers = [...new Set((await pinyinToNumbersBatch(rawEntries.flatMap((entry) => strings(entry.pinyin)))).filter(Boolean))];
     const jyutping = [...new Set(rawEntries.flatMap((entry) => strings(entry.jyutping)).map(comparableJyutping).filter(Boolean))];
     return {
       ...head,

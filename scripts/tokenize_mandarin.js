@@ -7,27 +7,11 @@
 const fs = require("fs");
 const path = require("path");
 const { defaultAddonPath, loadAddon } = require("../main/headless/nativeAddon.ts");
-const { pinyin } = require("pinyin-pro");
 
 const dictPath = path.join(
   __dirname,
   "../renderer/public/language-assets/mandarin/chinese/zh.jieba.txt"
 );
-
-function tokenize(sentence, addon) {
-  if (!sentence) return [];
-  return addon.jiebaCut(dictPath, sentence, true).map((word) => {
-    const pinyinInfo = pinyin(word, { toneType: "num", type: "all" });
-    return {
-      origin: word,
-      pinyin: pinyinInfo.map((info) => info.pinyin).join(" "),
-      separation: pinyinInfo.map((info) => ({
-        main: info.origin,
-        pinyin: info.pinyin,
-      })),
-    };
-  });
-}
 
 async function main() {
   const inputPath = process.argv[2];
@@ -42,9 +26,19 @@ async function main() {
   }
   const addon = loadAddon(defaultAddonPath(path.resolve(__dirname, "..")));
   await addon.jiebaLoad(dictPath, dictPath);
-  const results = texts.map((text) => ({
+  // The standalone tokenizer reads each word in isolation. One batch preserves those boundaries.
+  const words = texts.map(text => String(text) ? addon.jiebaCut(dictPath, String(text), true) : []);
+  const readings = JSON.parse(addon.pinyinBatch(words.flat(), false));
+  let offset = 0;
+  const results = texts.map((text, i) => ({
     text,
-    tokens: tokenize(String(text), addon),
+    tokens: words[i].map(origin => {
+      const row = readings[offset++];
+      return {
+        origin, pinyin: row.map(item => item.pinyin).join(" "),
+        separation: row.map(({origin: main, pinyin}) => ({main, pinyin})),
+      };
+    }),
   }));
   fs.writeFileSync(outputPath, JSON.stringify(results, null, 2), "utf8");
 }
