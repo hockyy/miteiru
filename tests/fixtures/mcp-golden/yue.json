@@ -99,7 +99,7 @@
       "start": 4,
       "end": 5,
       "word": true,
-      "pos": "suffix",
+      "pos": "word",
       "tag": "k",
       "base": "去",
       "reading": {
@@ -141,7 +141,7 @@
       "start": 5,
       "end": 6,
       "word": true,
-      "pos": "suffix",
+      "pos": "word",
       "tag": "k",
       "base": "咗",
       "reading": {
