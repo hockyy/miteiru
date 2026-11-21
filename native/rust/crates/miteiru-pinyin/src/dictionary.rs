@@ -28,6 +28,19 @@ static SOURCE: LazyLock<String> = LazyLock::new(|| {
 pub(crate) static DICTIONARY: LazyLock<Dictionary> = LazyLock::new(|| Dictionary::build(&SOURCE));
 
 impl Dictionary {
+    pub fn syllables(&self) -> impl Iterator<Item = &'static str> + '_ {
+        self.characters
+            .values()
+            .copied()
+            .chain(
+                self.nodes
+                    .iter()
+                    .filter_map(|node| node.pattern.map(|p| p.pinyin)),
+            )
+            .flat_map(|readings| readings.split(' '))
+            .chain(["", "yi", "bu", "yí", "yì", "bú", "liǎo", "tóng"])
+    }
+
     fn build(data: &'static str) -> Self {
         let mut nodes = vec![Node::default()];
         let mut characters = HashMap::new();

@@ -27,9 +27,10 @@ export async function fullPinyinBatch(texts: string[], simplify = false): Promis
   return rows;
 }
 
-/** The projection Miteiru needs for each original Unicode character. */
-export async function numberedPinyinBatch(texts: string[]): Promise<string[][]> {
-  return (await fullPinyinBatch(texts)).map(row => row.map(item => item.pinyin));
+/** One native call for all lines. For subtitles, align each line's t2s copy inside that call. */
+export async function pinyinReadingsBatch(texts: string[], toneType: "symbol" | "num" = "num", simplify = false): Promise<string[][]> {
+  const rows: string[] = await sys("pinyin_readings_batch", {texts: texts.map(nativeReadingText), symbols: toneType === "symbol", simplify});
+  return rows.map((row, i) => texts[i] ? row.split(" ") : []);
 }
 
 export async function convertPinyinBatch(texts: string[], format: "numToSymbol" | "symbolToNum"): Promise<string[]> {

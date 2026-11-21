@@ -42,6 +42,7 @@ const COMMANDS: &[&str] = &[
     "opencc_convert_batch",
     "jyutping_batch",
     "pinyin_batch",
+    "pinyin_readings_batch",
     "convert_pinyin_batch",
     "jieba_user_words",
     "japanese_load",

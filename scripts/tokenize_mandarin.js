@@ -28,15 +28,15 @@ async function main() {
   await addon.jiebaLoad(dictPath, dictPath);
   // The standalone tokenizer reads each word in isolation. One batch preserves those boundaries.
   const words = texts.map(text => String(text) ? addon.jiebaCut(dictPath, String(text), true) : []);
-  const readings = JSON.parse(addon.pinyinBatch(words.flat(), false));
+  const readings = addon.pinyinReadingsBatch(words.flat(), false, false);
   let offset = 0;
   const results = texts.map((text, i) => ({
     text,
     tokens: words[i].map(origin => {
-      const row = readings[offset++];
+      const row = readings[offset++].split(" ");
       return {
-        origin, pinyin: row.map(item => item.pinyin).join(" "),
-        separation: row.map(({origin: main, pinyin}) => ({main, pinyin})),
+        origin, pinyin: row.join(" "),
+        separation: Array.from(origin, (main, j) => ({main, pinyin: row[j]})),
       };
     }),
   }));

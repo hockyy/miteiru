@@ -20,7 +20,7 @@ use napi_derive::napi;
 
 /// Bumped when a function's name or shape changes, so the JS side can refuse a stale build.
 #[napi]
-pub const ADDON_API: u32 = 4;
+pub const ADDON_API: u32 = 5;
 
 static JAPANESE: LazyLock<JapaneseStore> = LazyLock::new(JapaneseStore::default);
 static CHINESE: LazyLock<JiebaStore> = LazyLock::new(JiebaStore::default);
@@ -115,6 +115,11 @@ pub fn jyutping_batch(texts: Vec<String>) -> String {
 pub fn pinyin_batch(texts: Vec<String>, simplify: bool) -> napi::Result<String> {
   let lines: Vec<_> = texts.iter().map(|text| miteiru_pinyin::line(text, simplify)).collect();
   serde_json::to_string(&lines).map_err(|error| failure(error.to_string()))
+}
+
+#[napi]
+pub fn pinyin_readings_batch(texts: Vec<String>, symbols: bool, simplify: bool) -> Vec<String> {
+  texts.iter().map(|text| miteiru_pinyin::readings(text, symbols, simplify)).collect()
 }
 
 #[napi]

@@ -45,6 +45,7 @@ permissions = [
   "allow-opencc-convert-batch",
   "allow-jyutping-batch",
   "allow-pinyin-batch",
+  "allow-pinyin-readings-batch",
   "allow-convert-pinyin-batch",
   "allow-jieba-user-words",
   "allow-japanese-load",

@@ -2,7 +2,7 @@ import {hanzi, setupChineseDictionary} from "../dictionary/chineseDictionaryDb";
 import {chineseLearningGloss, glossAll, queryChineseDictionary} from "./languages/learningGlosses";
 import {ipcMain} from "../../renderer/platform/backend/shims/desktop";
 import path from "path";
-import {convertPinyinBatch, fullPinyinBatch, numberedPinyinBatch} from "../language/pinyin";
+import {fullPinyinBatch, pinyinReadingsBatch} from "../language/pinyin";
 import {jyutpingBatch} from "../language/jyutping";
 import {Jieba} from "../../renderer/platform/backend/shims/jieba";
 import {formatJyutpingReading, formatPinyinReading} from "./pinyinTones";
@@ -83,16 +83,18 @@ export class ChineseEngine {
    */
   async tokenizeUsingJieba(sentence: string, toneType: string) {
     const entries = await this.updateUserWords();
-    const tokens: string[] = await this.jieba.cut(sentence);
-    const inContext = await sentencePinyin(sentence);
+    const format = toneType === "symbol" ? "symbol" : "num";
+    const [tokens, inContext]: [string[], Array<{origin: string; pinyin: string}>] = await Promise.all([
+      this.jieba.cut(sentence), sentencePinyin(sentence, format),
+    ]);
     const chars = tokens.flatMap(word => Array.from(word));
     const missing = [...new Set(chars.filter((char, i) => inContext[i]?.origin !== char))];
-    const fallbackRows = missing.length ? await numberedPinyinBatch(missing) : [];
+    const fallbackRows = missing.length ? await pinyinReadingsBatch(missing, format) : [];
     const fallback = new Map(missing.map((char, i) => [char, fallbackRows[i][0] ?? ""]));
-    const numbers = chars.map((char, i) => inContext[i]?.origin === char ? inContext[i].pinyin : fallback.get(char) ?? "");
-    const formatted = toneType === "symbol"
-      ? (await convertPinyinBatch(numbers, "numToSymbol")).map(reading => reading.replace(/[05]$/, ""))
-      : numbers.map(reading => formatPinyinReading(reading, toneType));
+    const formatted = chars.map((char, i) => {
+      const reading = inContext[i]?.origin === char ? inContext[i].pinyin : fallback.get(char) ?? "";
+      return format === "symbol" ? reading.replace(/[05]$/, "") : formatPinyinReading(reading, toneType);
+    });
     let offset = 0;
 
     return tokens.map(word => {
@@ -165,8 +167,12 @@ export class ChineseEngine {
  * traditional line is read through its simplified copy when that copy has the same characters count;
  * every item keeps the line's own character as its origin.
  */
-export const sentencePinyin = async (text: string): Promise<Array<{origin: string; pinyin: string}>> =>
-  text ? (await fullPinyinBatch([text], true))[0] : [];
+export const sentencePinyin = async (text: string, toneType?: "symbol" | "num"): Promise<Array<{origin: string; pinyin: string}>> => {
+  if (!text) return [];
+  if (!toneType) return (await fullPinyinBatch([text], true))[0];
+  const [readings] = await pinyinReadingsBatch([text], toneType, true);
+  return Array.from(text, (origin, index) => ({origin, pinyin: readings[index]}));
+};
 
 export const mandarinEngine = new ChineseEngine("zh-CN");
 export const cantoneseEngine = new ChineseEngine("yue");

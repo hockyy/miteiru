@@ -3,6 +3,7 @@
 //! - Embed the complete dict1–dict5 and number-rule data with zstd and index it on first use.
 //! - Retain the normal-mode maximum-probability matcher, tone sandhi and numeric type-all output.
 //! - Read subtitle lines through a character-aligned OpenCC t2s copy inside the native call.
+//! - Cache both display forms of each syllable and return compact per-line readings for subtitles.
 //! - Expose batches of lines and both string tone conversions. Omit unused modes and mutable dictionaries.
 
 mod dictionary;
@@ -12,6 +13,8 @@ pub use tones::convert;
 use dictionary::{Dictionary, DICTIONARY};
 use serde::Serialize;
 use std::borrow::Cow;
+use std::collections::HashMap;
+use std::sync::LazyLock;
 
 fn single(
     dict: &Dictionary,
@@ -238,6 +241,38 @@ pub fn line(text: &str, simplify: bool) -> Line {
             Line::Original(items)
         }
     }
+}
+
+// A subtitle needs one displayed syllable per character. Convert each dictionary syllable once.
+static FORMS: LazyLock<HashMap<&'static str, (String, String)>> = LazyLock::new(|| {
+    let mut forms = HashMap::new();
+    for syllable in DICTIONARY.syllables() {
+        forms.entry(syllable).or_insert_with(|| {
+            let numbered = tones::numbered(syllable);
+            let marked = tones::convert(&numbered, true);
+            (numbered, marked)
+        });
+    }
+    forms
+});
+
+/// Space-separated fields preserve empty readings. The JS caller already has the original characters.
+pub fn readings(text: &str, symbols: bool, simplify: bool) -> String {
+    let source = reading_source(text, simplify);
+    let forms = &*FORMS;
+    let mut output = String::with_capacity(text.len());
+    let mut first = true;
+    visit(&source, |_, syllable| {
+        if !first {
+            output.push(' ');
+        }
+        first = false;
+        if let Some(syllable) = syllable {
+            let (numbered, marked) = &forms[syllable];
+            output.push_str(if symbols { marked } else { numbered });
+        }
+    });
+    output
 }
 
 #[cfg(test)]

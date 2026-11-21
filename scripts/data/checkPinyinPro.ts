@@ -6,7 +6,7 @@ import fs from "node:fs";
 import {createRequire} from "node:module";
 import path from "node:path";
 import {sentencePinyin} from "../../main/handler/chinese";
-import {convertPinyinBatch, fullPinyinBatch, numberedPinyinBatch, type PinyinItem} from "../../main/language/pinyin";
+import {convertPinyinBatch, fullPinyinBatch, pinyinReadingsBatch, type PinyinItem} from "../../main/language/pinyin";
 import {toPinyinToneMarks} from "../../main/handler/pinyinTones";
 import {chineseReadingCorpus} from "./chineseReadingCorpus";
 
@@ -32,11 +32,13 @@ let conversionChecks = 0;
 
 async function checkPinyin(texts: string[]) {
   const full = await fullPinyinBatch(texts);
-  const numbers = await numberedPinyinBatch(texts);
+  const numbers = await pinyinReadingsBatch(texts);
+  const marks = await pinyinReadingsBatch(texts, "symbol");
   return texts.map((text, i) => {
     const expected = reference.pinyin(text, options);
     assert.deepEqual(full[i], expected, text);
     assert.deepEqual(numbers[i], expected.map(item => item.pinyin), text);
+    assert.deepEqual(marks[i], expected.map(item => reference.convert(item.pinyin, {format: "numToSymbol"})), text);
     pinyinChecks++;
     return expected;
   });
@@ -83,6 +85,11 @@ async function check() {
       ? (await checkPinyin([simplified]))[0].map((item, i) => ({origin: chars[i], pinyin: item.pinyin}))
       : raw;
     assert.deepEqual(await sentencePinyin(text), sentence, text);
+    for (const mode of ["num", "symbol"] as const) {
+      const expected = sentence.map(({origin, pinyin}) => ({origin,
+        pinyin: mode === "num" ? pinyin : reference.convert(pinyin, {format: "numToSymbol"})}));
+      assert.deepEqual(await sentencePinyin(text, mode), expected, text);
+    }
     const keep = index % 41 === 0 || index >= corpus.length || chars.length > 1024;
     if (keep) {
       cases.push({text, items: raw.map(itemId), ...(useCopy ? {simplifiedReadings: sentence.map(item => item.pinyin)} : {})});

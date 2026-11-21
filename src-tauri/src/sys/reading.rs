@@ -15,3 +15,9 @@ pub async fn convert_pinyin_batch(texts: Vec<String>, to_symbols: bool) -> Resul
   tauri::async_runtime::spawn_blocking(move || texts.iter().map(|text| miteiru_pinyin::convert(text, to_symbols)).collect())
     .await.map_err(|error| error.to_string())
 }
+
+#[tauri::command]
+pub async fn pinyin_readings_batch(texts: Vec<String>, symbols: bool, simplify: bool) -> Result<Vec<String>, String> {
+  tauri::async_runtime::spawn_blocking(move || texts.iter().map(|text| miteiru_pinyin::readings(text, symbols, simplify)).collect())
+    .await.map_err(|error| error.to_string())
+}
