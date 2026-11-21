@@ -3,6 +3,7 @@ import * as fsPromises from "node:fs/promises";
 import path from "node:path";
 import {decodeText} from "../../helpers/textEncoding";
 import {parseSubtitleCues} from "../../helpers/subtitleParser";
+import {convertOpencc} from "#miteiru/opencc";
 import {MediaAnalyzer} from "../../helpers/mediaAnalyzer";
 import {
   FileIdentityCache,
@@ -229,6 +230,7 @@ const entriesToSrt = (entries: SubtitleEntry[]) => {
 };
 
 export function registerMediaHandlers() {
+  ipcMain.handle("subtitle:convert-chinese", (_event, mode: 's2tw' | 'tw2s', lines: string[]) => convertOpencc(mode, lines));
   const preprocessCache = new FileIdentityCache<string>();
   const parseCache = new FileIdentityCache<unknown>();
 

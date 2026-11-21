@@ -5,6 +5,12 @@
   "version": "8.3.0",
   "author": "Hocky Yudhiono <hocky.yudhiono@gmail.com>",
   "homepage": "https://miteiru.hocky.id",
+  "imports": {
+    "#miteiru/opencc": {
+      "node": "./main/headless/opencc.ts",
+      "default": "./renderer/platform/backend/shims/opencc.ts"
+    }
+  },
   "engines": {
     "node": ">=22.15.0"
   },
@@ -19,6 +25,7 @@
     "script:wanikani": "node scripts/scrapeWanikaniKanji.js",
     "script:build-pitch-accent": "node scripts/buildPitchAccentData.js",
     "script:clean-next": "node scripts/cleanRendererNext.js",
+    "pretest": "cargo build --release --manifest-path native/rust/Cargo.toml -p miteiru-node",
     "test": "tsx --test \"tests/**/*.test.ts\"",
     "measure:ai": "tsx scripts/measureAiSpeed.ts",
     "mcp": "node scripts/miteiru-mcp.mjs",
@@ -80,7 +87,6 @@
     "level": "^10.0.0",
     "lucide-react": "^1.11.0",
     "next": "^16.2.1",
-    "opencc-js": "^1.0.5",
     "pathe": "^2.0.3",
     "postcss": "^8.5.8",
     "react": "^19.2.4",

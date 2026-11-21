@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {convertOpencc} from '../main/headless/opencc';
 import {
   cleanHearingImpaired,
   convertSubtitlesToEntries,
@@ -21,6 +22,10 @@ const SRT_ENTRIES = {
 const mockParseSubtitle = (impl: (filename: string) => Promise<unknown>) => {
   (globalThis as Record<string, unknown>).window = {
     miteiru: {parseSubtitle: impl},
+    backend: {invoke: (cmd, mode, lines) => {
+      assert.equal(cmd, 'subtitle:convert-chinese');
+      return convertOpencc(mode, lines);
+    }},
   };
 };
 
@@ -28,6 +33,25 @@ test('SubtitleContainer.create returns undefined for empty filename', async () =
   mockParseSubtitle(async () => SRT_ENTRIES);
   const result = await SubtitleContainer.create('', 'ja', true);
   assert.equal(result, undefined);
+});
+
+test('Mandarin file loading converts merged cues together, after removing subtitle tags', async () => {
+  mockParseSubtitle(async () => ({type: 'srt', content: {entries: [
+    {id: '1', from: 0, to: 1000, text: '台{\\i1}湾语言'},
+    {id: '2', from: 0, to: 1000, text: '手表'},
+    {id: '3', from: 2000, to: 3000, text: '里面'},
+  ]}}));
+  let calls = 0;
+  window.backend.invoke = async (cmd, mode, texts) => {
+    calls++;
+    assert.equal(cmd, 'subtitle:convert-chinese');
+    assert.equal(mode, 's2tw');
+    assert.deepEqual(texts, ['台湾语言\n手表', '里面']);
+    return convertOpencc(mode, texts);
+  };
+  const container = await SubtitleContainer.create('show.srt', 'zh-CN', false);
+  assert.deepEqual(container.lines.map(line => line.text), ['臺灣語言\n手錶', '裡面']);
+  assert.equal(calls, 1);
 });
 
 test('SubtitleContainer.create loads SRT-type subtitles successfully', async () => {
@@ -161,9 +185,9 @@ test('SubtitleContainer.create converts to traditional Chinese when requested', 
   assert.equal(container.lines[0].content, '臺灣語言');
 });
 
-test('createFromArrayEntries clamps overlapping lines monotonically', () => {
+test('createFromArrayEntries clamps overlapping lines monotonically', async () => {
   const container = new SubtitleContainer();
-  SubtitleContainer.createFromArrayEntries(
+  await SubtitleContainer.createFromArrayEntries(
     container,
     [
       {id: '1', from: 1000, to: 3000, text: 'a'},
@@ -179,9 +203,9 @@ test('createFromArrayEntries clamps overlapping lines monotonically', () => {
   assert.ok(container.lines[0].timeStart < container.lines[1].timeStart);
 });
 
-test('findLineIndexAt returns the active line or -1 in gaps', () => {
+test('findLineIndexAt returns the active line or -1 in gaps', async () => {
   const container = new SubtitleContainer();
-  SubtitleContainer.createFromArrayEntries(
+  await SubtitleContainer.createFromArrayEntries(
     container,
     [
       {id: '1', from: 1000, to: 2000, text: 'first'},

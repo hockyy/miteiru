@@ -66,7 +66,7 @@ test("Traditional Mandarin is read through its simplified copy: 我們 is wǒ me
     assert.deepEqual(numbers.map((token) => token.origin), ["我們", "今天", "說", "什麼", "？"]);
     assert.deepEqual(numbers.map((token) => token.pinyin), ["wo3 men5", "jin1 tian1", "shuo1", "shen2 me5", ""]);
     assert.deepEqual(numbers[0].separation.map((part) => part.main), ["我", "們"]);
-    assert.deepEqual(sentencePinyin("頭髮很長").map((read) => `${read.origin}${read.pinyin}`), ["頭tou2", "髮fa0", "很hen3", "長chang2"]);
+    assert.deepEqual((await sentencePinyin("頭髮很長")).map((read) => `${read.origin}${read.pinyin}`), ["頭tou2", "髮fa0", "很hen3", "長chang2"]);
   } finally {
     mandarinEngine.jieba = saved;
   }

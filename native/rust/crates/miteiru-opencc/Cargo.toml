@@ -1,0 +1,10 @@
+[package]
+name = "miteiru-opencc"
+version = "1.4.1"
+edition.workspace = true
+publish.workspace = true
+license = "MIT AND Apache-2.0"
+description = "OpenCC subtitle conversions for Miteiru"
+
+[dependencies]
+zstd = "0.13"

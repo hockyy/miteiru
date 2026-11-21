@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import {spawnSync} from "node:child_process";
 import ts from "typescript";
-import * as OpenCC from "opencc-js";
+import {convertOpencc} from "../main/headless/opencc";
 
 type Line = {id: string; text: string; source?: string};
 type Prediction = {id: string; tokens: string[]};
@@ -15,7 +15,7 @@ const fixtureLines = () => {
   const result: {text: string; source: string}[] = [];
   const visit = (directory: string) => {
     for (const entry of fs.readdirSync(directory, {withFileTypes: true})) {
-      if (["tokenizer-eval", "chinese-tokenizer"].includes(entry.name)) continue;
+      if (["tokenizer-eval", "chinese-tokenizer", "in-house"].includes(entry.name)) continue;
       const file = path.join(directory, entry.name);
       if (entry.isDirectory()) { visit(file); continue; }
       const source = path.relative(root, file).split(path.sep).join("/");
@@ -42,13 +42,13 @@ const fixtureLines = () => {
 
 export function prepareChineseCorpus(output: string) {
   fs.mkdirSync(output, {recursive: true});
-  const traditional = OpenCC.Converter({from: "cn", to: "t"});
   const fixtures = fixtureLines();
   for (const language of ["zh-Hans", "zh-Hant", "yue"]) {
     const seeds = fs.readFileSync(path.join(root, "tests/fixtures/chinese-tokenizer", language === "yue" ? "cantonese.txt" : "mandarin.txt"), "utf8").trim().split(/\r?\n/);
     if (seeds.length < 500 || new Set(seeds).size !== seeds.length) throw new Error("At least 500 distinct authored sentences are required");
-    const lines: Line[] = seeds.map((text, index) => ({
-      id: `${language}-authored-${index + 1}-1`, text: language === "zh-Hant" ? traditional(text) : text,
+    const texts = language === "zh-Hant" ? convertOpencc('s2t', seeds) : seeds;
+    const lines: Line[] = texts.map((text, index) => ({
+      id: `${language}-authored-${index + 1}-1`, text,
       source: "authored subtitle-style sentence"
     }));
     const unique = new Set(lines.map((line) => line.text));

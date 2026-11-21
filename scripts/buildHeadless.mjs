@@ -1,6 +1,6 @@
 // Bundles Miteiru's headless language server (main/headless/main.ts) for Node into
 // dist/headless/miteiru-headless.cjs. The app's code runs as it does in the backend worker, with the
-// tokenizer calls answered by the addon (main/headless/nodeSys.ts). Only level needs an alias.
+// tokenizer calls answered by the addon (main/headless/nodeSys.ts). Only level and the OpenCC bridge need aliases.
 //
 //   node scripts/buildHeadless.mjs     build when a source changed since the last build
 //   node scripts/buildHeadless.mjs -f  build anyway
@@ -33,7 +33,10 @@ export const buildHeadless = async () => {
     platform: 'node',
     format: 'cjs',
     target: 'node22',
-    alias: {level: path.join(root, 'renderer/platform/backend/shims/level.ts')},
+    alias: {
+      '#miteiru/opencc': path.join(root, 'renderer/platform/backend/shims/opencc.ts'),
+      level: path.join(root, 'renderer/platform/backend/shims/level.ts')
+    },
     metafile: true,
     legalComments: 'none',
     logLevel: 'warning',

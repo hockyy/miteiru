@@ -1,14 +1,13 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import * as OpenCC from "opencc-js";
+import {convertTranscription} from "./openccTranscription";
 import {
   ASR_CHUNK_SECONDS,
   ASR_CONCURRENCY,
   ASR_REQUEST_TIMEOUT_MS,
   asrLanguageForAppLang,
   maxCueCharsForAppLang,
-  shouldConvertToTraditional,
   subtitleFileTagForAppLang
 } from "../../renderer/utils/generateSubtitlesConfig";
 import type {GenerateSubtitlesProgress} from "../../renderer/types/generateSubtitles";
@@ -19,15 +18,6 @@ import {cuesFromTranscription, cuesToSrt, SrtCue} from "./srtFormat";
 import {extractAudioChunk, extractAudioForAsr} from "./subtitleAudioExtract";
 
 type ProgressFn = (progress: GenerateSubtitlesProgress) => void;
-
-const toHongKongTraditional = OpenCC.Converter({from: "cn", to: "hk"});
-
-const convertAsrText = (lang: string, text: string) => {
-  if (!text) {
-    return text;
-  }
-  return shouldConvertToTraditional(lang) ? toHongKongTraditional(text) : text;
-};
 
 export function buildSourceSrtPath(outputDir: string, stem: string, lang: string): string {
   return path.join(outputDir, `${stem}.${subtitleFileTagForAppLang(lang)}.srt`);
@@ -117,10 +107,7 @@ export async function generateSourceSubtitles(options: {
         total: chunks.length
       });
 
-      return cuesFromTranscription(body, chunk.start, {
-        convertText: (text) => convertAsrText(options.lang, text),
-        maxChars
-      });
+      return cuesFromTranscription(await convertTranscription(body, options.lang), chunk.start, {maxChars});
     });
 
     const cues: SrtCue[] = cueGroups.flat();

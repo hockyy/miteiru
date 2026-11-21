@@ -41,19 +41,19 @@ describe("cleanHearingImpaired: speaker labels", () => {
 });
 
 describe("createFromArrayEntries: order and same-time cues", () => {
-  const build = (entries: Array<{from: number; to: number; text: string}>) =>
-      SubtitleContainer.createFromArrayEntries(null as any, entries.map((e, i) => ({id: String(i), ...e})), "ja")
+  const build = async (entries: Array<{from: number; to: number; text: string}>) =>
+      (await SubtitleContainer.createFromArrayEntries(null as any, entries.map((e, i) => ({id: String(i), ...e})), "ja"))
           .lines.map((line) => [line.timeStart, line.timeEnd, line.text]);
 
-  it("gives the same lines as before for a file already in order", () => {
-    assert.deepEqual(build([
+  it("gives the same lines as before for a file already in order", async () => {
+    assert.deepEqual(await build([
       {from: 1000, to: 2000, text: "one"},
       {from: 3000, to: 4000, text: "two"},
     ]), [[1000, 2240, "one"], [3000, 4240, "two"]]);
   });
 
-  it("keeps every dialogue line when the song lines are listed first", () => {
-    const lines = build([
+  it("keeps every dialogue line when the song lines are listed first", async () => {
+    const lines = await build([
       {from: 60000, to: 64000, text: "song 1"},
       {from: 65000, to: 69000, text: "song 2"},
       {from: 1000, to: 2000, text: "d1"},
@@ -63,16 +63,16 @@ describe("createFromArrayEntries: order and same-time cues", () => {
     assert.deepEqual(lines.map((l) => l[2]), ["d1", "d2", "d3", "song 1", "song 2"]);
   });
 
-  it("keeps equal starts in their order", () => {
-    const lines = build([
+  it("keeps equal starts in their order", async () => {
+    const lines = await build([
       {from: 1000, to: 2000, text: "a"},
       {from: 1000, to: 3000, text: "b"},
     ]);
     assert.equal(lines[0][2], "a");
   });
 
-  it("joins two cues with the same start and end into one line", () => {
-    const lines = build([
+  it("joins two cues with the same start and end into one line", async () => {
+    const lines = await build([
       {from: 1000, to: 2000, text: "A: hi"},
       {from: 1000, to: 2000, text: "B: hello"},
     ]);
@@ -80,8 +80,8 @@ describe("createFromArrayEntries: order and same-time cues", () => {
     assert.equal(lines[0][2], "A: hi\nB: hello");
   });
 
-  it("shows identical texts once", () => {
-    const lines = build([
+  it("shows identical texts once", async () => {
+    const lines = await build([
       {from: 1000, to: 2000, text: "same"},
       {from: 1000, to: 2000, text: "same"},
     ]);

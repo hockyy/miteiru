@@ -12,6 +12,7 @@ pub mod asset;
 pub mod chinese;
 pub mod errors;
 pub mod japanese;
+pub use miteiru_opencc as opencc;
 pub mod table;
 pub mod zstd;
 

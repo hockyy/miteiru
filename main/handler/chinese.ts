@@ -3,7 +3,7 @@ import {chineseLearningGloss, glossAll, queryChineseDictionary} from "./language
 import {ipcMain} from "../../renderer/platform/backend/shims/desktop";
 import path from "path";
 import {pinyin} from "pinyin-pro";
-import * as OpenCC from "opencc-js/t2cn";
+import {convertOpencc} from "#miteiru/opencc";
 import ToJyutping from "to-jyutping";
 import {Jieba} from "../../renderer/platform/backend/shims/jieba";
 import {formatJyutpingReading, formatPinyinReading} from "./pinyinTones";
@@ -85,7 +85,7 @@ export class ChineseEngine {
   async tokenizeUsingJieba(sentence: string, toneType: string) {
     const entries = await this.updateUserWords();
     const tokens: string[] = await this.jieba.cut(sentence);
-    const inContext = sentencePinyin(sentence);
+    const inContext = await sentencePinyin(sentence);
     let offset = 0;
 
     return tokens.map(word => {
@@ -154,22 +154,16 @@ export class ChineseEngine {
   }
 }
 
-let traditionalToSimplified: ((text: string) => string) | undefined;
-const simplifiedCopy = (text: string): string => {
-  traditionalToSimplified ??= OpenCC.Converter({from: 't', to: 'cn'});
-  return traditionalToSimplified(text);
-};
-
 /**
  * pinyin-pro's reading of every character of `text`, read together so polyphones take their context.
  * pinyin-pro knows its context words in simplified characters (們 alone is mén, 我们 is wǒ men), so a
  * traditional line is read through its simplified copy when that copy has the same characters count;
  * every item keeps the line's own character as its origin.
  */
-export const sentencePinyin = (text: string): Array<{origin: string; pinyin: string}> => {
+export const sentencePinyin = async (text: string): Promise<Array<{origin: string; pinyin: string}>> => {
   if (!text) return [];
   const characters = Array.from(text);
-  const simplified = simplifiedCopy(text);
+  const [simplified] = await convertOpencc('t2s', [text]);
   const source = simplified !== text && Array.from(simplified).length === characters.length ? simplified : text;
   const read = pinyin(source, {toneType: 'num', type: 'all'}) as Array<{origin: string; pinyin: string}>;
   // One item per character is what the word offsets need; anything else falls back to word by word.
