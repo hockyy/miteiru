@@ -2,11 +2,11 @@ import {isKana, toHiragana, toRomaji} from "../language/wanakana";
 import type {DictionaryDb} from "../dictionary/levelDictionary";
 import type {JmdictWord} from "../dictionary/jmdictDb";
 import type {MiteiruJapaneseWord} from "../handler/languages/japaneseAnalysis";
-import {exactChineseEntries, exactJapaneseMatches} from "../handler/languages/learningGlosses";
+import {exactChineseViews, exactJapaneseMatches} from "../handler/languages/learningGlosses";
 import {buildInflectionTable} from "../handler/languages/inflectionTable";
 import type {UserDictionaryEntry} from "../helpers/userDictionary";
 import {mapLimit} from "../helpers/mapLimit";
-import {normalizeChineseEntry, rankChineseEntries, entryHasReading, shortSense, type ChineseEntryView} from "../language/chineseEntries";
+import {rankChineseEntries, entryHasReading, resolveChineseReference, shortSense, type ChineseEntryView, type ResolvedChineseReference} from "../language/chineseEntries";
 import {lookupHsk, type HskWords} from "../language/hsk";
 import {japaneseRuby, chineseRuby, type RubySegment} from "../language/japaneseRuby";
 import {japaneseLevelFields, type JapaneseLevels} from "../language/japaneseLevels";
@@ -204,9 +204,7 @@ const composedCounterReadings = async (db: DictionaryDb, word: string, tokens: M
   ]}]};
 };
 
-const chineseEntries = (db: DictionaryDb, word: string): Promise<ChineseEntryView[]> => cached(db, `zh\u0000${word}`, async () => (
-  (await exactChineseEntries(db, word)).map(normalizeChineseEntry).filter((entry): entry is ChineseEntryView => entry !== null)
-));
+const chineseEntries = (db: DictionaryDb, word: string): Promise<ChineseEntryView[]> => cached(db, `zh\u0000${word}`, () => exactChineseViews(db, word));
 
 // ---- Building blocks ---------------------------------------------------------------------------------
 
@@ -239,10 +237,11 @@ const jmdictGloss = (entry: JmdictWord, context: SenseContext, alternatives: Jmd
   };
 };
 
-const chineseGloss = (entry: ChineseEntryView, source: string, alternatives: ChineseEntryView[]) => ({
-  en: entry.senses.length > 0 ? entry.senses.slice(0, MAX_SENSES) : entry.references.slice(0, MAX_SENSES),
+const chineseGloss = (entry: ChineseEntryView, source: string, alternatives: ChineseEntryView[], resolved?: ResolvedChineseReference) => ({
+  en: (resolved?.senses ?? (entry.senses.length ? entry.senses : entry.references)).slice(0, MAX_SENSES),
   source,
   entry_id: entry.id,
+  ...(resolved ? {via: {word: resolved.word, entry_id: resolved.entry_id, relation: resolved.relation}} : {}),
   ...(entry.measureWords.length > 0 ? {measure_words: entry.measureWords} : {}),
   ...(entry.senses.length > 0 && entry.references.length > 0 ? {references: entry.references} : {}),
   ...(entry.standardChinese ? {standard_chinese: entry.standardChinese} : {}),
@@ -439,11 +438,13 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
 
     let ranked: ChineseEntryView[] = [];
     let all: ChineseEntryView[] = [];
+    const match = {word: piece.s, script: info.script ?? "traditional", reading: readingText, cantonese} as const;
     if (db && !user) {
       all = await chineseEntries(db, piece.s);
-      ranked = rankChineseEntries(all, {word: piece.s, script: info.script ?? "traditional", reading: readingText, cantonese});
+      ranked = rankChineseEntries(all, match);
     }
     const entry = ranked[0];
+    const resolved = entry?.referenceTargets && db ? await resolveChineseReference(entry, match, (word) => chineseEntries(db, word)) : undefined;
     let readingCheck: "dictionary" | "mismatch" | "unknown" = "unknown";
     let dictionaryReadings: string[] | undefined;
     if (all.length > 0 && readingText) {
@@ -472,7 +473,7 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
       ...(entry && !cantonese && entry.simplified && entry.traditional ? {forms: {simplified: entry.simplified, traditional: entry.traditional}} : {}),
       ...(readingText ? {reading} : {}),
       ruby: chineseRuby(parts.map((part) => ({main: part.main, reading: cantonese ? part.reading : pinyinMarked(pinyinNumbered(part.reading))}))),
-      gloss: user ? userGloss(user) : entry ? chineseGloss(entry, cantonese ? "CantoDict" : "CC-CEDICT", ranked.slice(1)) : null,
+      gloss: user ? userGloss(user) : entry ? chineseGloss(entry, cantonese ? "CantoDict" : "CC-CEDICT", ranked.slice(1), resolved) : null,
       levels: {...(typeof hsk === "number" ? {hsk} : {})},
       ...(tones.some((tone) => tone !== null) ? {tones} : {}),
       ...(!cantonese && numbered.length ? {tones_dictionary: numbered.map((syllable) => numberedTone(syllable, 5))} : {}),
@@ -640,7 +641,7 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
     };
   };
 
-  const chineseEntryView = (entry: ChineseEntryView, source: string, hsk: HskWords | null, cantonese: boolean) => ({
+  const chineseEntryView = (entry: ChineseEntryView, source: string, hsk: HskWords | null, cantonese: boolean, resolved?: ResolvedChineseReference) => ({
     entry_id: entry.id,
     source,
     traditional: entry.traditional,
@@ -649,6 +650,7 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
     ...(entry.pinyin.length ? {pinyin: entry.pinyin.map((reading) => ({pinyin_num: reading, pinyin: reading.split(/\s+/).map((syllable) => pinyinMarked(pinyinNumbered(syllable))).join(" ")}))} : {}),
     ...(entry.jyutping.length ? {jyutping: entry.jyutping} : {}),
     senses: entry.senses,
+    ...(resolved ? {resolved_from: {word: resolved.word, entry_id: resolved.entry_id, senses: resolved.senses}} : {}),
     ...(entry.measureWords.length ? {measure_words: entry.measureWords} : {}),
     ...(entry.references.length ? {references: entry.references} : {}),
     ...(entry.standardChinese ? {standard_chinese: entry.standardChinese} : {}),
@@ -726,12 +728,17 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
     if (!db) throw new ToolError(`${info.name} isn't loaded: its dictionary is not open.`, 409);
     let entries = await chineseEntries(db, word);
     if (reading) entries = entries.filter((entry) => entryHasReading(entry, reading, cantonese));
-    const ranked = rankChineseEntries(entries, {word, script: info.script ?? "traditional", reading: reading || undefined, cantonese});
+    const match = {word, script: info.script ?? "traditional", reading: reading || undefined, cantonese} as const;
+    const ranked = rankChineseEntries(entries, match);
     const hsk = cantonese ? null : await deps.hskWords();
+    const views = await Promise.all(ranked.slice(0, limit).map(async (entry) => {
+      const resolved = await resolveChineseReference(entry, match, (target) => chineseEntries(db, target));
+      return chineseEntryView(entry, cantonese ? "CantoDict" : "CC-CEDICT", hsk, cantonese, resolved);
+    }));
     return {
       ...head,
       total: ranked.length + (user ? 1 : 0),
-      entries: [...(user ? [userEntryView(user)] : []), ...ranked.slice(0, limit).map((entry) => chineseEntryView(entry, cantonese ? "CantoDict" : "CC-CEDICT", hsk, cantonese))]
+      entries: [...(user ? [userEntryView(user)] : []), ...views]
     };
   };
 

@@ -2,7 +2,7 @@ import {isKana, isKanji, toHiragana, toKatakana} from "../../language/wanakana";
 import {kanjiBeginning, readingBeginning, type JmdictWord} from "../../dictionary/jmdictDb";
 import {charAnywhere, charBeginning} from "../../dictionary/chineseDictionaryDb";
 import {getJsonRecords, valuesWithPrefix, type DictionaryDb} from "../../dictionary/levelDictionary";
-import {normalizeChineseEntry, rankChineseEntries, shortSense, type ChineseEntryView} from "../../language/chineseEntries";
+import {normalizeChineseEntry, rankChineseEntries, resolveChineseReference, shortSense, type ChineseEntryView, type ChineseMatch} from "../../language/chineseEntries";
 import {rankJapaneseEntries, rankSenses} from "../../language/japaneseSenses";
 
 /** One word to gloss under a learning-mode subtitle: its dictionary form and (Japanese) reading. */
@@ -149,7 +149,7 @@ export const queryChineseDictionary = async (db: DictionaryDb, query: string, li
 export const CHINESE_HINT_LENGTH = 24;
 
 /** A hint from an entry's senses: the first part of a sense that fits, else the first one cut short. */
-export const chineseHint = (entry: ChineseEntryView): string => {
+export const chineseHint = (entry: Pick<ChineseEntryView, "senses">): string => {
   const parts = entry.senses.map(shortSense).filter(Boolean);
   const fitting = parts.find((part) => part.length <= CHINESE_HINT_LENGTH);
   if (fitting) return fitting;
@@ -160,14 +160,15 @@ export const chineseHint = (entry: ChineseEntryView): string => {
   return `${(space > 8 ? cut.slice(0, space) : cut).trim()}…`;
 };
 
+const chineseViews = (entries: any[]) => entries.map(normalizeChineseEntry).filter((entry): entry is ChineseEntryView => entry !== null);
+
 /**
  * A short meaning of the entry that best matches `target` (rankChineseEntries: a headword that is
  * `target`, not only a surname, the most senses). It used to keep only meanings of at most 10
  * characters, so 没想到 ("didn't expect"), 玉皇大帝, 龙王, 飲茶 and 咗 got none.
  */
 export const pickChineseGloss = (entries: any[], target: string, {cantonese = false}: {cantonese?: boolean} = {}): string => {
-  const views = entries.map(normalizeChineseEntry).filter((entry): entry is ChineseEntryView => entry !== null);
-  for (const entry of rankChineseEntries(views, {word: target, script: cantonese ? "traditional" : undefined, cantonese})) {
+  for (const entry of rankChineseEntries(chineseViews(entries), {word: target, script: cantonese ? "traditional" : undefined, cantonese})) {
     const hint = chineseHint(entry);
     if (hint) return hint;
   }
@@ -181,9 +182,19 @@ export const exactChineseEntries = async (db: DictionaryDb, word: string): Promi
   return getJsonRecords<any>(db, [...new Set(ids)].map((id) => `raw/words/${id}`));
 };
 
+export const exactChineseViews = async (db: DictionaryDb, word: string) => chineseViews(await exactChineseEntries(db, word));
+
 export const chineseLearningGloss = async (db: DictionaryDb, {target}: LearningGlossRequest, languageCode = "zh-CN"): Promise<string> => {
   if (!target) return "";
-  return pickChineseGloss(await exactChineseEntries(db, target), target, {cantonese: languageCode === "yue"});
+  const cantonese = languageCode === "yue";
+  const match: ChineseMatch = {word: target, script: cantonese ? "traditional" : undefined, cantonese};
+  const lookup = (word: string) => exactChineseViews(db, word);
+  for (const entry of rankChineseEntries(await lookup(target), match)) {
+    const resolved = await resolveChineseReference(entry, match, lookup);
+    const hint = chineseHint(resolved ?? entry);
+    if (hint) return hint;
+  }
+  return "";
 };
 
 /** The shortest meaningful part (≤ 15 characters) of a VNEDict meaning. */
