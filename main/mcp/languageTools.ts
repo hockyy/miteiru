@@ -107,9 +107,14 @@ export const japanesePos = (tag: string): Pos => {
   }
 };
 
-/** A coarse part of speech for a jieba tag's first letter (CC-CEDICT has none). */
-export const chinesePos = (part: string | null | undefined): Pos => {
-  if (!part) return "word";
+/**
+ * A coarse part of speech for a jieba tag's first letter (CC-CEDICT has none). `x` marks a word the
+ * list has no tag for (都, 就, 要), so it reads as untagged. The Cantonese list's `k` mixes bound
+ * particles (咗, 嘅, 哋) with ordinary verbs (去, 來, 下), so there it reads as untagged too; the raw
+ * tag still reaches clients in the token's `tag`.
+ */
+export const chinesePos = (part: string | null | undefined, cantonese = false): Pos => {
+  if (!part || part === "x" || (cantonese && part === "k")) return "word";
   if (/^n[rstz]/.test(part)) return "proper_noun";
   if (part === "eng") return "word";
   switch (part[0]) {
@@ -420,7 +425,7 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
       : {pinyin: numbered.map(pinyinMarked).join(" "), pinyin_num: readingText};
     return {
       s: piece.s, start: piece.start, end: piece.end, word: true,
-      pos: user ? "noun" : chinesePos(token.part),
+      pos: user ? "noun" : chinesePos(token.part, cantonese),
       ...(token.part ? {tag: token.part} : {}),
       base: piece.s,
       // The word in the other script (Mandarin only: CantoDict's simplified column is sparse and Cantonese is written traditional).

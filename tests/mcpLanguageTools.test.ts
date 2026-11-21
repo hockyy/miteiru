@@ -267,12 +267,21 @@ test("Chinese POS preserves proper-noun subtypes and maps other jieba tags by fi
     pronoun: ["r", "rg", "rz"], adjective: ["ag", "ad", "an", "zg"],
     adverb: ["dg"], numeral: ["mq"], classifier: ["q"], particle: ["uj", "y", "p"],
     conjunction: ["c"], interjection: ["o"], idiom: ["i"], expression: ["l"],
-    prefix: ["h"], suffix: ["k"], punct: ["wj"], other: ["x", "g"], word: ["eng", ""],
+    prefix: ["h"], suffix: ["k"], punct: ["wj"], other: ["g"], word: ["x", "eng", ""],
   })) {
     for (const tag of tags) assert.equal(chinesePos(tag), pos, tag);
   }
   assert.equal(chinesePos(undefined), "word");
   assert.equal(chinesePos(null), "word");
+});
+
+test("Cantonese reads the word list's untrustworthy k and x tags as untagged", () => {
+  // yue.jieba.txt tags 去 and 咗 alike as k, and 都, 就, 要 as x.
+  assert.equal(chinesePos("k", true), "word");
+  assert.equal(chinesePos("x", true), "word");
+  assert.equal(chinesePos("k"), "suffix");
+  assert.equal(chinesePos("v", true), "verb");
+  assert.equal(chinesePos("r", true), "pronoun");
 });
 
 // ---- analyze_text ------------------------------------------------------------------------------------
