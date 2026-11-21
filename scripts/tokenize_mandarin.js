@@ -1,11 +1,12 @@
 /**
- * Same Mandarin tokenizer as Miteiru: Jieba + pinyin-pro (toneType num).
+ * Segment Mandarin with Miteiru's Rust addon and annotate each word with numbered pinyin.
  *
+ *   node scripts/miteiru-mcp.mjs --build
  *   node scripts/tokenize_mandarin.js input.json output.json
  */
 const fs = require("fs");
 const path = require("path");
-const { Jieba } = require("@node-rs/jieba");
+const { defaultAddonPath, loadAddon } = require("../main/headless/nativeAddon.ts");
 const { pinyin } = require("pinyin-pro");
 
 const dictPath = path.join(
@@ -13,9 +14,9 @@ const dictPath = path.join(
   "../renderer/public/language-assets/mandarin/chinese/zh.jieba.txt"
 );
 
-function tokenize(sentence, jieba) {
+function tokenize(sentence, addon) {
   if (!sentence) return [];
-  return jieba.cut(sentence).map((word) => {
+  return addon.jiebaCut(dictPath, sentence, true).map((word) => {
     const pinyinInfo = pinyin(word, { toneType: "num", type: "all" });
     return {
       origin: word,
@@ -28,7 +29,7 @@ function tokenize(sentence, jieba) {
   });
 }
 
-function main() {
+async function main() {
   const inputPath = process.argv[2];
   const outputPath = process.argv[3];
   if (!inputPath || !outputPath) {
@@ -39,12 +40,16 @@ function main() {
   if (!Array.isArray(texts)) {
     throw new Error("Expected JSON array of strings");
   }
-  const jieba = Jieba.withDict(fs.readFileSync(dictPath));
+  const addon = loadAddon(defaultAddonPath(path.resolve(__dirname, "..")));
+  await addon.jiebaLoad(dictPath, dictPath);
   const results = texts.map((text) => ({
     text,
-    tokens: tokenize(String(text), jieba),
+    tokens: tokenize(String(text), addon),
   }));
   fs.writeFileSync(outputPath, JSON.stringify(results, null, 2), "utf8");
 }
 
-main();
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

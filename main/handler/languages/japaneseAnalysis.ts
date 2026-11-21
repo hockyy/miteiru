@@ -16,7 +16,8 @@ export interface MiteiruJapaneseWordWithSeparations extends MiteiruJapaneseWord 
   separation: MiteiruJapaneseSeparation[];
 }
 
-export interface KuromojinWord {
+/** Serialized miteiru_tokenizer::japanese::Token. Rust omits absent readings and pronunciations. */
+export interface JapaneseToken {
   word_id: number;
   word_type: string;
   word_position: number;
@@ -34,10 +35,10 @@ export interface KuromojinWord {
 
 
 // Unknown words have no reading; keep the old empty-reading behavior for them.
-const kuromojiReading = (item: KuromojinWord): string => item.reading ?? item.pronunciation ?? "";
+const kuromojiReading = (item: JapaneseToken): string => item.reading ?? item.pronunciation ?? "";
 
 /**
- * Kuromoji's `pronunciation` is the spoken form (ハ → ワ, オオキイ → オーキイ).
+ * IPADIC's `pronunciation` is the spoken form (ハ → ワ, オオキイ → オーキイ).
  * Romaji keeps its sound changes but not its long-vowel marks, which would
  * otherwise read 大きい as "oukii" and 先生 as "sensee".
  */
@@ -51,7 +52,7 @@ const spokenKana = (reading: string, pronunciation?: string): string => {
 // Furigana follows the dictionary reading; ー stays as written (ホーム → ほーむ, not ほうむ).
 const toFuriganaHiragana = (kana: string): string => toHiragana(kana, {convertLongVowelMark: false});
 
-export const kuromojinToJapaneseWords = (texts: KuromojinWord[]): MiteiruJapaneseWord[] => texts.map((item) => ({
+export const kuromojinToJapaneseWords = (texts: JapaneseToken[]): MiteiruJapaneseWord[] => texts.map((item) => ({
   origin: item.surface_form,
   hiragana: toFuriganaHiragana(kuromojiReading(item)),
   basicForm: item.basic_form,
@@ -62,7 +63,7 @@ export const kuromojinToJapaneseWords = (texts: KuromojinWord[]): MiteiruJapanes
 }));
 
 export const processKuromojinToSeparations = (
-  texts: KuromojinWord[]
+  texts: JapaneseToken[]
 ): MiteiruJapaneseWordWithSeparations[] => kuromojinToJapaneseWords(texts).map((word, index) => ({
   ...word,
   separation: splitOkuriganaCompact(

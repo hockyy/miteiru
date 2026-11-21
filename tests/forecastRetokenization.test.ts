@@ -232,8 +232,9 @@ test('legacy AI duplicates fall back to JMdict in word lookup, glosses and norma
   const values = new Map<string, any>([['userDictionary.enabled', true], ['userDictionary.data', {revision: 1, entries: [saved]}]]);
   setStoreFactory(async () => ({get: (key, fallback) => values.has(key) ? values.get(key) : fallback, set: (key, value) => { values.set(key, value); }}));
   Japanese.Dict = {db, tags: {}};
-  Japanese.kuromojiTokenizer = {tokenizeForSentence: (surface) => [{surface_form: surface, basic_form: surface, reading: 'シケン',
-    pos: '名詞', pos_detail_1: '*', pos_detail_2: '*', pos_detail_3: '*'}]} as never;
+  const tokenize = (surface: string) => [{surface_form: surface, basic_form: surface, reading: 'シケン',
+    pos: '名詞', pos_detail_1: '*', pos_detail_2: '*', pos_detail_3: '*'}];
+  Japanese.kuromojiTokenizer = {tokenizeForSentence: tokenize, tokenizeWithUserWords: tokenize} as never;
   Japanese.registerHandlers();
   try {
     const queried = await dispatchInvoke('queryJapanese', ['試験', 8]) as any[];

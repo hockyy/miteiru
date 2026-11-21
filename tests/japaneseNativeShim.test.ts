@@ -4,20 +4,18 @@ import {readFileSync} from 'node:fs';
 import path from 'node:path';
 import {setStoreFactory} from '../main/handler/common/storeHandlers';
 import {setSys} from '../renderer/platform/backend/sys';
-import {builder, JAPANESE_APP_WORDS_KEY} from '../renderer/platform/backend/shims/kuromoji';
+import {JapaneseTokenizer, JAPANESE_APP_WORDS_KEY} from '../renderer/platform/backend/shims/kuromoji';
 import {decodeJapaneseTokenBatch} from '../renderer/platform/backend/shims/japaneseTokenBatch';
-import type {JapaneseBackendTokenizer} from '../main/helpers/japaneseTokenizerWords';
 import type {UserDictionaryEntry} from '../main/helpers/userDictionary';
 
-const build = () => new Promise<JapaneseBackendTokenizer>((resolve, reject) => builder({dicPath: '/pack/japanese/dict', jmdictPath: '/pack/japanese/dict/jmdict.pack'})
-  .build((error, tokenizer) => error ? reject(error) : resolve(tokenizer as JapaneseBackendTokenizer)));
+const build = () => JapaneseTokenizer.load('/pack/japanese/dict', '/pack/japanese/dict/jmdict.pack');
 
 const binaryBatch = (texts: string[]) => new TextEncoder().encode(JSON.stringify({
   features: [['名詞', '一般', '*', '*', '*', '*']],
   tokens: texts.map((text) => [[1, 'KNOWN', 1, text, 0, text, null, null]]),
 })).buffer;
 
-test('Japanese defaults to native, loads once, and updates only the extra lexicon on revisions', async () => {
+test('Japanese loads once and updates only the extra lexicon on revisions', async () => {
   const calls: {cmd: string; args: Record<string, unknown>}[] = [];
   setStoreFactory(async () => ({get: (_key, fallback) => fallback, set: () => undefined}));
   setSys(async (cmd, args) => { calls.push({cmd, args}); return cmd === 'japanese_tokenize' ? [{surface_form: args.text}] : undefined; });
@@ -36,7 +34,7 @@ test('Japanese defaults to native, loads once, and updates only the extra lexico
   assert.equal(calls[2].args.text, 'あの星詠みを見ている');
 });
 
-test('a failed native load is surfaced, never silently replaced by kuromoji', async () => {
+test('a failed native load reports the dictionary error', async () => {
   setStoreFactory(async () => ({get: (_key, fallback) => fallback, set: () => undefined}));
   setSys(async () => { throw new Error('broken IPADIC'); });
   await assert.rejects(build(), /broken IPADIC/);
@@ -134,7 +132,10 @@ test('the Rust batch fixture preserves every token field and rejects a missing f
 
 test('JMdict headword nodes load only through the explicit opt-in store key', async () => {
   const calls: {cmd: string; args: Record<string, unknown>}[] = [];
-  setStoreFactory(async () => ({get: (key, fallback) => key === JAPANESE_APP_WORDS_KEY ? true : fallback, set: () => undefined}));
+  setStoreFactory(async () => ({get: (key) => {
+    assert.equal(key, JAPANESE_APP_WORDS_KEY);
+    return true;
+  }, set: () => undefined}));
   setSys(async (cmd, args) => { calls.push({cmd, args}); });
   await build();
   assert.equal(calls[0].cmd, 'japanese_load');

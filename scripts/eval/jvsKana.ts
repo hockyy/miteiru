@@ -131,7 +131,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(__filename
   const csv = args.find((arg, index) => !arg.startsWith("--") && !["--dict", "--save"].includes(args[index - 1]));
   if (!csv) throw new Error("Usage: npx tsx scripts/eval/jvsKana.ts <jvs_nonpara_kana.csv> [--dict <IPADIC dir>] [--save <out.json>]");
   const root = path.resolve(__dirname, "..", "..");
-  const dict = option("--dict") ?? path.join(root, "node_modules", "kuromoji", "dict");
+  const dict = option("--dict") ?? path.join(root, "renderer/public/language-assets/japanese/dict");
   const run = async () => {
     const addon = loadAddon(defaultAddonPath(root));
     await addon.japaneseLoad(dict, null, false);

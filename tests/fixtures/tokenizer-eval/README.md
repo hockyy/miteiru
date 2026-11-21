@@ -26,7 +26,7 @@ dictionary is used. No application behavior is changed.
   Dictionary absence never silently licenses a questionable lexical merge.
 - agreement.json and agreement.md report the untouched annotator arrays,
   before adjudication. dictionary-coverage.json includes dictionary checksums
-  and coverage totals. baseline/ retains the final current-pipeline run,
+  and coverage totals. baseline/ retains the final pre-Rust pipeline run,
   predictions, score details, per-category results, worst lines and input hashes.
 - provenance.json records source/annotation/fixture hashes and split policy.
   Freeze test after adjudication; use only dev while tuning. Held-out means
@@ -62,32 +62,16 @@ empty, P/R/F1 are 1; if only one is empty, F1 is 0. Categories overlap, so their
 counts must not be added as though disjoint. Worst non-exact lines sort by F1,
 then boundary-error count, then ID. JSON retains raw counts and differing offsets.
 
-## Existing pipeline baseline (no profile or downloads)
+## Historical tokenizer baseline
 
-Point --assets at an **already available local** language-assets directory:
+The frozen annotations and GUIDELINES.md describe the pipeline the annotators evaluated.
+The baseline records its kuromoji.js Japanese tokens and Node jieba Mandarin and Cantonese
+tokens after the app's word grouping, with user dictionaries disabled. Package versions,
+source revision and input hashes are in [the baseline manifest](baseline/manifest.json).
 
-    npx tsx scripts/runTokenizerBaseline.ts --assets LOCAL_LANGUAGE_ASSETS --split dev --out baseline-dev
-    npx tsx scripts/runTokenizerBaseline.ts --assets LOCAL_LANGUAGE_ASSETS --split all --out baseline-final
+Re-score the committed predictions across both splits with the current scorer.
 
-Without --assets, the repository renderer/public/language-assets is used. Missing
-assets are errors; the runner does not fetch them or read an installed app's
-profile. No access to APPDATA/miteiru, dictionary database, saved words or manual
-entries occurs. It calls the same Node-capable handlers as tests/verbConjugation:
-
-- Japanese: the pack's IPADIC, kuromoji.js tokenizeForSentence,
-  Japanese.processKuromojinToSeparations, then the actual parseJapaneseVerbs.
-- Mandarin/Cantonese: @node-rs/jieba with the respective pack's zh.jieba.txt or
-  yue.jieba.txt and default cut HMM, then the actual Chinese.tokenizeUsingJieba
-  or Chinese.getJyutpingForSentence, taking their origin fields.
-- User-dictionary overrides are deliberately absent. Do not compare a custom-
-  dictionary-enabled candidate to this baseline without disclosing that change.
-- This is the requested Node baseline of the current JS token-building pipeline;
-  it does not claim byte-identical behavior to a packaged native bridge build.
-
-The run writes predictions.jsonl, scores.json, scores.md and manifest.json.
-Re-score with evalTokenizers.ts using matching --split/--variant. Final baseline
-test scores are descriptive reporting only; no gold or policy is adjusted to
-make the baseline score better after predictions are inspected.
+    npx tsx scripts/evalTokenizers.ts --predictions tests/fixtures/tokenizer-eval/baseline/predictions.jsonl --split all
 
 ## Reproduce data checks
 

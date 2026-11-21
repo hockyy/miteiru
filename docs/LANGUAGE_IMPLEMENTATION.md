@@ -101,7 +101,7 @@ Current asset ownership:
 ```
 
 **Features:**
-- Jieba tokenization for word segmentation
+- Miteiru's Rust tokenizer segments Mandarin and Cantonese using each pack's word list
 - Pinyin pronunciation for Mandarin
 - Jyutping romanization for Cantonese
 - CC-CEDICT dictionary integration

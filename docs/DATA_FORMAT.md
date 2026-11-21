@@ -152,11 +152,11 @@ The generator computes the numbers from the median's length, and a field that eq
 
 ## Compressed asset files (.zst)
 
-Language assets that are not tables are single files the app reads whole. A packaged build stores each one as `<name>.zst` (zstd level 19, 128 MB window, long-distance matching) beside where the plain file would be, and the plain and `.gz` copies are not shipped. Development keeps the sources as downloaded (plain, or `.gz` for kuromoji), so nothing is compressed there.
+Language assets that are not tables are single files the app reads whole. A packaged build stores each one as `<name>.zst` (zstd level 19, 128 MB window, long-distance matching) beside where the plain file would be, and the plain and `.gz` copies are not shipped. Development keeps the sources as downloaded (plain, or `.gz` for IPADIC), so nothing is compressed there.
 
 | Asset | Download | Shipped |
 | --- | --- | --- |
-| kuromoji `japanese/dict/*.dat` (12 files) | 20.5 MB gzipped | 12.3 MB |
+| IPADIC `japanese/dict/*.dat` (12 files) | 20.5 MB gzipped | 12.3 MB |
 | `mandarin/chinese/zh.jieba.txt` | 2.95 MB gzipped | 2.36 MB |
 | `cantonese/cantonese/yue.jieba.txt` | 0.21 MB gzipped | 0.19 MB |
 | `vietnamese/vietnamese/vnedict.txt` | 2.09 MB plain | 0.59 MB |
@@ -166,7 +166,7 @@ Files the renderer fetches by URL (pitch accents, grammar) stay plain, since the
 
 How they are read, always from the plain path, taking the first that exists of the plain file, `<path>.zst`, `<path>.gz`:
 
-- **Rust**: `sys::fs::read_asset` (used by the jieba loader and the dictionary import), decoding with the capped `sys/zstd.rs` `decompress` (128 MB; the largest kuromoji file is about 30 MB). The command `fs_read_asset(path)` returns the same bytes raw; kuromoji's loader (`shims/kuromoji.ts`) calls it once per `<name>.dat.gz` it is asked for, with the `.gz` removed, so there is no decompression in JS.
+- The Japanese and Chinese tokenizers and the dictionary importer use `miteiru_langdata::asset::read_asset`. It reads and decompresses IPADIC and the Chinese word lists directly in Rust, with a 128 MiB limit per compressed asset.
 - **JS**: `readAsset`, `readTextAsset` and `assetExists` in `main/helpers/assetFiles.ts`, decompressing with `zlib.zstdDecompress` (in the app, the shim's call to Rust). `readJsonFile` and the Vietnamese loader go through `readTextAsset`.
 
 To add one: read it through one of those readers (never `fs.readFile` of the plain path), add its directory and name to `TARGETS` in `scripts/compressLanguageAssets.js`, and make sure `assetExists` is what finds it (a file that is only `.zst` has no plain path to `access`). `renderer/platform/smokeTest.ts` loads every language, so a packaged build fails its smoke test if a `.zst` path breaks.

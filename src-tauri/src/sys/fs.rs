@@ -251,7 +251,7 @@ pub async fn fs_read_range(path: String, offset: u64, length: usize) -> Result<t
   read_range(&path, offset, length).map(tauri::ipc::Response::new)
 }
 
-/// A language asset's decompressed bytes (see read_asset), for the kuromoji loader.
+/// A language asset's decompressed bytes (see read_asset).
 #[tauri::command]
 pub async fn fs_read_asset(path: String) -> Result<tauri::ipc::Response, String> {
   read_asset(&path).map(tauri::ipc::Response::new)

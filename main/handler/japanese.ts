@@ -4,19 +4,14 @@ import {searchKanji, setupKanjidic} from "../dictionary/kanjidicDb";
 import path from "path";
 import {readJsonFile} from "../utils";
 import fsPromises from "node:fs/promises";
-import kuromoji from "kuromoji";
-import {tokenizeJapaneseWithEntries, type JapaneseBackendTokenizer} from '../helpers/japaneseTokenizerWords';
+import {JapaneseTokenizer} from "../../renderer/platform/backend/shims/kuromoji";
 import type {UserDictionaryEntry} from '../helpers/userDictionary';
-import {processKuromojinToSeparations, KuromojinWord} from "./languages/japaneseAnalysis";
+import {processKuromojinToSeparations, type JapaneseToken} from "./languages/japaneseAnalysis";
 import {buildInflectionTable, type InflectionTableRequest} from "./languages/inflectionTable";
 import {readStrokeSvg} from "../helpers/strokeSvg";
 import {glossAll, japaneseLearningGloss, searchJapanese} from "./languages/learningGlosses";
 import {lookupUserDictionaryEntry, userJapaneseDictionaryResult} from "../helpers/userDictionary";
 import {hasExactJapaneseDefault} from '../helpers/japaneseDictionaryPriority';
-
-const buildKuromojiTokenizer = (dicPath: string, jmdictPath?: string) => new Promise<JapaneseBackendTokenizer>((resolve, reject) => {
-  kuromoji.builder({dicPath, jmdictPath}).build((error, tokenizer) => (error ? reject(error) : resolve(tokenizer)));
-});
 
 let warnedAboutWanikani = false;
 
@@ -57,8 +52,8 @@ class Japanese {
   static importDict: string;
   static importBaseSVG: string;
   static kuromojiDictPath: string;
-  static kuromojiTokenizer: JapaneseBackendTokenizer | null = null;
-  static kuromojiTokenizerPromise: Promise<JapaneseBackendTokenizer> | null = null;
+  static kuromojiTokenizer: JapaneseTokenizer | null = null;
+  static kuromojiTokenizerPromise: Promise<JapaneseTokenizer> | null = null;
   static kuromojiTokenizerGeneration = 0;
 
   static getJapaneseSettings = (appDataDirectory, replacements: any = {}) => {
@@ -144,9 +139,9 @@ class Japanese {
       }
     }
 
-    // A failed load is forgotten so the next call retries (kuromojin cached the rejection for good).
+    // A failed load is forgotten so the next call retries.
     const generation = this.kuromojiTokenizerGeneration;
-    this.kuromojiTokenizerPromise ??= buildKuromojiTokenizer(dictionaryPath, path.join(dictionaryPath, 'jmdict.pack')).then((loadedTokenizer) => {
+    this.kuromojiTokenizerPromise ??= JapaneseTokenizer.load(dictionaryPath, path.join(dictionaryPath, 'jmdict.pack')).then((loadedTokenizer) => {
       if (this.kuromojiTokenizerGeneration === generation) this.kuromojiTokenizer = loadedTokenizer;
       return loadedTokenizer;
     }, (error) => {
@@ -157,15 +152,15 @@ class Japanese {
     return this.kuromojiTokenizerPromise;
   }
 
-  static async tokenizeUsingKuromoji(sentence: string, entries?: UserDictionaryEntry[]): Promise<KuromojinWord[]> {
+  static async tokenizeUsingKuromoji(sentence: string, entries?: UserDictionaryEntry[]): Promise<JapaneseToken[]> {
     const tokenizer = this.kuromojiTokenizer ?? await this.loadKuromojiTokenizer();
-    return tokenizeJapaneseWithEntries(tokenizer, sentence, entries);
+    return entries ? tokenizer.tokenizeWithUserWords(sentence, entries) : tokenizer.tokenizeForSentence(sentence);
   }
 
   static processKuromojinToSeparations = processKuromojinToSeparations;
 
   /**
-   * Starts loading the Kuromoji dictionary at launch so the first analysis is fast: from
+   * Starts loading IPADIC at launch so the first analysis is fast: from
    * `dictionaryFolder` (an installed Japanese pack's, found by the registry), else the bundled one.
    * Without Japanese data there is nothing to preload until the user installs the Japanese pack.
    */

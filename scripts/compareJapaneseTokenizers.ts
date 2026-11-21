@@ -1,23 +1,21 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
-import {performance} from 'node:perf_hooks';
 import {isDeepStrictEqual} from 'node:util';
 import ts from 'typescript';
-import kuromoji from 'kuromoji';
 import {scan} from '../main/helpers/dataTable';
 import {parseJapaneseVerbs} from '../main/handler/languages/analyzer';
-import {processKuromojinToSeparations, type KuromojinWord} from '../main/handler/languages/japaneseAnalysis';
+import {processKuromojinToSeparations, type JapaneseToken} from '../main/handler/languages/japaneseAnalysis';
 import {type UserDictionaryEntry} from '../main/helpers/userDictionary';
 import {japaneseUserDictionaryToken} from '../main/helpers/japaneseTokenizerWords';
 
 type DictionaryWord = {surface: string; reading: string; conditions: number; noun: boolean};
 type GoldLine = {id: string; text?: string; sentence?: string; surface?: string};
-type NativeResult = {tokens: Record<string, KuromojinWord[][]>; metrics: Record<string, unknown>};
+type NativeResult = {tokens: Record<string, JapaneseToken[][]>; metrics: Record<string, unknown>};
 const root = process.cwd();
 const argument = (name: string, fallback = '') => process.argv[process.argv.indexOf(name) + 1] ?? fallback;
 const option = (name: string, fallback = '') => process.argv.includes(name) ? argument(name, fallback) : fallback;
-const dict = path.resolve(option('--dict', 'node_modules/kuromoji/dict'));
+const dict = path.resolve(option('--dict', 'renderer/public/language-assets/japanese/dict'));
 const output = path.resolve(option('--out', 'dist/tokenizer-japanese'));
 const jmdict = option('--jmdict');
 const goldPath = option('--gold');
@@ -74,12 +72,6 @@ async function dictionaryWords(file: string): Promise<DictionaryWord[]> {
   });
 }
 
-const collectHeap = () => {
-  (globalThis as {gc?: () => void}).gc?.();
-  const {heapUsed, arrayBuffers, rss} = process.memoryUsage();
-  return {heapUsed, arrayBuffers, rss};
-};
-
 async function run() {
   fs.mkdirSync(output, {recursive: true});
   const gold: GoldLine[] | null = goldPath ? fs.readFileSync(goldPath, 'utf8').trim().split(/\r?\n/).map((line) => JSON.parse(line)) : null;
@@ -88,24 +80,6 @@ async function run() {
     if (typeof text !== 'string') throw new Error(`Gold ${line.id} has no text field`);
     return text;
   }) : repoCorpus();
-  const before = collectHeap();
-  const start = performance.now();
-  const legacy = await new Promise<kuromoji.Tokenizer>((resolve, reject) => kuromoji.builder({dicPath: dict})
-    .build((error, tokenizer) => error ? reject(error) : resolve(tokenizer)));
-  const loadMs = performance.now() - start;
-  const loaded = collectHeap();
-  const first = performance.now();
-  legacy.tokenizeForSentence(lines[0] ?? '日本語');
-  const firstTokenMs = performance.now() - first;
-  const baselineErrors: {index: number; text: string; error: string}[] = [];
-  const legacyTokens = (line: string, index: number) => {
-    try { return legacy.tokenizeForSentence(line); }
-    catch (error) { if (!baselineErrors.some((entry) => entry.index === index)) baselineErrors.push({index, text: line, error: String(error)}); return []; }
-  };
-  const baseline = lines.map(legacyTokens);
-  const bench = performance.now();
-  for (let repeat = 0; repeat < repetitions; repeat++) lines.forEach(legacyTokens);
-  const batchMs = (performance.now() - bench) / repetitions;
   const words = await dictionaryWords(jmdict);
   const headwords = new Set(words.map((word) => word.surface));
   const savedWords: UserDictionaryEntry[] = [
@@ -119,15 +93,14 @@ async function run() {
     user_words: userWords.map(({surface, source}) => ({surface, source})), repetitions}), maxBuffer: 512 * 1024 * 1024});
   if (native.status !== 0) throw new Error(native.stderr || native.error?.message || `Native exit ${native.status}`);
   const result: NativeResult = JSON.parse(native.stdout);
-  const raw: Record<string, KuromojinWord[][]> = {kuromoji: baseline, ...result.tokens};
+  const raw = result.tokens;
   const pipeline: Record<string, any[][]> = {};
   for (const [mode, tokenLines] of Object.entries(raw)) {
     pipeline[mode] = await Promise.all(tokenLines.map((tokens) => parseJapaneseVerbs(processKuromojinToSeparations(tokens).map((token) => {
       const entry = mode === 'user' ? userWords.find((entry) => entry.surface === token.origin) : undefined;
       return entry ? japaneseUserDictionaryToken(entry) : token;
-    }), {learnerUnits: mode !== 'kuromoji'})));
+    }), {learnerUnits: true})));
     tokenLines.forEach((tokens, index) => {
-      if (mode === 'kuromoji' && baselineErrors.some((error) => error.index === index)) return;
       if (tokens.map((token) => token.surface_form).join('') !== lines[index]
         || pipeline[mode][index].map((token) => token.origin).join('') !== lines[index]) {
         throw new Error(`${mode} does not reconstruct input line ${index + 1}`);
@@ -143,38 +116,29 @@ async function run() {
     return {allTokens: all.length, allHits, allShare: all.length ? allHits / all.length : 0,
       japaneseTokens: tokens.length, japaneseHits: hits, japaneseShare: tokens.length ? hits / tokens.length : 0};
   };
-  const fields: Record<string, number> = {};
   const differences: Record<string, unknown[]> = {};
-  const comparison = {base: 'kuromoji', app: 'base', suffix: 'base', suffix_app: 'suffix', user: 'suffix'};
-  for (const mode of Object.keys(result.tokens)) {
+  const comparison = {app: 'base', suffix: 'base', suffix_app: 'suffix', user: 'suffix'};
+  for (const [mode, previous] of Object.entries(comparison)) {
     differences[mode] = lines.flatMap((text, index) => {
-      const previous = comparison[mode];
       const before = raw[previous][index];
       const after = raw[mode][index];
       const beforeLearner = pipeline[previous][index].map((token) => token.origin);
       const afterLearner = pipeline[mode][index].map((token) => token.origin);
       if (isDeepStrictEqual(before, after) && isDeepStrictEqual(beforeLearner, afterLearner)) return [];
-      if (mode === 'base') for (let token = 0; token < Math.max(before.length, after.length); token++) {
-        const keys = new Set([...Object.keys(before[token] ?? {}), ...Object.keys(after[token] ?? {})]);
-        for (const key of keys) if (!isDeepStrictEqual(before[token]?.[key], after[token]?.[key])) fields[key] = (fields[key] ?? 0) + 1;
-      }
       return [{id: gold?.[index].id ?? `corpus-${index + 1}`, text, before: before.map((token) => token.surface_form), after: after.map((token) => token.surface_form),
         beforeLearner, afterLearner}];
     });
   }
   const summary = {corpus: goldPath || (process.argv.includes('--authored-only') ? '505 individually authored subtitles'
     : '505 authored subtitles + Japanese-script test/fixture strings, including Han-only cross-language cases (gold excluded)'), lines: lines.length,
-    baseline: {loadMs, firstTokenMs, loadToFirstMs: loadMs + firstTokenMs, batchMs, linesPerSecond: lines.length * 1000 / batchMs,
-      heapDelta: loaded.heapUsed - before.heapUsed, arrayBufferDelta: loaded.arrayBuffers - before.arrayBuffers}, native: result.metrics,
+    native: result.metrics,
     changed: Object.fromEntries(Object.entries(differences).map(([mode, changes]) => [mode, {lines: changes.length, share: changes.length / lines.length}])),
-    learnerChanged: Object.fromEntries(Object.keys(result.tokens).map((mode) => {
-      const changes = pipeline[mode].filter((tokens, index) => !isDeepStrictEqual(tokens.map((token) => token.origin), pipeline[comparison[mode]][index].map((token) => token.origin))).length;
+    learnerChanged: Object.fromEntries(Object.entries(comparison).map(([mode, previous]) => {
+      const changes = pipeline[mode].filter((tokens, index) => !isDeepStrictEqual(tokens.map((token) => token.origin), pipeline[previous][index].map((token) => token.origin))).length;
       return [mode, {lines: changes, share: changes / lines.length}];
     })),
-    finalVsKuromoji: {rawLines: raw.suffix.filter((tokens, index) => !isDeepStrictEqual(tokens, raw.kuromoji[index])).length,
-      learnerLines: pipeline.suffix.filter((tokens, index) => !isDeepStrictEqual(tokens.map((token) => token.origin), pipeline.kuromoji[index].map((token) => token.origin))).length},
     reconstruction: 'All native raw and learner outputs reconstruct every input exactly',
-    baselineErrors, baseFieldDifferences: fields, jmdictCoverage: Object.fromEntries(Object.entries(pipeline).map(([mode, tokens]) => [mode, coverage(tokens)]))};
+    jmdictCoverage: Object.fromEntries(Object.entries(pipeline).map(([mode, tokens]) => [mode, coverage(tokens)]))};
   fs.writeFileSync(path.join(output, 'summary.json'), JSON.stringify(summary, null, 2) + '\n');
   fs.writeFileSync(path.join(output, 'differences.json'), JSON.stringify(differences, null, 2) + '\n');
   fs.writeFileSync(path.join(output, 'raw.json'), JSON.stringify({lines, raw}) + '\n');

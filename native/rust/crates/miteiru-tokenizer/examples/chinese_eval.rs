@@ -1,4 +1,3 @@
-use jieba_rs::Jieba;
 use miteiru_tokenizer::chinese::{Language, Tokenizer};
 use serde::{Deserialize, Serialize};
 use std::alloc::{GlobalAlloc, Layout, System};
@@ -42,73 +41,42 @@ struct Prediction<'a> {
     tokens: Vec<&'a str>,
 }
 
-enum Engine {
-    Reference(Jieba),
-    Native(Tokenizer),
-}
-
-impl Engine {
-    fn cut<'a>(&self, text: &'a str, hmm: bool) -> Vec<&'a str> {
-        match self {
-            Self::Reference(engine) => engine.cut(text, hmm),
-            Self::Native(engine) => engine.cut(text, hmm),
-        }
-    }
-}
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<_> = std::env::args().skip(1).collect();
-    if args.len() != 7 {
-        return Err("usage: chinese_eval <jieba|native> <zh|yue> <list> <headwords.txt|-> <corpus.jsonl> <predictions.jsonl> <hmm:true|false>".into());
-    }
-    if !matches!(args[0].as_str(), "jieba" | "native")
-        || !matches!(args[1].as_str(), "zh" | "yue")
-        || !matches!(args[6].as_str(), "true" | "false")
-    {
-        return Err("invalid engine, language, or HMM/typed-OOV flag".into());
-    }
-    let corpus: Vec<Input> = BufReader::new(std::fs::File::open(&args[4])?)
+    let [engine, language, list, headwords, corpus_path, predictions, typed_oov] = args.as_slice()
+    else {
+        return Err("usage: chinese_eval native <zh|yue> <list> <headwords.txt|-> <corpus.jsonl> <predictions.jsonl> <typed-oov:true|false>".into());
+    };
+    let language_mode = match (engine.as_str(), language.as_str()) {
+        ("native", "zh") => Language::Mandarin,
+        ("native", "yue") => Language::Cantonese,
+        _ => return Err("expected native zh or native yue".into()),
+    };
+    let typed_oov = typed_oov.parse::<bool>()?;
+    let corpus: Vec<Input> = BufReader::new(std::fs::File::open(corpus_path)?)
         .lines()
         .map(|line| Ok(serde_json::from_str(&line?)?))
         .collect::<Result<_, Box<dyn std::error::Error>>>()?;
-    let bytes = std::fs::read(&args[2])?;
+    let bytes = std::fs::read(list)?;
     let before = LIVE.load(Ordering::Relaxed);
     PEAK.store(before, Ordering::Relaxed);
     let started = Instant::now();
-    let mut engine = if args[0] == "jieba" {
-        Engine::Reference(Jieba::with_dict(&mut BufReader::new(bytes.as_slice()))?)
-    } else {
-        Engine::Native(Tokenizer::with_dict(
-            &mut BufReader::new(bytes.as_slice()),
-            if args[1] == "yue" {
-                Language::Cantonese
-            } else {
-                Language::Mandarin
-            },
-        )?)
-    };
+    let mut engine = Tokenizer::with_dict(&mut BufReader::new(bytes.as_slice()), language_mode)?;
     let load_ms = started.elapsed().as_secs_f64() * 1000.0;
     let base_bytes = LIVE.load(Ordering::Relaxed).saturating_sub(before);
     let base_peak_bytes = PEAK.load(Ordering::Relaxed).saturating_sub(before);
     let started = Instant::now();
-    let mut added = 0;
-    let mut filtered = 0;
-    let mut restored = 0;
-    if let Engine::Native(ref mut tokenizer) = engine {
-        if args[3] != "-" {
-            let words = std::fs::read_to_string(&args[3])?;
-            let stats = tokenizer.set_app_words(words.lines());
-            added = stats.added;
-            filtered = stats.filtered;
-            restored = stats.restored;
-        }
-    }
+    let stats = if headwords == "-" {
+        Default::default()
+    } else {
+        let words = std::fs::read_to_string(headwords)?;
+        engine.set_app_words(words.lines())
+    };
     let overlay_ms = started.elapsed().as_secs_f64() * 1000.0;
     let retained_bytes = LIVE.load(Ordering::Relaxed).saturating_sub(before);
-    let hmm = args[6] == "true";
-    let mut writer = std::io::BufWriter::new(std::fs::File::create(&args[5])?);
+    let mut writer = std::io::BufWriter::new(std::fs::File::create(predictions)?);
     for line in &corpus {
-        let tokens = engine.cut(&line.text, hmm);
+        let tokens = engine.cut(&line.text, typed_oov);
         assert_eq!(tokens.concat(), line.text, "text preservation: {}", line.id);
         serde_json::to_writer(
             &mut writer,
@@ -122,23 +90,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     writer.flush()?;
     MEASURE.store(false, Ordering::Relaxed);
     for line in &corpus {
-        std::hint::black_box(engine.cut(&line.text, hmm));
+        std::hint::black_box(engine.cut(&line.text, typed_oov));
     }
     let started = Instant::now();
     let mut rounds = 0;
     let corpus_bytes: usize = corpus.iter().map(|line| line.text.len()).sum();
     while started.elapsed().as_millis() < 800 {
         for line in &corpus {
-            std::hint::black_box(engine.cut(&line.text, hmm));
+            std::hint::black_box(engine.cut(&line.text, typed_oov));
         }
         rounds += 1;
     }
     println!(
         "{}",
-        serde_json::json!({"engine":args[0], "language":args[1], "hmm":hmm,
+        serde_json::json!({"engine":"native", "language":language, "hmm":typed_oov,
         "lines":corpus.len(), "loadMs":load_ms, "overlayMs":overlay_ms,
         "baseHeapBytes":base_bytes, "basePeakHeapBytes":base_peak_bytes,
-        "retainedHeapBytes":retained_bytes, "added":added, "filtered":filtered, "restored":restored,
+        "retainedHeapBytes":retained_bytes, "added":stats.added, "filtered":stats.filtered, "restored":stats.restored,
         "mibPerSecond":(rounds * corpus_bytes) as f64 / 1048576.0 / started.elapsed().as_secs_f64()})
     );
     Ok(())

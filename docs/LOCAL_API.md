@@ -146,9 +146,9 @@ Every text tool takes `language`:
 | `language` | Language | Engine and dictionary |
 | --- | --- | --- |
 | `ja` | Japanese | Miteiru's Rust tokenizer (IPADIC), JMdict, KANJIDIC2, KanjiVG |
-| `zh-Hans` | Mandarin, simplified characters | jieba, CC-CEDICT, Make Me a Hanzi |
+| `zh-Hans` | Mandarin, simplified characters | Miteiru's tokenizer, CC-CEDICT, Make Me a Hanzi |
 | `zh-Hant` | Mandarin, traditional characters | the same, with traditional forms preferred |
-| `yue` | Cantonese | jieba, CantoDict, Make Me a Hanzi |
+| `yue` | Cantonese | Miteiru's tokenizer, CantoDict, Make Me a Hanzi |
 | `vi` | Vietnamese | Miteiru's Vietnamese word splitter, VNEDict |
 
 Without `language`, a tool uses the language the learner chose in Miteiru. Each language's engine and dictionaries load on their own, the first time a call needs them, and stay loaded; loading one never changes the language the player shows. A language whose pack isn't installed answers `409` (for MCP, a tool error) saying so.

@@ -6,12 +6,12 @@ Miteiru splits subtitles into words, shows each word's reading, and looks words 
 
 | | Japanese 日本語 | Mandarin 中文 | Cantonese 廣東話 | Vietnamese Tiếng Việt |
 | --- | --- | --- | --- | --- |
-| **Word splitting** | Miteiru's own Rust tokenizer: a MeCab-style lattice over IPADIC, with a JMdict-checked suffix engine that keeps inflected forms whole (見たよ → 見た + よ, base 見る) | jieba (jieba-rs, in Rust) | jieba (jieba-rs, in Rust), with Cantonese words | Longest match over syllables, from the end of the line, against VNEDict |
+| **Word splitting** | Miteiru's own Rust tokenizer: a MeCab-style lattice over IPADIC, with a JMdict-checked suffix engine that keeps inflected forms whole (見たよ → 見た + よ, base 見る) | Miteiru's Rust tokenizer with the Mandarin word list | Miteiru's Rust tokenizer with the Cantonese word list | Longest match over syllables, from the end of the line, against VNEDict |
 | **Readings** | Furigana in hiragana, romaji | Pinyin from pinyin-pro, read a whole line at a time so polyphones take their context; tone marks or numbers | Jyutping from to-jyutping; tone numbers or contour marks | — (written as it is read) |
 | **Dictionary** | JMdict, KANJIDIC2 | CC-CEDICT | CantoDict | VNEDict (54,375+ entries) |
 | **Also** | Pitch accent (Kanjium), conjugation tables and the steps back to the dictionary form, kanji stroke order (KanjiVG) | HSK 3.0 levels, tone colours after tone sandhi, simplified and traditional forms, hanzi stroke order (Make Me a Hanzi) | Hanzi stroke order (Make Me a Hanzi) | A meaning under every word |
 
-Mandarin and Cantonese each have an engine of their own (jieba, dictionary and Your dictionary), so one never changes the other. Traditional Mandarin is read for pinyin through a simplified copy of the line (OpenCC), since pinyin-pro knows its context words in simplified characters: 我們 is wǒ men, 什麼 is shén me.
+Mandarin and Cantonese each have an engine of their own (tokenizer, dictionary and Your dictionary), so one never changes the other. Traditional Mandarin is read for pinyin through a simplified copy of the line (OpenCC), since pinyin-pro knows its context words in simplified characters: 我們 is wǒ men, 什麼 is shén me.
 
 The Japanese tokenizer's design and evaluation are in [docs/JAPANESE_TOKENIZER.md](docs/JAPANESE_TOKENIZER.md); the Vietnamese one is in [docs/VIETNAMESE_IMPLEMENTATION.md](docs/VIETNAMESE_IMPLEMENTATION.md).
 
@@ -43,7 +43,7 @@ Each language's tokens, as the subtitles and the local API's `/analyze` receive 
 ## Technical implementation
 
 - **Backend:** the language handlers in `main/` run in a Web Worker beside the page; the Rust shell (`src-tauri/`) provides files, processes, storage and the tokenizers. The page calls the backend through `window.backend.invoke(channel, ...args)`.
-- **Tokenizers:** `native/rust/crates/miteiru-tokenizer` (Japanese and jieba), with the dictionary tables and their stores in `native/rust/crates/miteiru-langdata`. The app uses them through Tauri commands, and the headless server through a Node addon (`native/rust/crates/miteiru-node`), so both split text the same way.
+- **Tokenizers:** `native/rust/crates/miteiru-tokenizer` (Japanese, Mandarin and Cantonese), with the dictionary tables and their stores in `native/rust/crates/miteiru-langdata`. The app uses them through Tauri commands, and the headless server through a Node addon (`native/rust/crates/miteiru-node`), so both split text the same way.
 - **Data:** language packs (`.mtrpack`) installed from the Home screen, holding each language's `language-assets`; small study data (pitch accents, HSK, JLPT and frequency lists) ships with the app in `renderer/public`. For development, `npm run script:initrepo` downloads the data.
 - **Interface:** UI components and subtitle rendering in `renderer/`.
 
