@@ -36,7 +36,7 @@ for (const language of ["zh-CN", "yue"] as const) {
     Chinese.languageCode = language;
     Chinese.userWords = undefined;
     Chinese.jieba = {setUserWords: async (words) => { updates.push(words); hasWord = words.length > 0; },
-      cut: async (line) => { calls.push(line); return hasWord ? ["我", "愛", "星際薯片"] : ["我", "愛", "星際", "薯片"]; }};
+      cutTagged: async (line) => { calls.push(line); return (hasWord ? ["我", "愛", "星際薯片"] : ["我", "愛", "星際", "薯片"]).map(s => ({s})); }};
     const options = {tokenizerMode: language === "yue" ? "cantonese" : "jieba", toneType: "symbol"};
     try {
       const first = await analyzeText("我愛星際薯片", options);

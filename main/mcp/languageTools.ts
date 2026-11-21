@@ -13,7 +13,7 @@ import {rankJapaneseEntries, rankSenses, senseFitsPos, senseLine, type SenseCont
 import {isToolLanguage, toolLanguageInfo, type StoredLanguageCode, type ToolLanguage, type ToolLanguageInfo} from "../language/languages";
 import {mandarinSpokenTones} from "../language/mandarinTones";
 import {classifyAccent, lookupPitchAccent, splitIntoMorae, type PitchAccentMap} from "../language/pitchAccent";
-import {comparableJyutping, comparablePinyin, numberedTone, pinyinMarked, pinyinNumbered, pinyinToNumbers, stripVietnamese, vietnameseTone} from "../language/readings";
+import {comparableJyutping, comparablePinyin, numberedTone, pinyinMarked, pinyinNumbered, pinyinToNumbersBatch, stripVietnamese, vietnameseTone} from "../language/readings";
 import {alignTokens, type Piece} from "../language/tokenAlign";
 import {ToolError} from "./protocol";
 import {isCountedWord, wordKey} from "./videoCoverage";
@@ -107,9 +107,17 @@ export const japanesePos = (tag: string): Pos => {
   }
 };
 
-/** A coarse part of speech for a jieba tag's first letter (CC-CEDICT has none). */
-export const chinesePos = (part: string | null | undefined): Pos => {
-  switch (part) {
+/**
+ * A coarse part of speech for a jieba tag's first letter (CC-CEDICT has none). `x` marks a word the
+ * list has no tag for (都, 就, 要), so it reads as untagged. The Cantonese list's `k` mixes bound
+ * particles (咗, 嘅, 哋) with ordinary verbs (去, 來, 下), so there it reads as untagged too; the raw
+ * tag still reaches clients in the token's `tag`.
+ */
+export const chinesePos = (part: string | null | undefined, cantonese = false): Pos => {
+  if (!part || part === "x" || (cantonese && part === "k")) return "word";
+  if (/^n[rstz]/.test(part)) return "proper_noun";
+  if (part === "eng") return "word";
+  switch (part[0]) {
     case "n": case "t": case "s": case "f": return "noun";
     case "R": return "proper_noun";
     case "r": return "pronoun";
@@ -126,7 +134,7 @@ export const chinesePos = (part: string | null | undefined): Pos => {
     case "l": return "expression";
     case "h": return "prefix";
     case "k": return "suffix";
-    case undefined: case null: case "": return "word";
+    case "w": return "punct";
     default: return "other";
   }
 };
@@ -417,7 +425,7 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
       : {pinyin: numbered.map(pinyinMarked).join(" "), pinyin_num: readingText};
     return {
       s: piece.s, start: piece.start, end: piece.end, word: true,
-      pos: user ? "noun" : chinesePos(token.part),
+      pos: user ? "noun" : chinesePos(token.part, cantonese),
       ...(token.part ? {tag: token.part} : {}),
       base: piece.s,
       // The word in the other script (Mandarin only: CantoDict's simplified column is sparse and Cantonese is written traditional).
@@ -752,7 +760,7 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
     const hsk = cantonese ? undefined : lookupHsk(await deps.hskWords(), char);
     const strings = (value: unknown) => (Array.isArray(value) ? value : value ? [value] : []).filter((item): item is string => typeof item === "string" && item !== "");
     // The character lists write pinyin with tone marks; the tools give both forms, as everywhere else.
-    const pinyinNumbers = [...new Set(rawEntries.flatMap((entry) => strings(entry.pinyin)).map(pinyinToNumbers).filter(Boolean))];
+    const pinyinNumbers = [...new Set((await pinyinToNumbersBatch(rawEntries.flatMap((entry) => strings(entry.pinyin)))).filter(Boolean))];
     const jyutping = [...new Set(rawEntries.flatMap((entry) => strings(entry.jyutping)).map(comparableJyutping).filter(Boolean))];
     return {
       ...head,

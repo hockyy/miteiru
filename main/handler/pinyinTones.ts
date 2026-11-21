@@ -1,5 +1,3 @@
-import {convert} from "pinyin-pro";
-
 /**
  * How subtitles show Mandarin and Cantonese tones, by the learner's "Tone numbers" setting (store
  * `toneType`, Video settings): `num` shows tone numbers (ni3 hao3, nei5 hou2), `symbol` shows tone
@@ -40,11 +38,19 @@ export function replacePinyinToneSymbol(syllable: string): string {
 
 /** Standard pinyin with diacritics on vowels: ni3 → nǐ */
 export function toPinyinToneMarks(syllable: string): string {
-  if (!syllable) {
-    return "";
-  }
-  const converted = convert(syllable, {format: "numToSymbol"});
-  // Neutral tone (5/0) is not a diacritic; pinyin-pro may leave the digit.
+  if (!syllable) return "";
+  // Synchronous ruby, dictionary entries and userDictionaryToken format individual readings here.
+  // Subtitle lines and dictionary lookup batches use the native converter.
+  const converted = syllable.split(" ").map(word => {
+    const erhua = word.length > 2 && word.endsWith("r") && Number(word.at(-2)) >= 0 && Number(word.at(-2)) <= 4;
+    const stem = erhua ? word.slice(0, -1) : word;
+    const tone = Number(stem.at(-1));
+    if (!(tone >= 0 && tone <= 4)) return word;
+    const vowel = ["a", "o", "e", "ü", "v", "ui", "iu", "i", "u", "n", "m", "ê"].find(key => stem.includes(key));
+    if (!vowel) return word;
+    const marked = ((vowel === "v" ? "ü" : vowel) + ["", "\u0304", "\u0301", "\u030c", "\u0300"][tone]).normalize("NFC");
+    return stem.slice(0, -1).replace(vowel, marked) + (erhua ? "r" : "");
+  }).join(" ");
   return converted.replace(/[05]$/, "");
 }
 

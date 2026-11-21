@@ -16,6 +16,8 @@ tauri-build = { version = "2", features = [] }
 cc = "1"
 
 [dependencies]
+miteiru-jyutping = { path = "../native/rust/crates/miteiru-jyutping" }
+miteiru-pinyin = { path = "../native/rust/crates/miteiru-pinyin" }
 tauri = { version = "2", features = [] }
 tauri-plugin-dialog = "2"
 tauri-plugin-opener = "2"
@@ -69,6 +71,12 @@ opt-level = "s"
 strip = true
 
 [profile.release.package.miteiru-tokenizer]
+opt-level = 3
+
+[profile.release.package.miteiru-jyutping]
+opt-level = 3
+
+[profile.release.package.miteiru-pinyin]
 opt-level = 3
 
 # Dictionary table reads (a gloss per word of a subtitle file) and the tokenizer stores.

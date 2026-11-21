@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-jyutping-batch"
+description = "Enables the jyutping_batch command without any pre-configured scope."
+commands.allow = ["jyutping_batch"]
+
+[[permission]]
+identifier = "deny-jyutping-batch"
+description = "Denies the jyutping_batch command without any pre-configured scope."
+commands.deny = ["jyutping_batch"]

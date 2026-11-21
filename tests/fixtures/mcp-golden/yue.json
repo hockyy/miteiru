@@ -12,7 +12,8 @@
       "start": 0,
       "end": 2,
       "word": true,
-      "pos": "word",
+      "pos": "pronoun",
+      "tag": "r",
       "base": "佢哋",
       "reading": {
         "jyutping": "keoi5 dei6"
@@ -55,7 +56,8 @@
       "start": 2,
       "end": 4,
       "word": true,
-      "pos": "word",
+      "pos": "noun",
+      "tag": "n",
       "base": "今日",
       "reading": {
         "jyutping": "gam1 jat6"
@@ -98,6 +100,7 @@
       "end": 5,
       "word": true,
       "pos": "word",
+      "tag": "k",
       "base": "去",
       "reading": {
         "jyutping": "heoi3"
@@ -139,6 +142,7 @@
       "end": 6,
       "word": true,
       "pos": "word",
+      "tag": "k",
       "base": "咗",
       "reading": {
         "jyutping": "zo2"
@@ -168,7 +172,8 @@
       "start": 6,
       "end": 8,
       "word": true,
-      "pos": "word",
+      "pos": "verb",
+      "tag": "v",
       "base": "飲茶",
       "reading": {
         "jyutping": "jam2 caa4"

@@ -39,7 +39,7 @@ const log = (message) => process.stderr.write(`[miteiru-mcp] ${message}\n`);
 
 const addonFile = process.platform === 'win32' ? 'miteiru_node.dll' : process.platform === 'darwin' ? 'libmiteiru_node.dylib' : 'libmiteiru_node.so';
 const addonPath = process.env.MITEIRU_NODE_ADDON || path.join(process.env.CARGO_TARGET_DIR || path.join(root, 'native', 'rust', 'target'), 'release', addonFile);
-const rustSources = ['miteiru-langdata', 'miteiru-tokenizer', 'miteiru-node', 'miteiru-opencc'].map((crate) => path.join(root, 'native', 'rust', 'crates', crate));
+const rustSources = ['miteiru-langdata', 'miteiru-tokenizer', 'miteiru-node', 'miteiru-opencc', 'miteiru-jyutping', 'miteiru-pinyin'].map((crate) => path.join(root, 'native', 'rust', 'crates', crate));
 
 const newestMtime = (directory) => {
   let newest = 0;

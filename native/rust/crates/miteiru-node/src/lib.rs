@@ -20,7 +20,7 @@ use napi_derive::napi;
 
 /// Bumped when a function's name or shape changes, so the JS side can refuse a stale build.
 #[napi]
-pub const ADDON_API: u32 = 2;
+pub const ADDON_API: u32 = 6;
 
 static JAPANESE: LazyLock<JapaneseStore> = LazyLock::new(JapaneseStore::default);
 static CHINESE: LazyLock<JiebaStore> = LazyLock::new(JiebaStore::default);
@@ -106,6 +106,27 @@ pub fn opencc_convert_batch(mode: String, lines: Vec<napi::bindgen_prelude::Utf1
   Ok(lines.iter().map(|line| converter.convert_utf16(line).into()).collect())
 }
 
+#[napi]
+pub fn jyutping_batch(texts: Vec<String>) -> String {
+  miteiru_jyutping::batch(&texts)
+}
+
+#[napi]
+pub fn pinyin_batch(texts: Vec<String>, simplify: bool) -> napi::Result<String> {
+  let lines: Vec<_> = texts.iter().map(|text| miteiru_pinyin::line(text, simplify)).collect();
+  serde_json::to_string(&lines).map_err(|error| failure(error.to_string()))
+}
+
+#[napi]
+pub fn pinyin_readings_batch(texts: Vec<String>, symbols: bool, simplify: bool) -> Vec<String> {
+  texts.iter().map(|text| miteiru_pinyin::readings(text, symbols, simplify)).collect()
+}
+
+#[napi]
+pub fn convert_pinyin_batch(texts: Vec<String>, to_symbols: bool) -> Vec<String> {
+  texts.iter().map(|text| miteiru_pinyin::convert(text, to_symbols)).collect()
+}
+
 pub struct ChineseLoad {
   key: String,
   dict_path: String,
@@ -129,6 +150,19 @@ impl Task for ChineseLoad {
 #[napi]
 pub fn jieba_load(key: String, dict_path: String, dictionary_path: Option<String>) -> AsyncTask<ChineseLoad> {
   AsyncTask::new(ChineseLoad { key, dict_path, dictionary_path })
+}
+
+/// A segmented word and its optional tag from the language pack.
+#[napi(object)]
+pub struct TaggedChineseWord {
+  pub s: String,
+  pub tag: Option<String>,
+}
+
+#[napi]
+pub fn jieba_cut_tagged(key: String, text: String, hmm: bool) -> napi::Result<Vec<TaggedChineseWord>> {
+  let words = CHINESE.cut_tagged(&key, &text, hmm).map_err(failure)?;
+  Ok(words.into_iter().map(|word| TaggedChineseWord { s: word.s, tag: word.tag }).collect())
 }
 
 /// `jieba_cut`: the words of `text`.

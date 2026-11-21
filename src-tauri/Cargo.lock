@@ -2490,8 +2490,10 @@ dependencies = [
  "libc",
  "libloading 0.9.0",
  "log",
+ "miteiru-jyutping",
  "miteiru-langdata",
  "miteiru-mpv",
+ "miteiru-pinyin",
  "miteiru-tokenizer",
  "raw-window-handle",
  "rusqlite",
@@ -2512,6 +2514,13 @@ dependencies = [
  "webview2-com",
  "windows-core",
  "windows-sys 0.60.2",
+ "zstd",
+]
+
+[[package]]
+name = "miteiru-jyutping"
+version = "0.0.0"
+dependencies = [
  "zstd",
 ]
 
@@ -2539,6 +2548,15 @@ dependencies = [
 name = "miteiru-opencc"
 version = "1.4.1"
 dependencies = [
+ "zstd",
+]
+
+[[package]]
+name = "miteiru-pinyin"
+version = "0.0.0"
+dependencies = [
+ "miteiru-opencc",
+ "serde",
  "zstd",
 ]
 

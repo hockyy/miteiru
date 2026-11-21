@@ -5,6 +5,7 @@ import {SYS_KV_BATCH, SYS_READ_ASSET} from "../../renderer/platform/backend/prot
 import {decodeBatch, type KvStore, type RangeOptions} from "./kvStore";
 import {openccText} from "../language/opencc";
 import type {MiteiruAddon, UserWord} from "./nativeAddon";
+import {readingCommands} from "./readingCommands";
 
 /**
  * The app's `sys(...)` commands (src-tauri/src/lib.rs) as the headless server answers them, so the
@@ -43,8 +44,10 @@ export const createNodeSys = (addon: MiteiruAddon, kv: KvStore): SysCall => {
     japanese_tokenize: async (args) => JSON.parse(await addon.japaneseTokenizeBatch(text(args.dictPath), [text(args.text)]))[0],
     japanese_tokenize_batch: async (args) => JSON.parse(await addon.japaneseTokenizeBatch(text(args.dictPath), (args.texts as unknown[]).map(text))),
     jieba_load: (args) => addon.jiebaLoad(text(args.key), text(args.dictPath), typeof args.dictionaryPath === "string" ? args.dictionaryPath : null),
+    jieba_cut_tagged: (args) => addon.jiebaCutTagged(text(args.key), text(args.text), args.hmm !== false),
     jieba_cut: (args) => addon.jiebaCut(text(args.key), text(args.text), args.hmm !== false),
     opencc_convert_batch: (args) => addon.openccConvertBatch(text(args.mode), (args.lines as Array<string | number[]>).map(openccText)),
+    ...readingCommands(addon),
     jieba_user_words: (args) => addon.jiebaUserWords(text(args.key), words(args.words)),
     table_open: (args) => addon.tableOpen(text(args.path)),
     table_close: (args) => addon.tableClose(Number(args.handle)),

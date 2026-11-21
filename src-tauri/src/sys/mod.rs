@@ -12,6 +12,7 @@ pub mod langpack;
 pub mod mkv;
 pub mod opencc;
 pub mod proc;
+pub mod reading;
 pub mod shell;
 pub mod table;
 pub mod zstd;

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-pinyin-readings-batch"
+description = "Enables the pinyin_readings_batch command without any pre-configured scope."
+commands.allow = ["pinyin_readings_batch"]
+
+[[permission]]
+identifier = "deny-pinyin-readings-batch"
+description = "Denies the pinyin_readings_batch command without any pre-configured scope."
+commands.deny = ["pinyin_readings_batch"]

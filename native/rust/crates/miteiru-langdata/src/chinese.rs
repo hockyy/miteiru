@@ -3,7 +3,7 @@
 
 use miteiru_tokenizer::chinese::{Language, Tokenizer};
 use miteiru_tokenizer::lexicon::{ExtraWord, WordSource};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::io::BufReader;
 use std::sync::{Arc, Mutex};
@@ -16,6 +16,13 @@ pub struct JiebaStore(Mutex<HashMap<String, Arc<Tokenizer>>>);
 pub struct UserWord {
   pub surface: String,
   pub source: String,
+}
+
+#[derive(Serialize)]
+pub struct TaggedWord {
+  pub s: String,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub tag: Option<String>,
 }
 
 fn headwords(path: &str) -> Result<Vec<String>, String> {
@@ -117,14 +124,23 @@ impl JiebaStore {
     Ok(())
   }
 
+  fn tokenizer(&self, key: &str) -> Result<Arc<Tokenizer>, String> {
+    self.0.lock().unwrap().get(key).cloned()
+      .ok_or_else(|| format!("EINVAL: invalid argument, jieba '{key}' is not loaded"))
+  }
+
+  pub fn cut_tagged(&self, key: &str, text: &str, hmm: bool) -> Result<Vec<TaggedWord>, String> {
+    let jieba = self.tokenizer(key)?;
+    Ok(jieba.cut(text, hmm).into_iter()
+      .map(|word| TaggedWord {
+        s: word.to_owned(),
+        tag: jieba.tag(word).map(str::to_owned),
+      })
+      .collect())
+  }
+
   pub fn cut(&self, key: &str, text: &str, hmm: bool) -> Result<Vec<String>, String> {
-    let jieba = self
-      .0
-      .lock()
-      .unwrap()
-      .get(key)
-      .cloned()
-      .ok_or_else(|| format!("EINVAL: invalid argument, jieba '{key}' is not loaded"))?;
+    let jieba = self.tokenizer(key)?;
     Ok(
       jieba
         .cut(text, hmm)

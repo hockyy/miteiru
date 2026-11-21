@@ -1,6 +1,8 @@
 /** The Mandarin and Cantonese tokenizers load their word lists and segment text in Rust. */
 import {sys} from '../sys';
 
+export interface TaggedChineseWord { s: string; tag?: string }
+
 export class Jieba {
   private constructor(private readonly key: string) {}
 
@@ -13,6 +15,10 @@ export class Jieba {
 
   async cut(text: string, hmm = true): Promise<string[]> {
     return sys('jieba_cut', {key: this.key, text, hmm});
+  }
+
+  async cutTagged(text: string, hmm = true): Promise<TaggedChineseWord[]> {
+    return sys('jieba_cut_tagged', {key: this.key, text, hmm});
   }
 
   async setUserWords(words: {surface: string; source: string}[]): Promise<void> {

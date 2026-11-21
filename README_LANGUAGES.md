@@ -7,7 +7,7 @@ Miteiru splits subtitles into words, shows each word's reading, and looks words 
 | | Japanese 日本語 | Mandarin 中文 | Cantonese 廣東話 | Vietnamese Tiếng Việt |
 | --- | --- | --- | --- | --- |
 | **Word splitting** | Miteiru's own Rust tokenizer: a MeCab-style lattice over IPADIC, with a JMdict-checked suffix engine that keeps inflected forms whole (見たよ → 見た + よ, base 見る) | Miteiru's Rust tokenizer with the Mandarin word list | Miteiru's Rust tokenizer with the Cantonese word list | Longest match over syllables, from the end of the line, against VNEDict |
-| **Readings** | Furigana in hiragana, romaji | Pinyin from pinyin-pro, read a whole line at a time so polyphones take their context; tone marks or numbers | Jyutping from to-jyutping; tone numbers or contour marks | — (written as it is read) |
+| **Readings** | Furigana in hiragana, romaji | Whole-line pinyin with tone marks or numbers, from an in-house Rust port of [pinyin-pro 3.29.3](https://github.com/zh-lx/pinyin-pro) (MIT) | Jyutping with tone numbers or contour marks, from an in-house Rust port of [to-jyutping 3.1.1](https://github.com/CanCLID/to-jyutping) (BSD-2-Clause) | — (written as it is read) |
 | **Dictionary** | JMdict, KANJIDIC2 | CC-CEDICT | CantoDict | VNEDict (54,375+ entries) |
 | **Also** | Pitch accent (Kanjium), conjugation tables and the steps back to the dictionary form, kanji stroke order (KanjiVG) | HSK 3.0 levels, tone colours after tone sandhi, simplified and traditional forms, hanzi stroke order (Make Me a Hanzi) | Hanzi stroke order (Make Me a Hanzi) | A meaning under every word |
 

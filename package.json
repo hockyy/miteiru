@@ -6,6 +6,10 @@
   "author": "Hocky Yudhiono <hocky.yudhiono@gmail.com>",
   "homepage": "https://miteiru.hocky.id",
   "imports": {
+    "#miteiru/reading-sys": {
+      "node": "./main/headless/checkoutReadingSys.ts",
+      "default": "./renderer/platform/backend/sys.ts"
+    },
     "#miteiru/opencc": {
       "node": "./main/headless/opencc.ts",
       "default": "./renderer/platform/backend/shims/opencc.ts"
@@ -51,9 +55,7 @@
     "@tauri-apps/plugin-process": "2.3.1",
     "@tauri-apps/plugin-updater": "2.12.0",
     "chardet": "^2.2.0",
-    "iconv-lite": "^0.7.2",
-    "pinyin-pro": "^3.27.0",
-    "to-jyutping": "^3.1.1"
+    "iconv-lite": "^0.7.2"
   },
   "devDependencies": {
     "@fontsource-variable/noto-sans-jp": "^5.3.0",
