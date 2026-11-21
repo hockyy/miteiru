@@ -110,7 +110,7 @@ Set `tokenizer.japanese.useJmdictWords` to `true` and restart to enable the expe
 $env:CARGO_TARGET_DIR='C:/Users/miki/miteiru/src-tauri/target'
 npm.cmd ci
 cargo build --release --manifest-path native/rust/Cargo.toml -p miteiru-tokenizer --example japanese_tokenize
-npx.cmd tsx scripts/compareJapaneseTokenizers.ts --dict <ipadic-directory> --jmdict <existing-jmdict.pack-or-json>
+npx tsx scripts/compareJapaneseTokenizers.ts --dict <ipadic-directory> --jmdict <existing-jmdict.pack-or-json>
 ```
 
 The report uses 505 individually authored subtitle lines plus Japanese strings from repository tests and JSON fixtures. The gold fixture directory is explicitly excluded. JSON outputs contain every raw token field, changed lines, separate base/app/suffix/suffix_app/user predictions, throughput and retained dictionary bytes. The `--dict` argument defaults to the downloaded Japanese pack at `renderer/public/language-assets/japanese/dict`. Retained Rust allocation estimates are not RSS or JS heap and must not be mislabeled. End-to-end timings and worker heap are measured separately in the app.
