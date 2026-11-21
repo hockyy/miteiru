@@ -470,6 +470,36 @@ test("readings lists every dictionary reading with the tokenizer's", async () =>
   await assert.rejects(call("readings", {language: "vi", word: "tôi"}), rejects(400, /language must be one of: ja, zh-Hans, zh-Hant, yue$/));
 });
 
+test("Japanese readings and lookup_word compose only dictionary-backed counter readings", async () => {
+  const db = await memoryDictionary(jmdictImport, {version: "test", dictDate: "", dictRevisions: [], tags: {}, words: [
+    jmWord("number", ["三", "３"], ["さん"], [sense(["num"], ["three"])]),
+    jmWord("cup", ["杯"], ["さかずき"], [sense(["n"], ["sake cup"])]),
+    jmWord("counter", ["杯"], ["はい"], [sense(["ctr"], ["counter for cupfuls"])]),
+    jmWord("cat", ["猫"], ["ねこ"], [sense(["n"], ["cat"])]),
+    jmWord("other", ["三箱"], ["みはこ"], [sense(["n"], ["another word"])]),
+    jmWord("boxes", ["箱"], ["はこ"], [sense(["ctr"], ["boxes"])])
+  ]});
+  const {call} = await toolsWith({jmdict: () => db, analyze: async (_, word) => {
+    if (word === "猫") return japaneseTokens(word);
+    const [number, unit] = Array.from(word);
+    return [{origin: number, pos: "名詞-数", hiragana: "さん"}, {origin: unit, pos: "名詞-接尾-助数詞", hiragana: "ばい",
+      counterReading: {number: "サン", counter: unit === "箱" ? "ハコ" : "バイ", base: unit === "箱" ? "ハコ" : "ハイ"}}];
+  }});
+  for (const tool of ["readings", "lookup_word"]) {
+    for (const word of ["三杯", "3杯"]) {
+      const result = await call(tool, {language: "ja", word});
+      assert.deepEqual(result.composed_readings, [{reading: "さんばい", romaji: "sanbai", rule: "counter", parts: [
+        {s: word[0], reading: "さん", entry_id: "number"}, {s: "杯", reading: "ばい", entry_id: "counter"}
+      ]}]);
+      assert.deepEqual(result.readings ?? result.entries, []);
+    }
+    // Plain noun, missing numeral, missing unit, noun without a counter sense, conflicting whole word.
+    for (const word of ["猫", "六杯", "三匹", "三猫", "三箱"]) {
+      assert.equal("composed_readings" in await call(tool, {language: "ja", word}), false, word);
+    }
+  }
+});
+
 test("text_coverage counts words by saved level and lists the unknown ones with their levels", async () => {
   const {call} = await toolsWith();
   const coverage = await call("text_coverage", {language: "ja", texts: ["猫が好きです", "今日ね税理士さんと"], limit: 5});

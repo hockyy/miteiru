@@ -10,6 +10,7 @@ export interface MiteiruJapaneseWord {
   hiragana: string;
   basicForm: string;
   pos: string;
+  counterReading?: JapaneseToken["counter_reading"];
 }
 
 
@@ -32,6 +33,7 @@ export interface JapaneseToken {
   basic_form: string;
   reading?: string;
   pronunciation?: string;
+  counter_reading?: {number: string; counter: string; base: string};
 }
 
 
@@ -58,6 +60,7 @@ export const kuromojinToJapaneseWords = (texts: JapaneseToken[]): MiteiruJapanes
   origin: item.surface_form,
   hiragana: toFuriganaHiragana(kuromojiReading(item)),
   basicForm: item.basic_form,
+  ...(item.counter_reading ? {counterReading: item.counter_reading} : {}),
   pos: item.pos
     + (item.pos_detail_1 !== "*" ? `-${item.pos_detail_1}` : "")
     + (item.pos_detail_2 !== "*" ? `-${item.pos_detail_2}` : "")

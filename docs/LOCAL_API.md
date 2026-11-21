@@ -284,6 +284,14 @@ Mandarin and Cantonese entries give `traditional`, `simplified`, `pinyin` (`[{pi
 
 A word in Your dictionary comes first, as `{"entry_id": "user:<language>:<word>", "source": "Your dictionary", …}`. An inflected Japanese word (`行かなかった`) adds `"dictionary_form": "行く"`.
 
+For a Japanese numeral followed by a counter, `lookup_word` can also return `composed_readings` at the top level. The entry IDs in its two parts identify the numeral and the counter sense. Each part gives its pronunciation in the compound. For example, the headless server answers `{"language":"ja","word":"六匹"}` with
+
+```json
+{"language":{"code":"ja","name":"Japanese"},"word":"六匹","total":0,"entries":[],
+ "composed_readings":[{"reading":"ろっぴき","romaji":"roppiki","rule":"counter","parts":[
+   {"s":"六","reading":"ろっ","entry_id":"1585310"},{"s":"匹","reading":"ぴき","entry_id":"1583370"}]}]}
+```
+
 ### `lookup_character`
 
 Arguments: `language` (`ja`, `zh-Hans`, `zh-Hant` or `yue`), `char` (one kanji or hanzi).
@@ -329,6 +337,27 @@ Arguments: `language` (`ja`, `zh-Hans`, `zh-Hant` or `yue`), `word`.
   {"reading": "こんにち", "romaji": "konnichi", "common": true, "entry_ids": ["1579110"]},
   {"reading": "こんち", "romaji": "konchi", "common": false, "entry_ids": ["1579110"]},
   {"reading": "こんじつ", "romaji": "konjitsu", "common": false, "entry_ids": ["1579110"]}]}
+```
+
+`readings` and `lookup_word` both add `composed_readings` when the tokenizer splits the input into a numeral (kanji, digits, or 何) and one counter, and JMdict identifies both parts. The whole reading comes from the tokenizer’s counter rules. If JMdict lists the whole word, the composed reading must agree with one of its readings. `readings` lists the whole word’s dictionary readings, and `tokenizer_reading` separates its tokens with spaces. These are headless responses for 三杯, 一杯 and 何本.
+
+```json
+{"language":{"code":"ja","name":"Japanese"},"word":"三杯","source":"JMdict","tokenizer_reading":"さん ばい","readings":[],
+ "composed_readings":[{"reading":"さんばい","romaji":"sanbai","rule":"counter","parts":[
+   {"s":"三","reading":"さん","entry_id":"1579350"},{"s":"杯","reading":"ばい","entry_id":"2019640"}]}]}
+```
+
+```json
+{"language":{"code":"ja","name":"Japanese"},"word":"一杯","source":"JMdict","tokenizer_reading":"いっ ぱい",
+ "readings":[{"reading":"いっぱい","romaji":"ippai","common":true,"entry_ids":["1165670"],"pitch":{"accents":[1],"patterns":["atamadaka"]}}],
+ "composed_readings":[{"reading":"いっぱい","romaji":"ippai","rule":"counter","parts":[
+   {"s":"一","reading":"いっ","entry_id":"1160790"},{"s":"杯","reading":"ぱい","entry_id":"2019640"}]}]}
+```
+
+```json
+{"language":{"code":"ja","name":"Japanese"},"word":"何本","source":"JMdict","tokenizer_reading":"なん ぼん","readings":[],
+ "composed_readings":[{"reading":"なんぼん","romaji":"nanbon","rule":"counter","parts":[
+   {"s":"何","reading":"なん","entry_id":"2846738"},{"s":"本","reading":"ぼん","entry_id":"1522150"}]}]}
 ```
 
 ```json

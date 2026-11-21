@@ -1,6 +1,7 @@
 import {isKana, toHiragana, toRomaji} from "../language/wanakana";
 import type {DictionaryDb} from "../dictionary/levelDictionary";
 import type {JmdictWord} from "../dictionary/jmdictDb";
+import type {MiteiruJapaneseWord} from "../handler/languages/japaneseAnalysis";
 import {exactChineseEntries, exactJapaneseMatches} from "../handler/languages/learningGlosses";
 import {buildInflectionTable} from "../handler/languages/inflectionTable";
 import type {UserDictionaryEntry} from "../helpers/userDictionary";
@@ -9,7 +10,7 @@ import {normalizeChineseEntry, rankChineseEntries, entryHasReading, shortSense, 
 import {lookupHsk, type HskWords} from "../language/hsk";
 import {japaneseRuby, chineseRuby, type RubySegment} from "../language/japaneseRuby";
 import {japaneseLevelFields, type JapaneseLevels} from "../language/japaneseLevels";
-import {rankJapaneseEntries, rankSenses, senseFitsPos, senseLine, type SenseContext} from "../language/japaneseSenses";
+import {kanaOf, rankJapaneseEntries, rankSenses, senseFitsPos, senseLine, type SenseContext} from "../language/japaneseSenses";
 import {isToolLanguage, toolLanguageInfo, type StoredLanguageCode, type ToolLanguage, type ToolLanguageInfo} from "../language/languages";
 import {mandarinSpokenTones} from "../language/mandarinTones";
 import {classifyAccent, lookupPitchAccent, splitIntoMorae, type PitchAccentMap} from "../language/pitchAccent";
@@ -163,6 +164,45 @@ const cached = (db: object, key: string, read: () => Promise<any[]>): Promise<an
 };
 
 const japaneseEntries = (db: DictionaryDb, word: string): Promise<JmdictWord[]> => cached(db, `ja\u0000${word}`, () => exactJapaneseMatches(db, word));
+
+// JMdict writes Arabic numerals full width. Keep the caller's original spelling in the result.
+const jmdictDigits = (text: string) => text.replace(/[0-9]/g, (digit) => String.fromCharCode(digit.charCodeAt(0) + 0xfee0));
+const appliesTo = (forms: string[], text: string) => forms.includes("*") || forms.includes(text);
+const couldStartCount = /^[〇一二三四五六七八九十百千万億兆何0-9０-９]./u;
+
+/** The tokenizer supplies the two pronunciations. JMdict establishes what each piece means. */
+const composedCounterReadings = async (db: DictionaryDb, word: string, tokens: MiteiruJapaneseWord[], whole: JmdictWord[], filter = "") => {
+  const [number, counter] = tokens;
+  const pair = counter?.counterReading;
+  if (tokens.length !== 2 || !pair || number.origin + counter.origin !== word) return {};
+  const numberReading = kanaOf(pair.number);
+  const counterReading = kanaOf(pair.counter);
+  const reading = numberReading + counterReading;
+  if (filter && kanaOf(filter) !== reading) return {};
+
+  const spelling = jmdictDigits(word);
+  const listed = spelling === word ? whole : [...whole, ...await japaneseEntries(db, spelling)];
+  if (listed.length && !listed.some((entry) => entry.kana.some((kana) => kanaOf(kana.text) === reading
+    && (appliesTo(kana.appliesToKanji, word) || appliesTo(kana.appliesToKanji, spelling))))) return {};
+
+  const numeral = jmdictDigits(number.origin);
+  const [numbers, counters] = await Promise.all([japaneseEntries(db, numeral), japaneseEntries(db, counter.origin)]);
+  const numberEntry = rankJapaneseEntries(numbers, {base: numeral, reading: numberReading, context: {pos: number.pos}})
+    .find((entry) => entry.sense.some((sense) => appliesTo(sense.appliesToKanji, numeral)
+      && sense.partOfSpeech.includes(numeral === "何" ? "pref" : "num")));
+  const counterEntries = rankJapaneseEntries(counters, {base: counter.origin, reading: counterReading, context: {pos: counter.pos}});
+  const matchesUnit = (entry: JmdictWord, unit: string) => entry.kana.some((kana) =>
+    kanaOf(kana.text) === unit && appliesTo(kana.appliesToKanji, counter.origin)
+    && entry.sense.some((sense) => sense.partOfSpeech.includes("ctr")
+      && appliesTo(sense.appliesToKanji, counter.origin) && appliesTo(sense.appliesToKana, kana.text)));
+  const counterEntry = counterEntries.find((entry) => matchesUnit(entry, counterReading))
+    ?? counterEntries.find((entry) => matchesUnit(entry, kanaOf(pair.base)));
+  if (!numberEntry || !counterEntry) return {};
+  return {composed_readings: [{reading, romaji: toRomaji(reading), rule: "counter", parts: [
+    {s: number.origin, reading: numberReading, entry_id: numberEntry.id},
+    {s: counter.origin, reading: counterReading, entry_id: counterEntry.id}
+  ]}]};
+};
 
 const chineseEntries = (db: DictionaryDb, word: string): Promise<ChineseEntryView[]> => cached(db, `zh\u0000${word}`, async () => (
   (await exactChineseEntries(db, word)).map(normalizeChineseEntry).filter((entry): entry is ChineseEntryView => entry !== null)
@@ -641,11 +681,12 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
       const db = deps.jmdict();
       if (!db) throw new ToolError("Japanese isn't loaded: its dictionary is not open.", 409);
       const data = await studyData(info);
-      let entries = await japaneseEntries(db, word);
+      const whole = await japaneseEntries(db, word);
+      let entries = whole;
       let dictionaryForm: string | undefined;
+      const tokens = !whole.length || couldStartCount.test(word) ? await deps.analyze("ja", word) : [];
       if (entries.length === 0) {
         // An inflected form: look up the dictionary form Miteiru's tokenizer gives it.
-        const tokens = await deps.analyze("ja", word);
         const words = tokens.filter((token) => /[\p{L}\p{N}]/u.test(String(token?.origin ?? "")));
         if (words.length === 1 && wordKey(words[0]) !== word) {
           dictionaryForm = wordKey(words[0]);
@@ -662,7 +703,8 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
         ...head,
         ...(dictionaryForm ? {dictionary_form: dictionaryForm} : {}),
         total: ranked.length + (user ? 1 : 0),
-        entries: [...(user ? [userEntryView(user)] : []), ...ranked.slice(0, limit).map((entry) => jmdictEntryView(entry, tags, data))]
+        entries: [...(user ? [userEntryView(user)] : []), ...ranked.slice(0, limit).map((entry) => jmdictEntryView(entry, tags, data))],
+        ...await composedCounterReadings(db, word, tokens, whole, reading)
       };
     }
 
@@ -813,7 +855,8 @@ export const createLanguageTools = (deps: LanguageToolDeps) => {
           found.push({reading, romaji: toRomaji(reading), common: kana.common, entry_ids: [entry.id], ...(pitch ? {pitch: {accents: pitch.accents, patterns: pitch.patterns}} : {})});
         }
       }
-      return {...head, source: "JMdict", tokenizer_reading: toHiragana(tokenized, {convertLongVowelMark: false}), readings: found};
+      return {...head, source: "JMdict", tokenizer_reading: kanaOf(tokenized), readings: found,
+        ...await composedCounterReadings(db, word, tokens, entries)};
     }
     if (info.id === "vi") throw new ToolError("readings is for Japanese, Mandarin and Cantonese: Vietnamese is written as it is read.");
 

@@ -31,6 +31,17 @@ pub struct Token {
     pub reading: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pronunciation: Option<String>,
+    /// Pronunciation of an isolated numeral and counter together, attached to the counter.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub counter_reading: Option<CounterReading>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct CounterReading {
+    pub number: String,
+    pub counter: String,
+    /// The counter before sound changes, for matching the right dictionary entry.
+    pub base: String,
 }
 
 #[derive(Clone, Copy)]
@@ -427,6 +438,7 @@ impl Tokenizer {
                 features.get(9).map(|value| (*value).into())
             },
             reading,
+            counter_reading: None,
         }
     }
 
