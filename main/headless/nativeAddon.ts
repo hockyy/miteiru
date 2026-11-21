@@ -18,6 +18,7 @@ export interface MiteiruAddon {
   jiebaLoad(key: string, dictPath: string, dictionaryPath?: string | null): Promise<void>;
   jiebaCut(key: string, text: string, hmm: boolean): string[];
   openccConvertBatch(mode: string, lines: string[]): string[];
+  jyutpingBatch(texts: string[]): string;
   jiebaUserWords(key: string, words: UserWord[]): void;
   tableOpen(path: string): number;
   tableClose(handle: number): void;
@@ -27,7 +28,7 @@ export interface MiteiruAddon {
 }
 
 /** The ADDON_API this code is written against; a build with another one is refused. */
-export const EXPECTED_ADDON_API = 2;
+export const EXPECTED_ADDON_API = 3;
 
 /** The file cargo builds for the crate on this system. */
 export const addonFileName = (platform: NodeJS.Platform = process.platform) => (

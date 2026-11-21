@@ -236,6 +236,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "miteiru-jyutping"
+version = "0.0.0"
+dependencies = [
+ "zstd",
+]
+
+[[package]]
 name = "miteiru-langdata"
 version = "0.0.0"
 dependencies = [
@@ -259,6 +266,7 @@ dependencies = [
 name = "miteiru-node"
 version = "0.0.0"
 dependencies = [
+ "miteiru-jyutping",
  "miteiru-langdata",
  "napi",
  "napi-build",

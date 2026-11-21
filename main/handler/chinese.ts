@@ -4,7 +4,7 @@ import {ipcMain} from "../../renderer/platform/backend/shims/desktop";
 import path from "path";
 import {pinyin} from "pinyin-pro";
 import {convertOpencc} from "#miteiru/opencc";
-import ToJyutping from "to-jyutping";
+import {jyutpingBatch} from "../language/jyutping";
 import {Jieba} from "../../renderer/platform/backend/shims/jieba";
 import {formatJyutpingReading, formatPinyinReading} from "./pinyinTones";
 import {readStrokeSvg} from "../helpers/strokeSvg";
@@ -129,13 +129,14 @@ export class ChineseEngine {
       const segments = await this.jieba.cut(sentence);
       const result: JyutpingResult[] = [];
 
-      for (const segment of segments) {
+      const readings = await jyutpingBatch(segments);
+      for (const [index, segment] of segments.entries()) {
         const custom = entries.get(segment);
         if (custom) {
           result.push(userDictionaryToken(custom, toneType) as unknown as JyutpingResult);
           continue;
         }
-        const jyutpingList = ToJyutping.getJyutpingList(segment);
+        const jyutpingList = readings[index];
         const formattedJyutping = jyutpingList.map(([, jp]) => formatJyutpingReading(jp, toneType)).join(' ');
         const separation = jyutpingList.map(([char, jp]) => ({
           main: char,

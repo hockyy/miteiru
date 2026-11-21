@@ -43,6 +43,7 @@ permissions = [
   "allow-jieba-load",
   "allow-jieba-cut",
   "allow-opencc-convert-batch",
+  "allow-jyutping-batch",
   "allow-jieba-user-words",
   "allow-japanese-load",
   "allow-japanese-set-words",

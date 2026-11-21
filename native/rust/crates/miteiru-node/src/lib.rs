@@ -20,7 +20,7 @@ use napi_derive::napi;
 
 /// Bumped when a function's name or shape changes, so the JS side can refuse a stale build.
 #[napi]
-pub const ADDON_API: u32 = 2;
+pub const ADDON_API: u32 = 3;
 
 static JAPANESE: LazyLock<JapaneseStore> = LazyLock::new(JapaneseStore::default);
 static CHINESE: LazyLock<JiebaStore> = LazyLock::new(JiebaStore::default);
@@ -104,6 +104,12 @@ pub fn japanese_tokenize_batch(dict_path: String, texts: Vec<String>) -> AsyncTa
 pub fn opencc_convert_batch(mode: String, lines: Vec<napi::bindgen_prelude::Utf16String>) -> napi::Result<Vec<napi::bindgen_prelude::Utf16String>> {
   let converter = miteiru_langdata::opencc::converter(&mode).map_err(failure)?;
   Ok(lines.iter().map(|line| converter.convert_utf16(line).into()).collect())
+}
+
+#[napi]
+pub fn jyutping_batch(texts: Vec<String>) -> napi::Result<String> {
+  let rows: Vec<_> = texts.iter().map(|text| miteiru_jyutping::readings(text)).collect();
+  serde_json::to_string(&rows).map_err(|error| failure(error.to_string()))
 }
 
 pub struct ChineseLoad {

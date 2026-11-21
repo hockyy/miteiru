@@ -40,6 +40,7 @@ const COMMANDS: &[&str] = &[
     "jieba_load",
     "jieba_cut",
     "opencc_convert_batch",
+    "jyutping_batch",
     "jieba_user_words",
     "japanese_load",
     "japanese_set_words",
